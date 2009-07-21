@@ -12,6 +12,8 @@ enum LOG_LEVEL { LOG_OFF = 0, LOG_SEVERE, LOG_WARNING, LOG_DEBUG };
 int string_to_int(std::string str);
 
 std::string int_to_string(int i);
+std::string long_to_string(long i);
+long string_to_long(std::string str);
 
 /** Remove whitespaces from beginning and end of a string
 * @param str string to process
@@ -36,5 +38,7 @@ void log_string(const std::string logstr, LOG_LEVEL level);
 * @param ReplaceWith String that should be inserted instead
 */
 void replace_all(std::string& searchIn, std::string searchFor, std::string ReplaceWith);
+
+bool dump_list_to_file();
 
 #endif /*HELPERFUNCTIONS_H_*/

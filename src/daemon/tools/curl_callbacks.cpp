@@ -1,6 +1,7 @@
 #include <fstream>
 #include <vector>
 #include "../dl/download.h"
+#include "helperfunctions.h"
 using namespace std;
 
 size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
@@ -15,5 +16,6 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	vector<download>::iterator it = *itp;
 	it->size = dltotal;
 	it->downloaded_bytes = dlnow;
+	dump_list_to_file();
 	return 0;
 }

@@ -1,8 +1,9 @@
 # depslib dependency file v1.0
-1248202632 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.cpp
+1248209565 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.cpp
 	"download.h"
 	"../../lib/cfgfile.h"
 	"../tools/curl_callbacks.h"
+	"../tools/helperfunctions.h"
 	<string>
 	<boost/filesystem.hpp>
 	<ctime>
@@ -10,7 +11,7 @@
 	<fstream>
 	<sstream>
 
-1248202499 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.h
+1248208193 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.h
 	<string>
 	<fstream>
 
@@ -38,7 +39,7 @@
 	"download.h"
 	<vector>
 
-1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/helperfunctions.h
+1248208392 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/helperfunctions.h
 	<string>
 
 1248198473 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/downloaddaemon.cpp
@@ -83,7 +84,7 @@
 	"../dl/download.h"
 	"global_management.h"
 
-1248202087 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/mgmt_thread.cpp
+1248207858 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/mgmt_thread.cpp
 	<iostream>
 	<vector>
 	<cassert>
@@ -95,12 +96,13 @@
 	"../../lib/cfgfile.h"
 	"../tools/helperfunctions.h"
 
-1248198473 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/curl_callbacks.cpp
+1248207974 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/curl_callbacks.cpp
 	<fstream>
 	<vector>
 	"../dl/download.h"
+	"helperfunctions.h"
 
-1248198473 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/helperfunctions.cpp
+1248208379 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/helperfunctions.cpp
 	"helperfunctions.h"
 	<sstream>
 	<string>
@@ -109,6 +111,7 @@
 	<fstream>
 	<ctime>
 	"../../lib/cfgfile.h"
+	"../dl/download.h"
 
 1248198473 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/lib/cfgfile.cpp
 	"cfgfile.h"
@@ -124,11 +127,11 @@
 	<boost/thread.hpp>
 	<boost/bind.hpp>
 
-1248198473 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient/ddclient.cpp
+1248208734 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient/ddclient.cpp
 	<iostream>
 	"../lib/netpptk.h"
 
-1248198473 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/plugins/rapidshare_com.cpp
+1248209486 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/plugins/rapidshare_com.cpp
 	<curl/curl.h>
 	<string>
 	<cstdlib>

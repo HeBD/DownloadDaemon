@@ -80,14 +80,14 @@ public:
 	download_status status;
 	std::string add_date;
 	int id;
-	int downloaded_bytes;
-	int size;
+	long downloaded_bytes;
+	long size;
 	int wait_seconds;
 	download_error error;
 
 
 private:
-	std::string int_to_string(int i);
+	//std::string int_to_string(int i);
 
 };
 

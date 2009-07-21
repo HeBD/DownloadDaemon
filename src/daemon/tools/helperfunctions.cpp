@@ -6,9 +6,12 @@
 #include <fstream>
 #include <ctime>
 #include "../../lib/cfgfile.h"
-
+#include "../dl/download.h"
 using namespace std;
+
 extern cfgfile global_config;
+extern string program_root;
+extern std::vector<download> global_download_list;
 
 int string_to_int(const std::string str) {
 	std::stringstream ss;
@@ -83,6 +86,15 @@ void replace_all(std::string& searchIn, std::string searchFor, std::string Repla
 	}
 }
 
+std::string long_to_string(long i) {
+	std::stringstream ss;
+	ss << i;
+	std::string ret;
+	ss >> ret;
+	return ret;
+
+}
+
 std::string int_to_string(int i) {
 	std::stringstream ss;
 	ss << i;
@@ -90,4 +102,26 @@ std::string int_to_string(int i) {
 	ss >> ret;
 	return ret;
 
+}
+
+long string_to_long(string str) {
+	std::stringstream ss;
+	ss << str;
+	long ret;
+	ss >> ret;
+	return ret;
+}
+
+bool dump_list_to_file() {
+	fstream dlfile(string(program_root + global_config.get_cfg_value("dlist_file")).c_str(), ios::trunc | ios::out);
+	if(!dlfile.good()) {
+		return false;
+	}
+
+	for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
+		dlfile << it->serialize() << '\n';
+	}
+	dlfile.close();
+
+	return true;
 }

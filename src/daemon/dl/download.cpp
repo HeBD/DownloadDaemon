@@ -1,6 +1,7 @@
 #include "download.h"
 #include "../../lib/cfgfile.h"
 #include "../tools/curl_callbacks.h"
+#include "../tools/helperfunctions.h"
 #include <string>
 #include <boost/filesystem.hpp>
 #include <ctime>
@@ -64,10 +65,10 @@ void download::from_serialized(std::string &serializedDL) {
 				}
 				break;
 			case 5:
-				downloaded_bytes = atoi(current_entry.c_str());
+				downloaded_bytes = string_to_long(current_entry.c_str());
 				break;
 			case 6:
-				size = atoi(current_entry.c_str());
+				size = string_to_long(current_entry.c_str());
 				break;
 		}
 		++curr_pos;
@@ -115,7 +116,9 @@ int download::get_download(parsed_download &parsed_dl) {
 	// should be packed in an extra thread so we can break up after a few seconds
 	std::string ex(plugindir + '/' + host + ' ' + int_to_string(id) + ' ' + url);
 	parsed_dl.plugin_return_val = system(ex.c_str());
-
+	if(parsed_dl.plugin_return_val == 255) {
+		parsed_dl.plugin_return_val = -1;
+	}
 
 	std::string tmpfile(plugindir + "/plugin_comm/" + int_to_string(id));
 	cfgfile plugin_output(tmpfile, false);
@@ -202,11 +205,3 @@ const char* download::get_status_str() {
 	return "UNKNOWN_STATUS";
 }
 
-std::string download::int_to_string(int i) {
-	std::stringstream ss;
-	ss << i;
-	std::string ret;
-	ss >> ret;
-	return ret;
-
-}

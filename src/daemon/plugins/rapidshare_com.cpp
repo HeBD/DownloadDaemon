@@ -47,54 +47,63 @@ int main(int argc, char* argv[]) {
 		output_file.close();
 		return -1;
 	}
-
-	string url;
-	pos = resultstr.find("http://", pos);
-	unsigned int end = resultstr.find('\"', pos);
 	try {
+		string url;
+		pos = resultstr.find("http://", pos);
+		unsigned int end = resultstr.find('\"', pos);
+
 		url = resultstr.substr(pos, end - pos);
+
+		resultstr.clear();
+		curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(handle, CURLOPT_POST, 1);
+		curl_easy_setopt(handle, CURLOPT_POSTFIELDS, "dl.start=\"Free\"");
+		curl_easy_perform(handle);
+
+		if(resultstr.find("Or try again in about") != string::npos) {
+			pos = resultstr.find("Or try again in about");
+			pos = resultstr.find("about", pos);
+			pos = resultstr.find(' ', pos);
+			++pos;
+			end = resultstr.find(' ', pos);
+			output_file << "download_parse_success = 0\n";
+			output_file << "download_parse_errmsg = LIMIT_REACHED\n";
+			string have_to_wait(resultstr.substr(pos, end - pos));
+			unsigned int wait_secs = atoi(have_to_wait.c_str()) * 60;
+			output_file << "download_parse_wait = " << wait_secs;
+			output_file.close();
+			return 0;
+		} else if(resultstr.find("Please try again in 2 minutes") != string::npos) {
+			output_file << "download_parse_success = 0\n";
+			output_file << "download_parse_errmsg = SERVER_OVERLOAD\n";
+			output_file << "download_parse_wait = 120\n";
+			output_file.close();
+			return 0;
+		} else {
+			output_file << "download_parse_success = 1\n";
+
+			if((pos = resultstr.find("var c")) == string::npos) {
+				// Unable to get the wait time, will wait 135 seconds
+				output_file << "wait_before_download = 135" << '\n';
+			} else {
+				pos = resultstr.find("=", pos) + 1;
+				end = resultstr.find(";", pos) - 1;
+				output_file << "wait_before_download = " << atoi(resultstr.substr(pos, end).c_str()) << '\n';
+			}
+
+			if((pos = resultstr.find("<form name=\"dlf\"")) == string::npos) {
+				return -1;
+			}
+
+			pos = resultstr.find("http://", pos);
+			end = resultstr.find('\"', pos);
+
+			output_file << "download_url = " << resultstr.substr(pos, end - pos) << '\n';
+			output_file.close();
+			return 0;
+		}
 	} catch (...) {
 		output_file.close();
 		return -1;
-	}
-	resultstr.clear();
-	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
-	curl_easy_setopt(handle, CURLOPT_POST, 1);
-	curl_easy_setopt(handle, CURLOPT_POSTFIELDS, "dl.start=\"Free\"");
-	curl_easy_perform(handle);
-
-	if(resultstr.find("Or try again in about") != string::npos) {
-		pos = resultstr.find("Or try again in about");
-		pos = resultstr.find("about", pos);
-		pos = resultstr.find(' ', pos);
-		++pos;
-		end = resultstr.find(' ', pos);
-		output_file << "download_parse_success = 0\n";
-		output_file << "download_parse_errmsg = LIMIT_REACHED\n";
-		string have_to_wait(resultstr.substr(pos, end - pos));
-		unsigned int wait_secs = atoi(have_to_wait.c_str()) * 60;
-		output_file << "download_parse_wait = " << wait_secs;
-		output_file.close();
-		return 0;
-	} else if(resultstr.find("Please try again in 2 minutes") != string::npos) {
-		output_file << "download_parse_success = 0\n";
-		output_file << "download_parse_errmsg = SERVER_OVERLOAD\n";
-		output_file << "download_parse_wait = 120\n";
-		output_file.close();
-		return 0;
-	} else {
-		output_file << "download_parse_success = 1\n";
-
-		pos = resultstr.find("var c");
-		pos = resultstr.find("=", pos) + 1;
-		end = resultstr.find(";", pos) - 1;
-		output_file << "wait_before_download = " << atoi(resultstr.substr(pos, end).c_str()) << '\n';
-
-		pos = resultstr.find("<form name=\"dlf\"");
-		pos = resultstr.find("http://", pos);
-		end = resultstr.find('\"', pos);
-		output_file << "download_url = " << resultstr.substr(pos, end - pos) << '\n';
-		output_file.close();
-		return 0;
-	}
+		}
 }
