@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
 		++pos;
 		end = resultstr.find(' ', pos);
 		output_file << "download_parse_success = 0\n";
-		output_file << "download_parse_errmsg = SERVER_OVERLOAD\n";
+		output_file << "download_parse_errmsg = LIMIT_REACHED\n";
 		string have_to_wait(resultstr.substr(pos, end - pos));
 		unsigned int wait_secs = atoi(have_to_wait.c_str()) * 60;
 		output_file << "download_parse_wait = " << wait_secs;

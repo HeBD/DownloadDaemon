@@ -47,6 +47,7 @@ void download_thread(vector<download>::iterator download) {
 		break;
 		case INVALID_PLUGIN_PATH:
 			download->error = INVALID_PLUGIN_PATH;
+			download->status = DOWNLOAD_PENDING;
 			log_string("Could not locate plugin folder!", LOG_SEVERE);
 			exit(-1);
 		break;
@@ -94,9 +95,34 @@ void download_thread(vector<download>::iterator download) {
 		if(success == 0) {
 			log_string(string("Finished download ID: ") + int_to_string(download->id), LOG_DEBUG);
 			download->status = DOWNLOAD_FINISHED;
+			return;
 		} else {
 			log_string(string("Connection lost for download ID: ") + int_to_string(download->id), LOG_WARNING);
 			download->error = CONNECTION_LOST;
+			download->status = DOWNLOAD_PENDING;
+			return;
+		}
+	} else {
+		if(parsed_dl.download_parse_errmsg == "SERVER_OVERLOAD") {
+			log_string(string("Server overloaded for download ID: ") + int_to_string(download->id), LOG_WARNING);
+			download->status = DOWNLOAD_WAITING;
+			download->wait_seconds = parsed_dl.download_parse_wait;
+			return;
+		} else if(parsed_dl.download_parse_errmsg == "LIMIT_REACHED") {
+			log_string(string("Download limit reached for download ID: ") + int_to_string(download->id) + " (" + download->get_host() + ")", LOG_WARNING);
+			download->status = DOWNLOAD_WAITING;
+			download->wait_seconds = parsed_dl.download_parse_wait;
+			return;
+		} else if(parsed_dl.download_parse_errmsg == "CONNECTION_FAILED") {
+			log_string(string("Plugin failed to connect for ID:") + int_to_string(download->id), LOG_WARNING);
+			download->error = CONNECTION_LOST;
+			download->status = DOWNLOAD_INACTIVE;
+			return;
+		} else if(parsed_dl.download_parse_errmsg == "FILE_NOT_FOUND") {
+			log_string(string("File could not be found on the server: ") + parsed_dl.download_url, LOG_WARNING);
+			download->error = FILE_NOT_FOUND;
+			download->status = DOWNLOAD_INACTIVE;
+			return;
 		}
 	}
 }

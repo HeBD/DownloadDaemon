@@ -10,6 +10,9 @@ void tick_downloads() {
 		for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
 			if(it->wait_seconds > 0) {
 				--it->wait_seconds;
+				if(it->status == DOWNLOAD_WAITING && it->wait_seconds == 0) {
+					it->status = DOWNLOAD_PENDING;
+				}
 			}
 		}
 		sleep(1);

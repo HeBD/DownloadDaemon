@@ -253,6 +253,7 @@ bool set(std::string data) {
 					trim_string(data);
 					if(data == "0") {
 						it->status = DOWNLOAD_INACTIVE;
+						it->wait_seconds = 0;
 					}
 					else {
 						if(it->status == DOWNLOAD_INACTIVE) {

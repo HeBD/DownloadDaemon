@@ -180,6 +180,8 @@ const char* download::get_error_str() {
 			return "PLUGIN_ERROR";
 		case CONNECTION_LOST:
 			return "CONNECTION_LOST";
+		case FILE_NOT_FOUND:
+			return "FILE_NOT_FOUND";
 	}
 	return "UNKNOWN_ERROR";
 }

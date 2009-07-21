@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1248198473 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.cpp
+1248202632 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.cpp
 	"download.h"
 	"../../lib/cfgfile.h"
 	"../tools/curl_callbacks.h"
@@ -10,7 +10,7 @@
 	<fstream>
 	<sstream>
 
-1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.h
+1248202499 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.h
 	<string>
 	<fstream>
 
@@ -20,7 +20,7 @@
 
 1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/curl_callbacks.h
 
-1248198473 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
+1248202723 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
 	<string>
 	<boost/filesystem.hpp>
 	<boost/thread.hpp>
@@ -78,12 +78,12 @@
 
 1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/global_management.h
 
-1248198473 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/global_management.cpp
+1248204918 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/global_management.cpp
 	<vector>
 	"../dl/download.h"
 	"global_management.h"
 
-1248198473 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/mgmt_thread.cpp
+1248202087 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/mgmt_thread.cpp
 	<iostream>
 	<vector>
 	<cassert>
