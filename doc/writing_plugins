@@ -1,0 +1,44 @@
+This is a shourt introduction about how to write new Plugins for the downloader to support more hosters.
+Generally a plugin can be written in any language - no matter if compiled or interpreted.
+But it is not really recommended to write them e.g. in Java, since this
+would require a JVM on everyones machine.. and who want's one on his NAS or Router?...
+Anyway. All plugin-executables have to be called like the hoster from which they should download.
+a rapidshare.com plugin would therefore be called "rapidshare.com".
+These plugins do all the decrypting which is required before we can download (for rapidshare, 
+this would be clicking on the free button, for some others, this would be entering captchas).
+Maybe in a far future, i will include some captcha-decode-helper program or something, but right now, 
+this is not offered and you have to lookfor yourself.
+Anyhow, all work should be done by the plugin except for the final step of downloading the file. 
+The main program will do that.
+Now how does the main-program get the needed information? easy thing: 
+The plugin has to pass the information back to the main program through a file (i don't use pipes, sockets
+or some other way of IPC here, because that's not supported by all languages in a friendly way). 
+For this purpose, there is a folder called ${plugins}/plugin_comm.
+The communication file needs to get written in there. 
+The structures of such files is a simple "variable = value" structure. bool-variables have to be "0" or "1" (without the "").
+Other things like "true" and "false" are not supported. For communications, the following variables are supported:
+download_url		: The final URL from which we can download
+cookie_file		: If the hoster requires a cookie to be set, this specifies a file name in which the cookie information is safed, as cURL/libcURL saves them. leave blank if not required
+wait_before_download	: If we have to wait before we can really start, the number of seconds we have to wait can be specified here
+download_parse_success	: Here we can write if there was generally a success.
+download_parse_errmsg	: If download_parse_success is 0, we can specifie the reason here. Supported values are SERVER_OVERLOAD, LIMIT_REACHED, CONNECTION_FAILED, FILE_NOT_FOUND.
+			: If no reason, or an unknown reason is specified, the download will become deactivated and the downloader will ignore it in the futere.
+download_parse_wait	: If download_parse_success is 0 and the error is a LIMIT_REACHED or a SERVER_OVERLOAD, this specifies a timeout when we should try downloading again (in minutes)
+
+The file with this information has to be called after the download ID as specified by the first command-line argument (argv[1]/$1/whatever). The link that should be parsed by the plugin
+is specified in the second command-line argument (argv[2], $2). You should also be aware, that the execution-pass is NOT always ./
+In special occasions, this can vary. Therefore you should not save the file in "plugin_comm/argv[1]", but in "argv[0]/plugin_comm/argv[1]".
+Please make sure that the plugin-execution returns 0. If this is not the case, the download will get deactivated with an "unknown error".
+
+Also, for each hoster, the downloader needs to know basic information about what this hoster supports and what this hoster does not support. Files with this information are located in
+${plugins}/hostinfo. They are simple text-files, also with the variable = value schema. supported variables are:
+
+# offers_premium				: Specifies if the hoster has something like a premium service			# not implemented
+allows_multiple_downloads_free			: Specifies if the hoster allows multiple downloads at the same time
+# allows_multiple_downloads_premium		: Same as above, but for premium users				 		# not implemented
+# allows_download_resumption_free	   	: Specifies if the hoster allows the resumption of downloads			# not implemented
+# allows_download_resumption_premium	 	: Same as above, but for premium users						# not implemented
+# premium_auth_type		             	: Specifies how we have to authenticate if we are premium (e.g.: http-auth)	# not implemented
+
+Most values here are 1/0 bool-values.
+
