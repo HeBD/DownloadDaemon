@@ -236,7 +236,7 @@ endif
 endif
 
 daemon_only_clean:
-	$(RM) $(OBJS) $(PROGRAM) $(PROGRAM).exe
+	$(RM) $(DEPS) TAGS $(OBJS) $(PROGRAM) $(PROGRAM).exe 
 
 distclean: clean
 	$(RM) $(DEPS) TAGS

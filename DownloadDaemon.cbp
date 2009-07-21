@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="DownloadDaemon" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Daemon">
+				<Option platforms="Unix;" />
+				<Option output="built/DownloadDaemon" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-pedantic" />
+					<Add option="-Wall" />
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add library="curl" />
+					<Add library="boost_filesystem-mt" />
+					<Add library="boost_regex-mt" />
+					<Add library="boost_thread-mt" />
+				</Linker>
+			</Target>
+			<Target title="DDClient">
+				<Option platforms="Windows;Unix;" />
+				<Option output="built/ddclient" prefix_auto="1" extension_auto="1" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-pedantic" />
+					<Add option="-Wall" />
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add library="boost_thread-mt" />
+				</Linker>
+			</Target>
+			<Target title="rapidshare_com">
+				<Option output="built/plugins/rapidshare" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-pedantic" />
+					<Add option="-Wall" />
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add library="curl" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="src/Doxyfile">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="src/daemon/Makefile">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="src/daemon/dl/download.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/dl/download.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/dl/download_thread.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/dl/download_thread.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/downloaddaemon.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/global.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/mgmt/global_management.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/mgmt/global_management.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/mgmt/mgmt_thread.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/mgmt/mgmt_thread.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/plugins/Makefile">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="src/daemon/plugins/hostinfo/rapidshare.com">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="src/daemon/plugins/rapidshare_com.cpp">
+			<Option target="rapidshare_com" />
+		</Unit>
+		<Unit filename="src/daemon/tools/curl_callbacks.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/tools/curl_callbacks.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/tools/helperfunctions.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/tools/helperfunctions.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/ddclient/Makefile">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="src/ddclient/ddclient.cpp">
+			<Option target="DDClient" />
+		</Unit>
+		<Unit filename="src/lib/Makefile">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="src/lib/cfgfile.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/lib/cfgfile.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/lib/netpptk.cpp">
+			<Option target="Daemon" />
+			<Option target="DDClient" />
+		</Unit>
+		<Unit filename="src/lib/netpptk.h">
+			<Option target="Daemon" />
+			<Option target="DDClient" />
+		</Unit>
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<lib_finder disable_auto="1" />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
