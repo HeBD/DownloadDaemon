@@ -1,0 +1,5 @@
+2009-07-22 adrian
+	Made repository public and opened the initial version of DownloadDaemon
+	including a hard-to-use commandline client and a plugin for rapidshare.com
+	This version has the general ability to download and to get managed by a 
+	remote host. The first milestone might be reached soon.
