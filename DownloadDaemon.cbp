@@ -13,7 +13,6 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-O3" />
 					<Add option="-pedantic" />
 					<Add option="-Wall" />
 					<Add option="-g" />
@@ -32,7 +31,6 @@
 				<Option compiler="gcc" />
 				<Option use_console_runner="0" />
 				<Compiler>
-					<Add option="-O3" />
 					<Add option="-pedantic" />
 					<Add option="-Wall" />
 					<Add option="-g" />
@@ -46,8 +44,8 @@
 				<Option output="built/plugins/rapidshare.com" prefix_auto="1" extension_auto="0" />
 				<Option type="0" />
 				<Option compiler="gcc" />
+				<Option parameters="1 http://rapidshare.com/files/144286726/worldshift_Ka0oS.part02.rar" />
 				<Compiler>
-					<Add option="-O3" />
 					<Add option="-pedantic" />
 					<Add option="-Wall" />
 					<Add option="-g" />
