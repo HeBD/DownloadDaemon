@@ -25,7 +25,7 @@ install:
 	cp -rf built/* "${INSTALL_PATH}"
 	echo "#!/bin/bash" > /usr/local/bin/downloaddaemon
 	echo "cd ${INSTALL_PATH}" >> /usr/local/bin/downloaddaemon
-	echo "./DownloadDaemon" >> /usr/local/bin/downloaddaemon
+	echo "./DownloadDaemon \$${@}" >> /usr/local/bin/downloaddaemon
 	-mv "${INSTALL_PATH}/ddclient" /usr/local/bin
 	chmod +x /usr/local/bin/downloaddaemon
 

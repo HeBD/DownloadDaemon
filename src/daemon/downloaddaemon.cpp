@@ -17,6 +17,19 @@ using namespace std;
 extern cfgfile global_config;
 
 int main(int argc, char* argv[]) {
+	if(argc == 2) {
+		string argv1 = argv[1];
+		if(argv1 == "-d" || argv1 == "--daemon") {
+			int i = fork();
+			if (i < 0) return 1; /* fork error */
+			if (i > 0) return 0; /* parent exits */
+			/* child (daemon) continues */
+		} else if(argv1 == "--help") {
+			cout << "Usage: downloaddaemon [-d|--daemon]" << endl;
+			return 0;
+		}
+	}
+
 	string root_dir(argv[0]);
 
 	root_dir = root_dir.substr(0, root_dir.find_last_of("/\\"));
