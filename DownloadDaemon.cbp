@@ -54,6 +54,20 @@
 					<Add library="curl" />
 				</Linker>
 			</Target>
+			<Target title="DDClient-wx">
+				<Option output="ddclient-wx" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="`wx-config --cflags`" />
+				</Compiler>
+				<Linker>
+					<Add option="`wx-config --libs`" />
+					<Add library="boost_thread-mt" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
@@ -116,6 +130,21 @@
 		<Unit filename="src/daemon/tools/helperfunctions.h">
 			<Option target="Daemon" />
 		</Unit>
+		<Unit filename="src/ddclient-wx/connect_dlg.cpp">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/connect_dlg.h">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx.cpp">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_main.h">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient_main.cpp">
+			<Option target="DDClient-wx" />
+		</Unit>
 		<Unit filename="src/ddclient/Makefile">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
@@ -127,23 +156,40 @@
 		</Unit>
 		<Unit filename="src/lib/cfgfile.cpp">
 			<Option target="Daemon" />
+			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/lib/cfgfile.h">
 			<Option target="Daemon" />
+			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/lib/netpptk.cpp">
 			<Option target="Daemon" />
 			<Option target="DDClient" />
+			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/lib/netpptk.h">
 			<Option target="Daemon" />
 			<Option target="DDClient" />
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="wxsmith/connect_dlg.wxs">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="wxsmith/ddclient_main.wxs">
+			<Option target="DDClient-wx" />
 		</Unit>
 		<Extensions>
 			<envvars />
 			<code_completion />
 			<lib_finder disable_auto="1" />
 			<debugger />
+			<wxsmith version="1">
+				<gui name="wxWidgets" src="src/ddclient-wx/ddclient-wx.cpp" main="ddclient_main" init_handlers="necessary" language="CPP" />
+				<resources>
+					<wxFrame wxs="wxsmith/ddclient_main.wxs" src="src/ddclient-wx/ddclient_main.cpp" hdr="src/ddclient-wx/ddclient-wx_main.h" name="ddclient_main" language="CPP" />
+					<wxDialog wxs="wxsmith/connect_dlg.wxs" src="src/ddclient-wx/connect_dlg.cpp" hdr="src/ddclient-wx/connect_dlg.h" name="connect_dlg" language="CPP" />
+				</resources>
+			</wxsmith>
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
