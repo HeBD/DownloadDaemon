@@ -77,7 +77,11 @@ void download_thread(vector<download>::iterator download) {
 		}
 
 		string output_filename(global_config.get_cfg_value("download_folder"));
-		output_filename += '/' + parsed_dl.download_url.substr(parsed_dl.download_url.find_last_of('/'));
+		if(parsed_dl.download_url != "") {
+			output_filename += '/' + parsed_dl.download_url.substr(parsed_dl.download_url.find_last_of("/\\"));
+		} else {
+			// weird unknown error by wrong plugin implementation
+		}
 		fstream output_file(output_filename.c_str(), ios::out | ios::binary);
 		CURL* handle = curl_easy_init();
 		// set url

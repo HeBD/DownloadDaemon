@@ -59,6 +59,7 @@ class ddclient_main: public wxFrame
 
 		//(*Handlers(ddclient_main)
 		void OnConnectBtnClicked(wxCommandEvent& event);
+		void OnAddBtnClicked(wxCommandEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

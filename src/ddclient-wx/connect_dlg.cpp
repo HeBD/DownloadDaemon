@@ -81,10 +81,11 @@ void connect_dlg::Onconn_conn_btnClick(wxCommandEvent& event)
 	if(srvConnection.connect(ss.str(), port_txt->GetValue())) {
 		connected_successfully = true;
 		std::string rec;
+		//srvConnection >> rec;
 		srvConnection.recv(rec);
-		if(rec[0] == 0) {
+		if(rec[0] == '0') {
 			wxMessageBox(_("Successfully connected!"), _("Connect"));
-		} else if(rec[0] == 1) {
+		} else if(rec[0] == '1') {
 			wxMessageBox(_("Password required!"), _("Connect"));
 		} else {
 			wxMessageBox(_("An error occured..."), _("Connect"));

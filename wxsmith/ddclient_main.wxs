@@ -70,6 +70,7 @@
 				<label>Add</label>
 				<bitmap stock_id="wxART_ADD_BOOKMARK" stock_client="wxART_TOOLBAR" />
 				<tooltip>Adds a new Download</tooltip>
+				<handler function="OnAddBtnClicked" entry="EVT_TOOL" />
 			</object>
 			<object class="tool" name="del_btn" variable="ToolBarItem3" member="yes">
 				<label>Delete</label>

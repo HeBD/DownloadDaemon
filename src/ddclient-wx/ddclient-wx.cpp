@@ -11,6 +11,7 @@
 #include "ddclient-wx_main.h"
 #include "connect_dlg.h"
 #include "../lib/netpptk.h"
+#include "dlg_add.h"
 //(*AppHeaders
 #include <wx/image.h>
 //*)

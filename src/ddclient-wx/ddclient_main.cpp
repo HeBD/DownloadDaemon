@@ -1,5 +1,6 @@
 #include "ddclient-wx_main.h"
 #include "connect_dlg.h"
+#include "dlg_add.h"
 //(*InternalHeaders(ddclient_main)
 #include <wx/string.h>
 #include <wx/intl.h>
@@ -95,6 +96,7 @@ ddclient_main::ddclient_main(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	SetStatusBar(StatusBar1);
 
 	Connect(connect_btn,wxEVT_COMMAND_TOOL_CLICKED,(wxObjectEventFunction)&ddclient_main::OnConnectBtnClicked);
+	Connect(add_btn,wxEVT_COMMAND_TOOL_CLICKED,(wxObjectEventFunction)&ddclient_main::OnAddBtnClicked);
 	//*)
 }
 
@@ -111,3 +113,9 @@ void ddclient_main::OnConnectBtnClicked(wxCommandEvent& event)
 	connect->ShowModal();
 }
 
+
+void ddclient_main::OnAddBtnClicked(wxCommandEvent& event)
+{
+	dlg_add* add = new dlg_add(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	add->ShowModal();
+}
