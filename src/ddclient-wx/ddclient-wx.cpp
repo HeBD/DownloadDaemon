@@ -86,6 +86,7 @@ void list_manager(wxListCtrl *list) {
 
 		list->ClearAll();
 		while(getline(ss, answer)) {
+			answer.erase(answer.length());
 			int index = 0;
 
 			size_t start = 0;
@@ -94,14 +95,15 @@ void list_manager(wxListCtrl *list) {
 				continue;
 			}
 
-			size_t pos = 0;
-
+			size_t pos = answer.find('|') + 1;
+			wxString id(answer.substr(1, pos).c_str(), wxConvUTF8);
+			long itemIndex = list->InsertItem( 0 , id );
 			while((pos = answer.find('|', pos)) != std::string::npos) {
 				std::string curr = answer.substr(start, pos - start);
 				wxString data(curr.c_str(), wxConvUTF8);
 				++pos;
 				start = pos;
-				list->InsertItem(index, data);
+				list->SetItem(itemIndex, index, data);
 				++index;
 			}
 		}

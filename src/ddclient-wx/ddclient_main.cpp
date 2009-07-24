@@ -11,7 +11,6 @@
 
 //(*IdInit(ddclient_main)
 const long ddclient_main::ID_LISTCTRL2 = wxNewId();
-const long ddclient_main::ID_PANEL1 = wxNewId();
 const long ddclient_main::ID_LISTCTRL1 = wxNewId();
 const long ddclient_main::ID_PANEL2 = wxNewId();
 const long ddclient_main::ID_PANEL3 = wxNewId();
@@ -35,22 +34,12 @@ ddclient_main::ddclient_main(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	//(*Initialize(ddclient_main)
 	wxBoxSizer* BoxSizer3;
 	wxBoxSizer* BoxSizer2;
-	wxBoxSizer* BoxSizer4;
-	wxBoxSizer* BoxSizer1;
-
+	
 	Create(parent, wxID_ANY, _("DDClient-wx - A DownloadDaemon Client"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("wxID_ANY"));
 	SetClientSize(wxSize(776,383));
 	Notebook1 = new wxNotebook(this, ID_NOTEBOOK1, wxPoint(88,48), wxDefaultSize, 0, _T("ID_NOTEBOOK1"));
-	Panel1 = new wxPanel(Notebook1, ID_PANEL1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("ID_PANEL1"));
-	BoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
-	BoxSizer4 = new wxBoxSizer(wxVERTICAL);
-	DownloadList = new wxListCtrl(Panel1, ID_LISTCTRL2, wxDefaultPosition, wxSize(0,0), wxLC_LIST|wxLC_REPORT, wxDefaultValidator, _T("ID_LISTCTRL2"));
+	DownloadList = new wxListView(Notebook1, ID_LISTCTRL2, wxPoint(120,-46), wxSize(0,0), wxLC_LIST|wxLC_REPORT, wxDefaultValidator, _T("ID_LISTCTRL2"));
 	DownloadList->SetFocus();
-	BoxSizer4->Add(DownloadList, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	BoxSizer1->Add(BoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	Panel1->SetSizer(BoxSizer1);
-	BoxSizer1->Fit(Panel1);
-	BoxSizer1->SetSizeHints(Panel1);
 	Panel2 = new wxPanel(Notebook1, ID_PANEL2, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("ID_PANEL2"));
 	BoxSizer2 = new wxBoxSizer(wxHORIZONTAL);
 	ListCtrl1 = new wxListCtrl(Panel2, ID_LISTCTRL1, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_LISTCTRL1"));
@@ -63,7 +52,7 @@ ddclient_main::ddclient_main(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	Panel3->SetSizer(BoxSizer3);
 	BoxSizer3->Fit(Panel3);
 	BoxSizer3->SetSizeHints(Panel3);
-	Notebook1->AddPage(Panel1, _("All Downloads"), false);
+	Notebook1->AddPage(DownloadList, _("All Downloads"), false);
 	Notebook1->AddPage(Panel2, _("Running Downloads"), false);
 	Notebook1->AddPage(Panel3, _("Finished Downloads"), false);
 	MenuBar1 = new wxMenuBar();
@@ -84,7 +73,7 @@ ddclient_main::ddclient_main(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	StatusBar1->SetFieldsCount(1,__wxStatusBarWidths_1);
 	StatusBar1->SetStatusStyles(1,__wxStatusBarStyles_1);
 	SetStatusBar(StatusBar1);
-
+	
 	Connect(connect_btn,wxEVT_COMMAND_TOOL_CLICKED,(wxObjectEventFunction)&ddclient_main::OnConnectBtnClicked);
 	Connect(add_btn,wxEVT_COMMAND_TOOL_CLICKED,(wxObjectEventFunction)&ddclient_main::OnAddBtnClicked);
 	//*)
@@ -108,12 +97,4 @@ void ddclient_main::OnAddBtnClicked(wxCommandEvent& event)
 {
 	dlg_add* add = new dlg_add(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 	add->ShowModal();
-}
-
-void ddclient_main::OnListCtrl2BeginDrag(wxListEvent& event)
-{
-}
-
-void ddclient_main::OnDownloadListBeginDrag(wxListEvent& event)
-{
 }

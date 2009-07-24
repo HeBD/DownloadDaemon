@@ -1,10 +1,10 @@
 #include "helperfunctions.h"
 #include <sstream>
 #include <string>
-#include <boost/regex.hpp>
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <vector>
 #include "../../lib/cfgfile.h"
 #include "../dl/download.h"
 using namespace std;
@@ -32,12 +32,15 @@ void trim_string(std::string &str) {
 }
 
 bool validate_url(std::string &url) {
-	boost::regex rx("^(?#Protocol)(?:(?:ht|f)tp(?:s?)\\:\\/\\/|~/|/)?(?#Username:Password)(?:\\w+:\\w+@)?(?#Subdomains)(?:(?:[-\\w]+\\.)"
-					"+(?#TopLevel Domains)(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|museum|travel|[a-z]{2}))(?#Port)(?::[\\d]"
-					"{1,5})?(?#Directories)(?:(?:(?:/(?:[-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|/)+|\\?|#)?(?#Query)(?:(?:\\?(?:[-\\w~!$+|.,*:]"
-					"|%[a-f\\d{2}])+=(?:[-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)(?:&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=(?:[-\\w~!$+|.,*:=]|%[a-f\\d]"
-					"{2})*)*)*(?#Anchor)(?:#(?:[-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)?$");
-	return regex_match(url, rx);
+	bool valid = true;
+	if(url.find("http://") != 0 || url.find("ftp://") != 0) {
+		valid = false;
+	}
+	size_t pos = url.find('/') + 2;
+	if(url.find('.', pos +1) == string::npos) {
+		valid = false;
+	}
+	return valid;
 }
 
 void log_string(const std::string logstr, LOG_LEVEL level) {

@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1248209565 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.cpp
+1248465007 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.cpp
 	"download.h"
 	"../../lib/cfgfile.h"
 	"../tools/curl_callbacks.h"
@@ -11,9 +11,10 @@
 	<fstream>
 	<sstream>
 
-1248208193 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.h
+1248465016 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.h
 	<string>
 	<fstream>
+	<curl/curl.h>
 
 1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/lib/cfgfile.h
 	<string>
@@ -21,7 +22,7 @@
 
 1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/curl_callbacks.h
 
-1248446954 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
+1248465643 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
 	<string>
 	<boost/filesystem.hpp>
 	<boost/thread.hpp>
@@ -40,7 +41,7 @@
 	"download.h"
 	<vector>
 
-1248208392 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/helperfunctions.h
+1248454870 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/helperfunctions.h
 	<string>
 
 1248211755 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/downloaddaemon.cpp
@@ -78,14 +79,15 @@
 	<vector>
 	"../lib/cfgfile.h"
 
-1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/global_management.h
+1248451640 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/global_management.h
 
-1248204918 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/global_management.cpp
+1248465176 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/global_management.cpp
 	<vector>
+	<curl/curl.h>
 	"../dl/download.h"
 	"global_management.h"
 
-1248207858 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/mgmt_thread.cpp
+1248465039 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/mgmt_thread.cpp
 	<iostream>
 	<vector>
 	<cassert>
@@ -103,14 +105,14 @@
 	"../dl/download.h"
 	"helperfunctions.h"
 
-1248208379 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/helperfunctions.cpp
+1248450468 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/helperfunctions.cpp
 	"helperfunctions.h"
 	<sstream>
 	<string>
-	<boost/regex.hpp>
 	<iostream>
 	<fstream>
 	<ctime>
+	<vector>
 	"../../lib/cfgfile.h"
 	"../dl/download.h"
 
@@ -138,7 +140,7 @@
 	<cstdlib>
 	<fstream>
 
-1248373429 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx.cpp
+1248468540 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx.cpp
 	<wx/wxprec.h>
 	<wx/app.h>
 	"ddclient-wx_main.h"
@@ -152,7 +154,7 @@
 	<wx/msgdlg.h>
 	<wx/image.h>
 
-1248370392 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient_main.cpp
+1248468334 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient_main.cpp
 	"ddclient-wx_main.h"
 	"connect_dlg.h"
 	"dlg_add.h"
@@ -162,7 +164,7 @@
 	<wx/image.h>
 	<wx/artprov.h>
 
-1248369894 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx_main.h
+1248468334 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx_main.h
 	<wx/toolbar.h>
 	<wx/sizer.h>
 	<wx/listctrl.h>
@@ -1670,7 +1672,7 @@
 	"wx/bitmap.h"
 	"wx/icon.h"
 
-1248342792 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/connect_dlg.cpp
+1248466939 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/connect_dlg.cpp
 	"connect_dlg.h"
 	"../lib/netpptk.h"
 	<sstream>

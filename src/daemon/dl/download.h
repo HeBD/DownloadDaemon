@@ -3,6 +3,7 @@
 
 #include <string>
 #include <fstream>
+#include <curl/curl.h>
 
 enum download_error { NO_ERROR = 1, MISSING_PLUGIN, INVALID_HOST, INVALID_PLUGIN_PATH, PLUGIN_ERROR, CONNECTION_LOST, FILE_NOT_FOUND };
 enum auth_type { NO_AUTH = 1, HTTP_AUTH };
@@ -69,9 +70,19 @@ public:
 	*/
 	std::string get_host();
 
+	/** Get Info about a host
+	* @return hostinfo structure of the host
+	*/
 	hostinfo get_hostinfo();
 
+	/** Get the defines from above as a string literal
+	* @return the resulting error string
+	*/
 	const char* get_error_str();
+
+	/** Get the defines from above as a string literal
+	* @return the resulting status string
+	*/
 	const char* get_status_str();
 
 	std::string url;
@@ -84,7 +95,7 @@ public:
 	long size;
 	int wait_seconds;
 	download_error error;
-
+	CURL* handle;
 
 private:
 	//std::string int_to_string(int i);

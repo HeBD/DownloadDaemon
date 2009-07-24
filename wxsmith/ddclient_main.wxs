@@ -7,27 +7,11 @@
 		<object class="wxNotebook" name="ID_NOTEBOOK1" variable="Notebook1" member="yes">
 			<pos>88,48</pos>
 			<object class="notebookpage">
-				<object class="wxPanel" name="ID_PANEL1" variable="Panel1" member="yes">
-					<object class="wxBoxSizer" variable="BoxSizer1" member="no">
-						<object class="sizeritem">
-							<object class="wxBoxSizer" variable="BoxSizer4" member="no">
-								<orient>wxVERTICAL</orient>
-								<object class="sizeritem">
-									<object class="wxListCtrl" name="ID_LISTCTRL2" variable="DownloadList" member="yes">
-										<size>0,0</size>
-										<focused>1</focused>
-										<style>wxLC_LIST|wxLC_REPORT</style>
-									</object>
-									<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
-								</object>
-							</object>
-							<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-							<border>5</border>
-							<option>1</option>
-						</object>
-					</object>
+				<object class="wxListCtrl" name="ID_LISTCTRL2" subclass="wxListView" variable="DownloadList" member="yes">
+					<pos>120,-46</pos>
+					<size>0,0</size>
+					<focused>1</focused>
+					<style>wxLC_LIST|wxLC_REPORT</style>
 				</object>
 				<label>All Downloads</label>
 			</object>

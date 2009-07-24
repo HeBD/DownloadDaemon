@@ -84,7 +84,7 @@ void connect_dlg::Onconn_conn_btnClick(wxCommandEvent& event)
 		//srvConnection >> rec;
 		srvConnection.recv(rec);
 		if(rec[0] == '0') {
-			wxMessageBox(_("Successfully connected!"), _("Connect"));
+			this->Close();
 		} else if(rec[0] == '1') {
 			wxMessageBox(_("Password required!"), _("Connect"));
 		} else {
@@ -93,6 +93,5 @@ void connect_dlg::Onconn_conn_btnClick(wxCommandEvent& event)
 	} else {
 		wxMessageBox(_("Failed to connect."), _("Connect"));
 	}
-	this->Close();
 }
 

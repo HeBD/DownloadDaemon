@@ -21,6 +21,7 @@ extern cfgfile global_config;
 extern std::vector<download> global_download_list;
 extern std::string program_root;
 
+/** Main thread for managing downloads */
 void download_thread_main() {
 	vector<download>::iterator downloadable;
 	while(1) {
@@ -36,6 +37,9 @@ void download_thread_main() {
 	}
 }
 
+/** This function does the magic of downloading a file, calling the right plugin, etc.
+ *	@param download iterator to a download in the global download list, that we should load
+ */
 void download_thread(vector<download>::iterator download) {
 	parsed_download parsed_dl;
 	int success = download->get_download(parsed_dl);
@@ -69,12 +73,17 @@ void download_thread(vector<download>::iterator download) {
 
 	if(parsed_dl.download_parse_success) {
 		download->status = DOWNLOAD_RUNNING;
+		download->error = NO_ERROR;
 		log_string(string("Successfully parsed download ID: ") + int_to_string(download->id), LOG_DEBUG);
 		if(parsed_dl.wait_before_download > 0) {
 			log_string(string("Download ID: ") + int_to_string(download->id) + " has to wait " +
 					   int_to_string(parsed_dl.wait_before_download) + " seconds before downloading can start", LOG_DEBUG);
-			download->wait_seconds = parsed_dl.wait_before_download;
-			sleep(parsed_dl.wait_before_download);
+			download->wait_seconds = parsed_dl.wait_before_download + 1;
+
+			while(download->wait_seconds > 0) {
+				--download->wait_seconds;
+				sleep(1);
+			}
 		}
 
 		string output_filename(global_config.get_cfg_value("download_folder"));
@@ -84,28 +93,44 @@ void download_thread(vector<download>::iterator download) {
 			// weird unknown error by wrong plugin implementation
 		}
 		fstream output_file(output_filename.c_str(), ios::out | ios::binary);
-		CURL* handle = curl_easy_init();
 		// set url
-		curl_easy_setopt(handle, CURLOPT_URL, parsed_dl.download_url.c_str());
+		curl_easy_setopt(download->handle, CURLOPT_URL, parsed_dl.download_url.c_str());
 		// set file-writing function as callback
-		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_file);
-		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &output_file);
+		curl_easy_setopt(download->handle, CURLOPT_WRITEFUNCTION, write_file);
+		curl_easy_setopt(download->handle, CURLOPT_WRITEDATA, &output_file);
 		// show progress
-		curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0);
-		curl_easy_setopt(handle, CURLOPT_PROGRESSFUNCTION, report_progress);
-		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &download);
+		curl_easy_setopt(download->handle, CURLOPT_NOPROGRESS, 0);
+		curl_easy_setopt(download->handle, CURLOPT_PROGRESSFUNCTION, report_progress);
+		curl_easy_setopt(download->handle, CURLOPT_PROGRESSDATA, &download);
+		// set timeouts
+		curl_easy_setopt(download->handle, CURLOPT_LOW_SPEED_LIMIT, 100);
+		curl_easy_setopt(download->handle, CURLOPT_LOW_SPEED_TIME, 20);
 
 		log_string(string("Starting download ID: ") + int_to_string(download->id), LOG_DEBUG);
-		int success = curl_easy_perform(handle);
-		if(success == 0) {
-			log_string(string("Finished download ID: ") + int_to_string(download->id), LOG_DEBUG);
-			download->status = DOWNLOAD_FINISHED;
-			return;
-		} else {
-			log_string(string("Connection lost for download ID: ") + int_to_string(download->id), LOG_WARNING);
-			download->error = CONNECTION_LOST;
-			download->status = DOWNLOAD_PENDING;
-			return;
+		success = curl_easy_perform(download->handle);
+		switch(success) {
+			case 0:
+				log_string(string("Finished download ID: ") + int_to_string(download->id), LOG_DEBUG);
+				download->status = DOWNLOAD_FINISHED;
+				curl_easy_cleanup(download->handle);
+				return;
+			case 28:
+				if(download->status == DOWNLOAD_INACTIVE) {
+					log_string(string("Stopped download ID: ") + int_to_string(download->id), LOG_WARNING);
+					curl_easy_reset(download->handle);
+				} else {
+					log_string(string("Connection lost for download ID: ") + int_to_string(download->id), LOG_WARNING);
+					download->status = DOWNLOAD_PENDING;
+					download->error = CONNECTION_LOST;
+					curl_easy_reset(download->handle);
+				}
+				return;
+			default:
+				log_string(string("Download error for download ID: ") + int_to_string(download->id), LOG_WARNING);
+				download->status = DOWNLOAD_PENDING;
+				download->error = CONNECTION_LOST;
+				curl_easy_reset(download->handle);
+				return;
 		}
 	} else {
 		if(parsed_dl.download_parse_errmsg == "SERVER_OVERLOAD") {
@@ -132,6 +157,9 @@ void download_thread(vector<download>::iterator download) {
 	}
 }
 
+/** Gets the next downloadable item in the global download list (filters stuff like inactives, wrong time, etc)
+ *	@returns iterator to the correct download object from the global download list, iterator to end() if nothing can be downloaded
+ */
 vector<download>::iterator get_next_downloadable() {
 	vector<download>::iterator downloadable = global_download_list.end();
 	if(global_download_list.empty()) {
@@ -210,6 +238,9 @@ vector<download>::iterator get_next_downloadable() {
 	return downloadable;
 }
 
+/** Gets the number of currently running downloads
+ *	@returns the number
+ */
 int get_running_count() {
 	int running_downloads = 0;
 	for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
@@ -221,7 +252,10 @@ int get_running_count() {
 }
 
 
-
+/** Gets a download from the global list by searching for the ID
+ *	@param id Download ID to search for
+ *	@returns iterator to the download object
+ */
 vector<download>::iterator get_download_by_id(int id) {
 	for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
 		if(it->id == id) {

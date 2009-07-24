@@ -17,7 +17,7 @@ extern std::string program_root;
 
 download::download(std::string &url, int next_id)
 	: url(url), status(DOWNLOAD_PENDING), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(NO_ERROR) {
-
+	handle = curl_easy_init();
 	time_t rawtime;
 	time(&rawtime);
 	add_date = ctime(&rawtime);
@@ -76,6 +76,7 @@ void download::from_serialized(std::string &serializedDL) {
 	}
 	error = NO_ERROR;
 	wait_seconds = 0;
+	handle = curl_easy_init();
 }
 
 std::string download::serialize() {

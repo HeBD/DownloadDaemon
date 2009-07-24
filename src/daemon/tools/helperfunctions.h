@@ -7,10 +7,11 @@ enum LOG_LEVEL { LOG_OFF = 0, LOG_SEVERE, LOG_WARNING, LOG_DEBUG };
 
 /** Convert a string to an int
 * @param str string to convert
-* @return result
+* @returns result
 */
 int string_to_int(std::string str);
 
+/** Conversion functions for a few types */
 std::string int_to_string(int i);
 std::string long_to_string(long i);
 long string_to_long(std::string str);
@@ -22,7 +23,7 @@ void trim_string(std::string &str);
 
 /** Validation of a given URL to check if it's valid
 * @param url Url to check
-* @return true if valid
+* @returns true if valid
 */
 bool validate_url(std::string &url);
 
@@ -39,6 +40,9 @@ void log_string(const std::string logstr, LOG_LEVEL level);
 */
 void replace_all(std::string& searchIn, std::string searchFor, std::string ReplaceWith);
 
+/** Dumps the current internal download list (in vector global_download_list) to the download list file on the harddisk.
+* @returns ture on success
+*/
 bool dump_list_to_file();
 
 #endif /*HELPERFUNCTIONS_H_*/

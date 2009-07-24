@@ -173,7 +173,7 @@ bool get(std::string data, tkSock& sock) {
 			ss << comment << '|' << it->url << '|' << it->get_status_str() << '|' << it->downloaded_bytes << '|' << it->size
 			   << '|' << it->wait_seconds << '|' << it->get_error_str() << '\n';
 		}
-		log_string("Dumping download list to client", LOG_DEBUG);
+		//log_string("Dumping download list to client", LOG_DEBUG);
 		sock << ss.str();
 		return true;
 	}
@@ -252,6 +252,9 @@ bool set(std::string data) {
 					data = data.substr(6);
 					trim_string(data);
 					if(data == "0") {
+						if(it->status == DOWNLOAD_RUNNING) {
+							curl_easy_setopt(it->handle, CURLOPT_TIMEOUT, 1);
+						}
 						it->status = DOWNLOAD_INACTIVE;
 						it->wait_seconds = 0;
 					}
@@ -288,7 +291,6 @@ bool set(std::string data) {
 					}
 					return true;
 				}
-
 				return false;
 			}
 		}

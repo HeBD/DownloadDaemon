@@ -21,11 +21,10 @@ class ddclient_main: public wxFrame
 
 		//(*Declarations(ddclient_main)
 		wxToolBarToolBase* ToolBarItem5;
-		wxPanel* Panel1;
-		wxListCtrl* DownloadList;
 		wxStatusBar* StatusBar1;
 		wxPanel* Panel2;
 		wxToolBarToolBase* ToolBarItem2;
+		wxListView* DownloadList;
 		wxListCtrl* ListCtrl1;
 		wxToolBar* ToolBar1;
 		wxPanel* Panel3;
@@ -40,7 +39,6 @@ class ddclient_main: public wxFrame
 
 		//(*Identifiers(ddclient_main)
 		static const long ID_LISTCTRL2;
-		static const long ID_PANEL1;
 		static const long ID_LISTCTRL1;
 		static const long ID_PANEL2;
 		static const long ID_PANEL3;
