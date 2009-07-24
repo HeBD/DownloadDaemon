@@ -4,6 +4,7 @@
 		<title>Add Download</title>
 		<size>411,365</size>
 		<id_arg>0</id_arg>
+		<handler function="OnClose" entry="EVT_CLOSE" />
 		<object class="wxBoxSizer" variable="BoxSizer1" member="no">
 			<orient>wxVERTICAL</orient>
 			<object class="sizeritem">
@@ -22,7 +23,7 @@
 				<option>1</option>
 			</object>
 			<object class="sizeritem">
-				<object class="wxTextCtrl" name="ID_TEXTCTRL2" variable="TextCtrl2" member="yes">
+				<object class="wxTextCtrl" name="ID_TEXTCTRL2" variable="add_dl_links" member="yes">
 					<size>-1,200</size>
 					<minsize>500,-1</minsize>
 					<style>wxTE_MULTILINE|wxHSCROLL|wxVSCROLL</style>
@@ -34,17 +35,18 @@
 			<object class="sizeritem">
 				<object class="wxBoxSizer" variable="BoxSizer4" member="no">
 					<object class="sizeritem">
-						<object class="wxButton" name="ID_BUTTON1" variable="Button1" member="yes">
+						<object class="wxButton" name="ID_BUTTON1" variable="add_cancel_btn" member="yes">
 							<label>Cancel</label>
-							<handler function="OnButton1Click" entry="EVT_BUTTON" />
+							<handler function="Onadd_cancel_btnClick" entry="EVT_BUTTON" />
 						</object>
 						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>
 						<option>1</option>
 					</object>
 					<object class="sizeritem">
-						<object class="wxButton" name="ID_BUTTON2" variable="Button2" member="yes">
+						<object class="wxButton" name="ID_BUTTON2" variable="add_btn" member="yes">
 							<label>Add</label>
+							<handler function="Onadd_btnClick" entry="EVT_BUTTON" />
 						</object>
 						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>

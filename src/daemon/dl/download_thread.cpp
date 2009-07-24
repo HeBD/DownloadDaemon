@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 #include <cstdlib>
+#include <ctime>
 
 #include <curl/curl.h>
 
@@ -139,6 +140,53 @@ vector<download>::iterator get_next_downloadable() {
 
 	if(get_running_count() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())) {
 		return downloadable;
+	}
+
+	// Checking if we are in download-time...
+	if(global_config.get_cfg_value("download_timing_start").find(':') != string::npos && !global_config.get_cfg_value("download_timing_end").find(':') != string::npos ) {
+		time_t rawtime;
+		struct tm * current_time;
+		time ( &rawtime );
+		current_time = localtime ( &rawtime );
+		int starthours, startminutes, endhours, endminutes;
+		starthours = atoi(global_config.get_cfg_value("download_timing_start").substr(0, global_config.get_cfg_value("download_timing_start").find(':')).c_str());
+		endhours = atoi(global_config.get_cfg_value("download_timing_end").substr(0, global_config.get_cfg_value("download_timing_end").find(':')).c_str());
+		startminutes = atoi(global_config.get_cfg_value("download_timing_start").substr(global_config.get_cfg_value("download_timing_start").find(':') + 1).c_str());
+		endminutes = atoi(global_config.get_cfg_value("download_timing_end").substr(global_config.get_cfg_value("download_timing_end").find(':') + 1).c_str());
+		// we have a 0:00 shift
+		if(starthours > endhours) {
+			if(current_time->tm_hour < starthours && current_time->tm_hour > endhours) {
+				return downloadable;
+			}
+			if(current_time->tm_hour == starthours) {
+				if(current_time->tm_min < startminutes) {
+					return downloadable;
+				}
+			} else if(current_time->tm_hour == endhours) {
+				if(current_time->tm_min > endminutes) {
+					return downloadable;
+				}
+			}
+		// download window are just a few minutes
+		} else if(starthours == endhours) {
+			if(current_time->tm_min < startminutes || current_time->tm_min > endminutes) {
+				return downloadable;
+			}
+		// no 0:00 shift
+		} else if(starthours < endhours) {
+			if(current_time->tm_hour < starthours || current_time->tm_hour > endhours) {
+				return downloadable;
+			}
+			if(current_time->tm_hour == starthours) {
+				if(current_time->tm_min < startminutes) {
+					return downloadable;
+				}
+			} else if(current_time->tm_hour == endhours) {
+				if(current_time->tm_min > endminutes) {
+					return downloadable;
+				}
+			}
+		}
 	}
 
 

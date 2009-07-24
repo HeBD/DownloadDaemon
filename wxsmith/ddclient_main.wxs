@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <wxsmith>
 	<object class="wxFrame" name="ddclient_main">
+		<title>DDClient-wx - A DownloadDaemon Client</title>
 		<size>776,383</size>
 		<id_arg>0</id_arg>
 		<object class="wxNotebook" name="ID_NOTEBOOK1" variable="Notebook1" member="yes">
@@ -12,17 +13,10 @@
 							<object class="wxBoxSizer" variable="BoxSizer4" member="no">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
-									<object class="wxGrid" name="ID_GRID1" variable="Grid1" member="yes">
-										<cols>6</cols>
-										<collabels>
-											<item>ID</item>
-											<item>Added</item>
-											<item>Title</item>
-											<item>URL</item>
-											<item>Status</item>
-											<item>Progress</item>
-										</collabels>
-										<style>wxVSCROLL|wxHSCROLL</style>
+									<object class="wxListCtrl" name="ID_LISTCTRL2" variable="DownloadList" member="yes">
+										<size>0,0</size>
+										<focused>1</focused>
+										<style>wxLC_LIST|wxLC_REPORT</style>
 									</object>
 									<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 									<border>5</border>

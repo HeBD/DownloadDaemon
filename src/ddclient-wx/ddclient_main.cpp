@@ -10,7 +10,7 @@
 //*)
 
 //(*IdInit(ddclient_main)
-const long ddclient_main::ID_GRID1 = wxNewId();
+const long ddclient_main::ID_LISTCTRL2 = wxNewId();
 const long ddclient_main::ID_PANEL1 = wxNewId();
 const long ddclient_main::ID_LISTCTRL1 = wxNewId();
 const long ddclient_main::ID_PANEL2 = wxNewId();
@@ -38,25 +38,15 @@ ddclient_main::ddclient_main(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	wxBoxSizer* BoxSizer4;
 	wxBoxSizer* BoxSizer1;
 
-	Create(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("wxID_ANY"));
+	Create(parent, wxID_ANY, _("DDClient-wx - A DownloadDaemon Client"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("wxID_ANY"));
 	SetClientSize(wxSize(776,383));
 	Notebook1 = new wxNotebook(this, ID_NOTEBOOK1, wxPoint(88,48), wxDefaultSize, 0, _T("ID_NOTEBOOK1"));
 	Panel1 = new wxPanel(Notebook1, ID_PANEL1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("ID_PANEL1"));
 	BoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
 	BoxSizer4 = new wxBoxSizer(wxVERTICAL);
-	Grid1 = new wxGrid(Panel1, ID_GRID1, wxDefaultPosition, wxDefaultSize, wxVSCROLL|wxHSCROLL, _T("ID_GRID1"));
-	Grid1->CreateGrid(0,6);
-	Grid1->EnableEditing(true);
-	Grid1->EnableGridLines(true);
-	Grid1->SetColLabelValue(0, _("ID"));
-	Grid1->SetColLabelValue(1, _("Added"));
-	Grid1->SetColLabelValue(2, _("Title"));
-	Grid1->SetColLabelValue(3, _("URL"));
-	Grid1->SetColLabelValue(4, _("Status"));
-	Grid1->SetColLabelValue(5, _("Progress"));
-	Grid1->SetDefaultCellFont( Grid1->GetFont() );
-	Grid1->SetDefaultCellTextColour( Grid1->GetForegroundColour() );
-	BoxSizer4->Add(Grid1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	DownloadList = new wxListCtrl(Panel1, ID_LISTCTRL2, wxDefaultPosition, wxSize(0,0), wxLC_LIST|wxLC_REPORT, wxDefaultValidator, _T("ID_LISTCTRL2"));
+	DownloadList->SetFocus();
+	BoxSizer4->Add(DownloadList, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	BoxSizer1->Add(BoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	Panel1->SetSizer(BoxSizer1);
 	BoxSizer1->Fit(Panel1);
@@ -118,4 +108,12 @@ void ddclient_main::OnAddBtnClicked(wxCommandEvent& event)
 {
 	dlg_add* add = new dlg_add(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 	add->ShowModal();
+}
+
+void ddclient_main::OnListCtrl2BeginDrag(wxListEvent& event)
+{
+}
+
+void ddclient_main::OnDownloadListBeginDrag(wxListEvent& event)
+{
 }

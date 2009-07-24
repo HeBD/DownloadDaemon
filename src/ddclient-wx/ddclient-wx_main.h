@@ -2,7 +2,6 @@
 #define DDCLIENT_WX_MAIN_H
 
 //(*Headers(ddclient_main)
-#include <wx/grid.h>
 #include <wx/toolbar.h>
 #include <wx/sizer.h>
 #include <wx/listctrl.h>
@@ -23,8 +22,8 @@ class ddclient_main: public wxFrame
 		//(*Declarations(ddclient_main)
 		wxToolBarToolBase* ToolBarItem5;
 		wxPanel* Panel1;
+		wxListCtrl* DownloadList;
 		wxStatusBar* StatusBar1;
-		wxGrid* Grid1;
 		wxPanel* Panel2;
 		wxToolBarToolBase* ToolBarItem2;
 		wxListCtrl* ListCtrl1;
@@ -40,7 +39,7 @@ class ddclient_main: public wxFrame
 	protected:
 
 		//(*Identifiers(ddclient_main)
-		static const long ID_GRID1;
+		static const long ID_LISTCTRL2;
 		static const long ID_PANEL1;
 		static const long ID_LISTCTRL1;
 		static const long ID_PANEL2;
@@ -60,6 +59,8 @@ class ddclient_main: public wxFrame
 		//(*Handlers(ddclient_main)
 		void OnConnectBtnClicked(wxCommandEvent& event);
 		void OnAddBtnClicked(wxCommandEvent& event);
+		void OnListCtrl2BeginDrag(wxListEvent& event);
+		void OnDownloadListBeginDrag(wxListEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

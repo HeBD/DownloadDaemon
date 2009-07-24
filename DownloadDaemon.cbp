@@ -55,7 +55,8 @@
 				</Linker>
 			</Target>
 			<Target title="DDClient-wx">
-				<Option output="ddclient-wx" prefix_auto="1" extension_auto="1" />
+				<Option output="built/ddclient-wx" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="built/" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -145,6 +146,12 @@
 		<Unit filename="src/ddclient-wx/ddclient_main.cpp">
 			<Option target="DDClient-wx" />
 		</Unit>
+		<Unit filename="src/ddclient-wx/dlg_add.cpp">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/dlg_add.h">
+			<Option target="DDClient-wx" />
+		</Unit>
 		<Unit filename="src/ddclient/Makefile">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
@@ -178,6 +185,9 @@
 		<Unit filename="wxsmith/ddclient_main.wxs">
 			<Option target="DDClient-wx" />
 		</Unit>
+		<Unit filename="wxsmith/dlg_add.wxs">
+			<Option target="DDClient-wx" />
+		</Unit>
 		<Extensions>
 			<envvars />
 			<code_completion />
@@ -188,6 +198,7 @@
 				<resources>
 					<wxFrame wxs="wxsmith/ddclient_main.wxs" src="src/ddclient-wx/ddclient_main.cpp" hdr="src/ddclient-wx/ddclient-wx_main.h" name="ddclient_main" language="CPP" />
 					<wxDialog wxs="wxsmith/connect_dlg.wxs" src="src/ddclient-wx/connect_dlg.cpp" hdr="src/ddclient-wx/connect_dlg.h" name="connect_dlg" language="CPP" />
+					<wxDialog wxs="wxsmith/dlg_add.wxs" src="src/ddclient-wx/dlg_add.cpp" hdr="src/ddclient-wx/dlg_add.h" name="dlg_add" language="CPP" />
 				</resources>
 			</wxsmith>
 		</Extensions>

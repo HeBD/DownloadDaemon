@@ -21,13 +21,14 @@
 
 1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/curl_callbacks.h
 
-1248293100 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
+1248446954 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
 	<string>
 	<boost/filesystem.hpp>
 	<boost/thread.hpp>
 	<vector>
 	<fstream>
 	<cstdlib>
+	<ctime>
 	<curl/curl.h>
 	"../../lib/cfgfile.h"
 	"download.h"
@@ -137,16 +138,21 @@
 	<cstdlib>
 	<fstream>
 
-1248342379 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx.cpp
+1248373429 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx.cpp
 	<wx/wxprec.h>
 	<wx/app.h>
 	"ddclient-wx_main.h"
 	"connect_dlg.h"
 	"../lib/netpptk.h"
 	"dlg_add.h"
+	<boost/thread.hpp>
+	<string>
+	<sstream>
+	<vector>
+	<wx/msgdlg.h>
 	<wx/image.h>
 
-1248343061 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient_main.cpp
+1248370392 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient_main.cpp
 	"ddclient-wx_main.h"
 	"connect_dlg.h"
 	"dlg_add.h"
@@ -156,8 +162,7 @@
 	<wx/image.h>
 	<wx/artprov.h>
 
-1248342952 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx_main.h
-	<wx/grid.h>
+1248369894 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx_main.h
 	<wx/toolbar.h>
 	<wx/sizer.h>
 	<wx/listctrl.h>
@@ -1720,15 +1725,18 @@
 	"wx/defs.h"
 	"wx/scrolwin.h"
 
-1248343274 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/dlg_add.h
+1248367028 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/dlg_add.h
 	<wx/dialog.h>
 	<wx/sizer.h>
 	<wx/button.h>
 	<wx/stattext.h>
 	<wx/textctrl.h>
 
-1248343340 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/dlg_add.cpp
+1248367542 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/dlg_add.cpp
 	"dlg_add.h"
+	"../lib/netpptk.h"
+	<string>
+	<wx/msgdlg.h>
 	<wx/string.h>
 	<wx/intl.h>
 

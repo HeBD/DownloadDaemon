@@ -17,10 +17,10 @@ class dlg_add: public wxDialog
 		virtual ~dlg_add();
 
 		//(*Declarations(dlg_add)
-		wxButton* Button1;
-		wxButton* Button2;
 		wxStaticText* StaticText2;
-		wxTextCtrl* TextCtrl2;
+		wxButton* add_cancel_btn;
+		wxTextCtrl* add_dl_links;
+		wxButton* add_btn;
 		//*)
 
 	protected:
@@ -38,6 +38,9 @@ class dlg_add: public wxDialog
 		void OnTextCtrl2Text(wxCommandEvent& event);
 		void OnButton1Click(wxCommandEvent& event);
 		void OnButton2Click(wxCommandEvent& event);
+		void Onadd_btnClick(wxCommandEvent& event);
+		void OnClose(wxCloseEvent& event);
+		void Onadd_cancel_btnClick(wxCommandEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()
