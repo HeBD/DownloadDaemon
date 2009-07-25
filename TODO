@@ -1,0 +1,2 @@
+1: find a way to cross-compile it to ARMs (scratchbox) - sadly, boost::thread makes problems - maybe replace it with a small custom thread library based on pthreads?
+2: correctly handle absolute and relative paths in the configuration file
