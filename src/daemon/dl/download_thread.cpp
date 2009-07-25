@@ -92,6 +92,11 @@ void download_thread(vector<download>::iterator download) {
 			// weird unknown error by wrong plugin implementation
 		}
 		fstream output_file(output_filename.c_str(), ios::out | ios::binary);
+		if(!output_file.good()) {
+			download->error = WRITE_FILE_ERROR;
+			download->status = DOWNLOAD_PENDING;
+			return;
+		}
 		// set url
 		curl_easy_setopt(download->handle, CURLOPT_URL, parsed_dl.download_url.c_str());
 		// set file-writing function as callback

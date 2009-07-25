@@ -4,7 +4,7 @@ add_subdirectory(plugins)
 SET(daemon_SRCS downloaddaemon.cpp tools/helperfunctions.cpp tools/curl_callbacks.cpp mgmt/global_management.cpp mgmt/mgmt_thread.cpp dl/download_thread.cpp dl/download.cpp ../lib/netpptk.cpp ../lib/cfgfile.cpp)
 
 
-find_package(Boost REQUIRED COMPONENTS thread filesystem)
+find_package(Boost REQUIRED COMPONENTS thread)
 find_package(CURL REQUIRED)
 IF(Boost_FOUND AND CURL_FOUND)
 	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})

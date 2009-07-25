@@ -5,11 +5,16 @@
 #include "global.h"
 #include "mgmt/global_management.h"
 #include "tools/helperfunctions.h"
-#include <iostream>
+
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
+
+#include <iostream>
 #include <vector>
 #include <string>
+
+#include <sys/stat.h>
+#include <sys/types.h>
 
 using namespace std;
 
@@ -35,6 +40,12 @@ int main(int argc, char* argv[]) {
 	root_dir = root_dir.substr(0, root_dir.find_last_of("/\\"));
 	program_root = root_dir;
 	program_root += '/';
+
+	struct stat st;
+	if(stat(string(root_dir + "/conf/downloaddaemon.conf").c_str(), &st) != 0) {
+		log_string("Could not locate configuration file!", LOG_SEVERE);
+		exit(-1);
+	}
 	global_config.open_cfg_file(root_dir + "/conf/downloaddaemon.conf", true);
 
 

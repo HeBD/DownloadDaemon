@@ -181,6 +181,8 @@ const char* download::get_error_str() {
 			return "CONNECTION_LOST";
 		case FILE_NOT_FOUND:
 			return "FILE_NOT_FOUND";
+		case WRITE_FILE_ERROR:
+			return "WRITE_FILE_ERROR";
 	}
 	return "UNKNOWN_ERROR";
 }
