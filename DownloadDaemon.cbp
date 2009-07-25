@@ -19,7 +19,6 @@
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
-					<Add library="boost_filesystem-mt" />
 					<Add library="boost_thread-mt" />
 				</Linker>
 			</Target>
