@@ -1,7 +1,11 @@
+2009-07-25 adrian
+	- Changed from the crappy makefiles to cmake.. more or less successfully
+
 2009-07-24 adrian
 	- Further improvement of the gui client (still not functional at all)
 	- Implemented option for timed downloads (only download between two
 	  specific points in time)
+
 2009-07-23 adrian
 	- Made first developments on a gui client
 
