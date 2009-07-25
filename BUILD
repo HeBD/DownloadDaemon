@@ -1,9 +1,12 @@
-To build DownloadDaemon, you need to have libcurl (libcurl-dev), boost_filesystem, boost_regex and boost_thread installed.
-The easyest way to build DownloadDaemon is simply running make.
-If you only want to build the daemon and it's plugins and not build any client, run make daemon. if you only want to build the client, run make ddclient.
-If you only want to build the plugins, run make plugins. If you only want to build the daemon without any plugins, run make daemon_only.
-To install DownloadDaemon, run make install. This will install the program to /opt/downloaddaemon and put a starter in /usr/local/bin.
-You can change this behaviour by editing the variable in the Makefile. This option will simply install everything that has been built before.
-You do not have to install the program if you don't want to. You can simply run the downloader after building by executing ./downloaddaemon
+To build DownloadDaemon, you need to have libcurl (libcurl-dev), boost_filesystem and boost_thread installed.
+The easyest way to build all programs (server and client) is by changing to the build directory and running
+"cmake ..", then "make" and "make install"(as root).
 
+If you only want to build parts of the software, also change to the build directory and run
+"cmake ../src/daemon",
+"cmake ../src/ddclient",
+"cmake ../src/ddclient-wx"
+respectively, followed by "make" and "make install"(as root).
+The clients will  be installed to /usr/local/bin. The daemon and it's files will be installed to /opt/downloaddaemon, with a start-script in /usr/local/bin.
 
+All programs are moveable, so if you don't like /opt/downloaddaemon as a location, simply move it to somewhere else (in this case, you have to change the start-script in /usr/local/bin)
