@@ -1,11 +1,12 @@
 # depslib dependency file v1.0
-1248465007 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.cpp
+1248553021 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.cpp
+	<sys/types.h>
+	<sys/stat.h>
 	"download.h"
 	"../../lib/cfgfile.h"
 	"../tools/curl_callbacks.h"
 	"../tools/helperfunctions.h"
 	<string>
-	<boost/filesystem.hpp>
 	<ctime>
 	<cstdlib>
 	<fstream>
@@ -22,9 +23,8 @@
 
 1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/curl_callbacks.h
 
-1248465643 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
+1248550988 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
 	<string>
-	<boost/filesystem.hpp>
 	<boost/thread.hpp>
 	<vector>
 	<fstream>

@@ -19,6 +19,7 @@
 
 #include <wx/msgdlg.h>
 //(*AppHeaders
+#include "src/ddclient-wx/ddclient-wx_main.h"
 #include <wx/image.h>
 //*)
 
@@ -44,7 +45,7 @@ bool MyApp::OnInit()
     wxInitAllImageHandlers();
     if ( wxsOK )
     {
-	Frame = new ddclient_main(0);
+    ddclient_main* Frame = new ddclient_main(0);
     Frame->Show();
     SetTopWindow(Frame);
     }

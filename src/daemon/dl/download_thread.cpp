@@ -1,5 +1,4 @@
 #include <string>
-#include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <vector>
 #include <fstream>

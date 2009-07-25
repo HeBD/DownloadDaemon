@@ -1,15 +1,17 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "download.h"
 #include "../../lib/cfgfile.h"
 #include "../tools/curl_callbacks.h"
 #include "../tools/helperfunctions.h"
+
 #include <string>
-#include <boost/filesystem.hpp>
 #include <ctime>
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
 
-namespace bf = boost::filesystem;
 using namespace std;
 
 extern cfgfile global_config;
@@ -93,25 +95,18 @@ int download::get_download(parsed_download &parsed_dl) {
 		return INVALID_HOST;
 	}
 
-	bf::path plugpath(plugindir);
-	if(!bf::exists(plugpath)) {
+	struct stat st;
+	if(stat(plugindir.c_str(), &st) != 0) {
 		return INVALID_PLUGIN_PATH;
 	}
-	bool success = false;
-	bf::directory_iterator end_itr;
-	for(bf::directory_iterator itr(plugpath); itr != end_itr; ++itr) {
-		if(itr->leaf() == host) {
-			success = true;
-			break;
-		}
-	}
 
-	if(!success) {
+	string pluginfile(plugindir + host);
+	if(stat(pluginfile.c_str(), &st) != 0) {
 		return MISSING_PLUGIN;
 	}
 
-	if(!bf::exists(plugpath / "plugin_comm")) {
-		bf::create_directory(plugpath / "plugin_comm");
+	if(stat(string(plugindir + "/plugin_comm").c_str(), &st) != 0) {
+		mkdir(string(plugindir + "/plugin_comm").c_str(), 0755);
 	}
 
 	// should be packed in an extra thread so we can break up after a few seconds
@@ -131,7 +126,7 @@ int download::get_download(parsed_download &parsed_dl) {
 	parsed_dl.download_parse_errmsg = plugin_output.get_cfg_value("download_parse_errmsg");
 	parsed_dl.download_parse_wait = atoi(plugin_output.get_cfg_value("download_parse_wait").c_str());
 
-	bf::remove(tmpfile);
+	remove(tmpfile.c_str());
 	return 0;
 }
 
