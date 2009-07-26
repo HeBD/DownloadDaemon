@@ -1,2 +1,9 @@
 1: find a way to cross-compile it to ARMs (scratchbox) - sadly, boost::thread makes problems - maybe replace it with a small custom thread library based on pthreads?
 2: correctly handle absolute and relative paths in the configuration file
+3: write a php-based web-interface for root servers, etc
+4: make it possible to download files through the mgmt interface
+5: compile netpptk and cfgfile as shared libraries
+6: get the wx-client finally working... (damn listctrl seg faults...)
+7: implement reconnect script executuion
+8: implement all the # not implemented-s in hostinfo
+9: implement premium account support
