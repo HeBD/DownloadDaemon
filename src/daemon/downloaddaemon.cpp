@@ -1,4 +1,4 @@
-#include "../lib/cfgfile.h"
+#include "../lib/cfgfile/cfgfile.h"
 #include "mgmt/mgmt_thread.h"
 #include "dl/download.h"
 #include "dl/download_thread.h"

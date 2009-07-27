@@ -2,7 +2,7 @@
 #include <sys/stat.h>
 
 #include "download.h"
-#include "../../lib/cfgfile.h"
+#include "../../lib/cfgfile/cfgfile.h"
 #include "../tools/curl_callbacks.h"
 #include "../tools/helperfunctions.h"
 

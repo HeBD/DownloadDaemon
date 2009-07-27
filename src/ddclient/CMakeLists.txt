@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project(ddclient)
 
-SET(ddclient_SRCS ddclient.cpp ../lib/netpptk.cpp)
+SET(ddclient_SRCS ddclient.cpp ../lib/netpptk/netpptk.cpp)
 
 
 find_package(Boost REQUIRED COMPONENTS thread filesystem)

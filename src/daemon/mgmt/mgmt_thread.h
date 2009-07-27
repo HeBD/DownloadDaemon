@@ -3,8 +3,8 @@
 
 #include <vector>
 #include "../dl/download.h"
-#include "../../lib/cfgfile.h"
-#include "../../lib/netpptk.h"
+#include "../../lib/cfgfile/cfgfile.h"
+#include "../../lib/netpptk/netpptk.h"
 
 
 void mgmt_thread_main();

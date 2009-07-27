@@ -10,7 +10,7 @@
 
 #include "ddclient-wx_main.h"
 #include "connect_dlg.h"
-#include "../lib/netpptk.h"
+#include "../lib/netpptk/netpptk.h"
 #include "dlg_add.h"
 #include <boost/thread.hpp>
 #include <string>
@@ -19,7 +19,6 @@
 
 #include <wx/msgdlg.h>
 //(*AppHeaders
-#include "src/ddclient-wx/ddclient-wx_main.h"
 #include <wx/image.h>
 //*)
 

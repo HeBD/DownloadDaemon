@@ -159,20 +159,25 @@
 		<Unit filename="src/lib/Makefile">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="src/lib/cfgfile.cpp">
-			<Option target="Daemon" />
-			<Option target="DDClient-wx" />
-		</Unit>
-		<Unit filename="src/lib/cfgfile.h">
-			<Option target="Daemon" />
-			<Option target="DDClient-wx" />
-		</Unit>
-		<Unit filename="src/lib/netpptk.cpp">
+		<Unit filename="src/lib/bind/bind.h">
 			<Option target="Daemon" />
 			<Option target="DDClient" />
 			<Option target="DDClient-wx" />
 		</Unit>
-		<Unit filename="src/lib/netpptk.h">
+		<Unit filename="src/lib/cfgfile/cfgfile.cpp">
+			<Option target="Daemon" />
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/lib/cfgfile/cfgfile.h">
+			<Option target="Daemon" />
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/lib/netpptk/netpptk.cpp">
+			<Option target="Daemon" />
+			<Option target="DDClient" />
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/lib/netpptk/netpptk.h">
 			<Option target="Daemon" />
 			<Option target="DDClient" />
 			<Option target="DDClient-wx" />

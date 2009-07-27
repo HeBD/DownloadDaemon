@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../lib/netpptk.h"
+#include "../lib/netpptk/netpptk.h"
 using namespace std;
 
 int main(int argc, char* argv[]) {

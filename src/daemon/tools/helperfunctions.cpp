@@ -5,7 +5,7 @@
 #include <fstream>
 #include <ctime>
 #include <vector>
-#include "../../lib/cfgfile.h"
+#include "../../lib/cfgfile/cfgfile.h"
 #include "../dl/download.h"
 using namespace std;
 

@@ -6,8 +6,8 @@
 
 #include "mgmt_thread.h"
 #include "../dl/download.h"
-#include "../../lib/netpptk.h"
-#include "../../lib/cfgfile.h"
+#include "../../lib/netpptk/netpptk.h"
+#include "../../lib/cfgfile/cfgfile.h"
 #include "../tools/helperfunctions.h"
 
 using namespace std;

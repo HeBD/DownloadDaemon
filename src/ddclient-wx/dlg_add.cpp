@@ -1,5 +1,5 @@
 #include "dlg_add.h"
-#include "../lib/netpptk.h"
+#include "../lib/netpptk/netpptk.h"
 #include <string>
 extern tkSock srvConnection;
 extern bool connected_successfully;

@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
 add_subdirectory(plugins)
-SET(daemon_SRCS downloaddaemon.cpp tools/helperfunctions.cpp tools/curl_callbacks.cpp mgmt/global_management.cpp mgmt/mgmt_thread.cpp dl/download_thread.cpp dl/download.cpp ../lib/netpptk.cpp ../lib/cfgfile.cpp)
+SET(daemon_SRCS downloaddaemon.cpp tools/helperfunctions.cpp tools/curl_callbacks.cpp mgmt/global_management.cpp mgmt/mgmt_thread.cpp dl/download_thread.cpp dl/download.cpp ../lib/netpptk/netpptk.cpp ../lib/cfgfile/cfgfile.cpp)
 
 
 find_package(Boost REQUIRED COMPONENTS thread)

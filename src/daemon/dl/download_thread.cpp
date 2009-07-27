@@ -7,7 +7,7 @@
 
 #include <curl/curl.h>
 
-#include "../../lib/cfgfile.h"
+#include "../../lib/cfgfile/cfgfile.h"
 #include "download.h"
 #include "download_thread.h"
 #include "../tools/helperfunctions.h"
