@@ -84,6 +84,12 @@
 		<Unit filename="src/daemon/dl/download.h">
 			<Option target="Daemon" />
 		</Unit>
+		<Unit filename="src/daemon/dl/download_container.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/dl/download_container.h">
+			<Option target="Daemon" />
+		</Unit>
 		<Unit filename="src/daemon/dl/download_thread.cpp">
 			<Option target="Daemon" />
 		</Unit>

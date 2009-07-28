@@ -10,6 +10,7 @@
 #include "../../lib/cfgfile/cfgfile.h"
 #include "download.h"
 #include "download_thread.h"
+#include "download_container.h"
 #include "../tools/helperfunctions.h"
 #include "../tools/curl_callbacks.h"
 
@@ -17,7 +18,7 @@
 using namespace std;
 
 extern cfgfile global_config;
-extern std::vector<download> global_download_list;
+extern download_container global_download_list;
 extern std::string program_root;
 
 /** Main thread for managing downloads */
@@ -39,7 +40,7 @@ void download_thread_main() {
 /** This function does the magic of downloading a file, calling the right plugin, etc.
  *	@param download iterator to a download in the global download list, that we should load
  */
-void download_thread(vector<download>::iterator download) {
+void download_thread(download_container::iterator download) {
 	parsed_download parsed_dl;
 	int success = download->get_download(parsed_dl);
 	switch(success) {
@@ -164,13 +165,13 @@ void download_thread(vector<download>::iterator download) {
 /** Gets the next downloadable item in the global download list (filters stuff like inactives, wrong time, etc)
  *	@returns iterator to the correct download object from the global download list, iterator to end() if nothing can be downloaded
  */
-vector<download>::iterator get_next_downloadable() {
-	vector<download>::iterator downloadable = global_download_list.end();
+download_container::iterator get_next_downloadable() {
+	download_container::iterator downloadable = global_download_list.end();
 	if(global_download_list.empty()) {
 		return downloadable;
 	}
 
-	if(get_running_count() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())) {
+	if(global_download_list.running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())) {
 		return downloadable;
 	}
 
@@ -222,7 +223,7 @@ vector<download>::iterator get_next_downloadable() {
 	}
 
 
-	for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
+	for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
 		if(it->status != DOWNLOAD_INACTIVE && it->status != DOWNLOAD_FINISHED && it->status != DOWNLOAD_RUNNING && it->status != DOWNLOAD_WAITING) {
 			string current_host(it->get_host());
 			bool can_attach = true;
@@ -240,31 +241,4 @@ vector<download>::iterator get_next_downloadable() {
 	}
 
 	return downloadable;
-}
-
-/** Gets the number of currently running downloads
- *	@returns the number
- */
-int get_running_count() {
-	int running_downloads = 0;
-	for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-		if(it->status == DOWNLOAD_RUNNING) {
-			++running_downloads;
-		}
-	}
-	return running_downloads;
-}
-
-
-/** Gets a download from the global list by searching for the ID
- *	@param id Download ID to search for
- *	@returns iterator to the download object
- */
-vector<download>::iterator get_download_by_id(int id) {
-	for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-		if(it->id == id) {
-			return it;
-		}
-	}
-	return global_download_list.end();
 }

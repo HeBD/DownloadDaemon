@@ -48,14 +48,7 @@ int main(int argc, char* argv[]) {
 	}
 	global_config.open_cfg_file(root_dir + "/conf/downloaddaemon.conf", true);
 
-
-	ifstream dlist(string(program_root + global_config.get_cfg_value("dlist_file")).c_str());
-	string line;
-	while(getline(dlist, line)) {
-		download dl(line);
-		global_download_list.push_back(dl);
-	}
-	dlist.close();
+	global_download_list.from_file(string(program_root + global_config.get_cfg_value("dlist_file")).c_str());
 
 	log_string("DownloadDaemon started successfully", LOG_DEBUG);
 

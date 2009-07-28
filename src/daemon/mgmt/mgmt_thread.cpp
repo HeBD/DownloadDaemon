@@ -9,11 +9,12 @@
 #include "../../lib/netpptk/netpptk.h"
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../tools/helperfunctions.h"
+#include "../dl/download_container.h"
 
 using namespace std;
 
 extern cfgfile global_config;
-extern std::vector<download> global_download_list;
+extern download_container global_download_list;
 extern std::string program_root;
 
 
@@ -122,12 +123,11 @@ bool add(std::string data) {
 
 		download dl(url, get_next_id());
 		dl.comment = comment;
-		global_download_list.push_back(dl);
 		string logstr("Adding download: ");
 		logstr += dl.serialize();
 		log_string(logstr, LOG_DEBUG);
 
-		if(!dump_list_to_file()) {
+		if(!global_download_list.push_back(dl)) {
 			global_download_list.pop_back();
 			return false;
 		}
@@ -146,18 +146,16 @@ bool del(std::string data) {
 	log_string(logstr, LOG_DEBUG);
 
 	download tmpdl;
-	for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
+	for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
 		if(it->id == atoi(data.c_str())) {
 			tmpdl = *it;
 			global_download_list.erase(it);
 		}
 	}
 
-	if(!dump_list_to_file()) {
-		global_download_list.push_back(tmpdl);
+	if(!global_download_list.push_back(tmpdl)) {
 		return false;
 	}
-
 	return true;
 }
 
@@ -166,7 +164,7 @@ bool get(std::string data, tkSock& sock) {
 	trim_string(data);
 	if(data == "LIST") {
 		stringstream ss;
-		for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
+		for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
 			ss << it->id << '|' << it->add_date << '|';
 			string comment = it->comment;
 			replace_all(comment, "|", "\\|");
@@ -200,22 +198,21 @@ bool get(std::string data, tkSock& sock) {
 bool act(std::string data) {
 	trim_string(data);
 	download tmpdl;
-	for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-		if(it->id == atoi(data.c_str())) {
-			tmpdl = *it;
-			if(it->status == DOWNLOAD_INACTIVE) {
-				it->status = DOWNLOAD_PENDING;
-			}
-			if(!dump_list_to_file()) {
-				it->status = tmpdl.status;
-				return false;
-			}
-			string logstr("Activating download: ");
-			logstr += data;
-			log_string(logstr, LOG_DEBUG);
-			return true;
-		}
+	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
+
+	tmpdl = *it;
+	if(it->status == DOWNLOAD_INACTIVE) {
+		it->status = DOWNLOAD_PENDING;
 	}
+	if(!global_download_list.dump_to_file()) {
+		it->status = tmpdl.status;
+		return false;
+	}
+	string logstr("Activating download: ");
+	logstr += data;
+	log_string(logstr, LOG_DEBUG);
+	return true;
+
 	return false;
 }
 
@@ -243,58 +240,57 @@ bool set(std::string data) {
 		trim_string(data);
 		int id = atoi((data.substr(0, data.find(' '))).c_str());
 
-		for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-			if(it->id == id) {
-				data = data.substr(data.find(' '));
-				trim_string(data);
-				if(data.find("ACTIVE") == 0) {
-					download_status old_status = it->status;
-					data = data.substr(6);
-					trim_string(data);
-					if(data == "0") {
-						if(it->status == DOWNLOAD_RUNNING) {
-							curl_easy_setopt(it->handle, CURLOPT_TIMEOUT, 1);
-						}
-						it->status = DOWNLOAD_INACTIVE;
-						it->wait_seconds = 0;
-					}
-					else {
-						if(it->status == DOWNLOAD_INACTIVE) {
-							it->status = DOWNLOAD_PENDING;
-						}
-					}
-					if(!dump_list_to_file()) {
-						it->status = old_status;
-						return false;
-					}
-					return true;
+		download_container::iterator it = global_download_list.get_download_by_id(id);
 
-				} else if(data.find("COMMENT") == 0) {
-					string old_comment = it->comment;
-					data = data.substr(7);
-					trim_string(data);
-					it->comment = data;
-					if(!dump_list_to_file()) {
-						it->comment = old_comment;
-						return false;
-					}
-					return true;
-
-				} else if(data.find("URL") == 0) {
-					string old_url = it->url;
-					data = data.substr(3);
-					trim_string(data);
-					it->url = data;
-					if(!dump_list_to_file()) {
-						it->url = old_url;
-						return false;
-					}
-					return true;
+		data = data.substr(data.find(' '));
+		trim_string(data);
+		if(data.find("ACTIVE") == 0) {
+			download_status old_status = it->status;
+			data = data.substr(6);
+			trim_string(data);
+			if(data == "0") {
+				if(it->status == DOWNLOAD_RUNNING) {
+					curl_easy_setopt(it->handle, CURLOPT_TIMEOUT, 1);
 				}
+				it->status = DOWNLOAD_INACTIVE;
+				it->wait_seconds = 0;
+			}
+			else {
+				if(it->status == DOWNLOAD_INACTIVE) {
+					it->status = DOWNLOAD_PENDING;
+				}
+			}
+			if(!global_download_list.dump_to_file()) {
+				it->status = old_status;
 				return false;
 			}
+			return true;
+
+		} else if(data.find("COMMENT") == 0) {
+			string old_comment = it->comment;
+			data = data.substr(7);
+			trim_string(data);
+			it->comment = data;
+			if(!global_download_list.dump_to_file()) {
+				it->comment = old_comment;
+				return false;
+			}
+			return true;
+
+		} else if(data.find("URL") == 0) {
+			string old_url = it->url;
+			data = data.substr(3);
+			trim_string(data);
+			it->url = data;
+			if(!global_download_list.dump_to_file()) {
+				it->url = old_url;
+				return false;
+			}
+			return true;
 		}
+		return false;
 	}
+
 	return false;
 }
 

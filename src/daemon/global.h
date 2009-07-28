@@ -3,8 +3,9 @@
 
 #include <vector>
 #include "../lib/cfgfile/cfgfile.h"
+#include "dl/download_container.h"
 
-std::vector<download> global_download_list;
+download_container global_download_list;
 cfgfile global_config;
 std::string program_root;
 

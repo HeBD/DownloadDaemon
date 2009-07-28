@@ -140,6 +140,7 @@ void tkSock::auto_accept_threadfunc(void (*handle) (tkSock*)) {
 				break;
 			}
 			boost::thread connection_handle(boost::bind(&tkSock::handle_wrapper, this, tmpsock, handle));
+			connection_handle.detach();
 		} else {
 			sleep(1);
 		}

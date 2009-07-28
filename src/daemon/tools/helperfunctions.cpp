@@ -115,16 +115,3 @@ long string_to_long(string str) {
 	return ret;
 }
 
-bool dump_list_to_file() {
-	fstream dlfile(string(program_root + global_config.get_cfg_value("dlist_file")).c_str(), ios::trunc | ios::out);
-	if(!dlfile.good()) {
-		return false;
-	}
-
-	for(vector<download>::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-		dlfile << it->serialize() << '\n';
-	}
-	dlfile.close();
-
-	return true;
-}
