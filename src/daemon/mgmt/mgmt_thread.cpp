@@ -50,11 +50,13 @@ void connection_handler(tkSock *sock) {
 		if(data != passwd) {
 			auth_success = false;
 			log_string("Authentication failed", LOG_WARNING);
-			*sock << "-1 ERROR";
+			log_string(string("Received instead of real password: ") + data, LOG_DEBUG);
+			if(*sock) *sock << "-1 ERROR";
+			return;
 		} else {
 			log_string("User Authenticated", LOG_DEBUG);
 			auth_success = true;
-			*sock << "0 SUCCESS";
+			if(*sock) *sock << "0 SUCCESS";
 		}
 	} else if(*sock) {
 		*sock << "0 NO AUTH";
@@ -70,15 +72,17 @@ void connection_handler(tkSock *sock) {
 		trim_string(data);
 
 		if(data.length() < 8 || data.find("DDP") != 0 || !isspace(data[3])) {
-			*sock << "-1 ERROR";
+			if(*sock) *sock << "-1 ERROR";
 			break;
 		}
 		data = data.substr(4);
 		trim_string(data);
 		bool do_answer = false;
 		bool the_answer;
+
 		if(data.find("ADD") == 0) {
 			do_answer = true;
+			log_string(string("Rest to add: ") + data, LOG_DEBUG);
 			the_answer = add(data.substr(4));
 		} else if(data.find("DEL") == 0) {
 			do_answer = true;
@@ -95,9 +99,9 @@ void connection_handler(tkSock *sock) {
 		}
 		if(do_answer) {
 			if(the_answer) {
-				*sock << "0 SUCCESS";
+				if(*sock) *sock << "0 SUCCESS";
 			} else {
-				*sock << "-1 ERROR";
+				if(*sock) *sock << "-1 ERROR";
 				break;
 			}
 		}
@@ -106,6 +110,7 @@ void connection_handler(tkSock *sock) {
 
 /** adds a download to the queue */
 bool add(std::string data) {
+	log_string(string("finally adding: ") + data, LOG_DEBUG);
 	trim_string(data);
 	string url;
 	string comment;

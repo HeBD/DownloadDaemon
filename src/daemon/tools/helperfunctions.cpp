@@ -33,7 +33,7 @@ void trim_string(std::string &str) {
 
 bool validate_url(std::string &url) {
 	bool valid = true;
-	if(url.find("http://") != 0 || url.find("ftp://") != 0) {
+	if(url.find("http://") != 0 && url.find("ftp://") != 0) {
 		valid = false;
 	}
 	size_t pos = url.find('/') + 2;

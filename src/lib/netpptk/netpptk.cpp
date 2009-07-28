@@ -194,38 +194,43 @@ bool tkSock::send(const std::string &s) {
 	int status = 0;
 	std::string s_new;
 	s_new = append_header(s);
-	while(s_new.size() - status > 0) {
+	do {
 		status += ::send(m_sock, s_new.c_str() + status, s_new.size(), 0);
 		if(status == -1) {
 			valid = false;
 			return false;
 		}
-	}
+	} while(s_new.size() - status > 0);
 	return true;
 }
 
 int tkSock::recv(std::string& s) {
-	char initbuf[5];
+	char initbuf[21];
 	s = "";
-	memset(initbuf, 0, 5);
-	int status = ::recv(m_sock, initbuf, 5, 0);
-	s.append(initbuf, 5);
- 	if(status == -1) {
+	memset(initbuf, 0, 21);
+	int status = ::recv(m_sock, initbuf, 21, 0);
+ 	if(status <= 0) {
 		valid = false;
 		return 0;
 	}
+	s.append(initbuf, status);
 	int msgLen = remove_header(s);
 	if(msgLen == -1) {
 		s = "";
 		valid = false;
 		return 0;
+	} else if(s.length() >= (unsigned)msgLen) {
+		return status;
 	}
 	char *buf = new char[msgLen + 1];
-	status = s.size();
 	while(status < msgLen) {
 		memset(buf, 0, msgLen + 1);
 		int old_status = status;
-		status += ::recv(m_sock, buf, msgLen - status , 0);
+		status += ::recv(m_sock, buf, msgLen + 1 , 0);
+		if(status <= old_status) {
+			valid = false;
+			return 0;
+		}
 		s.append(buf, status - old_status);
 	}
 	delete [] buf;
