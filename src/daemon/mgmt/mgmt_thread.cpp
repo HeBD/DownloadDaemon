@@ -199,28 +199,6 @@ bool get(std::string data, tkSock& sock) {
 	return false;
 }
 
-/** Activate a download by id */
-bool act(std::string data) {
-	trim_string(data);
-	download tmpdl;
-	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
-
-	tmpdl = *it;
-	if(it->status == DOWNLOAD_INACTIVE) {
-		it->status = DOWNLOAD_PENDING;
-	}
-	if(!global_download_list.dump_to_file()) {
-		it->status = tmpdl.status;
-		return false;
-	}
-	string logstr("Activating download: ");
-	logstr += data;
-	log_string(logstr, LOG_DEBUG);
-	return true;
-
-	return false;
-}
-
 /** Sets a config variable or download property */
 bool set(std::string data) {
 	trim_string(data);
@@ -243,15 +221,16 @@ bool set(std::string data) {
 	if(data.find("DL") == 0) {
 		data = data.substr(2);
 		trim_string(data);
+		if(data.find(' ') == string::npos) return false;
 		int id = atoi((data.substr(0, data.find(' '))).c_str());
-
 		download_container::iterator it = global_download_list.get_download_by_id(id);
 
 		data = data.substr(data.find(' '));
 		trim_string(data);
+
 		if(data.find("ACTIVE") == 0) {
 			download_status old_status = it->status;
-			data = data.substr(6);
+			data = data.substr(5);
 			trim_string(data);
 			if(data == "0") {
 				if(it->status == DOWNLOAD_RUNNING) {

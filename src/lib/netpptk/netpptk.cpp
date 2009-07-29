@@ -223,7 +223,7 @@ int tkSock::recv(std::string& s) {
 		return status;
 	}
 	char *buf = new char[msgLen + 1];
-	while(status < msgLen) {
+	while(s.length() < (unsigned)msgLen) {
 		memset(buf, 0, msgLen + 1);
 		int old_status = status;
 		status += ::recv(m_sock, buf, msgLen + 1 , 0);

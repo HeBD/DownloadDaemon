@@ -94,6 +94,7 @@ void download_thread(download_container::iterator download) {
 		}
 		fstream output_file(output_filename.c_str(), ios::out | ios::binary);
 		if(!output_file.good()) {
+			log_string(string("Could not write to file: ") + output_filename, LOG_SEVERE);
 			download->error = WRITE_FILE_ERROR;
 			download->status = DOWNLOAD_PENDING;
 			return;

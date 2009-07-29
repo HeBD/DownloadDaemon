@@ -1,3 +1,7 @@
+2009-07-29 adrian
+	- Fixed some nasty bug in netpptk
+	- further development of the php-frontend
+
 2009-07-28 adrian
 	- made a class for the download container - cleaner code and more object oriented
 	- fixed a lot of minor bugs

@@ -24,7 +24,7 @@ function recv_all(&$socket, &$recv_buf) {
 
 function send_all(&$socket, $snd) {
 	$to_send = strlen($snd) . ":" . $snd;
-	if(socket_send($socket, $to_send, strlen($to_send), 0)) {
+	if(@socket_send($socket, $to_send, strlen($to_send), 0)) {
 		return true;
 	}
 	return false;
@@ -41,11 +41,11 @@ function connect_to_daemon(&$socket) {
 	$host = $_COOKIE['ddclient_host'];
 	$port = $_COOKIE['ddclient_port'];
 	
-	if(!socket_connect($socket, $host, $port)) {
+	if(!@socket_connect($socket, $host, $port)) {
 		return "CONNECT";
 	}
 	
-	if(!recv_all($socket, $recv_buf)) {
+	if(!@recv_all($socket, $recv_buf)) {
 		return "RECV";
 	}
 	
