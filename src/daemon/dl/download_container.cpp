@@ -64,3 +64,33 @@ bool download_container::dump_to_file() {
 	dlfile.close();
 	return true;
 }
+
+bool download_container::push_back(download &dl) {
+	download_list.push_back(dl);
+	if(!dump_to_file()) {
+		download_list.pop_back();
+		return false;
+	}
+	return true;
+}
+
+bool download_container::pop_back() {
+	download tmpdl = download_list.back();
+	download_list.pop_back();
+	if(!dump_to_file()) {
+		download_list.push_back(tmpdl);
+		return false;
+	}
+	return true;
+}
+
+bool download_container::erase(download_container::iterator it) {
+	download tmpdl = *it;
+	download_list.erase(it);
+	if(!dump_to_file()) {
+		download_list.push_back(tmpdl);
+		return false;
+	}
+	return true;
+}
+

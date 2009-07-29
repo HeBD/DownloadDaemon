@@ -20,9 +20,9 @@ public:
 	iterator begin() { return download_list.begin(); }
 	iterator end() { return download_list.end(); }
 	bool empty() { return download_list.empty(); }
-	bool push_back(download &dl) { download_list.push_back(dl); return dump_to_file(); }
-	bool pop_back() { download_list.pop_back(); return dump_to_file(); }
-	bool erase(download_container::iterator it) { download_list.erase(it); return dump_to_file(); }
+	bool push_back(download &dl);
+	bool pop_back();
+	bool erase(download_container::iterator it);
 
 	int running_downloads();
 	int total_downloads();

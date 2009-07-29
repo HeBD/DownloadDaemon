@@ -132,12 +132,7 @@ bool add(std::string data) {
 		logstr += dl.serialize();
 		log_string(logstr, LOG_DEBUG);
 
-		if(!global_download_list.push_back(dl)) {
-			global_download_list.pop_back();
-			return false;
-		}
-
-		return true;
+		return global_download_list.push_back(dl);
 	}
 	return false;
 }
@@ -150,18 +145,8 @@ bool del(std::string data) {
 	logstr += data;
 	log_string(logstr, LOG_DEBUG);
 
-	download tmpdl;
-	for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-		if(it->id == atoi(data.c_str())) {
-			tmpdl = *it;
-			global_download_list.erase(it);
-		}
-	}
-
-	if(!global_download_list.push_back(tmpdl)) {
-		return false;
-	}
-	return true;
+	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
+	return global_download_list.erase(it);
 }
 
 /** Get LIST of downloads or a specific VAR <...> (or VAR LIST) */

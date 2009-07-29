@@ -10,8 +10,10 @@ include("functional.php");
 		<meta HTTP-EQUIV="REFRESH" content="5; url=list.php">
 	</head>
 <body>
+	
+	<?php include("header.php"); ?>
+
 	<div align="center">
-	<h1>DownloadDaemon Manager</h1>
 		
 <?php
 	$socket = socket_create(AF_INET, SOCK_STREAM, 0);
