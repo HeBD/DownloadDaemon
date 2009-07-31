@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 
 	struct stat st;
 	if(stat(string(root_dir + "/conf/downloaddaemon.conf").c_str(), &st) != 0) {
-		log_string("Could not locate configuration file!", LOG_SEVERE);
+		cout << "Could not locate configuration file!" << endl;
 		exit(-1);
 	}
 	global_config.open_cfg_file(root_dir + "/conf/downloaddaemon.conf", true);

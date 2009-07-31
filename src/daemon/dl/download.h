@@ -7,7 +7,7 @@
 
 enum download_error { NO_ERROR = 1, MISSING_PLUGIN, INVALID_HOST, INVALID_PLUGIN_PATH, PLUGIN_ERROR, CONNECTION_LOST, FILE_NOT_FOUND, WRITE_FILE_ERROR };
 enum auth_type { NO_AUTH = 1, HTTP_AUTH };
-enum download_status { DOWNLOAD_PENDING = 1, DOWNLOAD_INACTIVE, DOWNLOAD_FINISHED, DOWNLOAD_RUNNING, DOWNLOAD_WAITING };
+enum download_status { DOWNLOAD_PENDING = 1, DOWNLOAD_INACTIVE, DOWNLOAD_FINISHED, DOWNLOAD_RUNNING, DOWNLOAD_WAITING, DOWNLOAD_DELETED };
 
 struct parsed_download {
 	std::string download_url;
@@ -85,10 +85,13 @@ public:
 	*/
 	const char* get_status_str();
 
+	void set_status(download_status st);
+	download_status get_status();
+
 	std::string url;
 	std::string comment;
 
-	download_status status;
+
 	std::string add_date;
 	int id;
 	long downloaded_bytes;
@@ -98,7 +101,7 @@ public:
 	CURL* handle;
 
 private:
-	//std::string int_to_string(int i);
+	download_status status;
 
 };
 

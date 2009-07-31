@@ -7,3 +7,4 @@
 7: implement reconnect script executuion
 8: implement all the # not implemented-s in hostinfo
 9: implement premium account support
+10: implement some type of container format to import/export huge lists

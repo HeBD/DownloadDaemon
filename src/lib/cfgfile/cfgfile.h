@@ -43,7 +43,7 @@ public:
  	*	@param cfg_identifier specifies the configruation option to search for
  	*	@returns Configuration value, or, if none found or no file is opened, an empty string
  	*/
-	std::string get_cfg_value(const std::string &cfg_identifier) const;
+	std::string get_cfg_value(const std::string &cfg_identifier);
 
 	/** Sets a configuration option. If the identifier already exists, the value is changed. Else, the option is appended.
  	*	@param cfg_identifier Identifier to search for/add

@@ -82,7 +82,6 @@ void connection_handler(tkSock *sock) {
 
 		if(data.find("ADD") == 0) {
 			do_answer = true;
-			log_string(string("Rest to add: ") + data, LOG_DEBUG);
 			the_answer = add(data.substr(4));
 		} else if(data.find("DEL") == 0) {
 			do_answer = true;
@@ -110,7 +109,6 @@ void connection_handler(tkSock *sock) {
 
 /** adds a download to the queue */
 bool add(std::string data) {
-	log_string(string("finally adding: ") + data, LOG_DEBUG);
 	trim_string(data);
 	string url;
 	string comment;
@@ -134,6 +132,7 @@ bool add(std::string data) {
 
 		return global_download_list.push_back(dl);
 	}
+	log_string("Could not add a download", LOG_WARNING);
 	return false;
 }
 
@@ -144,9 +143,10 @@ bool del(std::string data) {
 	string logstr("Removing download with id: ");
 	logstr += data;
 	log_string(logstr, LOG_DEBUG);
-
 	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
-	return global_download_list.erase(it);
+	curl_easy_setopt(it->handle, CURLOPT_TIMEOUT, 1);
+	it->set_status(DOWNLOAD_DELETED);
+	return true;
 }
 
 /** Get LIST of downloads or a specific VAR <...> (or VAR LIST) */
@@ -155,6 +155,9 @@ bool get(std::string data, tkSock& sock) {
 	if(data == "LIST") {
 		stringstream ss;
 		for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
+			if(it->get_status() == DOWNLOAD_DELETED) {
+				continue;
+			}
 			ss << it->id << '|' << it->add_date << '|';
 			string comment = it->comment;
 			replace_all(comment, "|", "\\|");
@@ -214,23 +217,25 @@ bool set(std::string data) {
 		trim_string(data);
 
 		if(data.find("ACTIVE") == 0) {
-			download_status old_status = it->status;
-			data = data.substr(5);
+			download_status old_status = it->get_status();
+			data = data.substr(6);
 			trim_string(data);
 			if(data == "0") {
-				if(it->status == DOWNLOAD_RUNNING) {
+				if(it->get_status() == DOWNLOAD_RUNNING) {
 					curl_easy_setopt(it->handle, CURLOPT_TIMEOUT, 1);
 				}
-				it->status = DOWNLOAD_INACTIVE;
+				it->set_status(DOWNLOAD_INACTIVE);
 				it->wait_seconds = 0;
 			}
-			else {
-				if(it->status == DOWNLOAD_INACTIVE) {
-					it->status = DOWNLOAD_PENDING;
+			else if(data == "1") {
+				if(it->get_status() == DOWNLOAD_INACTIVE) {
+					it->set_status(DOWNLOAD_PENDING);
 				}
+			} else {
+				return false;
 			}
 			if(!global_download_list.dump_to_file()) {
-				it->status = old_status;
+				it->set_status(old_status);
 				return false;
 			}
 			return true;

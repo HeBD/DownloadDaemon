@@ -23,7 +23,7 @@ extern std::string program_root;
 
 /** Main thread for managing downloads */
 void download_thread_main() {
-	vector<download>::iterator downloadable;
+	download_container::iterator downloadable;
 	while(1) {
 		downloadable = global_download_list.end();
 		downloadable = get_next_downloadable();
@@ -31,7 +31,7 @@ void download_thread_main() {
 			sleep(1);
 			continue;
 		} else {
-			downloadable->status = DOWNLOAD_RUNNING;
+			downloadable->set_status(DOWNLOAD_RUNNING);
 			boost::thread t(download_thread, downloadable);
 		}
 	}
@@ -43,36 +43,37 @@ void download_thread_main() {
 void download_thread(download_container::iterator download) {
 	parsed_download parsed_dl;
 	int success = download->get_download(parsed_dl);
+
 	switch(success) {
 		case INVALID_HOST:
-			download->status = DOWNLOAD_INACTIVE;
+			download->set_status(DOWNLOAD_INACTIVE);
 			download->error = INVALID_HOST;
 			log_string(string("Invalid host for download ID: ") + int_to_string(download->id), LOG_WARNING);
 			return;
 		break;
 		case INVALID_PLUGIN_PATH:
 			download->error = INVALID_PLUGIN_PATH;
-			download->status = DOWNLOAD_PENDING;
+			download->set_status(DOWNLOAD_PENDING);
 			log_string("Could not locate plugin folder!", LOG_SEVERE);
 			exit(-1);
 		break;
 		case MISSING_PLUGIN:
 			download->error = MISSING_PLUGIN;
 			log_string(string("Plugin missing for download ID: ") + int_to_string(download->id), LOG_WARNING);
-			download->status = DOWNLOAD_INACTIVE;
+			download->set_status(DOWNLOAD_INACTIVE);
 			return;
 		break;
 	}
 
 	if(parsed_dl.plugin_return_val == -1) {
 		log_string(string("Plugin reported unknown error for download ID: ") + int_to_string(download->id), LOG_WARNING);
-		download->status = DOWNLOAD_INACTIVE;
+		download->set_status(DOWNLOAD_INACTIVE);
 		download->error = PLUGIN_ERROR;
 		return;
 	}
 
 	if(parsed_dl.download_parse_success) {
-		download->status = DOWNLOAD_RUNNING;
+		download->set_status(DOWNLOAD_RUNNING);
 		download->error = NO_ERROR;
 		log_string(string("Successfully parsed download ID: ") + int_to_string(download->id), LOG_DEBUG);
 		if(parsed_dl.wait_before_download > 0) {
@@ -80,11 +81,17 @@ void download_thread(download_container::iterator download) {
 					   int_to_string(parsed_dl.wait_before_download) + " seconds before downloading can start", LOG_DEBUG);
 			download->wait_seconds = parsed_dl.wait_before_download + 1;
 
-			while(download->wait_seconds > 0) {
+
+			while(global_download_list.get_download_by_id(download->id) != global_download_list.end() && download->wait_seconds > 0) {
 				--download->wait_seconds;
 				sleep(1);
+				if(download->get_status() == DOWNLOAD_INACTIVE || download->get_status() == DOWNLOAD_DELETED) {
+					download->wait_seconds = 0;
+					return;
+				}
 			}
 		}
+
 
 		string output_filename(global_config.get_cfg_value("download_folder"));
 		if(parsed_dl.download_url != "") {
@@ -96,7 +103,7 @@ void download_thread(download_container::iterator download) {
 		if(!output_file.good()) {
 			log_string(string("Could not write to file: ") + output_filename, LOG_SEVERE);
 			download->error = WRITE_FILE_ERROR;
-			download->status = DOWNLOAD_PENDING;
+			download->set_status(DOWNLOAD_PENDING);
 			return;
 		}
 		// set url
@@ -113,27 +120,30 @@ void download_thread(download_container::iterator download) {
 		curl_easy_setopt(download->handle, CURLOPT_LOW_SPEED_TIME, 20);
 
 		log_string(string("Starting download ID: ") + int_to_string(download->id), LOG_DEBUG);
+
 		success = curl_easy_perform(download->handle);
 		switch(success) {
 			case 0:
 				log_string(string("Finished download ID: ") + int_to_string(download->id), LOG_DEBUG);
-				download->status = DOWNLOAD_FINISHED;
+				download->set_status(DOWNLOAD_FINISHED);
 				curl_easy_cleanup(download->handle);
 				return;
 			case 28:
-				if(download->status == DOWNLOAD_INACTIVE) {
+				if(download->get_status() == DOWNLOAD_INACTIVE) {
 					log_string(string("Stopped download ID: ") + int_to_string(download->id), LOG_WARNING);
 					curl_easy_reset(download->handle);
+				} else if(download->get_status() == DOWNLOAD_DELETED) {
+					curl_easy_cleanup(download->handle);
 				} else {
 					log_string(string("Connection lost for download ID: ") + int_to_string(download->id), LOG_WARNING);
-					download->status = DOWNLOAD_PENDING;
+					download->set_status(DOWNLOAD_PENDING);
 					download->error = CONNECTION_LOST;
 					curl_easy_reset(download->handle);
 				}
 				return;
 			default:
 				log_string(string("Download error for download ID: ") + int_to_string(download->id), LOG_WARNING);
-				download->status = DOWNLOAD_PENDING;
+				download->set_status(DOWNLOAD_PENDING);
 				download->error = CONNECTION_LOST;
 				curl_easy_reset(download->handle);
 				return;
@@ -141,23 +151,23 @@ void download_thread(download_container::iterator download) {
 	} else {
 		if(parsed_dl.download_parse_errmsg == "SERVER_OVERLOAD") {
 			log_string(string("Server overloaded for download ID: ") + int_to_string(download->id), LOG_WARNING);
-			download->status = DOWNLOAD_WAITING;
+			download->set_status(DOWNLOAD_WAITING);
 			download->wait_seconds = parsed_dl.download_parse_wait;
 			return;
 		} else if(parsed_dl.download_parse_errmsg == "LIMIT_REACHED") {
 			log_string(string("Download limit reached for download ID: ") + int_to_string(download->id) + " (" + download->get_host() + ")", LOG_WARNING);
-			download->status = DOWNLOAD_WAITING;
+			download->set_status(DOWNLOAD_WAITING);
 			download->wait_seconds = parsed_dl.download_parse_wait;
 			return;
 		} else if(parsed_dl.download_parse_errmsg == "CONNECTION_FAILED") {
 			log_string(string("Plugin failed to connect for ID:") + int_to_string(download->id), LOG_WARNING);
 			download->error = CONNECTION_LOST;
-			download->status = DOWNLOAD_INACTIVE;
+			download->set_status(DOWNLOAD_INACTIVE);
 			return;
 		} else if(parsed_dl.download_parse_errmsg == "FILE_NOT_FOUND") {
-			log_string(string("File could not be found on the server: ") + parsed_dl.download_url, LOG_WARNING);
+			log_string(string("File could not be found on the server for ID: ") + int_to_string(download->id), LOG_WARNING);
 			download->error = FILE_NOT_FOUND;
-			download->status = DOWNLOAD_INACTIVE;
+			download->set_status(DOWNLOAD_INACTIVE);
 			return;
 		}
 	}
@@ -168,15 +178,12 @@ void download_thread(download_container::iterator download) {
  */
 download_container::iterator get_next_downloadable() {
 	download_container::iterator downloadable = global_download_list.end();
-	if(global_download_list.empty()) {
-		return downloadable;
-	}
-
-	if(global_download_list.running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())) {
+	if(global_download_list.empty() || global_download_list.running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())) {
 		return downloadable;
 	}
 
 	// Checking if we are in download-time...
+	string dl_start(global_config.get_cfg_value("download_timing_start"));
 	if(global_config.get_cfg_value("download_timing_start").find(':') != string::npos && !global_config.get_cfg_value("download_timing_end").find(':') != string::npos ) {
 		time_t rawtime;
 		struct tm * current_time;
@@ -225,12 +232,13 @@ download_container::iterator get_next_downloadable() {
 
 
 	for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-		if(it->status != DOWNLOAD_INACTIVE && it->status != DOWNLOAD_FINISHED && it->status != DOWNLOAD_RUNNING && it->status != DOWNLOAD_WAITING) {
+		if(it->get_status() != DOWNLOAD_INACTIVE && it->get_status() != DOWNLOAD_FINISHED && it->get_status() != DOWNLOAD_RUNNING
+		   && it->get_status() != DOWNLOAD_WAITING && it->get_status() != DOWNLOAD_DELETED) {
 			string current_host(it->get_host());
 			bool can_attach = true;
 			hostinfo hinfo = it->get_hostinfo();
-			for(vector<download>::iterator it2 = global_download_list.begin(); it2 != global_download_list.end(); ++it2) {
-				if(it2->get_host() == current_host && (it2->status == DOWNLOAD_RUNNING || it2->status == DOWNLOAD_WAITING) && !hinfo.allows_multiple_downloads_free) {
+			for(download_container::iterator it2 = global_download_list.begin(); it2 != global_download_list.end(); ++it2) {
+				if(it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING) && !hinfo.allows_multiple_downloads_free) {
 					can_attach = false;
 				}
 			}

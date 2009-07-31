@@ -17,8 +17,7 @@
 		setcookie("ddclient_host", $host, $day);
 		setcookie("ddclient_port", $port, $day);
 		setcookie("ddclient_passwd", $passwd, $day);
-		$redirect = true;
-		//header("Location: list.php");
+		header("Location: list.php");
 	}
 
 ?>
@@ -28,7 +27,6 @@
 <html>
 	<head>
 		<title>DownloadDaemon Login</title>
-		<?php if($redirect) { echo "<meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=list.php\">"; } ?>
 	</head>
 
 	<body>

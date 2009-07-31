@@ -10,11 +10,13 @@ extern download_container global_download_list;
 void tick_downloads() {
 	while(true) {
 		for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-			if(it->wait_seconds > 0 && it->status == DOWNLOAD_WAITING) {
+			if(it->wait_seconds > 0 && it->get_status() == DOWNLOAD_WAITING) {
 				--it->wait_seconds;
-				if(it->status == DOWNLOAD_WAITING && it->wait_seconds == 0) {
-					it->status = DOWNLOAD_PENDING;
+				if(it->wait_seconds == 0) {
+					it->set_status(DOWNLOAD_PENDING);
 				}
+			} else if(it->wait_seconds > 0 && it->get_status() == DOWNLOAD_INACTIVE) {
+				it->wait_seconds = 0;
 			}
 		}
 

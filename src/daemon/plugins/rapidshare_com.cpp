@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
-	if(resultstr.find("The file could not be found") != string::npos) {
+	if(resultstr.find("The file could not be found") != string::npos || resultstr.find("404 Not Found") != string::npos) {
 		output_file << "download_parse_success = 0\n";
 		output_file << "download_parse_errmsg = FILE_NOT_FOUND\n";
 		output_file.close();

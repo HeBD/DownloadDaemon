@@ -18,7 +18,7 @@ extern cfgfile global_config;
 extern std::string program_root;
 
 download::download(std::string &url, int next_id)
-	: url(url), status(DOWNLOAD_PENDING), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(NO_ERROR) {
+	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(NO_ERROR), status(DOWNLOAD_PENDING) {
 	handle = curl_easy_init();
 	time_t rawtime;
 	time(&rawtime);
@@ -82,9 +82,12 @@ void download::from_serialized(std::string &serializedDL) {
 }
 
 std::string download::serialize() {
+	if(status == DOWNLOAD_DELETED) {
+		return "";
+	}
 	stringstream ss;
 	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << status << '|' << downloaded_bytes
-	   << '|' << size << '|';
+	   << '|' << size << "|\n";
 	return ss.str();
 }
 
@@ -199,7 +202,20 @@ const char* download::get_status_str() {
 			return "DOWNLOAD_RUNNING";
 		case DOWNLOAD_WAITING:
 			return "DOWNLOAD_WAITING";
+		default:
+			return "DOWNLOAD_DELETING";
 	}
 	return "UNKNOWN_STATUS";
+}
+
+void download::set_status(download_status st) {
+	if(status == DOWNLOAD_DELETED) {
+		return;
+	}
+	status = st;
+}
+
+download_status download::get_status() {
+	return status;
 }
 

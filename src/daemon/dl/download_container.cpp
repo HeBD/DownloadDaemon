@@ -36,7 +36,7 @@ download_container::iterator download_container::get_download_by_id(int id) {
 int download_container::running_downloads() {
 	int running_downloads = 0;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(it->status == DOWNLOAD_RUNNING) {
+		if(it->get_status() == DOWNLOAD_RUNNING) {
 			++running_downloads;
 		}
 	}
@@ -59,7 +59,7 @@ bool download_container::dump_to_file() {
 	}
 
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		dlfile << it->serialize() << '\n';
+		dlfile << it->serialize();
 	}
 	dlfile.close();
 	return true;
@@ -85,6 +85,9 @@ bool download_container::pop_back() {
 }
 
 bool download_container::erase(download_container::iterator it) {
+	if(it == download_list.end()) {
+		return false;
+	}
 	download tmpdl = *it;
 	download_list.erase(it);
 	if(!dump_to_file()) {

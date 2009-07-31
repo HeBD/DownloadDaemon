@@ -19,22 +19,23 @@ include("functional.php");
 	$socket = socket_create(AF_INET, SOCK_STREAM, 0);
 	$ret = connect_to_daemon($socket);
 	if($ret == "COOKIE") {
-		die("Cookies missing. If you have cookies disabled on your machine, please enable them. Else, try to log on again by clicking <a href=\"index.php\">here</a>");
+		echo "Cookies missing. If you have cookies disabled on your machine, please enable them. Else, try to log on again by clicking <a href=\"index.php\">here</a>";
+		exit;
 	} else if ($ret == "CONNECT") {
-		die("Coult not connect to DownloadDaemon. Maybe it is not running?");
+		echo "Coult not connect to DownloadDaemon. Maybe it is not running?";
+		exit;
 	} else if ($ret == "RECV") {
-		die("Successfully connected to the server, but data could not be received. Connection problem");
+		echo "Successfully connected to the server, but data could not be received. Connection problem";
+		exit;
 	} else if ($ret == "PASSWD") {
-		die("You entered a wrong password. Please go back to the login page.");
+		echo "You entered a wrong password. Please go back to the login page.";
+		exit;
 	}
 	echo "<br><br>";
 
 	$list = "";
 	send_all($socket, "DDP GET LIST");
 	recv_all($socket, $list);
-
-	// returns the string without nn pattern ... substitute xx
-	//echo str_replace("nn", "xx", $str);
 
 	$download_count = substr_count($list, "\n");
 	$download_index[] = array();
@@ -43,10 +44,9 @@ include("functional.php");
 	for($i = 0; $i < $download_count; $i++) {
 		$exp_dls[$i] = explode ( '|'  , $download_index[$i] );
 	}
-	echo $exp_dls[0][2];
 
 	echo "<table border=\"1\">\n";
-	echo "<tr><td>ID</td><td>Date</td><td>Title</td><td>URL</td><td>Status</td>";
+	echo "<tr><td>ID</td><td>Date</td><td>Title</td><td>URL</td><td>Status</td></tr>";
 	
 	for($i = 0; $i < $download_count; $i++) {
 		echo "<tr>";
@@ -71,7 +71,7 @@ include("functional.php");
 						echo "Download Inactive";
 					} else {
 						echo "<td bgcolor=\"red\">";
-						echo "Error: " . $exp_dls[$i][8];
+						echo "Inactive. Error: " . $exp_dls[$i][8];
 					}
 		
 				} else if($exp_dls[$i][4] == "DOWNLOAD_PENDING") {
@@ -85,9 +85,12 @@ include("functional.php");
 				} else if($exp_dls[$i][4] == "DOWNLOAD_WAITING") {
 					echo "<td bgcolor=\"yellow\">";
 					echo "Have to wait " . $exp_dls[$i][7] . " seconds";
+				} else if($exp_dls[$i][4] == "DOWNLOAD_FINISHED") {
+					echo "<td bgcolor=\"green\">";
+					echo "Download Finished";
 				} else {
 					echo "<td>Status not detected";
-				}
+				} 
 				
 				echo "</td>";
 				break;	

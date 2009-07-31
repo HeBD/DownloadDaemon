@@ -37,7 +37,7 @@ void cfgfile::open_cfg_file(const string &filepath, bool writeable = false) {
 	}
 }
 
-string cfgfile::get_cfg_value(const string &cfg_identifier) const {
+string cfgfile::get_cfg_value(const string &cfg_identifier) {
 	if(!file.is_open()) {
 		return "";
 	}

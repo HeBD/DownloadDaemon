@@ -4,6 +4,7 @@
 #include "download.h"
 #include <string>
 #include <vector>
+#include <boost/thread.hpp>
 
 class download_container {
 public:
@@ -30,7 +31,6 @@ public:
 	bool dump_to_file();
 
 private:
-
 	std::string list_file;
 	std::vector<download> download_list;
 };
