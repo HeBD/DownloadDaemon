@@ -92,7 +92,7 @@
 	"../dl/download_container.h"
 	"global_management.h"
 
-1249051494 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/mgmt_thread.cpp
+1249053093 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/mgmt_thread.cpp
 	<iostream>
 	<vector>
 	<cassert>
@@ -136,9 +136,9 @@
 	<boost/thread.hpp>
 	<boost/bind.hpp>
 
-1248208734 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient/ddclient.cpp
+1249054412 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient/ddclient.cpp
 	<iostream>
-	"../lib/netpptk.h"
+	"../lib/netpptk/netpptk.h"
 
 1248937613 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/plugins/rapidshare_com.cpp
 	<curl/curl.h>
@@ -146,7 +146,7 @@
 	<cstdlib>
 	<fstream>
 
-1248706322 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx.cpp
+1249068244 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx.cpp
 	<wx/wxprec.h>
 	<wx/app.h>
 	"ddclient-wx_main.h"
@@ -1740,9 +1740,9 @@
 	<wx/stattext.h>
 	<wx/textctrl.h>
 
-1248367542 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/dlg_add.cpp
+1248706331 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/dlg_add.cpp
 	"dlg_add.h"
-	"../lib/netpptk.h"
+	"../lib/netpptk/netpptk.h"
 	<string>
 	<wx/msgdlg.h>
 	<wx/string.h>

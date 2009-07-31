@@ -8,3 +8,7 @@
 8: implement all the # not implemented-s in hostinfo
 9: implement premium account support
 10: implement some type of container format to import/export huge lists
+11: write a few plugins
+12: priority settings
+13: handle container formats of other downloaders
+14: speed regulation
