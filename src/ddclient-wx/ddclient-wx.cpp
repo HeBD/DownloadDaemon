@@ -19,6 +19,7 @@
 
 #include <wx/msgdlg.h>
 //(*AppHeaders
+#include "src/ddclient-wx/ddclient-wx_main.h"
 #include <wx/image.h>
 //*)
 

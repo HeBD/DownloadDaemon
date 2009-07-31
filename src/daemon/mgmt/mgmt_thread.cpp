@@ -2,7 +2,6 @@
 #include<vector>
 #include<cassert>
 #include<string>
-#include<fstream>
 
 #include "mgmt_thread.h"
 #include "../dl/download.h"

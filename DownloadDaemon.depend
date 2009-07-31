@@ -23,7 +23,7 @@
 
 1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/curl_callbacks.h
 
-1248955332 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
+1249052706 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
 	<string>
 	<boost/thread.hpp>
 	<vector>
@@ -92,12 +92,11 @@
 	"../dl/download_container.h"
 	"global_management.h"
 
-1248946840 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/mgmt_thread.cpp
+1249051494 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/mgmt/mgmt_thread.cpp
 	<iostream>
 	<vector>
 	<cassert>
 	<string>
-	<fstream>
 	"mgmt_thread.h"
 	"../dl/download.h"
 	"../../lib/netpptk/netpptk.h"
@@ -1749,9 +1748,10 @@
 	<wx/string.h>
 	<wx/intl.h>
 
-1248954617 /home/ben/Sonstiges/coding/DownloadDaemon/src/lib/cfgfile/cfgfile.h
+1249051857 /home/ben/Sonstiges/coding/DownloadDaemon/src/lib/cfgfile/cfgfile.h
 	<string>
 	<fstream>
+	<boost/thread.hpp>
 
 1248727906 /home/ben/Sonstiges/coding/DownloadDaemon/src/lib/netpptk/netpptk.h
 	<string>
@@ -1764,7 +1764,7 @@
 	<netdb.h>
 	<arpa/inet.h>
 
-1248956180 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/lib/cfgfile/cfgfile.cpp
+1249051856 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/lib/cfgfile/cfgfile.cpp
 	"cfgfile.h"
 	<fstream>
 	<string>

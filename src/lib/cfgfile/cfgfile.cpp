@@ -38,7 +38,9 @@ void cfgfile::open_cfg_file(const string &filepath, bool writeable = false) {
 }
 
 string cfgfile::get_cfg_value(const string &cfg_identifier) {
+	mx.lock();
 	if(!file.is_open()) {
+		mx.unlock();
 		return "";
 	}
 	fstream tmpfile(filepath.c_str(), fstream::in); // second fstream to make const possible
@@ -53,14 +55,18 @@ string cfgfile::get_cfg_value(const string &cfg_identifier) {
 		if(identstr == cfg_identifier) {
 			val = buff.substr(eqloc +1);
 			trim(val);
+			mx.unlock();
 			return val;
 		}
 	}
+	mx.unlock();
 	return "";
 }
 
 bool cfgfile::set_cfg_value(const string &cfg_identifier, const string &cfg_value) {
+	mx.lock();
 	if(!is_writeable || !file.is_open()) {
+		mx.unlock();
 		return false;
 	}
 
@@ -101,6 +107,7 @@ bool cfgfile::set_cfg_value(const string &cfg_identifier, const string &cfg_valu
 	}
 
 	reload_file();
+	mx.unlock();
 	return true;
 }
 
@@ -113,6 +120,7 @@ void cfgfile::set_comment_token(const string &comment_token) {
 }
 
 void cfgfile::reload_file() {
+	mx.lock();
 	file.close();
 
 	if(is_writeable) {
@@ -120,10 +128,13 @@ void cfgfile::reload_file() {
 	} else {
 		file.open(this->filepath.c_str(), fstream::in);
 	}
+	mx.unlock();
 }
 
 void cfgfile::close_cfg_file() {
+	mx.lock();
 	file.close();
+	mx.unlock();
 }
 
 inline bool cfgfile::writeable() const {
@@ -134,15 +145,16 @@ inline std::string cfgfile::get_filepath() const {
 	return filepath;
 }
 
-bool cfgfile::list_config(std::string& resultstr) const {
+bool cfgfile::list_config(std::string& resultstr) {
+	mx.lock();
 	if(!file.is_open()) {
+		mx.unlock();
 		return false;
 	}
-	fstream tmpfile(filepath.c_str(), fstream::in); // second fstream to make const possible
 	string buff;
 	resultstr = "";
-	while(!tmpfile.eof() && tmpfile.good()) {
-		getline(tmpfile, buff);
+	while(!file.eof() && file.good()) {
+		getline(file, buff);
 		trim(buff);
 		if(buff.empty()) {
 			continue;
@@ -154,6 +166,7 @@ bool cfgfile::list_config(std::string& resultstr) const {
 			resultstr += '\n';
 		}
 	}
+	mx.unlock();
 	return true;
 
 }

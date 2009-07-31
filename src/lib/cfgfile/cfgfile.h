@@ -3,6 +3,7 @@
 
 #include<string>
 #include<fstream>
+#include<boost/thread.hpp>
 
 class cfgfile {
 public:
@@ -82,7 +83,7 @@ public:
  	*	@param resultstr A string in which the result is stored line by line
  	*	@returns true on success
  	*/
-	bool list_config(std::string& resultstr) const;
+	bool list_config(std::string& resultstr);
 
 private:
 	/** Internal use: removes whitespaces from the beginning and end of a string.
@@ -94,6 +95,8 @@ private:
 	std::string comment_token;
 	bool is_writeable;
 	char eqtoken;
+	boost::mutex mx;
+
 };
 
 #endif /*CFGFILE_H_*/
