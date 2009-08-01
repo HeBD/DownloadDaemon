@@ -111,6 +111,7 @@ bool tkSock::accept (tkSock& new_socket) {
     #else
         socklen_t addr_length = sizeof(m_addr);
     #endif
+    close(new_socket.m_sock);
 	new_socket.m_sock = ::accept(this->m_sock, reinterpret_cast<sockaddr*>(&m_addr), &addr_length);
 	if(new_socket.m_sock <= 0) {
 		valid = false;

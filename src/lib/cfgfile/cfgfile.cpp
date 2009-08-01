@@ -56,9 +56,11 @@ string cfgfile::get_cfg_value(const string &cfg_identifier) {
 			val = buff.substr(eqloc +1);
 			trim(val);
 			mx.unlock();
+			tmpfile.close();
 			return val;
 		}
 	}
+	tmpfile.close();
 	mx.unlock();
 	return "";
 }

@@ -1,3 +1,7 @@
+2009-08-01 adrian
+	- Again fixed some bugs
+	- fixed an ugly socket-descriptor leak in network library
+
 2009-07-31 adrian
 	- Lot of bug fixes
 	- PHP interface now mostly working

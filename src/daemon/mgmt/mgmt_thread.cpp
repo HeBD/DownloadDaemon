@@ -147,6 +147,7 @@ bool del(std::string data) {
 	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
 	curl_easy_setopt(it->handle, CURLOPT_TIMEOUT, 1);
 	it->set_status(DOWNLOAD_DELETED);
+	global_download_list.dump_to_file();
 	return true;
 }
 
