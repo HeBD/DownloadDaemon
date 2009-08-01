@@ -23,9 +23,10 @@
 
 1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/curl_callbacks.h
 
-1249052706 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
+1249118326 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
 	<string>
 	<boost/thread.hpp>
+	<boost/bind.hpp>
 	<vector>
 	<fstream>
 	<cstdlib>
