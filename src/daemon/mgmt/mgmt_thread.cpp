@@ -54,7 +54,7 @@ void connection_handler(tkSock *sock) {
 			if(*sock) *sock << "-1 ERROR";
 			return;
 		} else {
-			log_string("User Authenticated", LOG_DEBUG);
+			//log_string("User Authenticated", LOG_DEBUG);
 			auth_success = true;
 			if(*sock) *sock << "0 SUCCESS";
 		}

@@ -4,7 +4,7 @@ project(ddclient)
 SET(ddclient_SRCS ddclient.cpp ../lib/netpptk/netpptk.cpp)
 
 
-find_package(Boost REQUIRED COMPONENTS thread filesystem)
+find_package(Boost REQUIRED COMPONENTS thread)
 
 IF(Boost_FOUND)
 	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
