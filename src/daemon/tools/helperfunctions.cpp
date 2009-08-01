@@ -73,7 +73,7 @@ void log_string(const std::string logstr, LOG_LEVEL level) {
 		cerr << '[' << log_date << "] " << logstr << '\n' << flush;
 	} else {
 		ofstream ofs(desiredLogFile.c_str(), ios::app);
-		ofs << '[' << log_date << "] " << logstr;
+		ofs << '[' << log_date << "] " << logstr << '\n' << flush;
 		ofs.close();
 	}
 
