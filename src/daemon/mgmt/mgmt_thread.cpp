@@ -128,6 +128,7 @@ bool add(std::string data) {
 		dl.comment = comment;
 		string logstr("Adding download: ");
 		logstr += dl.serialize();
+		logstr.erase(logstr[logstr.length() - 1]);
 		log_string(logstr, LOG_DEBUG);
 
 		return global_download_list.push_back(dl);

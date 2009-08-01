@@ -63,6 +63,10 @@ include("functional.php");
 		}
 	}
 
+	if(isset($_GET['delete_file'])) {
+		echo "remote file deletion not yet supported"
+	}
+
 	$list = "";
 	send_all($socket, "DDP GET LIST");
 	recv_all($socket, $list);
@@ -95,6 +99,10 @@ include("functional.php");
 				}
 				
 				echo "<input type=\"submit\" name=\"delete\" value=\"Delete\">";
+				
+				if($exp_dls[$i][4] == "DOWNLOAD_FINISHED" || $exp_dls[$i][7] > 0) {
+					echo "<input type=\"submit\" name=\"delete_file\" value=\"Delete File\">";
+				}
 
 				echo "<input type=\"hidden\" name=\"id\" value=\"" . $exp_dls[$i][0] . "\">";
 					

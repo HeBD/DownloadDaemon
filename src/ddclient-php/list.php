@@ -58,7 +58,7 @@ include("functional.php");
 			case 3: echo "<td>" . $exp_dls[$i][$j] . "</td>"; break;
 			case 4: 
 				if($exp_dls[$i][4] == "DOWNLOAD_RUNNING") {
-					echo "<td bgcolor=\"green\">";
+					echo "<td bgcolor=\"lime\">";
 					if($exp_dls[$i][7] > 0) {
 						echo "Download running. Waiting " . $exp_dls[$i][7] . " seconds.";
 					} else {
