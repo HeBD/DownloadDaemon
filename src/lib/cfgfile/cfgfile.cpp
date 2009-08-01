@@ -172,10 +172,10 @@ bool cfgfile::list_config(std::string& resultstr) {
 }
 
 void cfgfile::trim(string &str) const {
-	while(isspace(str[0])) {
+	while(str.length() > 0 && isspace(str[0])) {
 		str.erase(str.begin());
 	}
-	while(isspace(*(str.end() - 1))) {
+	while(str.length() > 0 && isspace(*(str.end() - 1))) {
 		str.erase(str.end() -1);
 	}
 }

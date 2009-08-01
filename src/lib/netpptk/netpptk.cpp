@@ -129,10 +129,17 @@ void tkSock::auto_accept_threadfunc(void (*handle) (tkSock*)) {
 	while(!stop_threads) {
 		if(m_open_connections < m_maxconnections) {
 			++m_open_connections;
-			tkSock* tmpsock = new tkSock(1, m_maxrecv);
+			tkSock* tmpsock;
+			try {
+				tmpsock = new tkSock(1, m_maxrecv);
+			} catch (...) {
+				--m_open_connections;
+				continue;
+			}
+
 			if(!this->accept(*tmpsock)) {
 				--m_open_connections;
-				//throw SocketError(CONNECTION_PROBLEM);
+				delete tmpsock;
 				continue;
 			}
 			if(stop_threads) {
