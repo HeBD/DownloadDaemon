@@ -64,7 +64,7 @@ include("functional.php");
 	}
 
 	if(isset($_GET['delete_file'])) {
-		echo "remote file deletion not yet supported"
+		echo "remote file deletion not yet supported";
 	}
 
 	$list = "";
