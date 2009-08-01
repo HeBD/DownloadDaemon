@@ -1,5 +1,6 @@
 #include <string>
 #include <boost/thread.hpp>
+#include <boost/bind.hpp>
 #include <vector>
 #include <fstream>
 #include <cstdlib>
@@ -32,7 +33,7 @@ void download_thread_main() {
 			continue;
 		} else {
 			downloadable->set_status(DOWNLOAD_RUNNING);
-			boost::thread t(download_thread, downloadable);
+			boost::thread t(boost::bind(download_thread, downloadable));
 		}
 	}
 }
