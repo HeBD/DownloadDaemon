@@ -1,7 +1,7 @@
 THIS SPECIFICATION IS NOT YET VALID BUT WILL BE USED IN THE FUTURE!
 
 This document describes the basic protocol for communicating with DownloadDaemon, for doing things like writing clients, etc (and for myself...)
-The protocol exists of 2 layers. On the one hand, every message sent through a socket to DownloadDaemon and every message you will receive
+The protocol consists of 2 layers. On the one hand, every message sent through a socket to DownloadDaemon and every message you will receive
 from DownloadDaemon, will have this structure:
 <message length>:<message>
 The message length is ONLY the length of the data that follows after the : and not the data before it and also not the : itsself.
