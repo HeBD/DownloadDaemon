@@ -1,4 +1,7 @@
 2009-08-01 adrian
+	- Fixed partly missing log-entry
+
+2009-08-01 adrian
 	- Again fixed some bugs
 	- fixed an ugly socket-descriptor leak in network library
 
