@@ -1,0 +1,54 @@
+THIS SPECIFICATION IS NOT YET VALID BUT WILL BE USED IN THE FUTURE!
+
+This document describes the basic protocol for communicating with DownloadDaemon, for doing things like writing clients, etc (and for myself...)
+The protocol exists of 2 layers. On the one hand, every message sent through a socket to DownloadDaemon and every message you will receive
+from DownloadDaemon, will have this structure:
+<message length>:<message>
+The message length is ONLY the length of the data that follows after the : and not the data before it and also not the : itsself.
+example:
+11:DDP DL LIST
+
+For C++, this can be achieved by simply using DownloadDaemons netpptk, which will handle those things for you..
+send(std::string s) will automatically append the header to s, and recv(std::string &s) will automatically remove the header
+from the received message.
+
+Description of the DownloadDaemon protocol itsself:
+
+Every command sent to DownloadDaemon will always produce an answer.
+For most commands, this is either <answer_code> <answer_message> (e.g.: "0 SUCCESS").
+This applies to all commands that do not answer a real content, like for example a dump of the current download list, or the result of a config variable.
+These commands will return their answer, and an empty string if no answer can be found (e.g. download list empty/config variable not set).
+
+Every command sent to DownloadDaemon has to start with "DDP", followed by at least one whitespace.
+Also every command can address one of three targets. these targets can be "DL", "VAR" and "FILE".
+DL stands for downloads and should be used if you want to change something about a download list entry, like changing a title, adding or removing a download, etc..
+VAR stands for configuration variables and can be used to configure DownloadDaemon.
+FILE stands for doing something with a file that has been downloaded by downloaddaemon (like downloading the file to the local machine or deleting the file on the remote side)
+
+After specifing the target, at least one whitespace needs to follow, so now we got someting like "DDP DL ", "DDP VAR ", ...
+
+the third parameter is a command about what to do with the target.
+
+For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "UP", "DOWN", "ACTIVATE", "DEACTIVATE".
+	LIST will return the current list of downloads in the following format: id|date added|title|url|status|downloaded bytes|file size|wait seconds|error message
+	     followed by a newline. If there is a | in the title, it will be escaped as \|.
+	ADD <url> [<comment>] will add a download. the ADD command needs to be followed by at least one whitespace, followed by the download url.
+	    if a title for the download should be set, it should be added after another whitespace.
+	DEL <id> will delete a download and needs to be followed by the download ID as it can be viewed from the LIST command
+	STOP <id> will stop a running download immediately and needs to be followed by the download ID
+	UP <id> will move a download one position upwards and therfore increase its priority. The command needs to be followed by a download ID
+	DOWN <id> will move a download one position downwards and therfore decrease its priority. The command needs to be followed by a download ID
+	ACTIVATE <id> will activate a deactivated download
+	DEACTIVATE <id> will deactivate an active download. Running downloads will NOT be aborted by this command. If you want this to happen, you need to call STOP first.
+
+For the target VAR, the following commands exist: "SET", "GET".
+	SET <var>=<value> will set a configuration variable and needs to be in the format <variable> = <value>. the variable identifier is just the same
+	    as the variable in downloaddaemon.conf that should be changed
+	GET <var> will return a configuration variable. GET needs to be followed by the variable name that should be received and will return the value.
+
+For the target FILE, the following commands exist:
+	DEL <id> will delete a downloaded file. and needs to be followed by the download ID. This can be run on any download. If the file exists and can be deleted, this will return
+	    succes. else, it will return an error.
+	GETFILE <id> will send the downloaded file directly through the management socket. This should never be used for stuff like web-interfaces, because it will break a lot.
+	GETPATH <id> will send the local path on the server to the file to make downloading for local interfaces possible or let the client do some other work with it (extracting?)
+	GETSIZE <id> will return the number of bytes of the file to the corresponding download id and -1 if it fails.
