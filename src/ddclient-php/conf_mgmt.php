@@ -109,7 +109,7 @@ include("functional.php");
 	$sim_dls = "";
 	send_all($socket, "DDP VAR GET simultaneous_downloads");
 	recv_all($socket, $sim_dls);
-	echo "Here you can specifie how many downloads may run at the same time:<br>";
+	echo "Here you can specify how many downloads may run at the same time:<br>";
 	echo "Simultaneous downloads: <input type=\"text\" size=\"5\" name=\"simultaneous_downloads\" value=\"" . $sim_dls . "\">";
 	echo "<br><br><br>";
 	$log_lvl = "";	
