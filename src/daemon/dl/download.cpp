@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 
 #include "download.h"
+#include "download_container.h"
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../tools/curl_callbacks.h"
 #include "../tools/helperfunctions.h"
@@ -16,6 +17,7 @@ using namespace std;
 
 extern cfgfile global_config;
 extern std::string program_root;
+extern download_container global_download_list;
 
 download::download(std::string &url, int next_id)
 	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(NO_ERROR), status(DOWNLOAD_PENDING) {
@@ -216,6 +218,7 @@ void download::set_status(download_status st) {
 		return;
 	}
 	status = st;
+	global_download_list.dump_to_file();
 }
 
 download_status download::get_status() {
