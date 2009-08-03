@@ -33,6 +33,9 @@ void trim_string(std::string &str) {
 
 bool validate_url(std::string &url) {
 	bool valid = true;
+	if(url.find('|') != string::npos) {
+		valid = false;
+	}
 	if(url.find("http://") != 0 && url.find("ftp://") != 0) {
 		valid = false;
 	}
@@ -113,5 +116,18 @@ long string_to_long(string str) {
 	long ret;
 	ss >> ret;
 	return ret;
+}
+
+bool variable_is_valid(std::string variable) {
+	trim_string(variable);
+	string possible_vars = ",downloading_active,download_timing_start,download_timing_end,download_folder,simultaneous_downloads,"
+						   "log_level,log_file,mgmt_max_connections,mgmt_port,mgmt_password,plugin_dir,dlist_file,";
+	size_t pos;
+	if((pos = possible_vars.find(variable)) != string::npos) {
+		if(possible_vars[pos - 1] == ',' && possible_vars[pos + variable.length() - 1] == ',') {
+			return true;
+		}
+	}
+	return false;
 }
 

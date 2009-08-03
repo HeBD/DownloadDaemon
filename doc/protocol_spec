@@ -1,5 +1,3 @@
-THIS SPECIFICATION IS NOT YET VALID BUT WILL BE USED IN THE FUTURE!
-
 This document describes the basic protocol for communicating with DownloadDaemon, for doing things like writing clients, etc (and for myself...)
 The protocol consists of 2 layers. On the one hand, every message sent through a socket to DownloadDaemon and every message you will receive
 from DownloadDaemon, will have this structure:
@@ -7,6 +5,7 @@ from DownloadDaemon, will have this structure:
 The message length is ONLY the length of the data that follows after the : and not the data before it and also not the : itsself.
 example:
 11:DDP DL LIST
+If you put a wrong length in the beginning, you will be disconnected and need to reconnect.
 
 For C++, this can be achieved by simply using DownloadDaemons netpptk, which will handle those things for you..
 send(std::string s) will automatically append the header to s, and recv(std::string &s) will automatically remove the header
@@ -18,6 +17,13 @@ Every command sent to DownloadDaemon will always produce an answer.
 For most commands, this is either <answer_code> <answer_message> (e.g.: "0 SUCCESS").
 This applies to all commands that do not answer a real content, like for example a dump of the current download list, or the result of a config variable.
 These commands will return their answer, and an empty string if no answer can be found (e.g. download list empty/config variable not set).
+
+Authentication:
+	Authentication is a bit weird. As soon as you connect to DownloadDaemon, you should call a recv() to find out if you need to authenticate or not.
+	You will receive "100 SUCCESS" (see status list below) if you do not need to authenticate. If you need to authenticate, you will receive a
+	"101 AUTHENTICATION" error. As soon as you receive that, you should send the password and only the password. If authentication then succeeds, you will
+	get a "100 SUCCESS" now. If it fails, you will get another "101 AUTHENTICATION" and will then be disconnected. If you want to try again, you have to
+	reconnect.
 
 Every command sent to DownloadDaemon has to start with "DDP", followed by at least one whitespace.
 Also every command can address one of three targets. these targets can be "DL", "VAR" and "FILE".
@@ -43,12 +49,30 @@ For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "
 
 For the target VAR, the following commands exist: "SET", "GET".
 	SET <var>=<value> will set a configuration variable and needs to be in the format <variable> = <value>. the variable identifier is just the same
-	    as the variable in downloaddaemon.conf that should be changed
-	GET <var> will return a configuration variable. GET needs to be followed by the variable name that should be received and will return the value.
+	    as the variable in downloaddaemon.conf that should be changed. If you want to set the mgmt_password variable, you need to supply the old mgmt_password variable
+	    first. In this case, the structure will be SET mgmt_password = old_password ; new_password
+	GET <var> will return a configuration variable. GET needs to be followed by the variable name that should be received and will return the value. you can not receive the
+		  password with this option. If you try to, you will receive an OPTION error
+	
 
 For the target FILE, the following commands exist:
 	DEL <id> will delete a downloaded file. and needs to be followed by the download ID. This can be run on any download. If the file exists and can be deleted, this will return
-	    succes. else, it will return an error.
+	    success. else, it will return "109 FILE"
 	GETFILE <id> will send the downloaded file directly through the management socket. This should never be used for stuff like web-interfaces, because it will break a lot.
 	GETPATH <id> will send the local path on the server to the file to make downloading for local interfaces possible or let the client do some other work with it (extracting?)
 	GETSIZE <id> will return the number of bytes of the file to the corresponding download id and -1 if it fails.
+
+
+All error codes may vary between 100 and 999, to make parsing simple.
+For now, this list represents all codes:
+100 SUCCESS		<-- Operation succeeded
+101 PROTOCOL		<-- If you misunderstood this protocol documentation ;)
+102 AUTHENTICATION	<-- Authentication failed
+103 URL			<-- Invalid URL (when adding downloads)
+104 ID			<-- Entered a not-existing ID (also returned if you try to move the top-download up or the bottom download down)
+105 STOP		<-- If a download could not be stopped, because it's not running
+106 ACTIVATE		<-- If you try to activate a download that is already active
+107 DEACTIVATE		<-- If you try to deactivate a downoad that is already unactive
+108 VARIABLE		<-- If the variable you tried to set is invalid (if get fails, you just receive an empty string)
+109 FILE		<-- If you do any file operation on a file that does not exist.
+110 PERMISSION		<-- If a file could not be written (this can also happen if you add/del a download and don't have write permissions to the list-file)

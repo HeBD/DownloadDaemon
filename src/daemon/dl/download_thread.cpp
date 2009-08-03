@@ -179,7 +179,8 @@ void download_thread(download_container::iterator download) {
  */
 download_container::iterator get_next_downloadable() {
 	download_container::iterator downloadable = global_download_list.end();
-	if(global_download_list.empty() || global_download_list.running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())) {
+	if(global_download_list.empty() || global_download_list.running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())
+	   || global_config.get_cfg_value("downloading_active") == "0") {
 		return downloadable;
 	}
 

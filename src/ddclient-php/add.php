@@ -45,7 +45,7 @@
 		}
 		echo "<br>";
 		if(isset($_GET['submit_single'])) {
-			send_all($socket, "DDP ADD " . $_GET['url'] . " " . $_GET['title']);
+			send_all($socket, "DDP DL ADD " . $_GET['url'] . " " . $_GET['title']);
 			$recv = "";
 			recv_all($socket, $recv);
 			if($recv[0] == "-") {
@@ -73,10 +73,10 @@
 			$all_success = true;
 			for($i = 0; $i < $download_count; $i++) {
 				$buf = "";
-				send_all($socket, "DDP ADD " . $download_index[$i]);
+				send_all($socket, "DDP DL ADD " . $download_index[$i]);
 				recv_all($socket, $buf);
 
-				if($buf[0] == "-") {
+				if(mb_substr($buf, 0, 3) != "100") {
 					echo "Error adding download: " . $download_index[$i] . ": URL is probably invalid.";
 					$all_success = false;
 				}

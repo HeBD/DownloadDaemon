@@ -97,3 +97,31 @@ bool download_container::erase(download_container::iterator it) {
 	return true;
 }
 
+int download_container::move_up(int id) {
+	download_container::iterator it = get_download_by_id(id);
+	if(it == download_list.begin() || it == download_list.end()) {
+		return -1;
+	}
+	download_container::iterator it2 = get_download_by_id(id);
+	--it2;
+
+	int iddown = it2->id;
+	it2->id = it->id;
+	it->id = iddown;
+	if(!dump_to_file()) {
+		it->id = it2->id;
+		it2->id = iddown;
+		return -2;
+	}
+	return 0;
+}
+
+int download_container::get_next_id() {
+	int max_id = -1;
+	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+		if(it->id > max_id) {
+			max_id = it->id;
+		}
+	}
+	return ++max_id;
+}

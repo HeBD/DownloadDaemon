@@ -34,30 +34,30 @@ include("functional.php");
 	echo "<br><br>";
 
 	if(isset($_GET['activate'])) {
-		send_all($socket, "DDP SET DL " . $_GET['id'] . " ACTIVE 1");
+		send_all($socket, "DDP DL ACTIVATE " . $_GET['id']);
 		$buf = "";
 		recv_all($socket, $buf);
-		if($buf[0] == "-") {
+		if(mb_substr($buf, 0, 3) != "100") {
 			echo "Could not activate download " . $_GET['id'];
 			exit;
 		}
 	}
 
 	if(isset($_GET['deactivate'])) {
-		send_all($socket, "DDP SET DL " . $_GET['id'] . " ACTIVE 0");
+		send_all($socket, "DDP DL DEACTIVATE" . $_GET['id']);
 		$buf = "";
 		recv_all($socket, $buf);
-		if($buf[0] == "-") {
+		if(mb_substr($buf, 0, 3) != "100") {
 			echo "Could not deactivate download " . $_GET['id'];
 			exit;
 		}
 	}
 	
 	if(isset($_GET['delete'])) {
-		send_all($socket, "DDP DEL " . $_GET['id']);
+		send_all($socket, "DDP DL DEL " . $_GET['id']);
 		$buf = "";
 		recv_all($socket, $buf);
-		if($buf[0] == "-") {
+		if(mb_substr($buf, 0, 3) != "100") {
 			echo "Could not delete download " . $_GET['id'];
 			exit;
 		}
@@ -68,7 +68,7 @@ include("functional.php");
 	}
 
 	$list = "";
-	send_all($socket, "DDP GET LIST");
+	send_all($socket, "DDP DL LIST");
 	recv_all($socket, $list);
 
 	$download_count = substr_count($list, "\n");
@@ -120,12 +120,6 @@ include("functional.php");
 	}
 
 	echo "</table>"
-
-
-	// now we need to parse $list. schema:
-	//1|Thu Jul 23 20:08:04 2009||http://rapidshare.com/files/144286726/worldshift_Ka0oS.part02.rar|DOWNLOAD_RUNNING|4086368|200000000|130|NO_ERROR 
-	//2|Thu Jul 23 20:08:08 2009|aswekdfa|http://rapidshare.com/files/144286726/worldshift_Ka0oS.part02.rar|DOWNLOAD_INACTIVE|845088|200000000|0|NO_ERROR 
-	//echo $list;
 ?>
 	</div>
 </body>

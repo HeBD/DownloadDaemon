@@ -1,4 +1,13 @@
-2009-08-01 adrian
+2009-08-03 adrian
+	- Almost complete rewrite of the management api and protocol implementation
+	- Added a few new features to protocol
+	- added implementation for those features except for the FILE target which is
+	  not yet supported
+	- Fixed a nasty security hole in netpptk
+	- updated protocol specification
+	- made php interface ready for new protocol specification
+
+2009-08-02 adrian
 	- Fixed partly missing log-entry
 
 2009-08-01 adrian

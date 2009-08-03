@@ -34,7 +34,7 @@ include("functional.php");
 	echo "<br><br>";
 
 	$list = "";
-	send_all($socket, "DDP GET LIST");
+	send_all($socket, "DDP DL LIST");
 	recv_all($socket, $list);
 
 	$download_count = substr_count($list, "\n");

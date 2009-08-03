@@ -202,6 +202,9 @@ bool tkSock::send(const std::string &s) {
 	std::string s_new;
 	s_new = append_header(s);
 	do {
+		if(!valid) {
+			return false;
+		}
 		status += ::send(m_sock, s_new.c_str() + status, s_new.size(), 0);
 		if(status == -1) {
 			valid = false;
@@ -212,6 +215,7 @@ bool tkSock::send(const std::string &s) {
 }
 
 int tkSock::recv(std::string& s) {
+
 	char initbuf[21];
 	s = "";
 	memset(initbuf, 0, 21);
@@ -225,21 +229,34 @@ int tkSock::recv(std::string& s) {
 	if(msgLen == -1) {
 		s = "";
 		valid = false;
-		return 0;
+		return status;
 	} else if(s.length() >= (unsigned)msgLen) {
 		return status;
 	}
-	char *buf = new char[msgLen + 1];
+
+	struct timeval tv;
+	tv.tv_sec = 3;
+	tv.tv_usec = 0;
+	if (setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,  sizeof(tv))) {
+		valid = false;
+		return status;
+	}
+
+	char *buf = new char[m_maxrecv + 1];
 	while(s.length() < (unsigned)msgLen) {
-		memset(buf, 0, msgLen + 1);
+		memset(buf, 0, m_maxrecv + 1);
 		int old_status = status;
-		status += ::recv(m_sock, buf, msgLen + 1 , 0);
+		status += ::recv(m_sock, buf, m_maxrecv, 0);
 		if(status <= old_status) {
 			valid = false;
+			tv.tv_sec = 0;
+			setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(tv));
 			return 0;
 		}
 		s.append(buf, status - old_status);
 	}
+	tv.tv_sec = 0;
+	setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(tv));
 	delete [] buf;
 	if(s.size() > static_cast<unsigned>(msgLen)) {
 		return 0;

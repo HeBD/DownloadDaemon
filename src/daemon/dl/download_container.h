@@ -30,6 +30,10 @@ public:
 
 	bool dump_to_file();
 
+	int move_up(int id);
+
+	int get_next_id();
+
 private:
 	std::string list_file;
 	std::vector<download> download_list;
