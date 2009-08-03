@@ -113,6 +113,7 @@ int download_container::move_up(int id) {
 		it2->id = iddown;
 		return -2;
 	}
+	arrange_by_id();
 	return 0;
 }
 
@@ -124,4 +125,8 @@ int download_container::get_next_id() {
 		}
 	}
 	return ++max_id;
+}
+
+void download_container::arrange_by_id() {
+	sort(download_list.begin(), download_list.end());
 }

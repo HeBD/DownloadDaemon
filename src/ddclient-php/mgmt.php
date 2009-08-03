@@ -73,6 +73,16 @@ include("functional.php");
 		}
 	}
 
+	if(isset($_GET['up'])) {
+		send_all($socket, "DDP DL UP " . $_GET['id']);
+		$buf = "";
+		recv_all($socket, $buf);
+		if(mb_substr($buf, 0, 3) != "100") {
+			echo "Could not move download upwards";
+			exit;
+		}
+	}
+
 	$list = "";
 	send_all($socket, "DDP DL LIST");
 	recv_all($socket, $list);
@@ -105,6 +115,8 @@ include("functional.php");
 				}
 				
 				echo "<input type=\"submit\" name=\"delete\" value=\"Delete\">";
+
+				echo "<input type=\"submit\" name=\"up\" value=\"Up\">";
 
 				send_all($socket, "DDP FILE GETPATH " . $exp_dls[$i][0]);
 				$buf = "";

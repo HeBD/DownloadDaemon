@@ -33,6 +33,7 @@ public:
 	int move_up(int id);
 
 	int get_next_id();
+	void arrange_by_id();
 
 private:
 	std::string list_file;

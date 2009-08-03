@@ -222,3 +222,7 @@ download_status download::get_status() {
 	return status;
 }
 
+
+bool operator<(const download& x, const download& y) {
+	return x.id < y.id;
+}

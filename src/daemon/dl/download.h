@@ -101,9 +101,13 @@ public:
 	CURL* handle;
 	std::string output_file;
 
+
+
 private:
 	download_status status;
 
 };
+
+bool operator<(const download& x, const download& y);
 
 #endif /*DOWNLOAD_H_*/
