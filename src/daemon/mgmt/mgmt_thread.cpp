@@ -463,6 +463,7 @@ void target_file_del(std::string &data, tkSock *sock) {
 		log_string(string("Deleted file ID: ") + data, LOG_DEBUG);
 		*sock << "100 SUCCESS";
 		it->output_file = "";
+		global_download_list.dump_to_file();
 	} else {
 		*sock << "109 FILE";
 	}
@@ -477,7 +478,6 @@ void target_file_getpath(std::string &data, tkSock *sock) {
 	}
 	struct stat st;
 	if(stat(it->output_file.c_str(), &st) != 0) {
-		log_string(string("Failed to get path of file ID: ") + data, LOG_WARNING);
 		*sock << "";
 		return;
 	}

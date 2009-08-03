@@ -44,7 +44,7 @@ include("functional.php");
 	}
 
 	if(isset($_GET['deactivate'])) {
-		send_all($socket, "DDP DL DEACTIVATE" . $_GET['id']);
+		send_all($socket, "DDP DL DEACTIVATE " . $_GET['id']);
 		$buf = "";
 		recv_all($socket, $buf);
 		if(mb_substr($buf, 0, 3) != "100") {
@@ -64,7 +64,13 @@ include("functional.php");
 	}
 
 	if(isset($_GET['delete_file'])) {
-		echo "remote file deletion not yet supported";
+		send_all($socket, "DDP FILE DEL " . $_GET['id']);
+		$buf = "";
+		recv_all($socket, $buf);
+		if(mb_substr($buf, 0, 3) != "100") {
+			echo "Could not delete File " . $_GET['id'];
+			exit;
+		}
 	}
 
 	$list = "";
@@ -99,8 +105,11 @@ include("functional.php");
 				}
 				
 				echo "<input type=\"submit\" name=\"delete\" value=\"Delete\">";
-				
-				if($exp_dls[$i][4] == "DOWNLOAD_FINISHED" || $exp_dls[$i][7] > 0) {
+
+				send_all($socket, "DDP FILE GETPATH " . $exp_dls[$i][0]);
+				$buf = "";
+				recv_all($socket, $buf);
+				if($buf != "") {
 					echo "<input type=\"submit\" name=\"delete_file\" value=\"Delete File\">";
 				}
 
