@@ -45,7 +45,7 @@ For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "
 	UP <id> will move a download one position upwards and therfore increase its priority. The command needs to be followed by a download ID
 	DOWN <id> will move a download one position downwards and therfore decrease its priority. The command needs to be followed by a download ID
 	ACTIVATE <id> will activate a deactivated download
-	DEACTIVATE <id> will deactivate an active download. Running downloads will NOT be aborted by this command. If you want this to happen, you need to call STOP first.
+	DEACTIVATE <id> will deactivate an active download. Running downloads will be aborted by this command.
 
 For the target VAR, the following commands exist: "SET", "GET".
 	SET <var>=<value> will set a configuration variable and needs to be in the format <variable> = <value>. the variable identifier is just the same
@@ -59,8 +59,10 @@ For the target FILE, the following commands exist:
 	DEL <id> will delete a downloaded file. and needs to be followed by the download ID. This can be run on any download. If the file exists and can be deleted, this will return
 	    success. else, it will return "109 FILE"
 	GETFILE <id> will send the downloaded file directly through the management socket. This should never be used for stuff like web-interfaces, because it will break a lot.
+		     This is the only command that will result in 2 answers. The first answer you will receive is either a 100 SUCCESS or a 109 FILE. The second answer will
+		     then be either an empty string, or a file's content. (This function is not yet implemented!)
 	GETPATH <id> will send the local path on the server to the file to make downloading for local interfaces possible or let the client do some other work with it (extracting?)
-	GETSIZE <id> will return the number of bytes of the file to the corresponding download id and -1 if it fails.
+	GETSIZE <id> will return the number of bytes of the file corresponding to the download id and -1 if it fails.
 
 
 All error codes may vary between 100 and 999, to make parsing simple.

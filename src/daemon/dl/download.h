@@ -99,6 +99,7 @@ public:
 	int wait_seconds;
 	download_error error;
 	CURL* handle;
+	std::string output_file;
 
 private:
 	download_status status;

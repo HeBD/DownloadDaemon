@@ -4,6 +4,9 @@
 #include<string>
 #include<sstream>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "mgmt_thread.h"
 #include "../dl/download.h"
 #include "../../lib/netpptk/netpptk.h"
@@ -62,6 +65,7 @@ void connection_handler(tkSock *sock) {
 	while(*sock) {
 		if(sock->recv(data) == 0) {
 			*sock << "101 PROTOCOL";
+			break;
 		}
 		trim_string(data);
 
@@ -81,19 +85,19 @@ void connection_handler(tkSock *sock) {
 			trim_string(data);
 			target_dl(data, sock);
 		} else if(data.find("VAR") == 0) {
+			data = data.substr(3);
 			if(data.length() == 0 || !isspace(data[0])) {
 				*sock << "101 PROTOCOL";
 				continue;
 			}
-			data = data.substr(3);
 			trim_string(data);
 			target_var(data, sock);
 		} else if(data.find("FILE") == 0) {
+			data = data.substr(4);
 			if(data.length() == 0 || !isspace(data[0])) {
 				*sock << "101 PROTOCOL";
 				continue;
 			}
-			data = data.substr(4);
 			trim_string(data);
 			target_file(data, sock);
 		} else {
@@ -243,7 +247,7 @@ void target_dl_stop(string &data, tkSock *sock) {
 		log_string(string("Failed to stop download ID: ") + data, LOG_SEVERE);
 	} else {
 		curl_easy_setopt(it->handle, CURLOPT_TIMEOUT, 1);
-		it->set_status(DOWNLOAD_PENDING);
+		if(it->get_status() != DOWNLOAD_INACTIVE) it->set_status(DOWNLOAD_PENDING);
 		global_download_list.dump_to_file();
 		log_string(string("Stopped download ID: ") + data, LOG_DEBUG);
 		*sock << "100 SUCCESS";
@@ -369,15 +373,22 @@ void target_var_set(string &data, tkSock *sock) {
 		*sock << "101 PROTOCOL";
 		return;
 	}
-	if(data == "mgmt_password") {
+	if(data.find("mgmt_password") == 0) {
 		if(data.find(';') == string::npos) {
 			*sock << "101 PROTOCOL";
 			return;
 		}
-		string old_pw = data.substr(data.find('=') + 1, data.find(';') - 1);
+		size_t pos1 = data.find('=') + 1;
+		size_t pos2 = data.find(';', pos1);
+		string old_pw;
+		if(pos1 == pos2) {
+			old_pw = "";
+		} else {
+			old_pw = data.substr(pos1, pos2 - pos1);
+		}
 		trim_string(old_pw);
 		if(old_pw == global_config.get_cfg_value("mgmt_password")) {
-			if(global_config.set_cfg_value("mgmt_password", data.substr(data.find(';')))) {
+			if(global_config.set_cfg_value("mgmt_password", data.substr(data.find(';') + 1))) {
 				log_string("Changed management password", LOG_WARNING);
 				*sock << "100 SUCCESS";
 			} else {
@@ -391,7 +402,7 @@ void target_var_set(string &data, tkSock *sock) {
 		}
 	} else {
 		if(variable_is_valid(data.substr(0, data.find('=') - 1))) {
-			if(global_config.set_cfg_value(data.substr(0, data.find('=' - 1)), data.substr(data.find('=')))) {
+			if(global_config.set_cfg_value(data.substr(0, data.find('=')), data.substr(data.find('=') + 1))) {
 				*sock << "100 SUCCESS";
 			} else {
 				*sock << "110 PERMISSION";
@@ -403,7 +414,92 @@ void target_var_set(string &data, tkSock *sock) {
 
 }
 
-void target_file(string &data, tkSock *sock) {}
+void target_file(string &data, tkSock *sock) {
+	if(data.find("DEL") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_file_del(data, sock);
+	} else if(data.find("GETPATH") == 0) {
+		data = data.substr(7);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_file_getpath(data, sock);
+	} else if(data.find("GETSIZE") == 0) {
+		data = data.substr(7);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_file_getsize(data, sock);
+	} else {
+		*sock << "101 PROTOCOL";
+	}
+
+
+
+}
+
+void target_file_del(std::string &data, tkSock *sock) {
+	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
+	if(it == global_download_list.end()) {
+		log_string(string("Failed to delete file ID: ") + data, LOG_WARNING);
+		*sock << "104 ID";
+		return;
+	}
+	if(it->output_file == "" || it->get_status() == DOWNLOAD_RUNNING) {
+		log_string(string("Failed to delete file ID: ") + data, LOG_WARNING);
+		*sock << "109 FILE";
+		return;
+	}
+	if(remove(it->output_file.c_str()) == 0) {
+		log_string(string("Deleted file ID: ") + data, LOG_DEBUG);
+		*sock << "100 SUCCESS";
+		it->output_file = "";
+	} else {
+		*sock << "109 FILE";
+	}
+}
+
+void target_file_getpath(std::string &data, tkSock *sock) {
+	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
+	if(it == global_download_list.end()) {
+		log_string(string("Failed to get path of file ID: ") + data, LOG_WARNING);
+		*sock << "";
+		return;
+	}
+	struct stat st;
+	if(stat(it->output_file.c_str(), &st) != 0) {
+		log_string(string("Failed to get path of file ID: ") + data, LOG_WARNING);
+		*sock << "";
+		return;
+	}
+	*sock << it->output_file;
+}
+
+void target_file_getsize(std::string &data, tkSock *sock) {
+	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
+	if(it == global_download_list.end()) {
+		log_string(string("Failed to get size of file ID: ") + data, LOG_WARNING);
+		*sock << "-1";
+		return;
+	}
+	struct stat st;
+	if(stat(it->output_file.c_str(), &st) != 0) {
+		log_string(string("Failed to get size of file ID: ") + data, LOG_WARNING);
+		*sock << "-1";
+		return;
+	}
+	*sock << int_to_string(st.st_size);
+
+}
 
 
 

@@ -97,6 +97,7 @@ void download_thread(download_container::iterator download) {
 		string output_filename(global_config.get_cfg_value("download_folder"));
 		if(parsed_dl.download_url != "") {
 			output_filename += '/' + parsed_dl.download_url.substr(parsed_dl.download_url.find_last_of("/\\"));
+			download->output_file = output_filename;
 		} else {
 			// weird unknown error by wrong plugin implementation
 		}

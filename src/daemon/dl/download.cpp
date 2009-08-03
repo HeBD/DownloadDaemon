@@ -72,6 +72,9 @@ void download::from_serialized(std::string &serializedDL) {
 			case 6:
 				size = string_to_long(current_entry.c_str());
 				break;
+			case 7:
+				output_file = current_entry;
+				break;
 		}
 		++curr_pos;
 		++entry_num;
@@ -87,7 +90,7 @@ std::string download::serialize() {
 	}
 	stringstream ss;
 	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << status << '|' << downloaded_bytes
-	   << '|' << size << "|\n";
+	   << '|' << size << '|' << output_file << "|\n";
 	return ss.str();
 }
 

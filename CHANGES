@@ -1,4 +1,5 @@
 2009-08-03 adrian
+	- Implemented the FILE target for remote management now (mostly)
 	- Almost complete rewrite of the management api and protocol implementation
 	- Added a few new features to protocol
 	- added implementation for those features except for the FILE target which is

@@ -27,12 +27,7 @@ void target_var_get(std::string &data, tkSock *sock);
 void target_var_set(std::string &data, tkSock *sock);
 
 void target_file(std::string &data, tkSock *sock);
-
-bool add(std::string data);
-bool del(std::string data);
-bool get(std::string data, tkSock &sock);
-bool set(std::string data);
-unsigned int get_next_id();
-bool dump_list_to_file();
-
+void target_file_del(std::string &data, tkSock *sock);
+void target_file_getpath(std::string &data, tkSock *sock);
+void target_file_getsize(std::string &data, tkSock *sock);
 #endif /*MGMT_THREAD_H_*/

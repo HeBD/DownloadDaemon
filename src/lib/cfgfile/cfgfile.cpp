@@ -108,8 +108,9 @@ bool cfgfile::set_cfg_value(const string &cfg_identifier, const string &cfg_valu
 		file << *it << '\n';
 	}
 
-	reload_file();
 	mx.unlock();
+	reload_file();
+
 	return true;
 }
 
