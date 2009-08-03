@@ -401,8 +401,12 @@ void target_var_set(string &data, tkSock *sock) {
 			*sock << "102 AUTHENTICATION";
 		}
 	} else {
-		if(variable_is_valid(data.substr(0, data.find('=') - 1))) {
-			if(global_config.set_cfg_value(data.substr(0, data.find('=')), data.substr(data.find('=') + 1))) {
+		string identifier(data.substr(0, data.find('=')));
+		trim_string(identifier);
+		string value(data.substr(data.find('=') + 1));
+		trim_string(value);
+		if(variable_is_valid(identifier)) {
+			if(global_config.set_cfg_value(identifier, value)) {
 				*sock << "100 SUCCESS";
 			} else {
 				*sock << "110 PERMISSION";

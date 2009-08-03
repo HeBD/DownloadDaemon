@@ -1,4 +1,5 @@
 2009-08-03 adrian
+	- Implemented basic DownloadDaemon configuration in PHP interface
 	- Implemented the FILE target for remote management now (mostly)
 	- Almost complete rewrite of the management api and protocol implementation
 	- Added a few new features to protocol

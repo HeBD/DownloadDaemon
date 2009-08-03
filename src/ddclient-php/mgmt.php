@@ -33,48 +33,48 @@ include("functional.php");
 	}
 	echo "<br><br>";
 
-	if(isset($_GET['activate'])) {
-		send_all($socket, "DDP DL ACTIVATE " . $_GET['id']);
+	if(isset($_POST['activate'])) {
+		send_all($socket, "DDP DL ACTIVATE " . $_POST['id']);
 		$buf = "";
 		recv_all($socket, $buf);
 		if(mb_substr($buf, 0, 3) != "100") {
-			echo "Could not activate download " . $_GET['id'];
+			echo "Could not activate download " . $_POST['id'];
 			exit;
 		}
 	}
 
-	if(isset($_GET['deactivate'])) {
-		send_all($socket, "DDP DL DEACTIVATE " . $_GET['id']);
+	if(isset($_POST['deactivate'])) {
+		send_all($socket, "DDP DL DEACTIVATE " . $_POST['id']);
 		$buf = "";
 		recv_all($socket, $buf);
 		if(mb_substr($buf, 0, 3) != "100") {
-			echo "Could not deactivate download " . $_GET['id'];
+			echo "Could not deactivate download " . $_POST['id'];
 			exit;
 		}
 	}
 	
-	if(isset($_GET['delete'])) {
-		send_all($socket, "DDP DL DEL " . $_GET['id']);
+	if(isset($_POST['delete'])) {
+		send_all($socket, "DDP DL DEL " . $_POST['id']);
 		$buf = "";
 		recv_all($socket, $buf);
 		if(mb_substr($buf, 0, 3) != "100") {
-			echo "Could not delete download " . $_GET['id'];
+			echo "Could not delete download " . $_POST['id'];
 			exit;
 		}
 	}
 
-	if(isset($_GET['delete_file'])) {
-		send_all($socket, "DDP FILE DEL " . $_GET['id']);
+	if(isset($_POST['delete_file'])) {
+		send_all($socket, "DDP FILE DEL " . $_POST['id']);
 		$buf = "";
 		recv_all($socket, $buf);
 		if(mb_substr($buf, 0, 3) != "100") {
-			echo "Could not delete File " . $_GET['id'];
+			echo "Could not delete File " . $_POST['id'];
 			exit;
 		}
 	}
 
-	if(isset($_GET['up'])) {
-		send_all($socket, "DDP DL UP " . $_GET['id']);
+	if(isset($_POST['up'])) {
+		send_all($socket, "DDP DL UP " . $_POST['id']);
 		$buf = "";
 		recv_all($socket, $buf);
 		if(mb_substr($buf, 0, 3) != "100") {
@@ -107,7 +107,7 @@ include("functional.php");
 			case 2: echo "<td>" . $exp_dls[$i][$j] . "</td>"; break;
 			case 3: echo "<td>" . $exp_dls[$i][$j] . "</td>"; break;
 			case 4: echo "<td>";
-				echo "<form action=\"mgmt.php\" method=\"GET\">";
+				echo "<form action=\"mgmt.php\" method=\"post\">";
 				if($exp_dls[$i][4] == "DOWNLOAD_INACTIVE") {
 					echo "<input type=\"submit\" name=\"activate\" value=\"Activate\">";
 				} else {

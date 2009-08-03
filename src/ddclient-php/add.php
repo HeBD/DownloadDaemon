@@ -10,10 +10,10 @@
 	<?php include("header.php"); include("functional.php"); ?>
 
 	<div align="center">
-	<?php if(!isset($_GET['submit_single']) && !isset($_GET['submit_multiple'])) { ?>
+	<?php if(!isset($_POST['submit_single']) && !isset($_POST['submit_multiple'])) { ?>
 	<br>
 	Add singe Download (no title neccessary):
-	<form action="add.php" method="get">
+	<form action="add.php" method="post">
 		Title: <input type="text" name="title" size="100"> <br>
 		URL: <input type="text" name="url" size="100"> <br>
 		<input type="submit" value="Add" name="submit_single">
@@ -22,7 +22,7 @@
 	Here you can add several downloads at once.<br> If you want to specifie a comment for a download, enter it as
 	http://something.aa/bb|A Fancy Title.<br> This, however, is not necessary.<br>
 	Titles/URLs:<br>
-	<form action="add.php" method="get">
+	<form action="add.php" method="post">
 		 <textarea name="titles_urls" cols="120" rows="20"></textarea><br>
 		<input type="submit" value="Add" name="submit_multiple">
 	</form>
@@ -44,8 +44,8 @@
 			exit;
 		}
 		echo "<br>";
-		if(isset($_GET['submit_single'])) {
-			send_all($socket, "DDP DL ADD " . $_GET['url'] . " " . $_GET['title']);
+		if(isset($_POST['submit_single'])) {
+			send_all($socket, "DDP DL ADD " . $_POST['url'] . " " . $_POST['title']);
 			$recv = "";
 			recv_all($socket, $recv);
 			if($recv[0] == "-") {
@@ -57,7 +57,7 @@
 		
 
 		} else {
-			$list = $_GET['titles_urls'];
+			$list = $_POST['titles_urls'];
 			$download_count = substr_count($list, "http://");
 			if($download_count == 0) {
 				$download_count = substr_count($list, "ftp://");

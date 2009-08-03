@@ -124,7 +124,7 @@ bool variable_is_valid(std::string variable) {
 						   "log_level,log_file,mgmt_max_connections,mgmt_port,mgmt_password,plugin_dir,dlist_file,";
 	size_t pos;
 	if((pos = possible_vars.find(variable)) != string::npos) {
-		if(possible_vars[pos - 1] == ',' && possible_vars[pos + variable.length() + 1] == ',') {
+		if(possible_vars[pos - 1] == ',' && possible_vars[pos + variable.length()] == ',') {
 			return true;
 		}
 	}

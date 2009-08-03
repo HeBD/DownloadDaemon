@@ -48,12 +48,12 @@ function connect_to_daemon(&$socket) {
 	if(!@recv_all($socket, $recv_buf)) {
 		return "RECV";
 	}
-	
-	if($recv_buf[0] == "1") {
+
+	if(mb_substr($recv_buf, 0, 3) != "100") {
 		$passwd = $_COOKIE['ddclient_passwd'];
 		send_all($socket, $passwd);
 		recv_all($socket, $recv_buf);
-		if($recv_buf[0] == "-") {
+		if(mb_substr($recv_buf, 0, 3) != "100") {
 			return "PASSWD";
 		}
 	}
