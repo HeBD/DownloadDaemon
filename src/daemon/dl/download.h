@@ -11,6 +11,7 @@ enum download_status { DOWNLOAD_PENDING = 1, DOWNLOAD_INACTIVE, DOWNLOAD_FINISHE
 
 struct parsed_download {
 	std::string download_url;
+	std::string download_filename;
 	std::string cookie_file;
 	int wait_before_download;
 	bool download_parse_success;

@@ -28,7 +28,7 @@ install(TARGETS DownloadDaemon DESTINATION /opt/downloaddaemon/)
 install(FILES ../../program_data/LICENCE DESTINATION /opt/downloaddaemon) 
 install(FILES ../../program_data/conf/downloaddaemon.conf DESTINATION /opt/downloaddaemon/conf)
 install(FILES ../../program_data/downloaddaemon DESTINATION bin)
-INSTALL(CODE "FILE(MAKE_DIRECTORY /opt/downloaddaemon/downloads)")
+install(CODE "FILE(MAKE_DIRECTORY /opt/downloaddaemon/downloads)")
 
 
 #install(FILES ../../program_data/downloads DESTINATION /opt/downloaddaemon/)

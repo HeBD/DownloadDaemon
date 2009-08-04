@@ -94,13 +94,18 @@ void download_thread(download_container::iterator download) {
 		}
 
 
-		string output_filename(global_config.get_cfg_value("download_folder"));
-		if(parsed_dl.download_url != "" || (parsed_dl.download_url.find('/') == string::npos && parsed_dl.download_url.find('\\') == string::npos)) {
-			output_filename += '/' + parsed_dl.download_url.substr(parsed_dl.download_url.find_last_of("/\\"));
-			download->output_file = output_filename;
+		string output_filename;
+		if(parsed_dl.download_filename == "") {
+			if(parsed_dl.download_url != "" && parsed_dl.download_url.find('/') != string::npos) {
+				output_filename += global_config.get_cfg_value("download_folder");
+				output_filename += '/' + parsed_dl.download_url.substr(parsed_dl.download_url.find_last_of("/\\"));
+				download->output_file = output_filename;
+			}
 		} else {
-			// weird unknown error by wrong plugin implementation
+			output_filename += global_config.get_cfg_value("download_folder");
+			output_filename += '/' + parsed_dl.download_filename;
 		}
+
 		fstream output_file(output_filename.c_str(), ios::out | ios::binary);
 		if(!output_file.good()) {
 			log_string(string("Could not write to file: ") + output_filename, LOG_SEVERE);
@@ -108,7 +113,9 @@ void download_thread(download_container::iterator download) {
 			download->set_status(DOWNLOAD_PENDING);
 			return;
 		}
+
 		// set url
+		curl_easy_setopt(download->handle, CURLOPT_FOLLOWLOCATION, 1);
 		curl_easy_setopt(download->handle, CURLOPT_URL, parsed_dl.download_url.c_str());
 		// set file-writing function as callback
 		curl_easy_setopt(download->handle, CURLOPT_WRITEFUNCTION, write_file);

@@ -128,6 +128,7 @@ int download::get_download(parsed_download &parsed_dl) {
 	cfgfile plugin_output(tmpfile, false);
 
 	parsed_dl.download_url = plugin_output.get_cfg_value("download_url");
+	parsed_dl.download_filename = plugin_output.get_cfg_value("download_filename");
 	parsed_dl.cookie_file = plugin_output.get_cfg_value("cookie_file");
 	parsed_dl.wait_before_download = atoi(plugin_output.get_cfg_value("wait_before_download").c_str());
 	parsed_dl.download_parse_success = (bool)atoi(plugin_output.get_cfg_value("download_parse_success").c_str());

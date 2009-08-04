@@ -28,7 +28,6 @@ void trim_string(std::string &str) {
 	while(str.length() > 0 && isspace(*(str.end() - 1))) {
 		str.erase(str.end() -1);
 	}
-
 }
 
 bool validate_url(std::string &url) {

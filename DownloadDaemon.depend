@@ -1,8 +1,9 @@
 # depslib dependency file v1.0
-1249329626 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.cpp
+1249375653 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.cpp
 	<sys/types.h>
 	<sys/stat.h>
 	"download.h"
+	"download_container.h"
 	"../../lib/cfgfile/cfgfile.h"
 	"../tools/curl_callbacks.h"
 	"../tools/helperfunctions.h"
@@ -12,7 +13,7 @@
 	<fstream>
 	<sstream>
 
-1249329625 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.h
+1249373019 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download.h
 	<string>
 	<fstream>
 	<curl/curl.h>
@@ -23,7 +24,7 @@
 
 1248198473 /home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/curl_callbacks.h
 
-1249324174 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
+1249374529 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/dl/download_thread.cpp
 	<string>
 	<boost/thread.hpp>
 	<boost/bind.hpp>
@@ -115,7 +116,7 @@
 	"../dl/download_container.h"
 	"helperfunctions.h"
 
-1249332431 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/helperfunctions.cpp
+1249375131 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/tools/helperfunctions.cpp
 	"helperfunctions.h"
 	<sstream>
 	<string>
@@ -140,7 +141,7 @@
 	<boost/thread.hpp>
 	<boost/bind.hpp>
 
-1249054412 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient/ddclient.cpp
+1249364805 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient/ddclient.cpp
 	<iostream>
 	"../lib/netpptk/netpptk.h"
 
@@ -1792,4 +1793,11 @@
 	"download_container.h"
 	"download.h"
 	<string>
+
+1249372429 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/plugins/uploaded_to.cpp
+	<curl/curl.h>
+	<string>
+	<cstdlib>
+	<fstream>
+	<iostream>
 

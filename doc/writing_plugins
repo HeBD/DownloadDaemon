@@ -18,9 +18,11 @@ The communication file needs to get written in there.
 The structures of such files is a simple "variable = value" structure. bool-variables have to be "0" or "1" (without the "").
 Other things like "true" and "false" are not supported. For communications, the following variables are supported:
 download_url		: The final URL from which we can download
+download_filename	: For some hosters, the filename can not be read directly from the url. If this is not set, DownloadDaemon will try to do so.
+			: If your plugin produces wrong filenames for saved files, specify this option.
 cookie_file		: If the hoster requires a cookie to be set, this specifies a file name in which the cookie information is safed, as cURL/libcURL saves them. leave blank if not required
 wait_before_download	: If we have to wait before we can really start, the number of seconds we have to wait can be specified here
-download_parse_success	: Here we can write if there was generally a success.
+download_parse_success	: Here we can write 1 if there was generally a success.
 download_parse_errmsg	: If download_parse_success is 0, we can specifie the reason here. Supported values are SERVER_OVERLOAD, LIMIT_REACHED, CONNECTION_FAILED, FILE_NOT_FOUND.
 			: If no reason, or an unknown reason is specified, the download will become deactivated and the downloader will ignore it in the futere.
 download_parse_wait	: If download_parse_success is 0 and the error is a LIMIT_REACHED or a SERVER_OVERLOAD, this specifies a timeout when we should try downloading again (in minutes)
