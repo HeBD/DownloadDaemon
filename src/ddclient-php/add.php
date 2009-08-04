@@ -19,7 +19,7 @@
 		<input type="submit" value="Add" name="submit_single">
 	</form>
 	<br><br>
-	Here you can add several downloads at once.<br> If you want to specifie a comment for a download, enter it as
+	Here you can add several downloads at once.<br> If you want to specify a comment for a download, enter it as
 	http://something.aa/bb|A Fancy Title.<br> This, however, is not necessary.<br>
 	Titles/URLs:<br>
 	<form action="add.php" method="post">

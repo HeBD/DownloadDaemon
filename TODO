@@ -9,4 +9,5 @@
 10: implement some type of container format to import/export huge lists
 11: write a few plugins
 12: handle container formats of other downloaders
-14: speed regulation
+13: speed regulation
+14: extend netpptk to get endpoint info and display connecting IPs in logfile
