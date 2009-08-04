@@ -38,7 +38,7 @@
 					<table border="0">
 					<tr>
 						<td>Host/Port:</td>
-						<td><input type="text" name="host" value="127.0.0.1"><input type="text" name="port" value="4321" size="5"></td>
+						<td><input type="text" name="host" value="127.0.0.1"><input type="text" name="port" value="56789" size="5"></td>
 					</tr>
 					<tr>
 						<td>Password:</td>

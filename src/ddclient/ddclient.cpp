@@ -4,7 +4,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 	tkSock sock;
-	sock.connect("127.0.0.1", 4321);
+	sock.connect("127.0.0.1", 56789);
 	std::string snd;
 	sock >> snd;
 	cout << "Auth: " << snd << endl;
