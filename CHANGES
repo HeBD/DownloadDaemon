@@ -1,3 +1,6 @@
+2009-08-04 adrian
+	- The default DownloadDaemon port is now 54321
+
 2009-08-03 adrian
 	- Implemented basic DownloadDaemon configuration in PHP interface
 	- Implemented the FILE target for remote management now (mostly)
