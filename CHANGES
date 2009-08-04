@@ -1,10 +1,12 @@
-2009-08-04 adrian
+2009-08-04
+   [adrian]
 	- fixed missing freeaddrinfo() call -> memory leak
 	- The default DownloadDaemon port is now 56789
 	- extended plugin api
 	- created uploaded.to plugin
 
-2009-08-03 adrian
+2009-08-03
+   [adrian]
 	- Implemented basic DownloadDaemon configuration in PHP interface
 	- Implemented the FILE target for remote management now (mostly)
 	- Almost complete rewrite of the management api and protocol implementation
@@ -15,40 +17,49 @@
 	- updated protocol specification
 	- made php interface ready for new protocol specification
 
-2009-08-02 adrian
+2009-08-02
+   [adrian]
 	- Fixed partly missing log-entry
 
-2009-08-01 adrian
+2009-08-01
+   [adrian]
 	- Again fixed some bugs
 	- fixed an ugly socket-descriptor leak in network library
 
-2009-07-31 adrian
+2009-07-31
+   [adrian]
 	- Lot of bug fixes
 	- PHP interface now mostly working
 
-2009-07-29 adrian
+2009-07-29
+   [adrian]
 	- Fixed some nasty bug in netpptk
 	- further development of the php-frontend
 
-2009-07-28 adrian
+2009-07-28
+   [adrian]
 	- made a class for the download container - cleaner code and more object oriented
 	- fixed a lot of minor bugs
 	- started working on the php-base web interface (login and more 
 	  or less downloadlisting seems to work, it's just a few functions
 	  to make life easier in the future)
 
-2009-07-25 adrian
+2009-07-25
+   [adrian]
 	- Changed from the crappy makefiles to cmake.. more or less successfully
 
-2009-07-24 adrian
+2009-07-24
+   [adrian]
 	- Further improvement of the gui client (still not functional at all)
 	- Implemented option for timed downloads (only download between two
 	  specific points in time)
 
-2009-07-23 adrian
+2009-07-23
+   [adrian]
 	- Made first developments on a gui client
 
-2009-07-22 adrian
+2009-07-22
+   [adrian]
 	- Made repository public and opened the initial version of DownloadDaemon
 	  including a hard-to-use commandline client and a plugin for rapidshare.com
 	  This version has the general ability to download and to get managed by a 
