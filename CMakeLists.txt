@@ -6,9 +6,6 @@ project (DownloadDaemon)
 add_subdirectory (src/daemon)
 add_subdirectory (src/lib)
 
-project (plugins)
-add_subdirectory (src/daemon/plugins)
-
 project (ddclient)
 add_subdirectory (src/ddclient)
 add_subdirectory (src/lib)

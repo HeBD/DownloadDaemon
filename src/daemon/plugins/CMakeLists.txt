@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
+
 SET(rs_SRCS rapidshare_com.cpp)
 
 

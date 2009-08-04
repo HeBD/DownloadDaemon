@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 
+add_subdirectory(plugins)
+
 set(CMAKE_BUILD_TYPE Debug)
-#add_subdirectory(plugins)
 
 SET(daemon_SRCS downloaddaemon.cpp 
 		tools/helperfunctions.cpp 
@@ -27,4 +28,7 @@ install(TARGETS DownloadDaemon DESTINATION /opt/downloaddaemon/)
 install(FILES ../../program_data/LICENCE DESTINATION /opt/downloaddaemon) 
 install(FILES ../../program_data/conf/downloaddaemon.conf DESTINATION /opt/downloaddaemon/conf)
 install(FILES ../../program_data/downloaddaemon DESTINATION bin)
+INSTALL(CODE "FILE(MAKE_DIRECTORY /opt/downloaddaemon/downloads)")
+
+
 #install(FILES ../../program_data/downloads DESTINATION /opt/downloaddaemon/)
