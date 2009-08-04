@@ -101,12 +101,17 @@ bool tkSock::bind(const int port) {
 	hints.ai_flags = AI_PASSIVE;
 	std::stringstream ss;
 	ss << port;
-	if(getaddrinfo(NULL, ss.str().c_str(), &hints, &res) != 0)
-		return false;
-	int bind_return = ::bind(m_sock, res->ai_addr, sizeof(*res));
-	if(bind_return < 0) {
+	if(getaddrinfo(NULL, ss.str().c_str(), &hints, &res) != 0) {
+		freeaddrinfo(res);
 		return false;
 	}
+
+	int bind_return = ::bind(m_sock, res->ai_addr, sizeof(*res));
+	if(bind_return < 0) {
+		freeaddrinfo(res);
+		return false;
+	}
+	freeaddrinfo(res);
 	return true;
 }
 

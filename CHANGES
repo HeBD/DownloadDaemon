@@ -1,4 +1,5 @@
 2009-08-04 adrian
+	- fixed missing freeaddrinfo() call -> memory leak
 	- The default DownloadDaemon port is now 54321
 	- extended plugin api
 	- created uploaded.to plugin
