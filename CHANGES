@@ -1,4 +1,8 @@
 2009-08-04
+   [susanne]
+	- rewrote ddclient-wx
+
+2009-08-04
    [adrian]
 	- fixed missing freeaddrinfo() call -> memory leak
 	- The default DownloadDaemon port is now 56789
