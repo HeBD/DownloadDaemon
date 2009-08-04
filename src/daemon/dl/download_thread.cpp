@@ -99,7 +99,6 @@ void download_thread(download_container::iterator download) {
 			if(parsed_dl.download_url != "" && parsed_dl.download_url.find('/') != string::npos) {
 				output_filename += global_config.get_cfg_value("download_folder");
 				output_filename += '/' + parsed_dl.download_url.substr(parsed_dl.download_url.find_last_of("/\\"));
-				download->output_file = output_filename;
 			}
 		} else {
 			output_filename += global_config.get_cfg_value("download_folder");
@@ -107,6 +106,7 @@ void download_thread(download_container::iterator download) {
 		}
 
 		fstream output_file(output_filename.c_str(), ios::out | ios::binary);
+		download->output_file = output_filename;
 		if(!output_file.good()) {
 			log_string(string("Could not write to file: ") + output_filename, LOG_SEVERE);
 			download->error = WRITE_FILE_ERROR;
