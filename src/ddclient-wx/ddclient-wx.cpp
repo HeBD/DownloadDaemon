@@ -1,5 +1,5 @@
 /***************************************************************
- * Name:      app.cpp
+ * Name:      ddclient-wx.cpp
  * Purpose:   Code for Application Class
  * Author:    ko ()
  * Created:   2009-08-04
@@ -7,8 +7,8 @@
  * License:
  **************************************************************/
 
-#include "app.h"
-#include "frame.h"
+#include "ddclient-wx_main.h"
+#include "ddclient-wx.h"
 
 IMPLEMENT_APP(myapp);
 

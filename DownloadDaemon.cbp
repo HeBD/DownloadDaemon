@@ -38,6 +38,20 @@
 					<Add library="boost_thread-mt" />
 				</Linker>
 			</Target>
+			<Target title="DDClient-wx">
+				<Option output="build/ddclient-wx" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="built/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="`wx-config --cflags`" />
+				</Compiler>
+				<Linker>
+					<Add option="`wx-config --libs`" />
+				</Linker>
+			</Target>
 			<Target title="rapidshare_com">
 				<Option platforms="Unix;" />
 				<Option output="build/plugins/rapidshare.com" prefix_auto="1" extension_auto="0" />
@@ -53,19 +67,19 @@
 					<Add library="curl" />
 				</Linker>
 			</Target>
-			<Target title="DDClient-wx">
-				<Option output="build/ddclient-wx" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="built/" />
-				<Option type="0" />
+			<Target title="uploaded_to">
+				<Option platforms="Unix;" />
+				<Option output="build/plugins/uploaded.to" prefix_auto="1" extension_auto="0" />
+				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
 				<Compiler>
+					<Add option="-pedantic" />
 					<Add option="-Wall" />
 					<Add option="-g" />
-					<Add option="`wx-config --cflags`" />
 				</Compiler>
 				<Linker>
-					<Add option="`wx-config --libs`" />
-					<Add library="boost_thread-mt" />
+					<Add library="curl" />
 				</Linker>
 			</Target>
 		</Build>
@@ -74,9 +88,6 @@
 			<Add option="-fexceptions" />
 		</Compiler>
 		<Unit filename="src/Doxyfile">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
-		<Unit filename="src/daemon/Makefile">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="src/daemon/dl/download.cpp">
@@ -115,14 +126,11 @@
 		<Unit filename="src/daemon/mgmt/mgmt_thread.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/plugins/Makefile">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
-		<Unit filename="src/daemon/plugins/hostinfo/rapidshare.com">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
 		<Unit filename="src/daemon/plugins/rapidshare_com.cpp">
 			<Option target="rapidshare_com" />
+		</Unit>
+		<Unit filename="src/daemon/plugins/uploaded_to.cpp">
+			<Option target="uploaded_to" />
 		</Unit>
 		<Unit filename="src/daemon/tools/curl_callbacks.cpp">
 			<Option target="Daemon" />
@@ -136,67 +144,44 @@
 		<Unit filename="src/daemon/tools/helperfunctions.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/connect_dlg.cpp">
+		<Unit filename="src/ddclient-wx/ddclient-picture.cpp">
 			<Option target="DDClient-wx" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/connect_dlg.h">
+		<Unit filename="src/ddclient-wx/ddclient-picture.h">
 			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx.cpp">
 			<Option target="DDClient-wx" />
 		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx.h">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_main.cpp">
+			<Option target="DDClient-wx" />
+		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_main.h">
 			<Option target="DDClient-wx" />
-		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient_main.cpp">
-			<Option target="DDClient-wx" />
-		</Unit>
-		<Unit filename="src/ddclient-wx/dlg_add.cpp">
-			<Option target="DDClient-wx" />
-		</Unit>
-		<Unit filename="src/ddclient-wx/dlg_add.h">
-			<Option target="DDClient-wx" />
-		</Unit>
-		<Unit filename="src/ddclient/Makefile">
-			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="src/ddclient/ddclient.cpp">
 			<Option target="DDClient" />
 		</Unit>
-		<Unit filename="src/lib/Makefile">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
 		<Unit filename="src/lib/bind/bind.h">
 			<Option target="Daemon" />
 			<Option target="DDClient" />
-			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/lib/cfgfile/cfgfile.cpp">
 			<Option target="Daemon" />
-			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/lib/cfgfile/cfgfile.h">
 			<Option target="Daemon" />
-			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/lib/netpptk/netpptk.cpp">
 			<Option target="Daemon" />
 			<Option target="DDClient" />
-			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/lib/netpptk/netpptk.h">
 			<Option target="Daemon" />
 			<Option target="DDClient" />
-			<Option target="DDClient-wx" />
-		</Unit>
-		<Unit filename="wxsmith/connect_dlg.wxs">
-			<Option target="DDClient-wx" />
-		</Unit>
-		<Unit filename="wxsmith/ddclient_main.wxs">
-			<Option target="DDClient-wx" />
-		</Unit>
-		<Unit filename="wxsmith/dlg_add.wxs">
-			<Option target="DDClient-wx" />
 		</Unit>
 		<Extensions>
 			<envvars />

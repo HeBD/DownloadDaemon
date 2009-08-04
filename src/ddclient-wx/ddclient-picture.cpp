@@ -1,5 +1,5 @@
 /***************************************************************
- * Name:      picture.cpp
+ * Name:      ddclient-picture.cpp
  * Purpose:   Code for Picture Class
  * Author:    ko ()
  * Created:   2009-08-04
@@ -7,7 +7,7 @@
  * License:
  **************************************************************/
 
-#include "picture.h"
+#include "ddclient-picture.h"
 
 BEGIN_EVENT_TABLE (picture, wxPanel)
     EVT_PAINT(picture::OnPaint)

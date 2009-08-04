@@ -151,19 +151,9 @@
 	<cstdlib>
 	<fstream>
 
-1249068244 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx.cpp
-	<wx/wxprec.h>
-	<wx/app.h>
+1249402143 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx.cpp
 	"ddclient-wx_main.h"
-	"connect_dlg.h"
-	"../lib/netpptk/netpptk.h"
-	"dlg_add.h"
-	<boost/thread.hpp>
-	<string>
-	<sstream>
-	<vector>
-	<wx/msgdlg.h>
-	<wx/image.h>
+	"ddclient-wx.h"
 
 1248468334 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient_main.cpp
 	"ddclient-wx_main.h"
@@ -175,15 +165,18 @@
 	<wx/image.h>
 	<wx/artprov.h>
 
-1248468334 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx_main.h
+1249402156 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx_main.h
+	"ddclient-picture.h"
+	<vector>
+	<wx/frame.h>
+	<wx/notebook.h>
+	<wx/stattext.h>
+	<wx/menu.h>
 	<wx/toolbar.h>
+	<wx/artprov.h>
 	<wx/sizer.h>
 	<wx/listctrl.h>
-	<wx/notebook.h>
-	<wx/menu.h>
-	<wx/panel.h>
-	<wx/statusbr.h>
-	<wx/frame.h>
+	<wx/string.h>
 
 1238939027 /usr/include/wx-2.8/wx/wxprec.h
 	"wx/defs.h"
@@ -1771,7 +1764,7 @@
 	<netdb.h>
 	<arpa/inet.h>
 
-1249321325 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/lib/cfgfile/cfgfile.cpp
+1249397671 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/lib/cfgfile/cfgfile.cpp
 	"cfgfile.h"
 	<fstream>
 	<string>
@@ -1805,10 +1798,23 @@
 	"download.h"
 	<string>
 
-1249372429 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/plugins/uploaded_to.cpp
+1249375595 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/daemon/plugins/uploaded_to.cpp
 	<curl/curl.h>
 	<string>
 	<cstdlib>
 	<fstream>
 	<iostream>
+
+1249402065 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-picture.cpp
+	"ddclient-picture.h"
+
+1249401847 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-picture.h
+	<wx/panel.h>
+	<wx/bitmap.h>
+	<wx/image.h>
+	<wx/dcclient.h>
+
+1249401847 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx.h
+	<wx/wxprec.h>
+	<wx/wx.h>
 

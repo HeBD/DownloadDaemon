@@ -1,5 +1,5 @@
 /***************************************************************
- * Name:      frame.cpp
+ * Name:      ddclient-wx_main.cpp
  * Purpose:   Code for Frame Class
  * Author:    ko ()
  * Created:   2009-08-04
@@ -7,7 +7,7 @@
  * License:
  **************************************************************/
 
-#include "frame.h"
+#include "ddclient-wx_main.h"
 
 // IDs
 const long myframe::id_menu_quit = wxNewId();

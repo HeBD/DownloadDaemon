@@ -1,5 +1,5 @@
 /***************************************************************
- * Name:      frame.h
+ * Name:      ddclient-wx_main.h
  * Purpose:   Header for Frame Class
  * Author:    ko ()
  * Created:   2009-08-04
@@ -10,7 +10,7 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-#include "picture.h"
+#include "ddclient-picture.h"
 
 #include <vector>
 #include <wx/frame.h>
