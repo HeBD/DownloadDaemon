@@ -1,5 +1,5 @@
 /***************************************************************
- * Name:      app.h
+ * Name:      ddclient-wx.h
  * Purpose:   Header for Application Class
  * Author:    ko ()
  * Created:   2009-08-04
@@ -7,8 +7,8 @@
  * License:
  **************************************************************/
 
-#ifndef APP_H
-#define APP_H
+#ifndef DDCLIENT_WX_APP_H
+#define DDCLIENT_WX_APP_H
 
 #include <wx/wxprec.h>
 
@@ -25,4 +25,4 @@ class myapp: public wxApp{
             virtual bool OnInit();
 };
 
-#endif //APP_H
+#endif //DDCLIENT_WX_APP_H

@@ -15,7 +15,7 @@ IMPLEMENT_APP(myapp);
 bool myapp::OnInit(){
     wxInitAllImageHandlers(); // so that pictures can be seen
 
-    myframe* frame = new myframe(0, wxT("DownloadDaemon"));
+    myframe* frame = new myframe(0, wxT("DownloadDaemon-ClientWX"));
     frame->Show();
     SetTopWindow(frame);
 
