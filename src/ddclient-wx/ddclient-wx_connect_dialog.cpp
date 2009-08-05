@@ -32,7 +32,7 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxT("Con
     pass_text = new wxStaticText(this, -1, wxT("Password"));
 
     host_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(300, 25));
-    port_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(50, 25));
+    port_input = new wxTextCtrl(this,-1,wxT("56789"), wxDefaultPosition, wxSize(50, 25));
     pass_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(150, 25));
 
     connect_button = new wxButton(this, wxID_OK, wxT("Connect"));
