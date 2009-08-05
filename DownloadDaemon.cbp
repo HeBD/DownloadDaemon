@@ -146,16 +146,16 @@
 		<Unit filename="src/daemon/tools/helperfunctions.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-picture.cpp">
-			<Option target="DDClient-wx" />
-		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-picture.h">
-			<Option target="DDClient-wx" />
-		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx.cpp">
 			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx.h">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_connect_dialog.cpp">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_connect_dialog.h">
 			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_main.cpp">
