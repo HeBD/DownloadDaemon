@@ -17,8 +17,8 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	// careful! this is a POINTER to an iterator!
 	download_container::iterator *itp = (download_container::iterator*)clientp;
 	download_container::iterator it = *itp;
-	it->size = dltotal;
-	it->downloaded_bytes = dlnow;
+	it->size = (long)dltotal;
+	it->downloaded_bytes = (long)dlnow;
 	global_download_list.dump_to_file();
 	return 0;
 }
