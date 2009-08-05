@@ -1,3 +1,7 @@
+2009-08-05
+   [adrian]
+	- fixed crash when finished downlaods get deactivated/activated
+
 2009-08-04
    [susanne]
 	- rewrote ddclient-wx

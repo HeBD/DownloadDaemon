@@ -11,3 +11,4 @@
 12: handle container formats of other downloaders
 13: speed regulation
 14: extend netpptk to get endpoint info and display connecting IPs in logfile
+15: make ddclient userfriendly and finish ddclient-wx
