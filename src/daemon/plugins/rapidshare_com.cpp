@@ -55,6 +55,8 @@ int main(int argc, char* argv[]) {
 		url = resultstr.substr(pos, end - pos);
 
 		resultstr.clear();
+		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
+		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
 		curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(handle, CURLOPT_POST, 1);
 		curl_easy_setopt(handle, CURLOPT_POSTFIELDS, "dl.start=\"Free\"");

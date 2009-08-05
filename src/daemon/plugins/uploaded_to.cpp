@@ -31,6 +31,8 @@ int main(int argc, char* argv[]) {
 	fstream output_file(output_fn.c_str(), ios::out);
 	CURL* handle = curl_easy_init();
 	string resultstr;
+	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
+	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
 	curl_easy_setopt(handle, CURLOPT_URL, argv[2]);
 	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
