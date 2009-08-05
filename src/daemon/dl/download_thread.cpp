@@ -142,7 +142,7 @@ void download_thread(download_container::iterator download) {
 			case 0:
 				log_string(string("Finished download ID: ") + int_to_string(download->id), LOG_DEBUG);
 				download->set_status(DOWNLOAD_FINISHED);
-				curl_easy_cleanup(download->handle);
+				curl_easy_reset(download->handle);
 				return;
 			case 28:
 				if(download->get_status() == DOWNLOAD_INACTIVE) {
