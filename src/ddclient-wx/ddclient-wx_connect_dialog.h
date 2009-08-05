@@ -13,17 +13,33 @@
 #include <wx/dialog.h>
 #include <wx/stattext.h>
 #include <wx/button.h>
+#include <wx/sizer.h>
+#include <wx/textctrl.h>
 
 class connect_dialog : public wxDialog{
     public:
         connect_dialog(wxWindow *parent);
 
     private:
-        wxStaticText *message;
+        wxStaticText *message_text;
+        wxStaticText *host_text;
+        wxStaticText *port_text;
+        wxStaticText *pass_text;
+        wxTextCtrl *host_input;
+        wxTextCtrl *port_input;
+        wxTextCtrl *pass_input;
         wxButton *connect_button;
+        wxButton *cancel_button;
+
+        wxBoxSizer *dialog_sizer;
+        wxBoxSizer *text_sizer;
+        wxStaticBoxSizer* outer_input_sizer;
+        wxFlexGridSizer *input_sizer;
+        wxBoxSizer *button_sizer;
 
         // event handle methods
-        void on_connect(wxCloseEvent &event);
+        void on_connect(wxCommandEvent &event);
+        void on_cancel(wxCommandEvent &event);
 
         DECLARE_EVENT_TABLE()
 };

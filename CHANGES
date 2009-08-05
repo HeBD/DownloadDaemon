@@ -1,4 +1,6 @@
 2009-08-05
+   [susanne]
+	- created connect dialog (gui) for ddclient-wx, doesn't do anything yet   
    [adrian]
 	- fixed crash when finished downlaods get deactivated/activated
 	- corrected moving downloads up/down when other downloads have been deleted before

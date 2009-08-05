@@ -163,11 +163,9 @@ void myframe::on_about(wxCommandEvent &event){ // TODO: insert more meaningful i
 }
 
 
- void myframe::on_connect(wxCommandEvent &event){ // TODO: realize
-    //wxMessageBox(wxT("\nDummy Dialog"), wxT("Dummy"));
-
+ void myframe::on_connect(wxCommandEvent &event){
     connect_dialog dialog(this);
-    dialog.showModal(); // <= ERROR
+    dialog.ShowModal();
 
     return;
  }
