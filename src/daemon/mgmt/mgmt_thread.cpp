@@ -278,6 +278,16 @@ void target_dl_down(string &data, tkSock *sock) {
 		*sock << "104 ID";
 		return;
 	}
+
+	while(it->get_status() == DOWNLOAD_DELETED) {
+		++it;
+		if(it == global_download_list.end()) {
+			log_string(string("Failed to move download ID: ") + data + " downwards.", LOG_SEVERE);
+			*sock << "104 ID";
+			return;
+		}
+	}
+
 	switch(global_download_list.move_up(atoi(data.c_str()))) {
 		case 0:
 			log_string(string("Moved download ID: ") + data + " downwards", LOG_DEBUG);

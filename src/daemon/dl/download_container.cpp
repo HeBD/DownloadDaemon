@@ -102,8 +102,15 @@ int download_container::move_up(int id) {
 	if(it == download_list.begin() || it == download_list.end()) {
 		return -1;
 	}
-	download_container::iterator it2 = get_download_by_id(id);
+
+	download_container::iterator it2 = it;
 	--it2;
+	while(it2->get_status() == DOWNLOAD_DELETED) {
+		--it2;
+		if(it2 == download_list.begin()) {
+			return -1;
+		}
+	}
 
 	int iddown = it2->id;
 	it2->id = it->id;
