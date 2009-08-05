@@ -114,6 +114,13 @@ void download_thread(download_container::iterator download) {
 			return;
 		}
 
+		if(parsed_dl.download_url.empty()) {
+			log_string(string("Empty URL for download ID: ") + int_to_string(download->id), LOG_SEVERE);
+			download->error = PLUGIN_ERROR;
+			download->set_status(DOWNLOAD_PENDING);
+			return;
+		}
+
 		// set url
 		curl_easy_setopt(download->handle, CURLOPT_FOLLOWLOCATION, 1);
 		curl_easy_setopt(download->handle, CURLOPT_URL, parsed_dl.download_url.c_str());
