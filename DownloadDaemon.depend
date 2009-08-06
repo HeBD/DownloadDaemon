@@ -1865,10 +1865,12 @@
 1249503239 source:/home/ko/Desktop/smecks/Bildung/BenCode/b3nn0-DownloadDaemon/src/ddclient-wx/ddclient-wx_connect_dialog.cpp
 	"ddclient-wx_connect_dialog.h"
 
-1249503381 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx_connect_dialog.h
+1249511088 /home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx_connect_dialog.h
 	<wx/dialog.h>
 	<wx/stattext.h>
 	<wx/button.h>
+	<wx/sizer.h>
+	<wx/textctrl.h>
 
 1249503381 source:/home/ben/Sonstiges/coding/DownloadDaemon/src/ddclient-wx/ddclient-wx_connect_dialog.cpp
 	"ddclient-wx_connect_dialog.h"
