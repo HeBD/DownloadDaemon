@@ -1,8 +1,8 @@
-1: find a way to cross-compile it to ARMs (scratchbox) - sadly, boost::thread makes problems - maybe replace it with a small custom thread library based on pthreads?
+1: find a way to cross-compile it to ARMs (scratchbox) - succeeded in building a statically linked binary, but curl_easy_perform crashes (seg fault)
 2: correctly handle absolute and relative paths in the configuration file
 4: make it possible to download files through the mgmt interface
 5: compile netpptk and cfgfile as shared libraries
-6: get the wx-client finally working... (damn listctrl seg faults...)
+6: get the wx-client finally working... (susanne is working on this)
 7: implement reconnect script executuion
 8: implement all the # not implemented-s in hostinfo
 9: implement premium account support
@@ -11,4 +11,4 @@
 12: handle container formats of other downloaders
 13: speed regulation
 14: extend netpptk to get endpoint info and display connecting IPs in logfile
-15: make ddclient userfriendly and finish ddclient-wx
+15: Make a multiuser-system out of downloaddaemon with partly individual configuration (download-folder) and administration...
