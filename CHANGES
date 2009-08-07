@@ -1,3 +1,7 @@
+2009-08-06
+   [adrian]
+	- made ddclient more userfriendly for end-users
+
 2009-08-05
    [susanne]
 	- created connect dialog (gui) for ddclient-wx, doesn't do anything yet   
@@ -8,7 +12,6 @@
 2009-08-04
    [susanne]
 	- rewrote ddclient-wx
-
    [adrian]
 	- fixed missing freeaddrinfo() call -> memory leak
 	- The default DownloadDaemon port is now 56789
