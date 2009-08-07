@@ -52,6 +52,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="`wx-config --libs`" />
+					<Add library="boost_thread-mt" />
 				</Linker>
 			</Target>
 			<Target title="rapidshare_com">
@@ -181,10 +182,12 @@
 		<Unit filename="src/lib/netpptk/netpptk.cpp">
 			<Option target="Daemon" />
 			<Option target="DDClient" />
+			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/lib/netpptk/netpptk.h">
 			<Option target="Daemon" />
 			<Option target="DDClient" />
+			<Option target="DDClient-wx" />
 		</Unit>
 		<Extensions>
 			<envvars />

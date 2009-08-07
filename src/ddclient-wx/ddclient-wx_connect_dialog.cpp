@@ -33,10 +33,10 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxT("Con
 
     host_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(300, 25));
     port_input = new wxTextCtrl(this,-1,wxT("56789"), wxDefaultPosition, wxSize(50, 25));
-    pass_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(150, 25));
+    pass_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(150, 25), wxTE_PASSWORD);
 
     connect_button = new wxButton(this, wxID_OK, wxT("Connect"));
-    cancel_button = new wxButton(this, wxID_OK, wxT("Cancel"));
+    cancel_button = new wxButton(this, wxID_CANCEL, wxT("Cancel"));
 
 
     // filling sizers
@@ -67,9 +67,34 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxT("Con
 
 
 // event handle methods
-void connect_dialog::on_connect(wxCommandEvent &event){ //TODO not finished yet
-    // give the data to parent (myframe)
+void connect_dialog::on_connect(wxCommandEvent &event){ //TODO needs testing
 
+    std::string host = std::string(host_input->GetValue().mb_str());
+    int port = wxAtoi(port_input->GetValue());
+    std::string pass = std::string(pass_input->GetValue().mb_str());
+
+    tkSock *mysock = new tkSock();
+    bool connection = false;
+
+    try{
+       connection = mysock->connect(host, port);
+    }catch(...){} // no code needed here due to boolean connection
+
+
+    if(connection){
+        wxMessageBox(wxT("Connection succeeded."), wxT("Delete me when finished.")); //TODO delete
+
+        myframe *myparent = (myframe *) GetParent();
+
+        if(myparent->get_connection_attributes() != NULL) //if there is already a connection, delete the old one
+            delete myparent->get_connection_attributes();
+
+        myparent->set_connection_attributes(mysock, pass);
+
+    }else // failed
+        wxMessageBox(wxT("\nConnection failed.\t\t\nPlease try again."), wxT("Connection failed"));
+
+    // TODO testing if you need a password has to be done somewhere => maybe here
 
     Destroy();
 }

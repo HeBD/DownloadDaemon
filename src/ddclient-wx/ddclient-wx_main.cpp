@@ -47,6 +47,11 @@ myframe::myframe(wxWindow *parent, const wxString &title, wxWindowID id,const wx
 }
 
 
+myframe::~myframe(){
+        delete mysock;
+}
+
+
 void myframe::add_bars(){
 
     // menubar
@@ -192,3 +197,13 @@ void myframe::on_start(wxCommandEvent &event){ // TODO: realize
     wxMessageBox(wxT("\nDummy Dialog"), wxT("Dummy"));
     return;
  }
+
+
+// getter and setter methods
+void myframe::set_connection_attributes(tkSock *mysock, std::string password){
+        this->mysock = mysock;
+}
+
+tkSock *myframe::get_connection_attributes(){
+    return mysock;
+}

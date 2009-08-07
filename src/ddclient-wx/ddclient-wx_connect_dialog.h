@@ -10,11 +10,15 @@
 #ifndef DDCLIENT_WX_CONNECT_DIALOG_H
 #define DDCLIENT_WX_CONNECT_DIALOG_H
 
+#include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/dialog.h>
 #include <wx/stattext.h>
 #include <wx/button.h>
 #include <wx/sizer.h>
 #include <wx/textctrl.h>
+
+#include "../lib/netpptk/netpptk.h"
+#include "ddclient-wx_main.h"
 
 class connect_dialog : public wxDialog{
     public:

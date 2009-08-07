@@ -26,12 +26,22 @@
 #include <wx/string.h>
 
 #include "ddclient-wx_connect_dialog.h"
+#include "../lib/netpptk/netpptk.h"
 
 class myframe : public wxFrame{
     public:
         myframe(wxWindow *parent, const wxString &title, wxWindowID id=wxID_ANY,const wxPoint& pos=wxDefaultPosition,const wxSize& size=wxDefaultSize);
+        ~myframe();
+
+        // getter and setter methods
+        void set_connection_attributes(tkSock *mysock, std::string password);
+        tkSock *get_connection_attributes();
 
     private:
+
+        // connection attributes
+        tkSock *mysock;
+        std::string password;
 
         // elements for bars
         wxMenuBar *menu;
