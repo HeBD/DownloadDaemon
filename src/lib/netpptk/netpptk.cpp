@@ -35,12 +35,11 @@ tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0),
 	#endif
 
 	m_sock = ::socket(AF_INET, SOCK_STREAM, 0);
+	valid = false;
 	if(m_sock <= 0) {
-		valid = false;
 		throw SocketError(SOCKET_CREATION_FAILED);
 	}
 
-	valid = true;
 	#ifndef _WIN32
 		int y = 1;
 		setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int));
@@ -64,12 +63,11 @@ tkSock::tkSock(const unsigned int MaxConnections, const unsigned int MaxReceive)
 		m_maxrecv = 9999;
 	}
 	m_sock = ::socket(AF_INET, SOCK_STREAM, 0);
+    valid = false;
 
 	if(m_sock < 0) {
-		valid = false;
 		throw SocketError(SOCKET_CREATION_FAILED);
 	}
-	valid = true;
 	#ifndef _WIN32
 		int y = 1;
 		setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int));
@@ -103,23 +101,28 @@ bool tkSock::bind(const int port) {
 	ss << port;
 	if(getaddrinfo(NULL, ss.str().c_str(), &hints, &res) != 0) {
 		freeaddrinfo(res);
+		valid = false;
 		return false;
 	}
 
 	int bind_return = ::bind(m_sock, res->ai_addr, sizeof(*res));
 	if(bind_return < 0) {
 		freeaddrinfo(res);
+		valid = false;
 		return false;
 	}
 	freeaddrinfo(res);
+	valid = true;
 	return true;
 }
 
-bool tkSock::listen() const {
+bool tkSock::listen() {
 	int listen_return = ::listen(m_sock, m_maxconnections);
 	if(listen_return == -1) {
+	    valid = false;
 		return false;
 	}
+	valid = true;
 	return true;
 }
 
@@ -132,10 +135,10 @@ bool tkSock::accept (tkSock& new_socket) {
     close(new_socket.m_sock);
 	new_socket.m_sock = ::accept(this->m_sock, reinterpret_cast<sockaddr*>(&m_addr), &addr_length);
 	if(new_socket.m_sock <= 0) {
-		valid = false;
+		new_socket.valid = false;
 		return false;
 	}
-	valid = true;
+	new_socket.valid = true;
 	return true;
 }
 
@@ -224,16 +227,16 @@ bool tkSock::send(const std::string &s) {
 			return false;
 		}
 		status += ::send(m_sock, s_new.c_str() + status, s_new.size(), 0);
-		if(status == -1) {
+		if(status < 0) {
 			valid = false;
 			return false;
 		}
 	} while(s_new.size() - status > 0);
+	valid = true;
 	return true;
 }
 
 int tkSock::recv(std::string& s) {
-
 	char initbuf[21];
 	s = "";
 	memset(initbuf, 0, 21);
@@ -281,7 +284,6 @@ int tkSock::recv(std::string& s) {
 	}
 
 	return status;
-
 }
 
 std::string tkSock::append_header(std::string data) {

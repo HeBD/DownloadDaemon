@@ -42,7 +42,7 @@ public:
 	/** Listen on the specified port
 	*	@returns True on success
 	*/
-	bool listen() const;
+	bool listen();
 
 	/** Accept a queried connections
 	*	@param new_socket A socket to handle the accepted connection
