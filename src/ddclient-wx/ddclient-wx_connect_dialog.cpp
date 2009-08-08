@@ -36,6 +36,7 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxT("Con
     pass_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(150, 25), wxTE_PASSWORD);
 
     connect_button = new wxButton(this, wxID_OK, wxT("Connect"));
+    connect_button->SetDefault();
     cancel_button = new wxButton(this, wxID_CANCEL, wxT("Cancel"));
 
 
