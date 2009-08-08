@@ -63,7 +63,7 @@ include("functional.php");
 						echo "Download running. Waiting " . $exp_dls[$i][7] . " seconds.";
 					} else {
 						echo "Download Running: " . number_format($exp_dls[$i][5] / $exp_dls[$i][6] * 100, 1) . "% - " 
-						      . number_format($exp_dls[$i][5] / 1000000, 1) . "MB/" . number_format($exp_dls[$i][6] / 1000000, 1) . "MB";
+						      . number_format($exp_dls[$i][5] / 1048576, 1) . "MB/" . number_format($exp_dls[$i][6] / 1048576, 1) . "MB";
 					}
 				} else if($exp_dls[$i][4] == "DOWNLOAD_INACTIVE") {
 					if($exp_dls[$i][8] == "NO_ERROR") {

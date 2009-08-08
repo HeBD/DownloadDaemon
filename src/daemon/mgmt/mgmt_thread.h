@@ -30,4 +30,11 @@ void target_file(std::string &data, tkSock *sock);
 void target_file_del(std::string &data, tkSock *sock);
 void target_file_getpath(std::string &data, tkSock *sock);
 void target_file_getsize(std::string &data, tkSock *sock);
+
+void target_router(std::string &data, tkSock *sock);
+void target_router_getlist(std::string &data, tkSock *sock);
+void target_router_setmodel(std::string &data, tkSock *sock);
+void target_router_set(std::string &data, tkSock *sock);
+void target_router_get(std::string &data, tkSock *sock);
+
 #endif /*MGMT_THREAD_H_*/

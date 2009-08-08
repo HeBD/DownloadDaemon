@@ -51,23 +51,31 @@ For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "
 
 For the target VAR, the following commands exist: "SET", "GET".
 	SET <var>=<value> will set a configuration variable and needs to be in the format <variable> = <value>. the variable identifier is just the same
-	    as the variable in downloaddaemon.conf that should be changed. If you want to set the mgmt_password variable, you need to supply the old mgmt_password variable
+	    as the variable in downloaddaemon.conf that should be changed. If you want to set the mgmt_password variable, you need to 
+	    supply the old mgmt_password variable
 	    first. In this case, the structure will be SET mgmt_password = old_password ; new_password
-	GET <var> will return a configuration variable. GET needs to be followed by the variable name that should be received and will return the value. you can not receive the
-		  password with this option. If you try to, you will receive an OPTION error
+	GET <var> will return a configuration variable. GET needs to be followed by the variable name that should be received and will return the value.
+	    you can not receive the password with this option. If you try to, you will receive an OPTION error
 	
 
 For the target FILE, the following commands exist:
-	DEL <id> will delete a downloaded file. and needs to be followed by the download ID. This can be run on any download. If the file exists and can be deleted, this will return
-	    success. else, it will return "109 FILE"
-	GETFILE <id> will send the downloaded file directly through the management socket. This should never be used for stuff like web-interfaces, because it will break a lot.
-		     This is the only command that will result in 2 answers. The first answer you will receive is either a 100 SUCCESS or a 109 FILE. The second answer will
-		     then be either an empty string, or a file's content. (This function is not yet implemented!)
-	GETPATH <id> will send the local path on the server to the file to make downloading for local interfaces possible or let the client do some other work with it (extracting?)
+	DEL <id> will delete a downloaded file. and needs to be followed by the download ID. This can be run on any download. 
+	    If the file exists and can be deleted, this will return success. else, it will return "109 FILE"
+	GETFILE <id> will send the downloaded file directly through the management socket. This should never be used for stuff like web-interfaces,
+	        because it will break a lot.
+		This is the only command that will result in 2 answers. The first answer you will receive is either a 100 SUCCESS or a 109 FILE.
+	        The second answer will then be either an empty string, or a file's content. (This function is not yet implemented!)
+	GETPATH <id> will send the local path on the server to the file to make downloading for local interfaces possible or let 
+	        the client do some other work with it (extracting?)
 	GETSIZE <id> will return the number of bytes of the file corresponding to the download id and -1 if it fails.
 
 For the target ROUTER, the following commands exist (a few more parameters this time)
-
+	GETLIST will list all available Router-reconnect plugins, one per line in the form of vendor_model,
+	SETMODEL <vendor_model> will set the active reconnect script, returns 109 FILE if the reconnect-plugin does not exist
+	SET <var> = <value> will set a configuration variable for the currently selected router. 
+	    possible values can be found in conf/routerinfo.conf
+	GET <var> will get a configuration variable for the currently selected router. You will not be able to receive the router's
+	          password with this command for security reason.
 
 All error codes may vary between 100 and 999, to make parsing simple.
 For now, this list represents all codes:

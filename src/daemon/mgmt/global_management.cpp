@@ -38,6 +38,11 @@ void reconnect() {
 	std::string reconnect_plugin;
 	std::string reconnect_policy;
 	while(true) {
+	    if(global_config.get_cfg_value("enable_reconnect") == "0") {
+	        sleep(10);
+	        continue;
+	    }
+
 		reconnect_plugin = global_config.get_cfg_value("reconnect_plugin");
 		if(reconnect_plugin.empty()) {
 			sleep(10);
