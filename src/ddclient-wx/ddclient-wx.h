@@ -1,7 +1,7 @@
 /***************************************************************
- * Name:      ddclient-wx.h
+ * Name:	  ddclient-wx.h
  * Purpose:   Header for Application Class
- * Author:    ko ()
+ * Author:	ko ()
  * Created:   2009-08-04
  * Copyright: ko ()
  * License:
@@ -13,16 +13,16 @@
 #include <wx/wxprec.h>
 
 #ifdef __BORLANDC__
-    #pragma hdrstop
+	#pragma hdrstop
 #endif
 
 #ifndef WX_PRECOMP
-    #include <wx/wx.h>
+	#include <wx/wx.h>
 #endif
 
 class myapp: public wxApp{
-        public:
-            virtual bool OnInit();
+	    public:
+			virtual bool OnInit();
 };
 
 #endif //DDCLIENT_WX_APP_H
