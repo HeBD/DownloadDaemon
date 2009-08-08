@@ -31,7 +31,7 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxT("Con
     port_text = new wxStaticText(this, -1, wxT("Port"));
     pass_text = new wxStaticText(this, -1, wxT("Password"));
 
-    host_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(300, 25));
+    host_input = new wxTextCtrl(this,-1,wxT("127.0.0.1"), wxDefaultPosition, wxSize(300, 25));
     port_input = new wxTextCtrl(this,-1,wxT("56789"), wxDefaultPosition, wxSize(50, 25));
     pass_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(150, 25), wxTE_PASSWORD);
 
@@ -67,36 +67,74 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxT("Con
 
 
 // event handle methods
-void connect_dialog::on_connect(wxCommandEvent &event){ //TODO needs testing
+void connect_dialog::on_connect(wxCommandEvent &event){ //TODO: needs more tests
 
+    // getting user input
     std::string host = std::string(host_input->GetValue().mb_str());
     int port = wxAtoi(port_input->GetValue());
     std::string pass = std::string(pass_input->GetValue().mb_str());
 
     tkSock *mysock = new tkSock();
-    bool connection = false;
+    bool connection = false, error_occured = false;
 
     try{
        connection = mysock->connect(host, port);
     }catch(...){} // no code needed here due to boolean connection
 
 
-    if(connection){
-        wxMessageBox(wxT("Connection succeeded."), wxT("Delete me when finished.")); //TODO delete
+    if(connection){ // connection succeeded,  host (IP/URL or port) is ok
+        wxMessageBox(wxT("Connection succeeded (IP/URL and port are ok)."), wxT("Delete me when finished.")); //TODO: delete after tests
 
-        myframe *myparent = (myframe *) GetParent();
+        // authentification
+        std::string snd;
+        mysock->recv(snd);
 
-        if(myparent->get_connection_attributes() != NULL) //if there is already a connection, delete the old one
-            delete myparent->get_connection_attributes();
+        if(snd.find("100") == 0){ // 100 SUCCESS <-- Operation succeeded
+            wxMessageBox(wxT("No Password needed."), wxT("Delete me when finished.")); //TODO: delete after tests
 
-        myparent->set_connection_attributes(mysock, pass);
+        }else if(snd.find("102") == 0){ // 102 AUTHENTICATION <-- Authentication failed
+            mysock->send(pass);
+            mysock->recv(snd);
 
-    }else // failed
-        wxMessageBox(wxT("\nConnection failed.\t\t\nPlease try again."), wxT("Connection failed"));
+            if(snd.find("100") == 0){
+                wxMessageBox(wxT("Authentification succeeded."), wxT("Delete me when finished.")); //TODO: delete after tests
 
-    // TODO testing if you need a password has to be done somewhere => maybe here
+            }else if(snd.find("102") == 0){
+                wxMessageBox(wxT("Wrong Password, Authentification failed."), wxT("Authentification Error"));
+                error_occured = true;
 
-    Destroy();
+            }else{
+                wxMessageBox(wxT("Unknown Error while Authentication."), wxT("Authentification Error"));
+                error_occured = true;
+            }
+        }else{
+            wxMessageBox(wxT("Unknown Error while Authentication."), wxT("Authentification Error"));
+            error_occured = true;
+        }
+
+
+        if(!error_occured){
+
+            // give socket and password to parent (myframe)
+            myframe *myparent = (myframe *) GetParent();
+
+            if(myparent->get_connection_attributes() != NULL) //if there is already a connection, delete the old one
+                delete myparent->get_connection_attributes();
+
+            myparent->set_connection_attributes(mysock, pass);
+            myparent->fill_lists(); // TODO: shouldn't be here, will be in an own thread later
+
+            Destroy();
+
+        }else{
+            delete(mysock);
+        }
+
+    }else{ // connection failed due to host (IP/URL or port)
+        wxMessageBox(wxT("\nConnection failed (wrong IP/URL or port).\t\t\nPlease try again."), wxT("connection failed"));
+        delete(mysock);
+    }
+    // the dialog doesn't close with an error (so you don't have to type everything again), you have to get an connection or press cancel to do so
 }
 
 void connect_dialog::on_cancel(wxCommandEvent &event){

@@ -1,3 +1,7 @@
+2009-08-08
+   [susanne]
+	- included authentification at ddclient-wx connect dialog
+
 2009-08-07
    [susanne]
 	- ddclient-wx is now able to connect to servers 
@@ -7,20 +11,20 @@
 	- made ddclient more userfriendly for end-users
 
 2009-08-05
-   [susanne]
-	- created connect dialog (gui) for ddclient-wx, doesn't do anything yet   
    [adrian]
 	- fixed crash when finished downlaods get deactivated/activated
 	- corrected moving downloads up/down when other downloads have been deleted before
+   [susanne]
+	- created connect dialog (gui) for ddclient-wx, doesn't do anything yet   
 
 2009-08-04
-   [susanne]
-	- rewrote ddclient-wx
    [adrian]
 	- fixed missing freeaddrinfo() call -> memory leak
 	- The default DownloadDaemon port is now 56789
 	- extended plugin api
 	- created uploaded.to plugin
+   [susanne]
+	- rewrote ddclient-wx
 
 2009-08-03
    [adrian]

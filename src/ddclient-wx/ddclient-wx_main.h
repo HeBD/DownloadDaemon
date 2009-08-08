@@ -37,6 +37,8 @@ class myframe : public wxFrame{
         void set_connection_attributes(tkSock *mysock, std::string password);
         tkSock *get_connection_attributes();
 
+        void fill_lists(); // set private later
+
     private:
 
         // connection attributes

@@ -74,8 +74,8 @@ void myframe::add_bars(){
     toolbar->AddTool(id_toolbar_connect, wxT("Connect"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_EXECUTABLE_FILE")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Connect to a DownloadDaemon"), wxEmptyString);
     toolbar->AddSeparator();
 
-    toolbar->AddTool(id_toolbar_add, wxT("Add"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_ADD_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Adds a new Download"), wxEmptyString);
-	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_DEL_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deletes the selected Download"), wxEmptyString);
+    toolbar->AddTool(id_toolbar_add, wxT("Add"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_ADD_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Add a new Download"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_DEL_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download"), wxEmptyString);
 	toolbar->AddSeparator();
 
 	toolbar->AddTool(id_toolbar_stop, wxT("Stop"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CROSS_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Stop downloading files"), wxEmptyString);
@@ -149,6 +149,27 @@ void myframe::add_content(){
                         list[i]->SetItem(index, k, buffer);
                 }
         }
+    }
+
+    return;
+}
+
+
+void myframe::fill_lists(){ //TODO: not finished
+    std::string answer;
+    std::string line;
+    int occurance = 1;
+
+    mysock->send("DDP DL LIST");
+    mysock->recv(answer);
+
+    while(answer.length() > 0 && occurance >= 0){
+        occurance = answer.find("\n");
+        line = answer.substr(0, occurance);
+        answer = answer.substr(occurance+1, answer.length()-occurance-1);
+
+        //TODO: 2nd loop with search for | (careful, | in titles is escaped with \|
+        // then fill columns :3
     }
 
     return;
