@@ -5,4 +5,8 @@
 */
 void tick_downloads();
 
+/** Handles reconnecting configuration and policies
+*/
+void reconnect();
+
 #endif /*GLOBAL_MANAGEMENT_H_*/

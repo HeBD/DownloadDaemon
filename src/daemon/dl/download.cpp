@@ -109,15 +109,22 @@ int download::get_download(parsed_download &parsed_dl) {
 	}
 
 	string pluginfile(plugindir + host);
+	bool use_generic = false;
 	if(stat(pluginfile.c_str(), &st) != 0) {
-		return MISSING_PLUGIN;
+		use_generic = true;
 	}
 
 	if(stat(string(plugindir + "/plugin_comm").c_str(), &st) != 0) {
 		mkdir(string(plugindir + "/plugin_comm").c_str(), 0755);
 	}
 
-	// should be packed in an extra thread so we can break up after a few seconds
+	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
+	if(use_generic) {
+		parsed_dl.download_url = url;
+		parsed_dl.download_parse_success = 1;
+		return 0;
+	}
+
 	std::string ex(plugindir + '/' + host + ' ' + int_to_string(id) + ' ' + url);
 	parsed_dl.plugin_return_val = system(ex.c_str());
 	if(parsed_dl.plugin_return_val == 255) {
@@ -156,9 +163,17 @@ std::string download::get_host() {
 
 hostinfo download::get_hostinfo() {
 	string hostinfo_fn = program_root + global_config.get_cfg_value("plugin_dir") + "/hostinfo/" + get_host();
-	cfgfile hostinfo_file(hostinfo_fn, false);
-
 	hostinfo hinfo;
+	struct stat st;
+	if(stat(hostinfo_fn.c_str(), &st) != 0) {
+		hinfo.offers_premium = false;
+		hinfo.allows_multiple_downloads_free = true,
+		hinfo.allows_download_resumption_free = true;
+		hinfo.requires_cookie = false;
+		return hinfo;
+	}
+
+	cfgfile hostinfo_file(hostinfo_fn, false);
 	hinfo.offers_premium = (bool)atoi(hostinfo_file.get_cfg_value("offers_premium").c_str());
 	hinfo.allows_multiple_downloads_free = (bool)atoi(hostinfo_file.get_cfg_value("allows_multiple_downloads_free").c_str());
 	hinfo.allows_multiple_downloads_premium = (bool)atoi(hostinfo_file.get_cfg_value("allows_multiple_downloads_premium").c_str());
@@ -208,6 +223,8 @@ const char* download::get_status_str() {
 			return "DOWNLOAD_RUNNING";
 		case DOWNLOAD_WAITING:
 			return "DOWNLOAD_WAITING";
+		case DOWNLOAD_RECONNECTING:
+			return "DOWNLOAD_RECONNECTING";
 		default:
 			return "DOWNLOAD_DELETING";
 	}

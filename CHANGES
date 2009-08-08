@@ -1,4 +1,6 @@
 2009-08-08
+   [adrian]
+	- basic implementation for reconnect script executuion. configuration still missing
    [susanne]
 	- included authentification at ddclient-wx connect dialog
 
