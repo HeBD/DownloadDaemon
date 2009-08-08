@@ -32,6 +32,8 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxT("Con
 	pass_text = new wxStaticText(this, -1, wxT("Password"));
 
 	host_input = new wxTextCtrl(this,-1,wxT("127.0.0.1"), wxDefaultPosition, wxSize(300, 25));
+	host_input->SetSelection(-1, -1);
+	host_input->SetFocus();
 	port_input = new wxTextCtrl(this,-1,wxT("56789"), wxDefaultPosition, wxSize(50, 25));
 	pass_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(150, 25), wxTE_PASSWORD);
 

@@ -12,6 +12,7 @@
 
 
 #include <vector>
+#include <iomanip>
 
 #include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/frame.h>
@@ -24,6 +25,7 @@
 #include <wx/sizer.h>
 #include <wx/listctrl.h>
 #include <wx/string.h>
+#include <wx/gdicmn.h> // color database
 
 #include "ddclient-wx_connect_dialog.h"
 #include "../lib/netpptk/netpptk.h"

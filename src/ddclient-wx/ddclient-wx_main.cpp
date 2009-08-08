@@ -124,38 +124,21 @@ void myframe::add_content(){
 	sizer_finished->Add(list[2] , 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 
 
-	int num = 0; // for dummy input
-
 	for(int i=0; i<3; i++){
 		// columns
-		list[i]->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, -1);
-		list[i]->InsertColumn(1, wxT("Added"), wxLIST_AUTOSIZE_USEHEADER, 50);
-		list[i]->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 150);
-		list[i]->InsertColumn(3, wxT("\tURL\t"), wxLIST_AUTOSIZE_USEHEADER, 150);
+		list[i]->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 30);
+		list[i]->InsertColumn(1, wxT("Added"), wxLIST_AUTOSIZE_USEHEADER, 190);
+		list[i]->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 100);
+		list[i]->InsertColumn(3, wxT("\tURL\t"), wxLIST_AUTOSIZE_USEHEADER, 200);
 		list[i]->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 100);
-
-		// dummy input
-		wxString buffer;
-
-		int index;
-
-		for(int j=0; j<3; j++){
-				buffer.Printf(wxT("Item %d"), ++num);
-				index = list[i]->InsertItem(0, buffer);
-
-				for(int k=1; k<5; k++){
-
-						buffer.Printf(wxT("Col %d, item %d"), k, num);
-						list[i]->SetItem(index, k, buffer);
-				}
-		}
 	}
 
 	return;
 }
 
 
-void myframe::fill_lists(){ //TODO: not finished
+void myframe::fill_lists(){ //TODO: needs a lot of testing
+	std::vector<std::string> splitted_line;
 	std::string answer, line, tab;
 	size_t lineend = 1, tabend = 1, column_nr, line_index = 0, line_nr = 0;
 
@@ -186,20 +169,89 @@ void myframe::fill_lists(){ //TODO: not finished
 					tabend = line.find("|", tabend+1);
 
 				tab = line.substr(0, tabend);
-
 				line = line.substr(tabend+1);
+
 			}
+			splitted_line.push_back(tab); // save all tabs per line for later use
 
 			// fill columns
 			if(column_nr == 0){
 				line_index = list[0]->InsertItem(line_nr, wxString(tab.c_str(), wxConvUTF8)); //TODO: just list 0 atm (all downloads) //careful: has to be inserted in the bottom line!!!
 			}else if(column_nr < 4){
 				list[0]->SetItem(line_index, column_nr, wxString(tab.c_str(), wxConvUTF8)); //TODO: just list 0 atm (all downloads)
-			}else{ continue; }
+			}else{ }
 			column_nr++;
 		}
+
+		// building status column
+		std::string buffer;
+
+		if(splitted_line[4] == "DOWNLOAD_RUNNING"){
+				list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("LIME GREEN")));
+
+				if(std::atoi(splitted_line[7].c_str()) > 0){ // waiting time > 0
+					buffer = "Download running. Waiting " + splitted_line[7] + " seconds.";
+
+				}else{ // no waiting time
+					std::stringstream stream_buffer;
+					stream_buffer << "Download Running: ";
+
+					if(splitted_line[6] == "0"){ // download size unknown
+						stream_buffer << "0.00% - ";
+
+						if(splitted_line[5] == "0") // nothing downloaded yet
+							stream_buffer << "0.00 MB/ 0.00 MB";
+						else // something downloaded
+							stream_buffer << std::setprecision(3) << std::atoi(splitted_line[5].c_str()) / 1048576 << " MB/ 0.00 MB";
+
+					}else{ // downoad size known
+						if(splitted_line[5] == "0") // nothing downloaded yet
+							stream_buffer << "0.00% - 0.00 MB/ " << std::atoi(splitted_line[6].c_str()) / 1048576 << " MB";
+
+						else{ // download size known and something downloaded
+							stream_buffer << std::setprecision(3) << (float)std::atoi(splitted_line[5].c_str()) / (float)std::atoi(splitted_line[6].c_str()) * 100 << "% - ";
+							stream_buffer << std::setprecision(3) << std::atoi(splitted_line[5].c_str()) / 1048576 << " MB/ ";
+							stream_buffer << std::setprecision(3) << std::atoi(splitted_line[6].c_str()) / 1048576 << " MB";
+						}
+					}
+					buffer = stream_buffer.str();
+				}
+
+		}else if(splitted_line[4] == "DOWNLOAD_INACTIVE"){ // TODO: test the rest of the status stuff!
+			if(splitted_line[8] == "NO_ERROR"){
+				list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("YELLOW")));
+				buffer = "Download Inactive.";
+
+			}else{ // error occured
+				list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("RED")));
+				buffer = "Inactive. Error: " + splitted_line[8];
+			}
+
+		}else if(splitted_line[4] == "DOWNLOAD_PENDING"){
+			if(splitted_line[8] == "NO_ERROR"){
+				buffer = "Download Pending.";
+
+			}else{ //error occured
+				list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("RED")));
+				buffer = "Error: " + splitted_line[8];
+			}
+
+		}else if(splitted_line[4] == "DOWNLOAD_WAITING"){
+			list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("YELLOW")));
+			buffer = "Have to wait " + splitted_line[7] + " seconds.";
+
+		}else if(splitted_line[4] == "DOWNLOAD_FINISHED"){
+			list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("GREEN")));
+			buffer = "Download Finished.";
+
+		}else{ // default, column 4 has unknown input
+			buffer = "Status not detected.";
+		}
+		list[0]->SetItem(line_index, 4, wxString(buffer.c_str(), wxConvUTF8)); // finally inserting status column
+
 		line_nr++;
-	} //kills the programm, find mistake!
+		splitted_line.clear();
+	}
 
 	return;
 }
