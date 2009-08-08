@@ -65,7 +65,7 @@ public:
 
 	/** Receive data from a socket
 	*	@param s String to store the received data
-	*	@returns 0 on success, else, an error code
+	*	@returns The number of received bytes, negative value on error
 	*/
 	int recv(std::string &s);
 
