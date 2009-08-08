@@ -26,10 +26,12 @@ Authentication:
 	reconnect.
 
 Every command sent to DownloadDaemon has to start with "DDP", followed by at least one whitespace.
-Also every command can address one of three targets. these targets can be "DL", "VAR" and "FILE".
+Also every command can address one of three targets. these targets can be "DL", "VAR", "FILE" and "ROUTER".
 DL stands for downloads and should be used if you want to change something about a download list entry, like changing a title, adding or removing a download, etc..
 VAR stands for configuration variables and can be used to configure DownloadDaemon.
 FILE stands for doing something with a file that has been downloaded by downloaddaemon (like downloading the file to the local machine or deleting the file on the remote side)
+ROUTER stands for router hardware. DownloadDaemon supports reconnect scripts through router resetting/curl/whatever. 
+       With this target you can specifie router options (username/password/ip to connect, etc)
 
 After specifing the target, at least one whitespace needs to follow, so now we got someting like "DDP DL ", "DDP VAR ", ...
 
@@ -63,6 +65,8 @@ For the target FILE, the following commands exist:
 		     then be either an empty string, or a file's content. (This function is not yet implemented!)
 	GETPATH <id> will send the local path on the server to the file to make downloading for local interfaces possible or let the client do some other work with it (extracting?)
 	GETSIZE <id> will return the number of bytes of the file corresponding to the download id and -1 if it fails.
+
+For the target ROUTER, the following commands exist (a few more parameters this time)
 
 
 All error codes may vary between 100 and 999, to make parsing simple.
