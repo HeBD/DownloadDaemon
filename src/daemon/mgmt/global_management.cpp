@@ -15,6 +15,7 @@ using namespace std;
 
 extern download_container global_download_list;
 extern cfgfile global_config;
+extern cfgfile global_router_config;
 extern string program_root;
 
 void tick_downloads() {
@@ -43,12 +44,12 @@ void reconnect() {
 	        continue;
 	    }
 
-		reconnect_plugin = global_config.get_cfg_value("reconnect_plugin");
+		reconnect_plugin = global_router_config.get_cfg_value("router_model");
 		if(reconnect_plugin.empty()) {
 			sleep(10);
 			continue;
 		}
-		reconnect_policy = global_config.get_cfg_value("reconnect_policy");
+		reconnect_policy = global_router_config.get_cfg_value("reconnect_policy");
 		if(reconnect_policy.empty()) {
 			sleep(10);
 			continue;

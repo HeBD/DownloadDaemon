@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
 		exit(-1);
 	}
 	global_config.open_cfg_file(root_dir + "/conf/downloaddaemon.conf", true);
+	global_router_config.open_cfg_file(root_dir + "/conf/routerinfo.con", true);
 
 	global_download_list.from_file(string(program_root + global_config.get_cfg_value("dlist_file")).c_str());
 

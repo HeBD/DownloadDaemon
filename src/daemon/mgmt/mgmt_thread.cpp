@@ -529,23 +529,35 @@ void target_router(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_router_setmodel(data, sock);
-	} else if(data.find("GETSIZE") == 0) {
-		data = data.substr(7);
+	} else if(data.find("SET") == 0) {
+		data = data.substr(3);
 		if(data.length() == 0 || !isspace(data[0])) {
 			*sock << "101 PROTOCOL";
 			return;
 		}
 		trim_string(data);
-		target_file_getsize(data, sock);
-	} else {
+		target_router_set(data, sock);
+	} else if(data.find("GET") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_router_get(data, sock);
+    } else {
 		*sock << "101 PROTOCOL";
-	}
+    }
 }
 
-void target_router_getlist(std::string &data, tkSock *sock);
-void target_router_setmodel(std::string &data, tkSock *sock);
-void target_router_set(std::string &data, tkSock *sock);
-void target_router_get(std::string &data, tkSock *sock);
+void target_router_getlist(std::string &data, tkSock *sock) {
+}
+void target_router_setmodel(std::string &data, tkSock *sock) {
+}
+void target_router_set(std::string &data, tkSock *sock) {
+}
+void target_router_get(std::string &data, tkSock *sock) {
+}
 
 
 
