@@ -163,7 +163,7 @@ std::string download::get_host() {
 
 	if(url.find("www.") != std::string::npos) {
 		startpos = url.find('.') + 1;
-	} else if(url.find("http://") != std::string::npos) {
+	} else if(url.find("http://") != std::string::npos || url.find("ftp://") != std::string::npos) {
 		startpos = url.find('/') + 2;
 	} else {
 		return "";
