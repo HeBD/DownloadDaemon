@@ -5,6 +5,7 @@
 
 #include "../dl/download.h"
 #include "../dl/download_container.h"
+#include "../dl/download_thread.h"
 #include "../tools/helperfunctions.h"
 #include "../../lib/cfgfile/cfgfile.h"
 #include "global_management.h"
@@ -75,7 +76,7 @@ void reconnect() {
 			}
 		}
 		if(!reconnect_needed) {
-			sleep(10);
+			sleep(5);
 			continue;
 		}
 
@@ -102,7 +103,24 @@ void reconnect() {
 					reconnect_allowed = false;
 				}
 			}
+        // Only reconnect if no download is running and no download can be started
+		} else if(reconnect_policy == "PUSSY") {
+		    reconnect_allowed = true;
+			for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
+				if(it->get_status() == DOWNLOAD_RUNNING) {
+					reconnect_allowed = false;
+				}
+			}
+			download_container::iterator it = get_next_downloadable();
+			if(it != global_download_list.end()) {
+			    reconnect_allowed = false;
+			}
+		} else {
+		    log_string("Invalid reconnect policy", LOG_SEVERE);
+		    sleep(10);
+		    continue;
 		}
+
 
 		if(reconnect_needed && reconnect_allowed) {
 			string reconnect_script = program_root + "/reconnect/" + reconnect_plugin;
