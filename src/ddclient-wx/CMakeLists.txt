@@ -21,4 +21,4 @@ IF(Boost_FOUND AND wxWidgets_FOUND)
 ENDIF(Boost_FOUND AND wxWidgets_FOUND)
 
 install(TARGETS ddclient-wx DESTINATION bin)
-
+# need to check where to install img

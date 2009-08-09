@@ -1,4 +1,5 @@
 - find a way to cross-compile it to ARMs (scratchbox) - succeeded in building a statically linked binary, but curl_easy_perform crashes (seg fault)
+- put DownloadDaemon and clients in proper unix-specific paths
 - make it possible to download files through the mgmt interface
 - compile netpptk and cfgfile as shared libraries
 - implement all the # not implemented-s in hostinfo
