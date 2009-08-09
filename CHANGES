@@ -1,5 +1,7 @@
 2009-08-09
    [adrian]
+	- Implemented functionality to continue downloads that were started but broke up
+	- Changed behaviour if no plugin is found for a download: Download the file directly (makes direct links possible)
 	- added CMakeLists file for ddclient-wx
 	- Added new reconnect policy "PUSSY" which only reconnects when REALLY necessary
 	- fixed race-condition when adding downloads too fast

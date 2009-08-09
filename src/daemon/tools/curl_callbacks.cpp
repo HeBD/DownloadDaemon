@@ -1,8 +1,12 @@
 #include <fstream>
 #include <vector>
+
 #include "../dl/download.h"
 #include "../dl/download_container.h"
 #include "helperfunctions.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
 using namespace std;
 
 extern download_container global_download_list;
@@ -18,7 +22,12 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	download_container::iterator *itp = (download_container::iterator*)clientp;
 	download_container::iterator it = *itp;
 	it->size = (long)dltotal;
-	it->downloaded_bytes = (long)dlnow;
+	struct stat st;
+	if(stat(it->output_file.c_str(), &st) == 0) {
+	    it->downloaded_bytes = st.st_size;
+	} else {
+	    it->downloaded_bytes = (long)dlnow;
+	}
 	global_download_list.dump_to_file();
 	return 0;
 }

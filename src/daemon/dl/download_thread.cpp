@@ -111,18 +111,14 @@ void download_thread(download_container::iterator download) {
 		// Check if we can do a download resume or if we have to start from the beginning
         hostinfo hinfo = download->get_hostinfo();
         struct stat st;
-        if(stat(output_filename.c_str(), &st) == 0) {
-            if(st.st_size == download->downloaded_bytes && hinfo.allows_download_resumption_free) {
-                curl_easy_setopt(download->handle, CURLOPT_RESUME_FROM, st.st_size);
-            }
-        }
-
-		fstream output_file;
-		if(!hinfo.allows_download_resumption_free) {
+        fstream output_file;
+        if(stat(output_filename.c_str(), &st) == 0 && st.st_size == download->downloaded_bytes &&
+           hinfo.allows_download_resumption_free) {
+            curl_easy_setopt(download->handle, CURLOPT_RESUME_FROM, st.st_size);
+            output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
+        } else {
             output_file.open(output_filename.c_str(), ios::out | ios::binary);
-		} else {
-		    output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
-		}
+        }
 
 		if(!output_file.good()) {
 			log_string(string("Could not write to file: ") + output_filename, LOG_SEVERE);
