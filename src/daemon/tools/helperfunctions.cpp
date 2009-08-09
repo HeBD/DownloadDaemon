@@ -117,10 +117,11 @@ long string_to_long(string str) {
 	return ret;
 }
 
-bool variable_is_valid(std::string variable) {
+bool variable_is_valid(std::string &variable) {
 	trim_string(variable);
-	string possible_vars = ",downloading_active,download_timing_start,download_timing_end,download_folder,simultaneous_downloads,"
-						   "log_level,log_file,mgmt_max_connections,mgmt_port,mgmt_password,plugin_dir,dlist_file,";
+	string possible_vars = ",enable_reconnect,downloading_active,download_timing_start,download_timing_end,download_folder,"
+                           "simultaneous_downloads, log_level,log_file,mgmt_max_connections,mgmt_port,mgmt_password,plugin_dir,"
+                           "dlist_file,";
 	size_t pos;
 	if((pos = possible_vars.find(variable)) != string::npos) {
 		if(possible_vars[pos - 1] == ',' && possible_vars[pos + variable.length()] == ',') {
@@ -130,3 +131,14 @@ bool variable_is_valid(std::string variable) {
 	return false;
 }
 
+bool router_variable_is_valid(std::string &variable) {
+    trim_string(variable);
+    string possible_vars = ",reconnect_policy,router_ip,router_username,router_password,";
+    size_t pos;
+	if((pos = possible_vars.find(variable)) != string::npos) {
+		if(possible_vars[pos - 1] == ',' && possible_vars[pos + variable.length()] == ',') {
+			return true;
+		}
+	}
+	return false;
+}

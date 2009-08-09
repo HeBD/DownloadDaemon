@@ -6,6 +6,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 
 #include "mgmt_thread.h"
 #include "../dl/download.h"
@@ -17,6 +18,7 @@
 using namespace std;
 
 extern cfgfile global_config;
+extern cfgfile global_router_config;
 extern download_container global_download_list;
 extern std::string program_root;
 
@@ -100,7 +102,15 @@ void connection_handler(tkSock *sock) {
 			}
 			trim_string(data);
 			target_file(data, sock);
-		} else {
+		} else if(data.find("ROUTER") == 0) {
+		    data = data.substr(6);
+		    if(data.length() == 0 || !isspace(data[0])) {
+		        *sock << "101 PROTOCOL";
+		        continue;
+            }
+            trim_string(data);
+            target_router(data, sock);
+        } else {
 			*sock << "101 PROTOCOL";
 		}
 	}
@@ -513,14 +523,10 @@ void target_file_getsize(std::string &data, tkSock *sock) {
 }
 
 void target_router(std::string &data, tkSock *sock) {
-	if(data.find("GETLIST") == 0) {
-		data = data.substr(7);
-		if(data.length() == 0 || !isspace(data[0])) {
-			*sock << "101 PROTOCOL";
-			return;
-		}
+	if(data.find("LIST") == 0) {
+		data = data.substr(4);
 		trim_string(data);
-		target_router_getlist(data, sock);
+		target_router_list(data, sock);
 	} else if(data.find("SETMODEL") == 0) {
 		data = data.substr(8);
 		if(data.length() == 0 || !isspace(data[0])) {
@@ -550,17 +556,94 @@ void target_router(std::string &data, tkSock *sock) {
     }
 }
 
-void target_router_getlist(std::string &data, tkSock *sock) {
+void target_router_list(std::string &data, tkSock *sock) {
+    DIR *dp;
+    struct dirent *ep;
+    string content;
+    string path = program_root + "reconnect/";
+    dp = opendir (path.c_str());
+    if (dp == NULL) {
+        log_string("Could not open reconnect script directory", LOG_SEVERE);
+        *sock << "";
+        return;
+    }
+    while ((ep = readdir (dp))) {
+        if(ep->d_name[0] == '.') {
+            continue;
+        }
+        content += ep->d_name;
+        content += "\n";
+
+    }
+    (void) closedir (dp);
+
+    content.erase(content.end() - 1);
+    *sock << content;
 }
+
 void target_router_setmodel(std::string &data, tkSock *sock) {
+    struct dirent *de = NULL;
+    DIR *d = NULL;
+    string dir = program_root + "reconnect/";
+    d = opendir(dir.c_str());
+    std::string content;
+
+    if(d == NULL) {
+        log_string("Could not open reconnect script directory", LOG_SEVERE);
+        *sock << "109 FILE";
+        return;
+    }
+    while((de = readdir(d))) {
+        content += de->d_name + '\n';
+    }
+    closedir(d);
+    size_t pos;
+    if((pos = content.find(data)) == string::npos || content[pos - 1] != '\n' || content[pos + content.length()] != '\n') {
+        log_string("Selected plugin not found", LOG_WARNING);
+        *sock << "109 FILE";
+        return;
+    }
+
+    if(global_router_config.set_cfg_value("router_model", data)) {
+        log_string("Changed router model", LOG_DEBUG);
+        *sock << "100 SUCCESS";
+    } else {
+        log_string("Unable to set router model", LOG_SEVERE);
+        *sock << "110 PERMISSION";
+    }
 }
+
 void target_router_set(std::string &data, tkSock *sock) {
+    size_t eqpos = data.find('=');
+    if(eqpos == string::npos) {
+        *sock << "101 PROTOCOL";
+        return;
+    }
+    std::string identifier = data.substr(0, eqpos);
+    std::string variable = data.substr(eqpos);
+    trim_string(identifier);
+    trim_string(variable);
+
+    if(!router_variable_is_valid(identifier)) {
+        log_string("Tried to change an invalid router variable", LOG_WARNING);
+        *sock << "108 VARIABLE";
+        return;
+    }
+
+    if(global_router_config.set_cfg_value(identifier, variable)) {
+        log_string("Changed router variable", LOG_DEBUG);
+        *sock << "100 SUCCESS";
+    } else {
+        log_string("Unable to set router variable!", LOG_SEVERE);
+        *sock << "110 PERMISSION";
+    }
 }
+
 void target_router_get(std::string &data, tkSock *sock) {
+    if(data == "router_password") {
+        *sock << "";
+        return;
+    } else {
+        *sock << global_router_config.get_cfg_value(data);
+    }
 }
-
-
-
-
-
-

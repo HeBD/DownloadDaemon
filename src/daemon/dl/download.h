@@ -57,32 +57,32 @@ public:
 
 	/** execute the correct plugin with parameters and return information on the download
 	* @param parsed_dl Structure in which all information required to start the download is stored
-	* @return success status
+	* @returns success status
 	*/
 	int get_download(parsed_download &parsed_dl);
 
 	/** Serialize the download object to store it in the file
-	* @return The serialized string
+	* @returns The serialized string
 	*/
 	std::string serialize();
 
 	/** Find out the hoster (needed to call the correct plugin)
-	* @return host-string
+	* @returns host-string
 	*/
 	std::string get_host();
 
 	/** Get Info about a host
-	* @return hostinfo structure of the host
+	* @returns hostinfo structure of the host
 	*/
 	hostinfo get_hostinfo();
 
 	/** Get the defines from above as a string literal
-	* @return the resulting error string
+	* @returns the resulting error string
 	*/
 	const char* get_error_str();
 
 	/** Get the defines from above as a string literal
-	* @return the resulting status string
+	* @returns the resulting status string
 	*/
 	const char* get_status_str();
 

@@ -45,10 +45,16 @@ void replace_all(std::string& searchIn, std::string searchFor, std::string Repla
 */
 bool dump_list_to_file();
 
-/** Checks if a given identifiert is a valid configuration variable or not
+/** Checks if a given identifier is a valid configuration variable or not
 * @param variable Identifier to check
-* @return True if it's valid, false if not
+* @returns True if it's valid, false if not
 */
-bool variable_is_valid(std::string variable);
+bool variable_is_valid(std::string &variable);
+
+/** Checks if a given idetifier is a valid router config variable or not
+* @param variable Identifier to check
+* @returns true if it's valid, false if not
+*/
+bool router_variable_is_valid(std::string &variable);
 
 #endif /*HELPERFUNCTIONS_H_*/

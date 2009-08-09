@@ -1,3 +1,7 @@
+2009-08-09
+   [adrian]
+	- finisehd (but mostly untested) implementation of the reconnect script engine
+
 2009-08-08
    [adrian]
 	- basic implementation for reconnect script execution. configuration still missing

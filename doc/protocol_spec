@@ -70,7 +70,7 @@ For the target FILE, the following commands exist:
 	GETSIZE <id> will return the number of bytes of the file corresponding to the download id and -1 if it fails.
 
 For the target ROUTER, the following commands exist (a few more parameters this time)
-	GETLIST will list all available Router-reconnect plugins, one per line in the form of vendor_model,
+	LIST will list all available Router-reconnect plugins, one per line in the form of vendor_model,
 	SETMODEL <vendor_model> will set the active reconnect script, returns 109 FILE if the reconnect-plugin does not exist
 	SET <var> = <value> will set a configuration variable for the currently selected router. 
 	    possible values can be found in conf/routerinfo.conf

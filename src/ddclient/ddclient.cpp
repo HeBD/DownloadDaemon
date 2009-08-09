@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 
 		if(snd == "help" || snd == "?") {
 			cout << "General command structure: <target> <command> <parameters> " << endl;
-			cout << "Targets are DL for downloads, VAR for configuration variables and FILE for downloaded files" << endl;
+			cout << "Targets are DL for downloads, VAR for configuration variables, FILE for downloaded files and ROUTER for router configuration" << endl;
 			cout << "Possible commands:" << endl;
 			cout << "DL LIST\t\t\t\t Dumps the current download list" << endl;
 			cout << "DL ADD <url> <comment>\t\t Add a download" << endl;
@@ -100,11 +100,15 @@ int main(int argc, char* argv[]) {
 			cout << "DL DOWN <id>\t\t\t moves a download down" << endl;
 			cout << "DL ACTIVATE <id>\t\t activates a download" << endl;
 			cout << "DL DEACTIVATE <id>\t\t deactivates a download" << endl;
-			cout << "VAR SET <varaible>=<value>\t sets a configuration variable (<variable> needs to have the identifier of a variable in downloaddaemon.conf)" << endl;
-			cout << "VAR GET <variable>\t\t get the value of a configuration variable" << endl;
+			cout << "VAR SET <var>=<value>\t sets a configuration variable (<variable> needs to have the identifier of a variable in downloaddaemon.conf)" << endl;
+			cout << "VAR GET <var>\t\t get the value of a configuration variable" << endl;
 			cout << "FILE DEL <id>\t\t\t delete the file corresponding to the given download id" << endl;
 			cout << "FILE GETPATH <id>\t\t returns the path on the local filesystem of the downloaded file or an empty string if it does not exsist yet" << endl;
 			cout << "FILE GETSIZE <id>\t\t returns the file-size of the file corresponding to the given ID" << endl;
+			cout << "ROUTER LIST\t\t returns a list of supported router models" << endl;
+			cout << "ROUTER SETMODEL <model>\t sets the router model" << endl;
+			cout << "ROUTER SET <var>=<value>\t sets a router configuration varialbe" << endl;
+			cout << "ROUTER GET <var>\t\t returns the value of a router configuration variable" << endl;
 			cout << "\nTo quit ddclient, type exit or quit" << endl;
 			continue;
 		}

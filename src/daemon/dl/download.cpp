@@ -120,6 +120,7 @@ int download::get_download(parsed_download &parsed_dl) {
 
 	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
 	if(use_generic) {
+	    log_string("No plugin found, using generic download", LOG_WARNING);
 		parsed_dl.download_url = url;
 		parsed_dl.download_parse_success = 1;
 		return 0;

@@ -57,7 +57,7 @@
 			</Target>
 			<Target title="rapidshare_com">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/plugins/rapidshare" prefix_auto="1" extension_auto="0" />
+				<Option output="build/plugins/rapidshare" prefix_auto="0" extension_auto="0" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option use_console_runner="0" />
@@ -73,7 +73,7 @@
 			</Target>
 			<Target title="uploaded_to">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/plugins/uploaded.to" prefix_auto="1" extension_auto="0" />
+				<Option output="build/plugins/uploaded.to" prefix_auto="0" extension_auto="0" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option use_console_runner="0" />
@@ -87,9 +87,16 @@
 				</Linker>
 			</Target>
 			<Target title="aquip-a-wlan-3">
-				<Option output="DownloadDaemon" prefix_auto="1" extension_auto="1" />
-				<Option type="0" />
+				<Option platforms="Unix;Mac;" />
+				<Option output="build/reconnect/aquip_a-wlan-3" prefix_auto="0" extension_auto="0" />
+				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-pedantic" />
+					<Add option="-Wall" />
+					<Add option="-g" />
+				</Compiler>
 			</Target>
 		</Build>
 		<Compiler>
@@ -141,7 +148,7 @@
 		<Unit filename="src/daemon/plugins/uploaded_to.cpp">
 			<Option target="uploaded_to" />
 		</Unit>
-		<Unit filename="src/daemon/reconnect/aquip-a-wlan-3.cpp">
+		<Unit filename="src/daemon/reconnect/aquip_a-wlan-3.cpp">
 			<Option target="aquip-a-wlan-3" />
 		</Unit>
 		<Unit filename="src/daemon/tools/curl_callbacks.cpp">
