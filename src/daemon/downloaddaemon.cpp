@@ -53,7 +53,9 @@ int main(int argc, char* argv[]) {
 	global_config.open_cfg_file(root_dir + "/conf/downloaddaemon.conf", true);
 	global_router_config.open_cfg_file(root_dir + "/conf/routerinfo.conf", true);
 
-	global_download_list.from_file(string(program_root + global_config.get_cfg_value("dlist_file")).c_str());
+	string dlist_fn = global_config.get_cfg_value("dlist_file");
+	correct_path(dlist_fn);
+	global_download_list.from_file(dlist_fn.c_str());
 
 	log_string("DownloadDaemon started successfully", LOG_DEBUG);
 

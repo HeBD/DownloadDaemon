@@ -95,13 +95,15 @@ void download_thread(download_container::iterator download) {
 
 
 		string output_filename;
+		string download_folder = global_config.get_cfg_value("download_folder");
+		correct_path(download_folder);
 		if(parsed_dl.download_filename == "") {
 			if(parsed_dl.download_url != "" && parsed_dl.download_url.find('/') != string::npos) {
-				output_filename += global_config.get_cfg_value("download_folder");
+				output_filename += download_folder;
 				output_filename += '/' + parsed_dl.download_url.substr(parsed_dl.download_url.find_last_of("/\\"));
 			}
 		} else {
-			output_filename += global_config.get_cfg_value("download_folder");
+			output_filename += download_folder;
 			output_filename += '/' + parsed_dl.download_filename;
 		}
 		fstream output_file(output_filename.c_str(), ios::out | ios::binary);

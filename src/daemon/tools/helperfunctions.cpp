@@ -7,11 +7,13 @@
 #include <vector>
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../dl/download.h"
+#include "../dl/download_container.h"
 using namespace std;
 
 extern cfgfile global_config;
 extern string program_root;
-extern std::vector<download> global_download_list;
+extern download_container global_download_list;
+extern string program_root;
 
 int string_to_int(const std::string str) {
 	std::stringstream ss;
@@ -141,4 +143,11 @@ bool router_variable_is_valid(std::string &variable) {
 		}
 	}
 	return false;
+}
+
+void correct_path(std::string &path) {
+    trim_string(path);
+    if(path[0] != '/') {
+        path.insert(0, program_root);
+    }
 }

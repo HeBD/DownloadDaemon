@@ -1,5 +1,4 @@
 - find a way to cross-compile it to ARMs (scratchbox) - succeeded in building a statically linked binary, but curl_easy_perform crashes (seg fault)
-- correctly handle absolute and relative paths in the configuration file
 - make it possible to download files through the mgmt interface
 - compile netpptk and cfgfile as shared libraries
 - get the wx-client finally working... (susanne is working on this)

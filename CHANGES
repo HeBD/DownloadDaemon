@@ -8,6 +8,7 @@
 	  "represents a valid connection" and not "represents a valid socket descriptor"
 	- tested the ROUTER target a bit more and included it into cmake list files
 	- finisehd (but mostly untested) implementation of the reconnect script engine
+	- DownloadDaemon should now handle relative and absolute paths in the configuration file correctly
    [susanne]
 	- added download list reloading every two seconds at ddclient-wx
 

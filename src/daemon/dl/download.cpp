@@ -98,7 +98,8 @@ std::string download::serialize() {
 
 int download::get_download(parsed_download &parsed_dl) {
 	string host(get_host());
-	string plugindir = program_root + global_config.get_cfg_value("plugin_dir");
+	string plugindir = global_config.get_cfg_value("plugin_dir");
+	correct_path(plugindir);
 	if(host == "") {
 		return INVALID_HOST;
 	}
@@ -163,7 +164,8 @@ std::string download::get_host() {
 }
 
 hostinfo download::get_hostinfo() {
-	string hostinfo_fn = program_root + global_config.get_cfg_value("plugin_dir") + "/hostinfo/" + get_host();
+	string hostinfo_fn = global_config.get_cfg_value("plugin_dir") + "/hostinfo/" + get_host();
+	correct_path(hostinfo_fn);
 	hostinfo hinfo;
 	struct stat st;
 	if(stat(hostinfo_fn.c_str(), &st) != 0) {

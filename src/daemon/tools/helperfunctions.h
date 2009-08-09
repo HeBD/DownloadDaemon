@@ -57,4 +57,9 @@ bool variable_is_valid(std::string &variable);
 */
 bool router_variable_is_valid(std::string &variable);
 
+/** Checks if a path is relative or absolute and if it's relative, add the program_root in the beginning
+* @param path Path to check/modify
+*/
+void correct_path(std::string &path);
+
 #endif /*HELPERFUNCTIONS_H_*/
