@@ -53,8 +53,7 @@ void connection_handler(tkSock *sock) {
 		*sock << "102 AUTHENTICATION";
 		*sock >> data;
 		if(data != passwd) {
-			log_string("Authentication failed", LOG_WARNING);
-			log_string(string("Received instead of real password: ") + data, LOG_DEBUG);
+			log_string("Authentication failed, wrong password", LOG_WARNING);
 			if(*sock) *sock << "102 AUTHENTICATION";
 			return;
 		} else {
