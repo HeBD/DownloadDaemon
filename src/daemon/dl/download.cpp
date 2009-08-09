@@ -97,6 +97,15 @@ std::string download::serialize() {
 }
 
 int download::get_download(parsed_download &parsed_dl) {
+    parsed_dl.download_url = "";
+    parsed_dl.download_filename = "";
+    parsed_dl.cookie_file = "";
+    parsed_dl.wait_before_download = 0;
+    parsed_dl.download_parse_success = false;
+    parsed_dl.download_parse_errmsg = "";
+    parsed_dl.download_parse_wait = 0;
+    parsed_dl.plugin_return_val = 0;
+
 	string host(get_host());
 	string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);

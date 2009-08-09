@@ -1,5 +1,6 @@
 2009-08-09
    [adrian]
+	- added CMakeLists file for ddclient-wx
 	- Added new reconnect policy "PUSSY" which only reconnects when REALLY necessary
 	- fixed race-condition when adding downloads too fast
 	- added documentation for writing reconnect scripts

@@ -7,6 +7,8 @@
 #include <ctime>
 
 #include <curl/curl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "../../lib/cfgfile/cfgfile.h"
 #include "download.h"
@@ -93,7 +95,6 @@ void download_thread(download_container::iterator download) {
 			}
 		}
 
-
 		string output_filename;
 		string download_folder = global_config.get_cfg_value("download_folder");
 		correct_path(download_folder);
@@ -106,7 +107,22 @@ void download_thread(download_container::iterator download) {
 			output_filename += download_folder;
 			output_filename += '/' + parsed_dl.download_filename;
 		}
-		fstream output_file(output_filename.c_str(), ios::out | ios::binary);
+
+		// Check if we can do a download resume or if we have to start from the beginning
+        hostinfo hinfo = download->get_hostinfo();
+        struct stat st;
+        if(stat(output_filename.c_str(), &st) == 0) {
+            if(st.st_size == download->downloaded_bytes && hinfo.allows_download_resumption_free) {
+                curl_easy_setopt(download->handle, CURLOPT_RESUME_FROM, st.st_size);
+            }
+        }
+
+		fstream output_file;
+		if(!hinfo.allows_download_resumption_free) {
+            output_file.open(output_filename.c_str(), ios::out | ios::binary);
+		} else {
+		    output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
+		}
 
 		if(!output_file.good()) {
 			log_string(string("Could not write to file: ") + output_filename, LOG_SEVERE);
