@@ -112,10 +112,11 @@ void download_thread(download_container::iterator download) {
         hostinfo hinfo = download->get_hostinfo();
         struct stat st;
         fstream output_file;
-        if(stat(output_filename.c_str(), &st) == 0 && st.st_size == download->downloaded_bytes &&
-           hinfo.allows_download_resumption_free) {
+        if(hinfo.allows_download_resumption_free && global_config.get_cfg_value("enable_resume") != "0" &&
+           stat(output_filename.c_str(), &st) == 0 && st.st_size == download->downloaded_bytes) {
             curl_easy_setopt(download->handle, CURLOPT_RESUME_FROM, st.st_size);
             output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
+            log_string(string("Download already started. Will continue to download ID: ") + int_to_string(download->id), LOG_DEBUG);
         } else {
             output_file.open(output_filename.c_str(), ios::out | ios::binary);
         }

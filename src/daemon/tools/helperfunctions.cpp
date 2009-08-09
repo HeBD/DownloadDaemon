@@ -121,7 +121,7 @@ long string_to_long(string str) {
 
 bool variable_is_valid(std::string &variable) {
 	trim_string(variable);
-	string possible_vars = ",enable_reconnect,downloading_active,download_timing_start,download_timing_end,download_folder,"
+	string possible_vars = ",enable_resume,enable_reconnect,downloading_active,download_timing_start,download_timing_end,download_folder,"
                            "simultaneous_downloads, log_level,log_file,mgmt_max_connections,mgmt_port,mgmt_password,plugin_dir,"
                            "dlist_file,";
 	size_t pos;
