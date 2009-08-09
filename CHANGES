@@ -1,5 +1,6 @@
 2009-08-09
    [adrian]
+	- fixed race-condition when adding downloads too fast
 	- added documentation for writing reconnect scripts
 	- small improvement in ddclient
 	- improved netpptk and fixed a bug in tkSock::bind. valid/operator bool now means as much as

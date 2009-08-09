@@ -42,6 +42,7 @@ void download_thread_main() {
  *	@param download iterator to a download in the global download list, that we should load
  */
 void download_thread(download_container::iterator download) {
+    download->set_status(DOWNLOAD_RUNNING);
 	parsed_download parsed_dl;
 	int success = download->get_download(parsed_dl);
 
@@ -104,15 +105,16 @@ void download_thread(download_container::iterator download) {
 			output_filename += global_config.get_cfg_value("download_folder");
 			output_filename += '/' + parsed_dl.download_filename;
 		}
-
 		fstream output_file(output_filename.c_str(), ios::out | ios::binary);
-		download->output_file = output_filename;
+
 		if(!output_file.good()) {
 			log_string(string("Could not write to file: ") + output_filename, LOG_SEVERE);
 			download->error = WRITE_FILE_ERROR;
 			download->set_status(DOWNLOAD_PENDING);
 			return;
 		}
+
+		download->output_file.assign(output_filename);
 
 		if(parsed_dl.download_url.empty()) {
 			log_string(string("Empty URL for download ID: ") + int_to_string(download->id), LOG_SEVERE);
