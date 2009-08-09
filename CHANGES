@@ -1,5 +1,6 @@
 2009-08-09
    [adrian]
+	- tested the ROUTER target a bit more and included it into cmake list files
 	- finisehd (but mostly untested) implementation of the reconnect script engine
 
 2009-08-08

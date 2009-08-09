@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
 add_subdirectory(plugins)
+add_subdirectory(reconnect)
 
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -28,7 +29,8 @@ ENDIF(Boost_FOUND AND CURL_FOUND)
 install(TARGETS DownloadDaemon DESTINATION /opt/downloaddaemon/)
 install(FILES ../../program_data/LICENCE DESTINATION /opt/downloaddaemon) 
 install(FILES ../../program_data/conf/downloaddaemon.conf DESTINATION /opt/downloaddaemon/conf)
-install(FILES ../../program_data/downloaddaemon DESTINATION bin)
+install(FILES ../../program_data/downloaddaemon DESTINATION bin PERMISSIONS WORLD_EXECUTE WORLD_READ GROUP_EXECUTE GROUP_READ OWNER_EXECUTE OWNER_READ OWNER_WRITE)
+install(FILES ../../program_data/conf/routerinfo.conf DESTINATION /opt/downloaddaemon/conf)
 install(CODE "FILE(MAKE_DIRECTORY /opt/downloaddaemon/downloads)")
 
 
