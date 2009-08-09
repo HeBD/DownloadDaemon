@@ -169,6 +169,12 @@
 		<Unit filename="src/ddclient-wx/ddclient-wx.h">
 			<Option target="DDClient-wx" />
 		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_about_dialog.cpp">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_about_dialog.h">
+			<Option target="DDClient-wx" />
+		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_connect_dialog.cpp">
 			<Option target="DDClient-wx" />
 		</Unit>
@@ -179,6 +185,12 @@
 			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_main.h">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_picture.cpp">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_picture.h">
 			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/ddclient/ddclient.cpp">

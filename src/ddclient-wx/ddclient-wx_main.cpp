@@ -33,7 +33,11 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 END_EVENT_TABLE()
 
 
-myframe::myframe(wxWindow *parent, const wxString &title, wxWindowID id,const wxPoint &pos,const wxSize &size): wxFrame(parent, -1, title){
+myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxWindowID id,const wxPoint &pos,const wxSize &size): wxFrame(parent, -1, title){
+
+	working_dir = parameter;
+	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/")));
+	working_dir += wxT("/");
 
 	SetClientSize(wxSize(750,500));
 	SetMinSize(wxSize(750,500));
@@ -92,7 +96,7 @@ void myframe::add_bars(){
 
 	// statusbar
 	CreateStatusBar(2);
-	SetStatusText(wxT("I'm not useful atm..."),0);
+	SetStatusText(wxT("I am a pretty useless statusbar. :3"),0);
 	SetStatusText(wxT(".."),1);
 
 	return;
@@ -341,8 +345,10 @@ void myframe::on_quit(wxCommandEvent &event){
 }
 
 
-void myframe::on_about(wxCommandEvent &event){ // TODO: insert more meaningful info
-	wxMessageBox(wxT("\nDownloadDaemon-ClientWX\n\nVersion 0.00000001~"), wxT("About"));
+void myframe::on_about(wxCommandEvent &event){
+	about_dialog dialog(working_dir, this);
+	dialog.ShowModal();
+
 	return;
 }
 
@@ -401,6 +407,7 @@ void myframe::on_start(wxCommandEvent &event){ // TODO: realize
 void myframe::set_connection_attributes(tkSock *mysock, string password){
 		this->mysock = mysock;
 }
+
 
 tkSock *myframe::get_connection_attributes(){
 	return mysock;

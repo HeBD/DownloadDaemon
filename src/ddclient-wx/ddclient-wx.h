@@ -21,8 +21,9 @@
 #endif
 
 class myapp: public wxApp{
-	    public:
-			virtual bool OnInit();
+	public:
+		virtual bool OnInit();
 };
 
-#endif //DDCLIENT_WX_APP_H
+
+#endif // DDCLIENT_WX_APP_H

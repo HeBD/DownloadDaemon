@@ -15,6 +15,7 @@
    [susanne]
 	- added download list reloading every two seconds at ddclient-wx
 	- ddclient-wx: download list columns now resize on client resize
+	- ddclient-wx: recreated about dialog
 
 2009-08-08
    [adrian]

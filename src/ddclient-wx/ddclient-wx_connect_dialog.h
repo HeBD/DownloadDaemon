@@ -49,4 +49,4 @@ class connect_dialog : public wxDialog{
 };
 
 
-#endif //DDCLIENT_WX_CONNECT_DIALOG_H
+#endif // DDCLIENT_WX_CONNECT_DIALOG_H

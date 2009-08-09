@@ -30,13 +30,14 @@
 #include <wx/gdicmn.h> // color database
 
 #include "ddclient-wx_connect_dialog.h"
+#include "ddclient-wx_about_dialog.h"
 #include "../lib/netpptk/netpptk.h"
 
 using namespace std;
 
 class myframe : public wxFrame{
 	public:
-		myframe(wxWindow *parent, const wxString &title, wxWindowID id=wxID_ANY,const wxPoint& pos=wxDefaultPosition,const wxSize& size=wxDefaultSize);
+		myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxWindowID id=wxID_ANY,const wxPoint& pos=wxDefaultPosition,const wxSize& size=wxDefaultSize);
 		~myframe();
 
 		// getter and setter methods
@@ -46,6 +47,7 @@ class myframe : public wxFrame{
 	private:
 
 		vector<vector<string> > content;
+		wxString working_dir;
 
 		// connection attributes
 		tkSock *mysock;
@@ -93,4 +95,4 @@ class myframe : public wxFrame{
 		DECLARE_EVENT_TABLE()
 };
 
-#endif //DDCLIENT_WX_MAIN_H
+#endif // DDCLIENT_WX_MAIN_H
