@@ -22,20 +22,19 @@
 int tkSock::m_instanceCount = 0;
 
 tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0), auto_accept_thread(0) {
+	valid = false;
 	#ifdef _WIN32
 		if(m_instanceCount == 0) {
 			WORD Version;
 			WSADATA wsaData;
 			Version = MAKEWORD(1, 1);
 			if(WSAStartup(Version, &wsaData) != 0) {
-				valid = false;
 				throw SocketError(SOCKET_CREATION_FAILED);
 			}
 		}
 	#endif
-
 	m_sock = ::socket(AF_INET, SOCK_STREAM, 0);
-	valid = false;
+
 	if(m_sock <= 0) {
 		throw SocketError(SOCKET_CREATION_FAILED);
 	}
@@ -49,12 +48,13 @@ tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0),
 
 tkSock::tkSock(const unsigned int MaxConnections, const unsigned int MaxReceive)
 	: m_maxconnections(MaxConnections), m_maxrecv(MaxReceive), m_open_connections(0), auto_accept_thread(0) {
+	valid = false;
 	#ifdef _WIN32
 		WORD Version;
 		WSADATA wsaData;
 		Version = MAKEWORD(1, 1);
 		if(WSAStartup(Version, &wsaData) != 0) {
-			valid = false;
+
 			throw SocketError(SOCKET_CREATION_FAILED);
 		}
 	#endif
@@ -63,7 +63,6 @@ tkSock::tkSock(const unsigned int MaxConnections, const unsigned int MaxReceive)
 		m_maxrecv = 9999;
 	}
 	m_sock = ::socket(AF_INET, SOCK_STREAM, 0);
-    valid = false;
 
 	if(m_sock < 0) {
 		throw SocketError(SOCKET_CREATION_FAILED);
@@ -231,7 +230,7 @@ bool tkSock::send(const std::string &s) {
 			return false;
 		}
 	} while(s_new.size() - status > 0);
-	valid = true;
+	//valid = true;
 	return true;
 }
 

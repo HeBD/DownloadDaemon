@@ -44,6 +44,10 @@ myframe::myframe(wxWindow *parent, const wxString &title, wxWindowID id,const wx
 
 	Layout();
 	Fit();
+
+	mysock = new tkSock();
+	boost::thread(boost::bind(&myframe::fill_lists, this));
+
 }
 
 
@@ -137,120 +141,213 @@ void myframe::add_content(){
 }
 
 
-void myframe::fill_lists(){ //TODO: needs a lot of testing
-	std::vector<std::string> splitted_line;
-	std::string answer, line, tab;
-	size_t lineend = 1, tabend = 1, column_nr, line_index = 0, line_nr = 0;
-
-	mysock->send("DDP DL LIST");
-	mysock->recv(answer);
-
-	// delete old input
-	for(int i=0; i<3; i++)
-		list[i]->DeleteAllItems();
-
-	// parse lines
-	while(answer.length() > 0 && lineend != std::string::npos){
-		lineend = answer.find("\n"); // termination character for line
-		line = answer.substr(0, lineend);
-		answer = answer.substr(lineend+1);
-
-		// parse columns
-		column_nr = 0;
-		tabend = 0;
-		while(line.length() > 0 && tabend != std::string::npos){
-			tabend = line.find("|"); // termination character for column
-
-			if(tabend == std::string::npos){ // no | found, so it is the last column
-				tab = line;
-				line = "";
-			}else{
-				if(tabend != 0 && line.at(tabend-1) == '\\') // because titles can have | inside (will be escaped with \)
-					tabend = line.find("|", tabend+1);
-
-				tab = line.substr(0, tabend);
-				line = line.substr(tabend+1);
-
-			}
-			splitted_line.push_back(tab); // save all tabs per line for later use
-
-			// fill columns
-			if(column_nr == 0){
-				line_index = list[0]->InsertItem(line_nr, wxString(tab.c_str(), wxConvUTF8)); //TODO: just list 0 atm (all downloads) //careful: has to be inserted in the bottom line!!!
-			}else if(column_nr < 4){
-				list[0]->SetItem(line_index, column_nr, wxString(tab.c_str(), wxConvUTF8)); //TODO: just list 0 atm (all downloads)
-			}else{ }
-			column_nr++;
+void myframe::fill_lists(){
+	while(true){ // for boost::thread
+		if(mysock == NULL || !*mysock){
+			sleep(2);
+			continue;
 		}
 
-		// building status column
-		std::string buffer;
+		vector<vector<string> > new_content;
+		vector<string> splitted_line;
+		string answer, line, tab;
+		size_t lineend = 1, tabend = 1, column_nr, line_nr = 0;
 
-		if(splitted_line[4] == "DOWNLOAD_RUNNING"){
-				list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("LIME GREEN")));
+		mysock->send("DDP DL LIST");
+		mysock->recv(answer);
 
-				if(std::atoi(splitted_line[7].c_str()) > 0){ // waiting time > 0
-					buffer = "Download running. Waiting " + splitted_line[7] + " seconds.";
 
-				}else{ // no waiting time
-					std::stringstream stream_buffer;
-					stream_buffer << "Download Running: ";
+		// parse lines
+		while(answer.length() > 0 && lineend != string::npos){
+			lineend = answer.find("\n"); // termination character for line
+			line = answer.substr(0, lineend);
+			answer = answer.substr(lineend+1);
 
-					if(splitted_line[6] == "0"){ // download size unknown
-						stream_buffer << "0.00% - ";
+			// parse columns
+			column_nr = 0;
+			tabend = 0;
+			while(line.length() > 0 && tabend != string::npos){
+				tabend = line.find("|"); // termination character for column
 
-						if(splitted_line[5] == "0") // nothing downloaded yet
-							stream_buffer << "0.00 MB/ 0.00 MB";
-						else // something downloaded
-							stream_buffer << std::setprecision(3) << std::atoi(splitted_line[5].c_str()) / 1048576 << " MB/ 0.00 MB";
+				if(tabend == string::npos){ // no | found, so it is the last column
+					tab = line;
+					line = "";
+				}else{
+					if(tabend != 0 && line.at(tabend-1) == '\\') // because titles can have | inside (will be escaped with \)
+						tabend = line.find("|", tabend+1);
 
-					}else{ // downoad size known
-						if(splitted_line[5] == "0") // nothing downloaded yet
-							stream_buffer << "0.00% - 0.00 MB/ " << std::atoi(splitted_line[6].c_str()) / 1048576 << " MB";
+					tab = line.substr(0, tabend);
+					line = line.substr(tabend+1);
 
-						else{ // download size known and something downloaded
-							stream_buffer << std::setprecision(3) << (float)std::atoi(splitted_line[5].c_str()) / (float)std::atoi(splitted_line[6].c_str()) * 100 << "% - ";
-							stream_buffer << std::setprecision(3) << std::atoi(splitted_line[5].c_str()) / 1048576 << " MB/ ";
-							stream_buffer << std::setprecision(3) << std::atoi(splitted_line[6].c_str()) / 1048576 << " MB";
-						}
-					}
-					buffer = stream_buffer.str();
 				}
-
-		}else if(splitted_line[4] == "DOWNLOAD_INACTIVE"){ // TODO: test the rest of the status stuff!
-			if(splitted_line[8] == "NO_ERROR"){
-				list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("YELLOW")));
-				buffer = "Download Inactive.";
-
-			}else{ // error occured
-				list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("RED")));
-				buffer = "Inactive. Error: " + splitted_line[8];
+				splitted_line.push_back(tab); // save all tabs per line for later use
 			}
 
-		}else if(splitted_line[4] == "DOWNLOAD_PENDING"){
-			if(splitted_line[8] == "NO_ERROR"){
-				buffer = "Download Pending.";
 
-			}else{ //error occured
-				list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("RED")));
-				buffer = "Error: " + splitted_line[8];
-			}
-
-		}else if(splitted_line[4] == "DOWNLOAD_WAITING"){
-			list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("YELLOW")));
-			buffer = "Have to wait " + splitted_line[7] + " seconds.";
-
-		}else if(splitted_line[4] == "DOWNLOAD_FINISHED"){
-			list[0]->SetItemBackgroundColour(line_index, wxColor(wxT("GREEN")));
-			buffer = "Download Finished.";
-
-		}else{ // default, column 4 has unknown input
-			buffer = "Status not detected.";
+			line_nr++;
+			new_content.push_back(splitted_line);
+			splitted_line.clear();
 		}
-		list[0]->SetItem(line_index, 4, wxString(buffer.c_str(), wxConvUTF8)); // finally inserting status column
 
+		compare_vectorvector(new_content.begin(), new_content.end());
+		content = new_content;
+
+		sleep(2); // reload every two seconds
+	}
+	return;
+}
+
+
+string myframe::build_status(string &status_text, vector<string> &splitted_line){ // TODO: test every possible status
+	string color = "WHITE";
+
+	if(splitted_line[4] == "DOWNLOAD_RUNNING"){
+		color = "LIME GREEN";
+
+		if(atoi(splitted_line[7].c_str()) > 0){ // waiting time > 0
+			status_text = "Download running. Waiting " + splitted_line[7] + " seconds.";
+
+		}else{ // no waiting time
+			stringstream stream_buffer;
+			stream_buffer << "Download Running: ";
+
+			if(splitted_line[6] == "0"){ // download size unknown
+				stream_buffer << "0.00% - ";
+
+				if(splitted_line[5] == "0") // nothing downloaded yet
+					stream_buffer << "0.00 MB/ 0.00 MB";
+				else // something downloaded
+					stream_buffer << setprecision(3) << atoi(splitted_line[5].c_str()) / 1048576 << " MB/ 0.00 MB";
+
+			}else{ // download size known
+				if(splitted_line[5] == "0") // nothing downloaded yet
+					stream_buffer << "0.00% - 0.00 MB/ " << atoi(splitted_line[6].c_str()) / 1048576 << " MB";
+
+				else{ // download size known and something downloaded
+					stream_buffer << setprecision(3) << (float)atoi(splitted_line[5].c_str()) / (float)atoi(splitted_line[6].c_str()) * 100 << "% - ";
+					stream_buffer << setprecision(3) << atoi(splitted_line[5].c_str()) / 1048576 << " MB/ ";
+					stream_buffer << setprecision(3) << atoi(splitted_line[6].c_str()) / 1048576 << " MB";
+				}
+			}
+			status_text = stream_buffer.str();
+		}
+
+	}else if(splitted_line[4] == "DOWNLOAD_INACTIVE"){ // TODO: test the rest of the status stuff!
+		if(splitted_line[8] == "NO_ERROR"){
+			color = "YELLOW";
+			status_text = "Download Inactive.";
+
+		}else{ // error occured
+			color = "RED";
+			status_text = "Inactive. Error: " + splitted_line[8];
+		}
+
+	}else if(splitted_line[4] == "DOWNLOAD_PENDING"){
+		if(splitted_line[8] == "NO_ERROR"){
+			status_text = "Download Pending.";
+
+		}else{ //error occured
+			color = "RED";
+			status_text = "Error: " + splitted_line[8];
+		}
+
+	}else if(splitted_line[4] == "DOWNLOAD_WAITING"){
+		color = "YELLOW";
+		status_text = "Have to wait " + splitted_line[7] + " seconds.";
+
+	}else if(splitted_line[4] == "DOWNLOAD_FINISHED"){
+		color = "GREEN";
+		status_text = "Download Finished.";
+
+	}else{ // default, column 4 has unknown input
+		status_text = "Status not detected.";
+	}
+
+	return color;
+}
+
+
+// methods for comparing and actualizing content if necessary
+void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content_it, vector<vector<string> >::iterator new_content_end){
+
+	vector<vector<string> >::iterator old_content_it = content.begin();
+	size_t line_nr = 0, line_index;
+	string status_text, color;
+
+
+	// compare the i-th vector in content with the i-th vector in new_content
+	while((new_content_it < new_content_end) && (old_content_it < content.end())){
+		compare_vector(line_nr, *new_content_it, (*old_content_it).begin(), (*old_content_it).end());
+
+		new_content_it++;
+		old_content_it++;
 		line_nr++;
-		splitted_line.clear();
+	}
+
+
+	if(new_content_it < new_content_end){ // there are more new lines then old ones
+
+		while(new_content_it < new_content_end){
+
+			// insert content
+			line_index = list[0]->InsertItem(line_nr, wxString((*new_content_it)[0].c_str(), wxConvUTF8));
+
+			for(int i=1; i<4; i++) // column 1 to 3
+				list[0]->SetItem(line_index, i, wxString((*new_content_it)[i].c_str(), wxConvUTF8));
+
+			// status column
+			color = build_status(status_text, (*new_content_it));
+			list[0]->SetItemBackgroundColour(line_index, wxString(color.c_str(), wxConvUTF8));
+			list[0]->SetItem(line_index, 4, wxString(status_text.c_str(), wxConvUTF8));
+
+			new_content_it++;
+			line_nr++;
+		}
+
+	}else if(old_content_it < content.end()){ // there are more old lines then new ones
+		while(old_content_it < content.end()){
+
+			// delete content
+			list[0]->DeleteItem(line_nr);
+
+			old_content_it++;
+			line_nr++;
+		}
+	}
+
+	return;
+}
+
+
+void myframe::compare_vector(size_t line_nr, vector<string> &splitted_line_new, vector<string>::iterator it_old, vector<string>::iterator end_old){
+	vector<string>::iterator it_new = splitted_line_new.begin();
+	vector<string>::iterator end_new = splitted_line_new.end();
+
+	size_t column_nr = 0;
+	bool status_change = false;
+	string status_text, color;
+
+	// compare every column
+	while((it_new < end_new) && (it_old < end_old)){
+
+		if(*it_new != *it_old){ // content of column_new != content of column_old
+
+			if(column_nr < 4) // direct input for columns 0 to 3
+				list[0]->SetItem(line_nr, column_nr, wxString((*it_new).c_str(), wxConvUTF8));
+
+			else // status column
+				status_change = true;
+		}
+
+		it_new++;
+		it_old++;
+		column_nr++;
+	}
+
+	if(status_change){
+		color = build_status(status_text, splitted_line_new);
+		list[0]->SetItemBackgroundColour(line_nr, wxString(color.c_str(), wxConvUTF8));
+		list[0]->SetItem(line_nr, 4, wxString(status_text.c_str(), wxConvUTF8));
 	}
 
 	return;
@@ -302,7 +399,7 @@ void myframe::on_start(wxCommandEvent &event){ // TODO: realize
 
 
 // getter and setter methods
-void myframe::set_connection_attributes(tkSock *mysock, std::string password){
+void myframe::set_connection_attributes(tkSock *mysock, string password){
 		this->mysock = mysock;
 }
 

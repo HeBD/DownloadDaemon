@@ -7,6 +7,8 @@
 	  "represents a valid connection" and not "represents a valid socket descriptor"
 	- tested the ROUTER target a bit more and included it into cmake list files
 	- finisehd (but mostly untested) implementation of the reconnect script engine
+   [susanne]
+	- added download list reloading every two seconds at ddclient-wx
 
 2009-08-08
    [adrian]

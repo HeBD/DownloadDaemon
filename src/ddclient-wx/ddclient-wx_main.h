@@ -13,6 +13,8 @@
 
 #include <vector>
 #include <iomanip>
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
 
 #include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/frame.h>
@@ -30,22 +32,24 @@
 #include "ddclient-wx_connect_dialog.h"
 #include "../lib/netpptk/netpptk.h"
 
+using namespace std;
+
 class myframe : public wxFrame{
 	public:
 		myframe(wxWindow *parent, const wxString &title, wxWindowID id=wxID_ANY,const wxPoint& pos=wxDefaultPosition,const wxSize& size=wxDefaultSize);
 		~myframe();
 
 		// getter and setter methods
-		void set_connection_attributes(tkSock *mysock, std::string password);
+		void set_connection_attributes(tkSock *mysock, string password);
 		tkSock *get_connection_attributes();
-
-		void fill_lists(); // set private later
 
 	private:
 
+		vector<vector<string> > content;
+
 		// connection attributes
 		tkSock *mysock;
-		std::string password;
+		string password;
 
 		// elements for bars
 		wxMenuBar *menu;
@@ -74,6 +78,12 @@ class myframe : public wxFrame{
 
 		void add_bars();
 		void add_content();
+		void fill_lists();
+		string build_status(string &status_text, vector<string> &splitted_line);
+
+		// methods for comparing and actualizing content if necessary
+		void compare_vectorvector(vector<vector<string> >::iterator new_content_it, vector<vector<string> >::iterator new_content_end);
+		void compare_vector(size_t line_nr, vector<string> &splitted_line_new, vector<string>::iterator it_old, vector<string>::iterator end_old);
 
 		// event handle methods
 		void on_quit(wxCommandEvent &event);

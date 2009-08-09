@@ -121,12 +121,13 @@ void connect_dialog::on_connect(wxCommandEvent &event){ //TODO: needs more tests
 			// give socket and password to parent (myframe)
 			myframe *myparent = (myframe *) GetParent();
 
-			if(myparent->get_connection_attributes() != NULL) //if there is already a connection, delete the old one
-				delete myparent->get_connection_attributes();
+			tkSock *frame_socket = myparent->get_connection_attributes();
+			if(frame_socket != NULL){ //if there is already a connection, delete the old one
+				delete frame_socket;
+				frame_socket = NULL;
+			}
 
 			myparent->set_connection_attributes(mysock, pass);
-			myparent->fill_lists(); // TODO: shouldn't be here, will be in an own thread later
-
 			Destroy();
 
 		}else{
