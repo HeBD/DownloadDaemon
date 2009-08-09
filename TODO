@@ -1,14 +1,13 @@
-1: find a way to cross-compile it to ARMs (scratchbox) - succeeded in building a statically linked binary, but curl_easy_perform crashes (seg fault)
-2: correctly handle absolute and relative paths in the configuration file
-4: make it possible to download files through the mgmt interface
-5: compile netpptk and cfgfile as shared libraries
-6: get the wx-client finally working... (susanne is working on this)
-7: finish reconnect script implementation (update protocol, add ROUTER target)
-8: implement all the # not implemented-s in hostinfo
-9: implement premium account support
-10: implement some type of container format to import/export huge lists
-11: write a few plugins
-12: handle container formats of other downloaders
-13: speed regulation
-14: extend netpptk to get endpoint info and display connecting IPs in logfile
-15: Make a multiuser-system out of downloaddaemon with partly individual configuration (download-folder) and administration...
+- find a way to cross-compile it to ARMs (scratchbox) - succeeded in building a statically linked binary, but curl_easy_perform crashes (seg fault)
+- correctly handle absolute and relative paths in the configuration file
+- make it possible to download files through the mgmt interface
+- compile netpptk and cfgfile as shared libraries
+- get the wx-client finally working... (susanne is working on this)
+- implement all the # not implemented-s in hostinfo
+- implement premium account support
+- implement some type of container format to import/export huge lists
+- write a few plugins
+- handle container formats of other downloaders
+- speed regulation
+- extend netpptk to get endpoint info and display connecting IPs in logfile
+- Make a multiuser-system out of downloaddaemon with partly individual configuration (download-folder) and administration...
