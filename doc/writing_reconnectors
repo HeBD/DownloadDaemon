@@ -1,0 +1,14 @@
+Writing a reconnector-script is pretty simple. It can be written in any programming or scripting language you wish,
+as long as the resulting file can be executed.
+The filename of the reconnector should be <vendor>_<model> and nothing else.
+When writing a reconnector, you will get up to three variables as command line arguments.
+the first one will be the router's ip address or hostname.
+the second one will be a username to log into the router.
+the third one will be a password to log into the router.
+Not all arguments have to exist for all models or all configurations, so you always HAVE to check
+for the number of arguments!
+Now just make sure that reconnecting works.
+If, however, the reconnect fails because of anything, reutrn something else than 0.
+If everything is okay, return 0.
+When done, mail me the reconnect script ;) and place it in /opt/downloaddaemon/reconnect.
+From then on, it is usable, no restart required.

@@ -100,7 +100,6 @@ bool tkSock::bind(const int port) {
 	std::stringstream ss;
 	ss << port;
 	if(getaddrinfo(NULL, ss.str().c_str(), &hints, &res) != 0) {
-		freeaddrinfo(res);
 		valid = false;
 		return false;
 	}

@@ -119,9 +119,10 @@ int main(int argc, char* argv[]) {
 
 		cout << answer << endl;
 		if(!command.empty()) {
-			return 0;
+		    break;
 		}
 	}
+	cout << endl;
 
 }
 

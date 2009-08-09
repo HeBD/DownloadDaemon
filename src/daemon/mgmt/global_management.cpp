@@ -38,6 +38,9 @@ void tick_downloads() {
 void reconnect() {
 	std::string reconnect_plugin;
 	std::string reconnect_policy;
+	std::string router_ip;
+	std::string router_username;
+	std::string router_password;
 	while(true) {
 	    if(global_config.get_cfg_value("enable_reconnect") == "0") {
 	        sleep(10);
@@ -54,6 +57,16 @@ void reconnect() {
 			sleep(10);
 			continue;
 		}
+		router_ip == global_router_config.get_cfg_value("router_ip");
+		if(router_ip.empty()) {
+		    log_string("Reconnecting activated, but no router ip specified", LOG_WARNING);
+		    sleep(10);
+		    continue;
+		}
+
+        router_username = global_router_config.get_cfg_value("router_username");
+        router_password = global_router_config.get_cfg_value("router_password");
+
 		bool reconnect_needed = false;
 		bool reconnect_allowed = false;
 		for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
@@ -101,13 +114,17 @@ void reconnect() {
 			}
 
 			log_string("Reconnecting now!", LOG_WARNING);
-			system(reconnect_script.c_str());
-			for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-				if(it->get_status() == DOWNLOAD_WAITING) {
-					it->set_status(DOWNLOAD_PENDING);
-				}
+			string ex = reconnect_script + ' ' + router_ip + ' ' + router_username + ' ' + router_password;
+			if(system(ex.c_str()) == 0) {
+                for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
+                    if(it->get_status() == DOWNLOAD_WAITING) {
+                        it->set_status(DOWNLOAD_PENDING);
+                    }
+                }
+			} else {
+			    log_string("Reconnect plugin failed!", LOG_SEVERE);
 			}
-			sleep(10);
 		}
+		sleep(10);
 	}
 }

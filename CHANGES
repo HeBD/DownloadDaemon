@@ -1,5 +1,9 @@
 2009-08-09
    [adrian]
+	- added documentation for writing reconnect scripts
+	- small improvement in ddclient
+	- improved netpptk and fixed a bug in tkSock::bind. valid/operator bool now means as much as
+	  "represents a valid connection" and not "represents a valid socket descriptor"
 	- tested the ROUTER target a bit more and included it into cmake list files
 	- finisehd (but mostly untested) implementation of the reconnect script engine
 
