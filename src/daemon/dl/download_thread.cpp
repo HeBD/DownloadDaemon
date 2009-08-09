@@ -42,7 +42,6 @@ void download_thread_main() {
  *	@param download iterator to a download in the global download list, that we should load
  */
 void download_thread(download_container::iterator download) {
-    download->set_status(DOWNLOAD_RUNNING);
 	parsed_download parsed_dl;
 	int success = download->get_download(parsed_dl);
 
@@ -114,7 +113,7 @@ void download_thread(download_container::iterator download) {
 			return;
 		}
 
-		download->output_file.assign(output_filename);
+        download->output_file = output_filename;
 
 		if(parsed_dl.download_url.empty()) {
 			log_string(string("Empty URL for download ID: ") + int_to_string(download->id), LOG_SEVERE);
@@ -189,6 +188,9 @@ void download_thread(download_container::iterator download) {
 			return;
 		}
 	}
+	// something weird happened...
+	download->set_status(DOWNLOAD_PENDING);
+	return;
 }
 
 /** Gets the next downloadable item in the global download list (filters stuff like inactives, wrong time, etc)

@@ -57,7 +57,7 @@ void reconnect() {
 			sleep(10);
 			continue;
 		}
-		router_ip == global_router_config.get_cfg_value("router_ip");
+		router_ip = global_router_config.get_cfg_value("router_ip");
 		if(router_ip.empty()) {
 		    log_string("Reconnecting activated, but no router ip specified", LOG_WARNING);
 		    sleep(10);
