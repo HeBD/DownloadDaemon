@@ -58,14 +58,9 @@ class myframe : public wxFrame{
 		wxToolBar *toolbar;
 
 		// elements for content
-		wxNotebook *notebook;
-		wxPanel *panel_all;
-		wxPanel *panel_running;
-		wxPanel *panel_finished;
-		wxBoxSizer *sizer_all;
-		wxBoxSizer *sizer_running;
-		wxBoxSizer *sizer_finished;
-		wxListCtrl *list[3];
+		wxPanel *panel_downloads;
+		wxBoxSizer *sizer_downloads;
+		wxListCtrl *list;
 
 		// element IDs
 		static const long id_menu_quit;
@@ -78,7 +73,7 @@ class myframe : public wxFrame{
 
 		void add_bars();
 		void add_content();
-		void fill_lists();
+		void fill_list();
 		string build_status(string &status_text, vector<string> &splitted_line);
 
 		// methods for comparing and actualizing content if necessary
@@ -93,6 +88,7 @@ class myframe : public wxFrame{
 		void on_delete(wxCommandEvent &event);
 		void on_stop(wxCommandEvent &event);
 		void on_start(wxCommandEvent &event);
+		void on_resize(wxSizeEvent &event);
 
 		DECLARE_EVENT_TABLE()
 };

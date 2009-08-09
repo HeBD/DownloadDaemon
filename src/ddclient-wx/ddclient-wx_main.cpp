@@ -29,13 +29,14 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_toolbar_delete, myframe::on_delete)
 	EVT_MENU(id_toolbar_stop, myframe::on_stop)
 	EVT_MENU(id_toolbar_start, myframe::on_start)
+	EVT_SIZE(myframe::on_resize)
 END_EVENT_TABLE()
 
 
 myframe::myframe(wxWindow *parent, const wxString &title, wxWindowID id,const wxPoint &pos,const wxSize &size): wxFrame(parent, -1, title){
 
-	SetClientSize(wxSize(700,500));
-	SetMinSize(wxSize(700,500));
+	SetClientSize(wxSize(750,500));
+	SetMinSize(wxSize(750,500));
 	CenterOnScreen();
 	//SetIcon(); // later
 
@@ -46,7 +47,7 @@ myframe::myframe(wxWindow *parent, const wxString &title, wxWindowID id,const wx
 	Fit();
 
 	mysock = new tkSock();
-	boost::thread(boost::bind(&myframe::fill_lists, this));
+	boost::thread(boost::bind(&myframe::fill_list, this));
 
 }
 
@@ -100,48 +101,27 @@ void myframe::add_bars(){
 
 void myframe::add_content(){
 
-	notebook = new wxNotebook(this, wxID_ANY, wxPoint(88,48));
-	panel_all = new wxPanel(notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-	panel_running = new wxPanel(notebook, wxNewId(), wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-	panel_finished = new wxPanel(notebook, wxNewId(), wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-	panel_all->SetFocus();
-
-	sizer_all = new wxBoxSizer(wxHORIZONTAL); // lines/rows, colums, vgap, hgap
-	sizer_running = new wxBoxSizer(wxHORIZONTAL);
-	sizer_finished = new wxBoxSizer(wxHORIZONTAL);
-
-	panel_all->SetSizer(sizer_all);
-	panel_running->SetSizer(sizer_running);
-	panel_finished->SetSizer(sizer_finished);
-
-	notebook->AddPage(panel_all, wxT("All Downloads"), false);
-	notebook->AddPage(panel_running, wxT("Running Downloads"), false);
-	notebook->AddPage(panel_finished, wxT("Finished Downloads"), false);
-
+	panel_downloads = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	sizer_downloads = new wxBoxSizer(wxHORIZONTAL); // lines/rows, colums, vgap, hgap
+	panel_downloads->SetSizer(sizer_downloads);
 
 	// all download lists
-	list[0] = new wxListCtrl(panel_all, wxID_ANY, wxPoint(120, -46), wxSize(0,0), wxLC_REPORT);
-	sizer_all->Add(list[0] , 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	list[1] = new wxListCtrl(panel_running, wxID_ANY, wxPoint(120, -46), wxSize(0,0), wxLC_REPORT);
-	sizer_running->Add(list[1] , 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	list[2] = new wxListCtrl(panel_finished, wxID_ANY, wxPoint(120, -46), wxSize(0,0), wxLC_REPORT);
-	sizer_finished->Add(list[2] , 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	list = new wxListCtrl(panel_downloads, wxID_ANY, wxPoint(120, -46), wxSize(0,0), wxLC_REPORT);
+	sizer_downloads->Add(list , 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 
 
-	for(int i=0; i<3; i++){
-		// columns
-		list[i]->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 30);
-		list[i]->InsertColumn(1, wxT("Added"), wxLIST_AUTOSIZE_USEHEADER, 190);
-		list[i]->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 100);
-		list[i]->InsertColumn(3, wxT("\tURL\t"), wxLIST_AUTOSIZE_USEHEADER, 200);
-		list[i]->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 100);
-	}
+	// columns
+	list->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 30);
+	list->InsertColumn(1, wxT("Added"), wxLIST_AUTOSIZE_USEHEADER, 190);
+	list->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 100);
+	list->InsertColumn(3, wxT("\tURL\t"), wxLIST_AUTOSIZE_USEHEADER, 200);
+	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 100);
 
 	return;
 }
 
 
-void myframe::fill_lists(){
+void myframe::fill_list(){
 	while(true){ // for boost::thread
 		if(mysock == NULL || !*mysock){
 			sleep(2);
@@ -290,15 +270,15 @@ void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content
 		while(new_content_it < new_content_end){
 
 			// insert content
-			line_index = list[0]->InsertItem(line_nr, wxString((*new_content_it)[0].c_str(), wxConvUTF8));
+			line_index = list->InsertItem(line_nr, wxString((*new_content_it)[0].c_str(), wxConvUTF8));
 
 			for(int i=1; i<4; i++) // column 1 to 3
-				list[0]->SetItem(line_index, i, wxString((*new_content_it)[i].c_str(), wxConvUTF8));
+				list->SetItem(line_index, i, wxString((*new_content_it)[i].c_str(), wxConvUTF8));
 
 			// status column
 			color = build_status(status_text, (*new_content_it));
-			list[0]->SetItemBackgroundColour(line_index, wxString(color.c_str(), wxConvUTF8));
-			list[0]->SetItem(line_index, 4, wxString(status_text.c_str(), wxConvUTF8));
+			list->SetItemBackgroundColour(line_index, wxString(color.c_str(), wxConvUTF8));
+			list->SetItem(line_index, 4, wxString(status_text.c_str(), wxConvUTF8));
 
 			new_content_it++;
 			line_nr++;
@@ -308,7 +288,7 @@ void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content
 		while(old_content_it < content.end()){
 
 			// delete content
-			list[0]->DeleteItem(line_nr);
+			list->DeleteItem(line_nr);
 
 			old_content_it++;
 			line_nr++;
@@ -333,7 +313,7 @@ void myframe::compare_vector(size_t line_nr, vector<string> &splitted_line_new, 
 		if(*it_new != *it_old){ // content of column_new != content of column_old
 
 			if(column_nr < 4) // direct input for columns 0 to 3
-				list[0]->SetItem(line_nr, column_nr, wxString((*it_new).c_str(), wxConvUTF8));
+				list->SetItem(line_nr, column_nr, wxString((*it_new).c_str(), wxConvUTF8));
 
 			else // status column
 				status_change = true;
@@ -346,8 +326,8 @@ void myframe::compare_vector(size_t line_nr, vector<string> &splitted_line_new, 
 
 	if(status_change){
 		color = build_status(status_text, splitted_line_new);
-		list[0]->SetItemBackgroundColour(line_nr, wxString(color.c_str(), wxConvUTF8));
-		list[0]->SetItem(line_nr, 4, wxString(status_text.c_str(), wxConvUTF8));
+		list->SetItemBackgroundColour(line_nr, wxString(color.c_str(), wxConvUTF8));
+		list->SetItem(line_nr, 4, wxString(status_text.c_str(), wxConvUTF8));
 	}
 
 	return;
@@ -380,6 +360,7 @@ void myframe::on_add(wxCommandEvent &event){ // TODO: realize
 	return;
  }
 
+
 void myframe::on_delete(wxCommandEvent &event){ // TODO: realize
 	wxMessageBox(wxT("\nDummy Dialog"), wxT("Dummy"));
 	return;
@@ -394,6 +375,24 @@ void myframe::on_stop(wxCommandEvent &event){ // TODO: realize
 
 void myframe::on_start(wxCommandEvent &event){ // TODO: realize
 	wxMessageBox(wxT("\nDummy Dialog"), wxT("Dummy"));
+	return;
+ }
+
+
+ void myframe::on_resize(wxSizeEvent &event){
+    myframe::OnSize(event); // call default evt_size handler
+    Refresh();
+
+ 	if(list != NULL){
+
+		// change column widths on resize
+		int width = GetClientSize().GetWidth();
+		width -= 235; // minus width of fix sized columns
+
+		list->SetColumnWidth(2, width/4); // only column 2 to 4, because 0 and 1 have fix sizes
+		list->SetColumnWidth(3, width/2);
+		list->SetColumnWidth(4, width/4);
+ 	}
 	return;
  }
 

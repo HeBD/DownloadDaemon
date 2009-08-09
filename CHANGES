@@ -11,6 +11,7 @@
 	- DownloadDaemon should now handle relative and absolute paths in the configuration file correctly
    [susanne]
 	- added download list reloading every two seconds at ddclient-wx
+	- ddclient-wx: download list columns now resize on client resize
 
 2009-08-08
    [adrian]
