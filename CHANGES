@@ -1,3 +1,7 @@
+2009-09-10
+   [adrian]
+	- ftp direct links are now also supported
+
 2009-08-09
    [adrian]
 	- Implemented functionality to continue downloads that were started but broke up
