@@ -5,6 +5,8 @@ set(CMAKE_BUILD_TYPE Debug)
 SET(ddclient_wx_SRCS	ddclient-wx_connect_dialog.cpp
 			ddclient-wx.cpp  
 			ddclient-wx_main.cpp
+			ddclient-wx_about_dialog.cpp
+			ddclient-wx_picture.cpp
 			../lib/netpptk/netpptk.cpp 
 			../lib/cfgfile/cfgfile.cpp)
 
