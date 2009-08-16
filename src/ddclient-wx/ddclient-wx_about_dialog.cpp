@@ -13,8 +13,28 @@
 // event table
 BEGIN_EVENT_TABLE(about_dialog, wxDialog)
 	EVT_BUTTON(wxID_OK, about_dialog::on_ok)
+	EVT_HYPERLINK(wxID_ANY, about_dialog::on_link_click) // should be unnecessary, but default behaviour doesn't happen somehow
 END_EVENT_TABLE()
 
+
+//helper function to generate build info
+wxString wxbuildinfo(){
+    wxString wxbuild(wxVERSION_STRING);
+
+	#if defined(__WXMSW__)
+	wxbuild << _T("-Windows");
+	#elif defined(__UNIX__)
+	wxbuild << _T("-Linux");
+	#endif // defined(__WXMSW__)
+
+	#if wxUSE_UNICODE
+	wxbuild << _T("-unicode build");
+	#else
+	wxbuild << _T("-ANSI build");
+	#endif // wxUSE_UNICODE
+
+    return wxbuild;
+}
 
 about_dialog::about_dialog(wxString working_dir, wxWindow *parent) : wxDialog(parent, -1, wxT("About...")){
 
@@ -26,8 +46,8 @@ about_dialog::about_dialog(wxString working_dir, wxWindow *parent) : wxDialog(pa
 	text_sizer = new wxBoxSizer(wxVERTICAL);
 
 	name_text = new wxStaticText(this, -1, wxT("DownloadDaemon-ClientWX"));
-	build_text = new wxStaticText(this, -1, wxT("(insert build info)"));
-	website_text = new wxStaticText(this, -1, wxT("(create link) \nhttp://board.gulli.com/thread/1419174-downloaddaemon\n---och-downloader-fr-server-nas-o/"));
+	build_text = new wxStaticText(this, -1, wxbuildinfo());
+	website_text = new wxHyperlinkCtrl(this, -1, wxT("Project Website"), wxT("http://board.gulli.com/thread/1419174-downloaddaemon\n---och-downloader-fr-server-nas-o"), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxHL_ALIGN_LEFT|wxHL_CONTEXTMENU);
 
 	ok_button = new wxButton(this, wxID_OK, wxT("Ok"));
 	ok_button->SetDefault();
@@ -41,10 +61,10 @@ about_dialog::about_dialog(wxString working_dir, wxWindow *parent) : wxDialog(pa
 	text_sizer->Add(build_text,0,wxALL|wxEXPAND,10);
 	text_sizer->Add(website_text,0,wxALL|wxEXPAND,10);
 
-	info_sizer->Add(pic, 0, wxALL, 20);
-	info_sizer->Add(text_sizer, 0, wxALL, 20);
+	info_sizer->Add(pic, 0, wxALL, 5);
+	info_sizer->Add(text_sizer, 0, wxALL, 5);
 
-	overall_sizer->Add(info_sizer, 0, wxALL, 20);
+	overall_sizer->Add(info_sizer, 0, wxALL, 0);
 	overall_sizer->Add(ok_button, 0, wxALIGN_CENTER);
 
 
@@ -57,6 +77,12 @@ about_dialog::about_dialog(wxString working_dir, wxWindow *parent) : wxDialog(pa
 
 void about_dialog::on_ok(wxCommandEvent &event){
 	Destroy();
+	return;
+}
+
+void about_dialog::on_link_click(wxHyperlinkEvent &event){
+	wxLaunchDefaultBrowser(event.GetURL()); // doesn't do anything, even though it should
+	return;
 }
 
 

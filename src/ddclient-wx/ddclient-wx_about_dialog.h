@@ -18,6 +18,7 @@
 #include <wx/button.h>
 #include <wx/sizer.h>
 #include <wx/string.h>
+#include <wx/hyperlink.h>
 
 #include "ddclient-wx_picture.h"
 
@@ -29,7 +30,7 @@ class about_dialog: public wxDialog{
 		wxString working_dir;
 		wxStaticText *name_text;
 		wxStaticText *build_text;
-		wxStaticText *website_text;
+		wxHyperlinkCtrl *website_text;
 		wxButton *ok_button;
 		picture *pic;
 
@@ -39,6 +40,7 @@ class about_dialog: public wxDialog{
 
 		// event handle methods
 		void on_ok(wxCommandEvent &event);
+		void on_link_click(wxHyperlinkEvent &event);
 
 		DECLARE_EVENT_TABLE()
 };

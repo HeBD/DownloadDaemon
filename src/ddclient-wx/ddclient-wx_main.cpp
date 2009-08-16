@@ -97,7 +97,7 @@ void myframe::add_bars(){
 
 	// statusbar
 	CreateStatusBar(2);
-	SetStatusText(wxT("I am a pretty useless statusbar. :3"),0);
+	SetStatusText(wxT("DownloadDaemon-ClientWX"),0);
 	SetStatusText(wxT(".."),1);
 
 	return;
