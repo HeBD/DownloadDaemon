@@ -25,7 +25,6 @@ extern std::string program_root;
 
 
 /** the main thread for the management-interface over tcp
- * @TODO REPLACE ERRORS WITH CORRECT ERROR CODES / IMPLEMENT LIB
  */
 void mgmt_thread_main() {
 	tkSock main_sock(string_to_int(global_config.get_cfg_value("mgmt_max_connections")), 1024);
@@ -44,7 +43,7 @@ void mgmt_thread_main() {
 }
 
 /** connection handle for management connections (callback function for tkSock)
- * @param the socket we get for communication with the other side
+ * @param sock the socket we get for communication with the other side
  */
 void connection_handler(tkSock *sock) {
 	std::string data;

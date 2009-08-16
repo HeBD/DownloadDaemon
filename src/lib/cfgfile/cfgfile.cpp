@@ -8,13 +8,13 @@ cfgfile::cfgfile()
 	: comment_token("#"), is_writeable(false), eqtoken('=') {
 }
 
-cfgfile::cfgfile(const string &filepath, bool is_writeable = false)
+cfgfile::cfgfile(const std::string &filepath, bool is_writeable)
 	: filepath(filepath), comment_token("#"), is_writeable(is_writeable), eqtoken('=') {
 	open_cfg_file(filepath, is_writeable);
 	comment_token = "#";
 }
 
-cfgfile::cfgfile(const string &filepath, const string &comment_token = "#", char eqtoken = '=', bool is_writeable = false)
+cfgfile::cfgfile(const std::string &filepath, const std::string &comment_token, char eqtoken, bool is_writeable)
 	: filepath(filepath), comment_token(comment_token), is_writeable(is_writeable), eqtoken(eqtoken) {
 	open_cfg_file(filepath, is_writeable);
 }
@@ -23,7 +23,7 @@ cfgfile::~cfgfile() {
 	file.close();
 }
 
-void cfgfile::open_cfg_file(const string &filepath, bool writeable = false) {
+void cfgfile::open_cfg_file(const std::string &filepath, bool writeable) {
 	file.close();
 	if (writeable) {
 		file.open(filepath.c_str(), fstream::out | fstream::in | fstream::ate);
@@ -37,7 +37,7 @@ void cfgfile::open_cfg_file(const string &filepath, bool writeable = false) {
 	}
 }
 
-string cfgfile::get_cfg_value(const string &cfg_identifier) {
+string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 	mx.lock();
 	if(!file.is_open()) {
 		mx.unlock();
@@ -65,7 +65,7 @@ string cfgfile::get_cfg_value(const string &cfg_identifier) {
 	return "";
 }
 
-bool cfgfile::set_cfg_value(const string &cfg_identifier, const string &cfg_value) {
+bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string &cfg_value) {
 	mx.lock();
 	if(!is_writeable || !file.is_open()) {
 		mx.unlock();
@@ -118,7 +118,7 @@ string cfgfile::get_comment_token() const {
 	return comment_token;
 }
 
-void cfgfile::set_comment_token(const string &comment_token) {
+void cfgfile::set_comment_token(const std::string &comment_token) {
 	this->comment_token = comment_token;
 }
 
@@ -174,7 +174,7 @@ bool cfgfile::list_config(std::string& resultstr) {
 
 }
 
-void cfgfile::trim(string &str) const {
+void cfgfile::trim(std::string &str) const {
 	while(str.length() > 0 && isspace(str[0])) {
 		str.erase(str.begin());
 	}

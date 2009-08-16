@@ -36,7 +36,6 @@ class download {
 public:
 	/** Normal constructor
 	* @param url Download URL
-	* @param plugindir Folder to the plugins
 	* @param next_id The ID this download should get
 	*/
 	download(std::string &url, int next_id);
