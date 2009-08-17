@@ -13,7 +13,6 @@
 // event table
 BEGIN_EVENT_TABLE(about_dialog, wxDialog)
 	EVT_BUTTON(wxID_OK, about_dialog::on_ok)
-	EVT_HYPERLINK(wxID_ANY, about_dialog::on_link_click) // should be unnecessary, but default behaviour doesn't happen somehow
 END_EVENT_TABLE()
 
 
@@ -47,7 +46,9 @@ about_dialog::about_dialog(wxString working_dir, wxWindow *parent) : wxDialog(pa
 
 	name_text = new wxStaticText(this, -1, wxT("DownloadDaemon-ClientWX"));
 	build_text = new wxStaticText(this, -1, wxbuildinfo() + wxT("\n"));
-	website_text = new wxHyperlinkCtrl(this, -1, wxT("Project Website"), wxT("http://board.gulli.com/thread/1419174-downloaddaemon\n---och-downloader-fr-server-nas-o"), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxHL_ALIGN_LEFT|wxHL_CONTEXTMENU);
+	website_text = new wxHyperlinkCtrl(this, -1, wxT("Project Website"), wxT("http://board.gulli.com/thread/1419174-downloaddaemon---och-downloader-fr-server-nas-o"), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxHL_ALIGN_LEFT|wxHL_CONTEXTMENU);
+	website_text->SetNormalColour(wxT("NAVY"));
+	website_text->SetHoverColour(wxT("MEDIUM SLATE BLUE"));
 
 	ok_button = new wxButton(this, wxID_OK, wxT("Ok"));
 	ok_button->SetDefault();
@@ -79,10 +80,3 @@ void about_dialog::on_ok(wxCommandEvent &event){
 	Destroy();
 	return;
 }
-
-void about_dialog::on_link_click(wxHyperlinkEvent &event){
-	wxLaunchDefaultBrowser(event.GetURL()); // doesn't do anything, even though it should
-	return;
-}
-
-

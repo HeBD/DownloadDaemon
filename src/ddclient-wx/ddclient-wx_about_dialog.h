@@ -47,7 +47,6 @@ class about_dialog: public wxDialog{
 
 		// event handle methods
 		void on_ok(wxCommandEvent &event);
-		void on_link_click(wxHyperlinkEvent &event);
 
 		DECLARE_EVENT_TABLE()
 };
