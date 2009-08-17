@@ -33,7 +33,8 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 END_EVENT_TABLE()
 
 
-myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxWindowID id,const wxPoint &pos,const wxSize &size): wxFrame(parent, -1, title){
+myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxWindowID id):
+	wxFrame(parent, id, title){
 
 	working_dir = parameter;
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/")));

@@ -46,14 +46,14 @@ about_dialog::about_dialog(wxString working_dir, wxWindow *parent) : wxDialog(pa
 	text_sizer = new wxBoxSizer(wxVERTICAL);
 
 	name_text = new wxStaticText(this, -1, wxT("DownloadDaemon-ClientWX"));
-	build_text = new wxStaticText(this, -1, wxbuildinfo());
+	build_text = new wxStaticText(this, -1, wxbuildinfo() + wxT("\n"));
 	website_text = new wxHyperlinkCtrl(this, -1, wxT("Project Website"), wxT("http://board.gulli.com/thread/1419174-downloaddaemon\n---och-downloader-fr-server-nas-o"), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxHL_ALIGN_LEFT|wxHL_CONTEXTMENU);
 
 	ok_button = new wxButton(this, wxID_OK, wxT("Ok"));
 	ok_button->SetDefault();
 
 	wxString url = working_dir + wxT("ddclient-wx_data/img/teufelchen_about.png");
-	pic = new picture(this, -1, wxPoint(0,0), wxSize(150,150), 0, _T(""), url);
+	pic = new picture(url, this, wxSize(150,150));
 
 
 	// filling sizers

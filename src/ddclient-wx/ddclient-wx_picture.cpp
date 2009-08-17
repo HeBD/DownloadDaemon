@@ -14,7 +14,7 @@ BEGIN_EVENT_TABLE (picture, wxPanel)
 END_EVENT_TABLE()
 
 
-picture::picture(wxWindow *parent,const wxWindowID &id, const wxPoint &pos, const wxSize &size, const long &style, const wxString &name, wxString image)
+picture::picture(wxString image, wxWindow *parent, const wxSize &size, const wxWindowID &id, const wxPoint &pos, const long &style, const wxString &name)
 : wxPanel(parent, id, pos, size, style, name){
    t_bmp = wxBitmap(wxImage(image, wxBITMAP_TYPE_PNG));
 }

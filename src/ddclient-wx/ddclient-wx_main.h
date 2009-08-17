@@ -36,13 +36,25 @@
 
 using namespace std;
 
+
+/** Main Class: the Frame */
 class myframe : public wxFrame{
 	public:
-		myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxWindowID id=wxID_ANY,const wxPoint& pos=wxDefaultPosition,const wxSize& size=wxDefaultSize);
+
+		/** Constructor with standard wxFrame Parameters */
+		myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxWindowID id=wxID_ANY);
 		~myframe();
 
 		// getter and setter methods
+		/** Setter for Attributes of Connection with DownloadDaemon Server
+		*	@param mysock Socket
+		*	@param password	Password
+		*/
 		void set_connection_attributes(tkSock *mysock, string password);
+
+		/** Getter for Attributes of Connection with DownloadDaemon Server
+		*	@returns Socket
+		*/
 		tkSock *get_connection_attributes();
 
 	private:

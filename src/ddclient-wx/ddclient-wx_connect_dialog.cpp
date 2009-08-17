@@ -86,21 +86,19 @@ void connect_dialog::on_connect(wxCommandEvent &event){ //TODO: needs more tests
 
 
 	if(connection){ // connection succeeded,  host (IP/URL or port) is ok
-		wxMessageBox(wxT("Connection succeeded (IP/URL and port are ok)."), wxT("Delete me when finished.")); //TODO: delete after tests
 
 		// authentification
 		std::string snd;
 		mysock->recv(snd);
 
 		if(snd.find("100") == 0){ // 100 SUCCESS <-- Operation succeeded
-			wxMessageBox(wxT("No Password needed."), wxT("Delete me when finished.")); //TODO: delete after tests
-
+			// nothing to do here if you reach this
 		}else if(snd.find("102") == 0){ // 102 AUTHENTICATION <-- Authentication failed
 			mysock->send(pass);
 			mysock->recv(snd);
 
 			if(snd.find("100") == 0){
-				wxMessageBox(wxT("Authentification succeeded."), wxT("Delete me when finished.")); //TODO: delete after tests
+				// nothing to do here if you reach this
 
 			}else if(snd.find("102") == 0){
 				wxMessageBox(wxT("Wrong Password, Authentification failed."), wxT("Authentification Error"));

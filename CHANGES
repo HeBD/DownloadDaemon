@@ -1,4 +1,8 @@
-2009-08.16
+2009-08-17
+   [susanne]
+	- ddclient-wx: added doxygen comments
+
+2009-08-16
    [susanne]
 	- ddclient-wx: changed appearance of about dialog 
 

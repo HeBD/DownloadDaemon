@@ -15,12 +15,21 @@
 #include <wx/image.h>
 #include <wx/dcclient.h>
 
+
+/** Picture Class. Paints a PNG Image. */
 class picture: public wxPanel{
     public:
-        picture(wxWindow *parent, const wxWindowID &id, const wxPoint &pos, const wxSize &size, const long &style, const wxString &name, wxString image);
+
+		/** Constructor with nearly standard wxDialog Parameters
+		*	@param image Image Path
+		*/
+        picture(wxString image, wxWindow *parent, const wxSize &size, const wxWindowID &id=wxID_ANY, const wxPoint &pos=wxDefaultPosition, const long &style=0, const wxString &name=wxPanelNameStr);
+
+
         void OnPaint(wxPaintEvent &evt);
 
     private:
+
         wxBitmap t_bmp;
         DECLARE_EVENT_TABLE()
 };

@@ -22,8 +22,15 @@
 
 #include "ddclient-wx_picture.h"
 
+
+/** About Dialog Class. Shows a Dialog with Information about the Program. */
 class about_dialog: public wxDialog{
 	public:
+
+		/** Constructor
+		*	@param working_dir Working Directory of the Program
+		*	@param parent Parent wxWindow
+		*/
 		about_dialog(wxString working_dir, wxWindow *parent);
 
 	private:

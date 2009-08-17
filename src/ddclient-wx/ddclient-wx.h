@@ -20,6 +20,8 @@
 	#include <wx/wx.h>
 #endif
 
+
+/** Application Class */
 class myapp: public wxApp{
 	public:
 		virtual bool OnInit();

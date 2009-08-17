@@ -20,8 +20,14 @@
 #include "../lib/netpptk/netpptk.h"
 #include "ddclient-wx_main.h"
 
+
+/** Connection Dialog Class. Shows a Dialog to connect to a DownloadDaemon Server. */
 class connect_dialog : public wxDialog{
 	public:
+
+		/** Constructor
+		*	@param parent Parent wxWindow
+		*/
 		connect_dialog(wxWindow *parent);
 
 	private:
