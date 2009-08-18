@@ -69,8 +69,6 @@ add_dialog::add_dialog(wxWindow *parent) : wxDialog(parent, -1, wxT("Add Downloa
 	dialog_sizer->Add(cancel_button, 0, wxALL, 10);
 
 
-
-
 	SetSizer(dialog_sizer);
 	Layout();
 	Fit();
@@ -80,16 +78,96 @@ add_dialog::add_dialog(wxWindow *parent) : wxDialog(parent, -1, wxT("Add Downloa
 
 
 // event handle methods
-void add_dialog::on_add_one(wxCommandEvent &event){ // TODO: realize
+void add_dialog::on_add_one(wxCommandEvent &event){
+
+	// extracting the data
+	string title = string((title_input->GetValue()).mb_str());
+	string url = string((url_input->GetValue()).mb_str());
+
+	 // exchange every | inside the title with a blank
+	size_t titlefind;
+	titlefind = title.find("|");
+
+	while(titlefind != string::npos){
+		title.at(titlefind) = ' ';
+		titlefind = title.find("|");
+	}
+
+	// check connection
+	myframe *myparent = (myframe *) GetParent();
+	tkSock *mysock = myparent->get_connection_attributes();
+
+	if(mysock == NULL || !*mysock) // if there is no active connection
+		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
+
+	else{ // send data to server
+		string answer;
+
+		mysock->send("DDP DL ADD " + url + " " + title);
+		mysock->recv(answer);
+
+		if(answer.find("103") == 0) // 103 URL <-- Invalid URL
+			wxMessageBox(wxT("The inserted URL was invalid."), wxT("Invalid URL"));
+	}
+
 	Destroy();
 }
 
 
-void add_dialog::on_add_many(wxCommandEvent &event){ // TODO: realize
+void add_dialog::on_add_many(wxCommandEvent &event){
+
+	// check connection
+	myframe *myparent = (myframe *) GetParent();
+	tkSock *mysock = myparent->get_connection_attributes();
+
+	if(mysock == NULL || !*mysock){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
+
+	}else{ // we have a connection
+
+		string many = string((many_input->GetValue()).mb_str());
+
+		vector<string> splitted_line;
+		string line, snd, answer;
+		size_t lineend = 1, urlend;
+		bool error_occured = false;
+
+		// parse lines
+		while(many.length() > 0 && lineend != string::npos){
+			lineend = many.find("\n"); // termination character for line
+
+			if(lineend == string::npos){ // this is the last line (which ends without \n)
+				line = many.substr(0, many.length());
+				many = "";
+
+			}else{ // there is still another line after this one
+				line = many.substr(0, lineend);
+				many = many.substr(lineend+1);
+			}
+
+			// parse url and title
+			urlend = line.find("|");
+			while(urlend != string::npos){ // exchange every | with a blank (there can be some | inside the title too)
+				line.at(urlend) = ' ';
+				urlend = line.find("|");
+			}
+
+			// send a single download
+			mysock->send("DDP DL ADD " + line);
+			mysock->recv(answer);
+
+			if(answer.find("103") == 0) // 103 URL <-- Invalid URL
+				error_occured = true;
+		}
+
+		if(error_occured)
+			wxMessageBox(wxT("At least one inserted URL was invalid."), wxT("Invalid URL"));
+	}
+
 	Destroy();
 }
 
 
-void add_dialog::on_cancel(wxCommandEvent &event){ // TODO: realize
+void add_dialog::on_cancel(wxCommandEvent &event){
 	Destroy();
 }

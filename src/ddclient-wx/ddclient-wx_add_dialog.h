@@ -18,7 +18,7 @@
 #include <wx/textctrl.h>
 
 #include "../lib/netpptk/netpptk.h"
-//#include "ddclient-wx_main.h"
+#include "ddclient-wx_main.h"
 
 
 /** Add Dialog Class. Shows a Dialog to add Downloads. */
