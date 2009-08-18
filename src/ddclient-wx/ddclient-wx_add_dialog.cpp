@@ -101,6 +101,13 @@ void add_dialog::on_add_one(wxCommandEvent &event){
 		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
 
 	else{ // send data to server
+
+		wxMutex *mx = myparent->get_mutex();
+
+		while(mx->Lock() != wxMUTEX_NO_ERROR){ // while the mutex can't be locked
+			sleep(1);
+		}
+
 		string answer;
 
 		mysock->send("DDP DL ADD " + url + " " + title);
@@ -108,6 +115,8 @@ void add_dialog::on_add_one(wxCommandEvent &event){
 
 		if(answer.find("103") == 0) // 103 URL <-- Invalid URL
 			wxMessageBox(wxT("The inserted URL was invalid."), wxT("Invalid URL"));
+
+		mx->Unlock();
 	}
 
 	Destroy();
@@ -124,6 +133,12 @@ void add_dialog::on_add_many(wxCommandEvent &event){
 		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
 
 	}else{ // we have a connection
+
+		wxMutex *mx = myparent->get_mutex();
+
+		while(mx->Lock() != wxMUTEX_NO_ERROR){ // while the mutex can't be locked
+			sleep(1);
+		}
 
 		string many = string((many_input->GetValue()).mb_str());
 
@@ -159,6 +174,8 @@ void add_dialog::on_add_many(wxCommandEvent &event){
 			if(answer.find("103") == 0) // 103 URL <-- Invalid URL
 				error_occured = true;
 		}
+
+		mx->Unlock();
 
 		if(error_occured)
 			wxMessageBox(wxT("At least one inserted URL was invalid."), wxT("Invalid URL"));

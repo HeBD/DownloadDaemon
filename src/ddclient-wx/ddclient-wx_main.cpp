@@ -117,11 +117,11 @@ void myframe::add_content(){
 
 
 	// columns
-	list->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 30);
+	list->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
 	list->InsertColumn(1, wxT("Added"), wxLIST_AUTOSIZE_USEHEADER, 190);
 	list->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 100);
 	list->InsertColumn(3, wxT("\tURL\t"), wxLIST_AUTOSIZE_USEHEADER, 200);
-	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 100);
+	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 80);
 
 	return;
 }
@@ -138,6 +138,10 @@ void myframe::fill_list(){
 		vector<string> splitted_line;
 		string answer, line, tab;
 		size_t lineend = 1, tabend = 1, column_nr, line_nr = 0;
+
+		while(mx.Lock() != wxMUTEX_NO_ERROR){ // wait while the mutex can't be locked
+			sleep(2);
+		}
 
 		mysock->send("DDP DL LIST");
 		mysock->recv(answer);
@@ -177,6 +181,8 @@ void myframe::fill_list(){
 
 		compare_vectorvector(new_content.begin(), new_content.end());
 		content = new_content;
+
+		mx.Unlock();
 
 		sleep(2); // reload every two seconds
 	}
@@ -253,6 +259,24 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 }
 
 
+void myframe::find_selected_lines(){
+	long item_index = -1;
+
+	selected_lines.clear();
+
+	while(true){
+		item_index = list->GetNextItem(item_index, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED); // gets the next selected item
+
+		if (item_index == -1) // no selected ones left => leave loop
+			break;
+		else // found a selected one
+			selected_lines.push_back(item_index);
+	  }
+
+	return;
+}
+
+
 // methods for comparing and actualizing content if necessary
 void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content_it, vector<vector<string> >::iterator new_content_end){
 
@@ -297,7 +321,7 @@ void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content
 			list->DeleteItem(line_nr);
 
 			old_content_it++;
-			line_nr++;
+			// line_nr stays the same!
 		}
 	}
 
@@ -371,8 +395,42 @@ void myframe::on_add(wxCommandEvent &event){
  }
 
 
-void myframe::on_delete(wxCommandEvent &event){ // TODO: realize
-	wxMessageBox(wxT("\nDummy Dialog"), wxT("Dummy"));
+void myframe::on_delete(wxCommandEvent &event){ // TODO: ERROR inside + add file delete popup
+	vector<int>::iterator it;
+	string id, answer;
+	bool error_occured = false;
+
+	if(mysock == NULL || !*mysock){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before deleting Downloads."), wxT("No Connection to Server"));
+
+	}else{ // we have a connection
+
+		while(mx.Lock() != wxMUTEX_NO_ERROR){ // while the mutex can't be locked
+			sleep(1);
+		}
+
+		find_selected_lines(); // save selection into selected_lines
+
+		for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+			id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+
+			// TODO : ask, if there should be a file delete (if there is a file)
+
+			mysock->send("DDP DL DEL " + id);
+			mysock->recv(answer);
+
+
+			if(answer.find("104") == 0) // 104 ID <-- Entered a not-existing ID
+				error_occured = true;
+
+		}
+
+		mx.Unlock();
+
+		if(error_occured)
+			wxMessageBox(wxT("Tried to delete an nonexisting ID."), wxT("Error"));
+	}
+
 	return;
  }
 
@@ -397,7 +455,7 @@ void myframe::on_start(wxCommandEvent &event){ // TODO: realize
 
 		// change column widths on resize
 		int width = GetClientSize().GetWidth();
-		width -= 235; // minus width of fix sized columns
+		width -= 255; // minus width of fix sized columns
 
 		list->SetColumnWidth(2, width/4); // only column 2 to 4, because 0 and 1 have fix sizes
 		list->SetColumnWidth(3, width/2);
@@ -415,4 +473,9 @@ void myframe::set_connection_attributes(tkSock *mysock, string password){
 
 tkSock *myframe::get_connection_attributes(){
 	return mysock;
+}
+
+
+wxMutex *myframe::get_mutex(){
+	return &mx;
 }

@@ -1,6 +1,7 @@
 2009-08-18
    [susanne]
 	- added dialog to add downloads at ddclient-wx
+	- added logic to delete downloads at ddclient-wx 
 
 2009-08-17
    [susanne]

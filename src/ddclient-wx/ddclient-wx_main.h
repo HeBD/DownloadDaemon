@@ -29,6 +29,7 @@
 #include <wx/string.h>
 #include <wx/gdicmn.h> // color database
 #include <wx/string.h>
+#include <wx/thread.h> // for mutex
 
 #include "ddclient-wx_connect_dialog.h"
 #include "ddclient-wx_about_dialog.h"
@@ -58,10 +59,17 @@ class myframe : public wxFrame{
 		*/
 		tkSock *get_connection_attributes();
 
+		/** Getter for Mutex, that makes sure only one Thread uses Socket and Content List at a time
+		*	@returns Mutex
+		*/
+		wxMutex *get_mutex();
+
 	private:
 
 		vector<vector<string> > content;
+		vector<int> selected_lines;
 		wxString working_dir;
+		wxMutex mx;
 
 		// connection attributes
 		tkSock *mysock;
@@ -91,6 +99,7 @@ class myframe : public wxFrame{
 		void add_content();
 		void fill_list();
 		string build_status(string &status_text, vector<string> &splitted_line);
+		void find_selected_lines();
 
 		// methods for comparing and actualizing content if necessary
 		void compare_vectorvector(vector<vector<string> >::iterator new_content_it, vector<vector<string> >::iterator new_content_end);
