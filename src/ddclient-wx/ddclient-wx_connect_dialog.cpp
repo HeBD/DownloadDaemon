@@ -122,14 +122,22 @@ void connect_dialog::on_connect(wxCommandEvent &event){ //TODO: needs more tests
 
 			// give socket and password to parent (myframe)
 			myframe *myparent = (myframe *) GetParent();
-
 			tkSock *frame_socket = myparent->get_connection_attributes();
+
+			wxMutex *mx = myparent->get_mutex();
+
+			while(mx->Lock() != wxMUTEX_NO_ERROR){ // while the mutex can't be locked
+				sleep(1);
+			}
+
 			if(frame_socket != NULL){ //if there is already a connection, delete the old one
 				delete frame_socket;
 				frame_socket = NULL;
 			}
 
 			myparent->set_connection_attributes(mysock, pass);
+			mx->Unlock();
+
 			Destroy();
 
 		}else{

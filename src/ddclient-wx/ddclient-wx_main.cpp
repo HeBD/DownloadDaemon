@@ -306,7 +306,7 @@ void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content
 				list->SetItem(line_index, i, wxString((*new_content_it)[i].c_str(), wxConvUTF8));
 
 			// status column
-			color = build_status(status_text, (*new_content_it));
+			color = build_status(status_text, *new_content_it);
 			list->SetItemBackgroundColour(line_index, wxString(color.c_str(), wxConvUTF8));
 			list->SetItem(line_index, 4, wxString(status_text.c_str(), wxConvUTF8));
 
