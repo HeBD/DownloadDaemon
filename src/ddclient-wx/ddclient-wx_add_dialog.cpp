@@ -102,11 +102,8 @@ void add_dialog::on_add_one(wxCommandEvent &event){
 
 	else{ // send data to server
 
-		wxMutex *mx = myparent->get_mutex();
-
-		while(mx->Lock() != wxMUTEX_NO_ERROR){ // while the mutex can't be locked
-			sleep(1);
-		}
+		boost::mutex *mx = myparent->get_mutex();
+		mx->lock();
 
 		string answer;
 
@@ -116,7 +113,7 @@ void add_dialog::on_add_one(wxCommandEvent &event){
 		if(answer.find("103") == 0) // 103 URL <-- Invalid URL
 			wxMessageBox(wxT("The inserted URL was invalid."), wxT("Invalid URL"));
 
-		mx->Unlock();
+		mx->unlock();
 	}
 
 	Destroy();
@@ -134,11 +131,8 @@ void add_dialog::on_add_many(wxCommandEvent &event){
 
 	}else{ // we have a connection
 
-		wxMutex *mx = myparent->get_mutex();
-
-		while(mx->Lock() != wxMUTEX_NO_ERROR){ // while the mutex can't be locked
-			sleep(1);
-		}
+		boost::mutex *mx = myparent->get_mutex();
+		mx->lock();
 
 		string many = string((many_input->GetValue()).mb_str());
 
@@ -175,7 +169,7 @@ void add_dialog::on_add_many(wxCommandEvent &event){
 				error_occured = true;
 		}
 
-		mx->Unlock();
+		mx->unlock();
 
 		if(error_occured)
 			wxMessageBox(wxT("At least one inserted URL was invalid."), wxT("Invalid URL"));

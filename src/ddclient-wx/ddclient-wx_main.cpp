@@ -139,9 +139,7 @@ void myframe::fill_list(){
 		string answer, line, tab;
 		size_t lineend = 1, tabend = 1, column_nr, line_nr = 0;
 
-		while(mx.Lock() != wxMUTEX_NO_ERROR){ // wait while the mutex can't be locked
-			sleep(2);
-		}
+		mx.lock();
 
 		mysock->send("DDP DL LIST");
 		mysock->recv(answer);
@@ -182,7 +180,7 @@ void myframe::fill_list(){
 		compare_vectorvector(new_content.begin(), new_content.end());
 		content = new_content;
 
-		mx.Unlock();
+		mx.unlock();
 
 		sleep(2); // reload every two seconds
 	}
@@ -405,9 +403,7 @@ void myframe::on_delete(wxCommandEvent &event){ // TODO: ERROR inside + add file
 
 	}else{ // we have a connection
 
-		while(mx.Lock() != wxMUTEX_NO_ERROR){ // while the mutex can't be locked
-			sleep(1);
-		}
+		mx.lock();
 
 		find_selected_lines(); // save selection into selected_lines
 
@@ -425,7 +421,7 @@ void myframe::on_delete(wxCommandEvent &event){ // TODO: ERROR inside + add file
 
 		}
 
-		mx.Unlock();
+		mx.unlock();
 
 		if(error_occured)
 			wxMessageBox(wxT("Tried to delete an nonexisting ID."), wxT("Error"));
@@ -476,6 +472,6 @@ tkSock *myframe::get_connection_attributes(){
 }
 
 
-wxMutex *myframe::get_mutex(){
+boost::mutex *myframe::get_mutex(){
 	return &mx;
 }
