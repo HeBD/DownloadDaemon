@@ -1,3 +1,7 @@
+2009-08-18
+   [susanne]
+	- added dialog to add downloads (gui) at ddclient-wx, doesn't to anything yet
+
 2009-08-17
    [susanne]
 	- ddclient-wx: added doxygen comments

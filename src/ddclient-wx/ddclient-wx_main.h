@@ -32,6 +32,7 @@
 
 #include "ddclient-wx_connect_dialog.h"
 #include "ddclient-wx_about_dialog.h"
+#include "ddclient-wx_add_dialog.h"
 #include "../lib/netpptk/netpptk.h"
 
 using namespace std;

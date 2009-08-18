@@ -175,6 +175,12 @@
 		<Unit filename="src/ddclient-wx/ddclient-wx_about_dialog.h">
 			<Option target="DDClient-wx" />
 		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_add_dialog.cpp">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_add_dialog.h">
+			<Option target="DDClient-wx" />
+		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_connect_dialog.cpp">
 			<Option target="DDClient-wx" />
 		</Unit>

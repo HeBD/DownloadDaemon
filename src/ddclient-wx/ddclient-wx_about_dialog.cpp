@@ -35,6 +35,7 @@ wxString wxbuildinfo(){
     return wxbuild;
 }
 
+
 about_dialog::about_dialog(wxString working_dir, wxWindow *parent) : wxDialog(parent, -1, wxT("About...")){
 
 	this->working_dir = working_dir;
@@ -75,6 +76,7 @@ about_dialog::about_dialog(wxString working_dir, wxWindow *parent) : wxDialog(pa
 
 	return;
 }
+
 
 void about_dialog::on_ok(wxCommandEvent &event){
 	Destroy();

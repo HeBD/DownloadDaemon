@@ -363,8 +363,10 @@ void myframe::on_about(wxCommandEvent &event){
  }
 
 
-void myframe::on_add(wxCommandEvent &event){ // TODO: realize
-	wxMessageBox(wxT("\nDummy Dialog"), wxT("Dummy"));
+void myframe::on_add(wxCommandEvent &event){
+	add_dialog dialog(this);
+	dialog.ShowModal();
+
 	return;
  }
 
