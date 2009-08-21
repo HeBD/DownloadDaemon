@@ -8,7 +8,9 @@
  **************************************************************/
 
 #include "ddclient-wx_main.h"
-
+#ifdef _WIN32
+    #define sleep(x) Sleep(x)
+#endif
 
 // IDs
 const long myframe::id_menu_quit = wxNewId();

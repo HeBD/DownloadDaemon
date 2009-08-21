@@ -1,3 +1,8 @@
+2009-08-21
+   [adrian]
+	- made ddclient-wx compatible with windows
+	- made ddclient-wx compatible with older gcc versions
+
 2009-08-18
    [susanne]
 	- added dialog to add downloads at ddclient-wx

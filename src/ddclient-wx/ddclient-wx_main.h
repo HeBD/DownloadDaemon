@@ -34,6 +34,9 @@
 #include "ddclient-wx_about_dialog.h"
 #include "ddclient-wx_add_dialog.h"
 #include "../lib/netpptk/netpptk.h"
+#if defined(__WXMSW__)
+    #include <wx/msw/winundef.h> // Because of conflicting wxWidgets and windows.h
+#endif
 
 using namespace std;
 

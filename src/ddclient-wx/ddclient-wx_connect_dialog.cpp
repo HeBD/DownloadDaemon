@@ -21,7 +21,7 @@ BEGIN_EVENT_TABLE(connect_dialog, wxDialog)
 END_EVENT_TABLE()
 
 
-connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxT("Connect to Host")){
+connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Connect to Host"))){
 
 	// create elements
 	dialog_sizer = new wxBoxSizer(wxVERTICAL);
