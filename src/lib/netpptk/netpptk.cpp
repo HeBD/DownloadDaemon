@@ -41,7 +41,7 @@ tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0),
 
 	#ifndef _WIN32
 		int y = 1;
-		setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int));
+		setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(y));
 	#endif
 	++m_instanceCount;
 }
@@ -224,7 +224,7 @@ bool tkSock::send(const std::string &s) {
 		if(!valid) {
 			return false;
 		}
-		status += ::send(m_sock, s_new.c_str() + status, s_new.size() - status, 0);
+		status += ::send(m_sock, s_new.c_str() + status, s_new.size() - status, MSG_NOSIGNAL);
 		if(status < 0) {
 			valid = false;
 			return false;
@@ -238,7 +238,7 @@ int tkSock::recv(std::string& s) {
 	char initbuf[21];
 	s = "";
 	memset(initbuf, 0, 21);
-	int status = ::recv(m_sock, initbuf, 21, 0);
+	int status = ::recv(m_sock, initbuf, 21, MSG_NOSIGNAL);
  	if(status <= 0) {
 		valid = false;
 		return 0;
