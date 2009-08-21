@@ -85,7 +85,14 @@ public:
 	*/
 	const char* get_status_str();
 
+	/** Sets the status of a download
+	* @param st desired status
+	*/
 	void set_status(download_status st);
+
+	/** Returns the status of a download
+	* @returns Download status
+	*/
 	download_status get_status();
 
 	std::string url;

@@ -80,16 +80,22 @@ void download_thread(download_container::iterator download) {
 		download->error = NO_ERROR;
 		log_string(string("Successfully parsed download ID: ") + int_to_string(download->id), LOG_DEBUG);
 		if(parsed_dl.wait_before_download > 0) {
-			log_string(string("Download ID: ") + int_to_string(download->id) + " has to wait " +
-					   int_to_string(parsed_dl.wait_before_download) + " seconds before downloading can start", LOG_DEBUG);
-			download->wait_seconds = parsed_dl.wait_before_download + 1;
 
+			if(download->get_status() != DOWNLOAD_DELETED) {
+				log_string(string("Download ID: ") + int_to_string(download->id) + " has to wait " +
+					       int_to_string(parsed_dl.wait_before_download) + " seconds before downloading can start", LOG_DEBUG);
+			}
+			download->wait_seconds = parsed_dl.wait_before_download + 1;
 
 			while(global_download_list.get_download_by_id(download->id) != global_download_list.end() && download->wait_seconds > 0) {
 				--download->wait_seconds;
 				sleep(1);
-				if(download->get_status() == DOWNLOAD_INACTIVE || download->get_status() == DOWNLOAD_DELETED) {
+				if(download->get_status() == DOWNLOAD_INACTIVE) {
 					download->wait_seconds = 0;
+					return;
+				} else if(download->get_status() == DOWNLOAD_DELETED) {
+					curl_easy_cleanup(download->handle);
+					global_download_list.erase(download);
 					return;
 				}
 			}
@@ -166,6 +172,7 @@ void download_thread(download_container::iterator download) {
 					curl_easy_reset(download->handle);
 				} else if(download->get_status() == DOWNLOAD_DELETED) {
 					curl_easy_cleanup(download->handle);
+					global_download_list.erase(download);
 				} else {
 					log_string(string("Connection lost for download ID: ") + int_to_string(download->id), LOG_WARNING);
 					download->set_status(DOWNLOAD_PENDING);

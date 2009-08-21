@@ -1,5 +1,7 @@
 2009-08-21
    [adrian]
+	- added cleanup code for deleted download objects to save a lot of memory on long uptimes
+	- fixed SIGPIPE crash when reading/writing invalid sockets
 	- made ddclient-wx compatible with windows
 	- made ddclient-wx compatible with older gcc versions
 

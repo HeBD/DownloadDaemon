@@ -246,9 +246,13 @@ const char* download::get_status_str() {
 void download::set_status(download_status st) {
 	if(status == DOWNLOAD_DELETED) {
 		return;
+	} else if(st == DOWNLOAD_DELETED && status != DOWNLOAD_RUNNING) {
+		curl_easy_cleanup(handle);
+		global_download_list.erase(global_download_list.get_download_by_id(id));
+	} else {
+		status = st;
+		global_download_list.dump_to_file();
 	}
-	status = st;
-	global_download_list.dump_to_file();
 }
 
 download_status download::get_status() {

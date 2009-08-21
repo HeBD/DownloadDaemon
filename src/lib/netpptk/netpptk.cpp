@@ -18,6 +18,10 @@
 	#include <arpa/inet.h>
 #endif
 
+#ifndef MSG_NOSIGNAL
+	#define MSG_NOSIGNAL 0
+#endif
+
 // Static socket-instance counter (needed for the Windows-init, and cleanup code)
 int tkSock::m_instanceCount = 0;
 
