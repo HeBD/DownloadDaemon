@@ -3,11 +3,9 @@
 
 #include <string>
 #include <boost/thread.hpp>
+
 #ifdef _WIN32
-	#include <windows.h>
     #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #include <io.h>
 #else
 	#include <sys/types.h>
 	#include <sys/socket.h>
