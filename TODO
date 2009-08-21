@@ -11,3 +11,4 @@
 - speed regulation
 - extend netpptk to get endpoint info and display connecting IPs in logfile
 - Make a multiuser-system out of downloaddaemon with partly individual configuration (download-folder) and administration...
+- Rewrite the plugin systems to use dynamicly loaded shared libraries instead of executables.

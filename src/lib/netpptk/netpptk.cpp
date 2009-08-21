@@ -224,7 +224,7 @@ bool tkSock::send(const std::string &s) {
 		if(!valid) {
 			return false;
 		}
-		status += ::send(m_sock, s_new.c_str() + status, s_new.size(), 0);
+		status += ::send(m_sock, s_new.c_str() + status, s_new.size() - status, 0);
 		if(status < 0) {
 			valid = false;
 			return false;
