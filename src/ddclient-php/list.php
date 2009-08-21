@@ -104,12 +104,7 @@ include("functional.php");
 	}
 
 	echo "</table>"
-
-
-	// now we need to parse $list. schema:
-	//1|Thu Jul 23 20:08:04 2009||http://rapidshare.com/files/144286726/worldshift_Ka0oS.part02.rar|DOWNLOAD_RUNNING|4086368|200000000|130|NO_ERROR 
-	//2|Thu Jul 23 20:08:08 2009|aswekdfa|http://rapidshare.com/files/144286726/worldshift_Ka0oS.part02.rar|DOWNLOAD_INACTIVE|845088|200000000|0|NO_ERROR 
-	//echo $list;
 ?>
 	</div>
 </body>
+</html>

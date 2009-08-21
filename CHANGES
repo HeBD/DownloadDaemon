@@ -1,5 +1,6 @@
 2009-08-21
    [adrian]
+	- fixed bug in ddclient-php when there are a lot of downloads (packet size/wring netpptk protocol implementation)
 	- added cleanup code for deleted download objects to save a lot of memory on long uptimes
 	- fixed SIGPIPE crash when reading/writing invalid sockets
 	- made ddclient-wx compatible with windows

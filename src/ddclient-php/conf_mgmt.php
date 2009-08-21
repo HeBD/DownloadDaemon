@@ -152,3 +152,4 @@ include("functional.php");
 
 	</div>
 </body>
+</html>

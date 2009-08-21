@@ -4,20 +4,26 @@ function recv_all(&$socket, &$recv_buf) {
 	
 	$recv_buf = "";
 	$recv_number = "";
-	$i = 0;
 	while(true) {
 		if(!@socket_recv($socket, $recv_buf, 1,  0)) {
 			return false;
 		}
 		if($recv_buf == ":") break;
 		$recv_number = $recv_number . $recv_buf;
-		if($i > 10) return false;
-		$i++;
 	}
 	$recv_buf = "";
-	if(!socket_recv($socket, $recv_buf, (int)$recv_number, 0)) {
-		return false;
+	$received_bytes = 0;
+	$temp_recv = "";
+
+	// receive all
+	while(($received_bytes += socket_recv($socket, $temp_recv, (int)$recv_number - $received_bytes, 0)) < $recv_number) {
+		$recv_buf .= $temp_recv;
+		if($received_bytes < 0) {
+			return false;
+		}
 	}
+	// append the rest
+	$recv_buf .= $temp_recv;
 	return true;
 	
 }
