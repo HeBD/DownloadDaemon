@@ -5,6 +5,7 @@
 #include <fstream>
 #include <ctime>
 #include <vector>
+#include <boost/thread.hpp>
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../dl/download.h"
 #include "../dl/download_container.h"
@@ -14,6 +15,11 @@ extern cfgfile global_config;
 extern string program_root;
 extern download_container global_download_list;
 extern string program_root;
+
+namespace {
+	// anonymous namespace to make it file-global
+	boost::mutex logfile_mutex;
+}
 
 int string_to_int(const std::string str) {
 	std::stringstream ss;
@@ -71,6 +77,7 @@ void log_string(const std::string logstr, LOG_LEVEL level) {
 		return;
 	}
 
+	boost::mutex::scoped_lock(logfile_mutex);
 	if(desiredLogFile == "stdout" || desiredLogFile == "") {
 		cout << '[' << log_date << "] " << logstr << '\n' << flush;
 	} else if(desiredLogFile == "stderr") {
@@ -80,7 +87,6 @@ void log_string(const std::string logstr, LOG_LEVEL level) {
 		ofs << '[' << log_date << "] " << logstr << '\n' << flush;
 		ofs.close();
 	}
-
 }
 
 

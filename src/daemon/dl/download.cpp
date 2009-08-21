@@ -243,7 +243,12 @@ const char* download::get_status_str() {
 	return "UNKNOWN_STATUS";
 }
 
-void download::set_status(download_status st) {
+void download::set_status(download_status st, bool force) {
+	if(force) {
+		status = st;
+		return;
+	}
+
 	if(status == DOWNLOAD_DELETED) {
 		return;
 	} else if(st == DOWNLOAD_DELETED && status != DOWNLOAD_RUNNING) {

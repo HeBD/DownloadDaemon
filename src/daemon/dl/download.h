@@ -87,8 +87,10 @@ public:
 
 	/** Sets the status of a download
 	* @param st desired status
+	* @param force If this is set to true, no checking will happen before setting the status. this should usually NOT be done, because in some cases setting a status
+	*			   needs special actions to take place before. Only use if you are 100% sure that you have to
 	*/
-	void set_status(download_status st);
+	void set_status(download_status st, bool force = false);
 
 	/** Returns the status of a download
 	* @returns Download status

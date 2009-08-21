@@ -2,6 +2,7 @@
 #include<fstream>
 #include<string>
 #include<vector>
+#include<boost/thread.hpp>
 using namespace std;
 
 cfgfile::cfgfile()
@@ -55,8 +56,8 @@ string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 		if(identstr == cfg_identifier) {
 			val = buff.substr(eqloc +1);
 			trim(val);
-			mx.unlock();
 			tmpfile.close();
+			mx.unlock();
 			return val;
 		}
 	}

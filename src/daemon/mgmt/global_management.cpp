@@ -111,7 +111,7 @@ void reconnect() {
 					reconnect_allowed = false;
 				}
 			}
-			download_container::iterator it = get_next_downloadable();
+			download_container::iterator it = global_download_list.get_next_downloadable();
 			if(it != global_download_list.end()) {
 			    reconnect_allowed = false;
 			}
