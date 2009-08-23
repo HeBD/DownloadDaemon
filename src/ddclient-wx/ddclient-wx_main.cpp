@@ -39,8 +39,10 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	wxFrame(parent, id, title){
 
 	working_dir = parameter;
-	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/")));
-	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/")));
+	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
+	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
+
+
 	working_dir += wxT("/");
 
 	SetClientSize(wxSize(750,500));
@@ -182,7 +184,6 @@ void myframe::fill_list(){
 		content = new_content;
 
 		mx.unlock();
-		Refresh();
 
 		sleep(2); // reload every two seconds
 	}
