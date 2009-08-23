@@ -90,6 +90,7 @@ bool download_container::pop_back() {
 }
 
 bool download_container::erase(download_container::iterator it) {
+	boost::mutex::scoped_lock(list_mutex);
 	if(it == download_list.end()) {
 		return false;
 	}
