@@ -2,8 +2,8 @@ This is a shourt introduction about how to write new Plugins for the downloader 
 Generally a plugin can only be written in C++ (C might be supported soon).
 Plugins are basically shared libraries which are loaded on runtime to execute some funtions.
 Good examples can be found for the rapidshare.com and uploaded.to plugins in src/daemon/plugins.
-A plugin always has to be named after its hoster, plus the ".so" file extension for shared libraries.
-so for rapidshare.com, you will get a plugin-library called "rapidshare.com.so".
+A plugin always has to be named after its hoster, plus the ".so" file extension and "lib" file prefix for shared libraries.
+so for rapidshare.com, you will get a plugin-library called "librapidshare.com.so".
 Maybe in a far future, i will include some captcha-decode-helper program or something, but right now, 
 this is not offered and you have to look for yourself.
 Anyhow, all work should be done by the plugin except for the final step of downloading the file. 

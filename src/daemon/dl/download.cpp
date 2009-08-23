@@ -113,7 +113,7 @@ plugin_status download::get_download(plugin_output &poutp) {
 		return PLUGIN_INVALID_PATH;
 	}
 
-	string pluginfile(plugindir + host + ".so");
+	string pluginfile(plugindir + "lib" + host + ".so");
 	bool use_generic = false;
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;
@@ -252,7 +252,7 @@ plugin_output download::get_hostinfo() {
 		return outp;
 	}
 
-	string pluginfile(plugindir + host + ".so");
+	string pluginfile(plugindir + "lib" + host + ".so");
 	bool use_generic = false;
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;

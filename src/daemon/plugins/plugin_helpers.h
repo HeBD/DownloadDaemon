@@ -25,6 +25,10 @@ void set_wait_time(download &dl, int seconds) {
 	dl.wait_seconds = seconds;
 }
 
+int get_wait_time(download &dl) {
+	return dl.wait_seconds;
+}
+
 const char* get_url(download &dl) {
 	return dl.url.c_str();
 }
