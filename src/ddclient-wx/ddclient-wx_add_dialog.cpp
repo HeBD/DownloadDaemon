@@ -13,14 +13,13 @@
 // IDs
 const long add_dialog::id_add_one = wxNewId();
 const long add_dialog::id_add_many = wxNewId();
-const long add_dialog::id_cancel = wxNewId();
 
 
 // event table
 BEGIN_EVENT_TABLE(add_dialog, wxDialog)
 	EVT_BUTTON(id_add_one, add_dialog::on_add_one)
 	EVT_BUTTON(id_add_many, add_dialog::on_add_many)
-	EVT_BUTTON(id_cancel, add_dialog::on_cancel)
+	EVT_BUTTON(wxID_CANCEL, add_dialog::on_cancel)
 END_EVENT_TABLE()
 
 
@@ -46,7 +45,7 @@ add_dialog::add_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Ad
 	add_one_button = new wxButton(this, id_add_one, wxT("Add one"));
 	add_one_button->SetDefault();
 	add_many_button = new wxButton(this, id_add_many, wxT("Add many"));
-	cancel_button = new wxButton(this, id_cancel, wxT("Cancel"));
+	cancel_button = new wxButton(this, wxID_CANCEL, wxT("Cancel"));
 
 
 	// filling sizers

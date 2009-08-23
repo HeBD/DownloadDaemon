@@ -10,14 +10,10 @@
 #include "ddclient-wx_connect_dialog.h"
 
 
-// IDs
-const long connect_dialog::id_cancel = wxNewId();
-
-
 // event table
 BEGIN_EVENT_TABLE(connect_dialog, wxDialog)
 	EVT_BUTTON(wxID_OK, connect_dialog::on_connect)
-	EVT_BUTTON(id_cancel, connect_dialog::on_cancel)
+	EVT_BUTTON(wxID_CANCEL, connect_dialog::on_cancel)
 END_EVENT_TABLE()
 
 
@@ -43,7 +39,7 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString
 
 	connect_button = new wxButton(this, wxID_OK, wxT("Connect"));
 	connect_button->SetDefault();
-	cancel_button = new wxButton(this, id_cancel, wxT("Cancel"));
+	cancel_button = new wxButton(this, wxID_CANCEL, wxT("Cancel"));
 
 
 	// filling sizers

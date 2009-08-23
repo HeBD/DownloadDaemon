@@ -55,7 +55,6 @@ class add_dialog : public wxDialog{
 		// element IDs
 		static const long id_add_one;
 		static const long id_add_many;
-		static const long id_cancel;
 
 		// event handle methods
 		void on_add_one(wxCommandEvent &event);

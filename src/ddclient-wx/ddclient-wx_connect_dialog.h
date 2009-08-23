@@ -50,9 +50,6 @@ class connect_dialog : public wxDialog{
 		wxFlexGridSizer *input_sizer;
 		wxBoxSizer *button_sizer;
 
-		// element IDs
-		static const long id_cancel;
-
 		// event handle methods
 		void on_connect(wxCommandEvent &event);
 		void on_cancel(wxCommandEvent &event);

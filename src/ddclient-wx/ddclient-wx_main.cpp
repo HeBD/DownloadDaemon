@@ -388,14 +388,19 @@ void myframe::on_about(wxCommandEvent &event){
 
 
 void myframe::on_add(wxCommandEvent &event){
-	add_dialog dialog(this);
-	dialog.ShowModal();
+	if(mysock == NULL || !*mysock) // if there is no active connection
+		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
+
+	else{
+		add_dialog dialog(this);
+		dialog.ShowModal();
+	}
 
 	return;
  }
 
 
-void myframe::on_delete(wxCommandEvent &event){ // TODO: ERROR inside + add file delete popup
+void myframe::on_delete(wxCommandEvent &event){
 	vector<int>::iterator it;
 	string id, answer;
 	bool error_occured = false;
@@ -408,25 +413,50 @@ void myframe::on_delete(wxCommandEvent &event){ // TODO: ERROR inside + add file
 		mx.lock();
 
 		find_selected_lines(); // save selection into selected_lines
+		if(!selected_lines.empty()){
 
-		for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-			id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+			// make sure user wants to delete downloads
+			wxMessageDialog dialog(this, wxT("Do you really want to delete\nthe selected Download(s)?"), wxT("Delete Downloads"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+			int del = dialog.ShowModal();
 
-			// TODO : ask, if there should be a file delete (if there is a file)
+			if(del == wxID_YES){ // user clicked yes to delete
 
-			mysock->send("DDP DL DEL " + id);
-			mysock->recv(answer);
+				for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+					id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
 
+					// test if there is a file on the server
+					mysock->send("DDP FILE GETPATH " + id);
+					mysock->recv(answer);
 
-			if(answer.find("104") == 0) // 104 ID <-- Entered a not-existing ID
-				error_occured = true;
+					if(!answer.empty()){ // file exists
 
+						string question = "Do you want to delete the downloaded File for Download ID " + id + "?";
+						wxMessageDialog file_dialog(this, wxString(question.c_str(), wxConvUTF8), wxT("Delete File"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+						int del_file = file_dialog.ShowModal();
+
+						if(del_file == wxID_YES){ // user clicked yes to delete
+							mysock->send("DDP FILE DEL " + id);
+							mysock->recv(answer);
+
+							if(answer.find("109") == 0) // 109 FILE <-- file operation on a file that does not exist
+								error_occured = true;
+
+						}
+					}
+
+					mysock->send("DDP DL DEL " + id);
+					mysock->recv(answer);
+
+					if(answer.find("104") == 0) // 104 ID <-- Entered a not-existing ID
+						error_occured = true;
+				}
+			}
 		}
 
 		mx.unlock();
 
 		if(error_occured)
-			wxMessageBox(wxT("Tried to delete an nonexisting ID."), wxT("Error"));
+			wxMessageBox(wxT("Error occured at deleting Downloads."), wxT("Error"));
 	}
 
 	return;

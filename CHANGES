@@ -1,3 +1,9 @@
+2009-08-23
+   [susanne]
+	- added file delete before deleting the download at ddclient-wx
+	- ddclient-wx now asks you if you really want to delete downloads
+	- ddclient-wx now tells you to connect before you can try to add downloads
+
 2009-08-21
    [adrian]
 	- tried to bring a bit more thread safety
