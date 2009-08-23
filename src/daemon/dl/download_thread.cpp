@@ -44,47 +44,39 @@ void download_thread_main() {
  *	@param download iterator to a download in the global download list, that we should load
  */
 void download_thread(download_container::iterator download) {
-	parsed_download parsed_dl;
-	int success = download->get_download(parsed_dl);
+	plugin_output plug_outp;
+	int success = download->get_download(plug_outp);
 
 	switch(success) {
-		case INVALID_HOST:
+		case PLUGIN_INVALID_HOST:
+			download->error = PLUGIN_INVALID_HOST;
 			download->set_status(DOWNLOAD_INACTIVE, true);
-			download->error = INVALID_HOST;
 			log_string(string("Invalid host for download ID: ") + int_to_string(download->id), LOG_WARNING);
 			return;
 		break;
-		case INVALID_PLUGIN_PATH:
-			download->error = INVALID_PLUGIN_PATH;
+		case PLUGIN_INVALID_PATH:
+			download->error = PLUGIN_INVALID_PATH;
 			download->set_status(DOWNLOAD_PENDING, true);
 			log_string("Could not locate plugin folder!", LOG_SEVERE);
 			exit(-1);
 		break;
-		case MISSING_PLUGIN:
-			download->error = MISSING_PLUGIN;
+		case PLUGIN_MISSING:
+			download->error = PLUGIN_MISSING;
 			log_string(string("Plugin missing for download ID: ") + int_to_string(download->id), LOG_WARNING);
 			download->set_status(DOWNLOAD_INACTIVE, true);
 			return;
 		break;
 	}
 
-	if(parsed_dl.plugin_return_val == -1) {
-		log_string(string("Plugin reported unknown error for download ID: ") + int_to_string(download->id), LOG_WARNING);
-		download->set_status(DOWNLOAD_INACTIVE, true);
-		download->error = PLUGIN_ERROR;
-		return;
-	}
-
-	if(parsed_dl.download_parse_success) {
-		download->error = NO_ERROR;
+	if(success == PLUGIN_SUCCESS) {
+		download->error = PLUGIN_SUCCESS;
 		log_string(string("Successfully parsed download ID: ") + int_to_string(download->id), LOG_DEBUG);
-		if(parsed_dl.wait_before_download > 0) {
+		if(download->wait_seconds > 0) {
 
 			if(download->get_status() != DOWNLOAD_DELETED) {
 				log_string(string("Download ID: ") + int_to_string(download->id) + " has to wait " +
-					       int_to_string(parsed_dl.wait_before_download) + " seconds before downloading can start", LOG_DEBUG);
+					       int_to_string(download->wait_seconds) + " seconds before downloading can start", LOG_DEBUG);
 			}
-			download->wait_seconds = parsed_dl.wait_before_download + 1;
 
 			while(global_download_list.get_download_by_id(download->id) != global_download_list.end() && download->wait_seconds > 0) {
 				--download->wait_seconds;
@@ -103,21 +95,20 @@ void download_thread(download_container::iterator download) {
 		string output_filename;
 		string download_folder = global_config.get_cfg_value("download_folder");
 		correct_path(download_folder);
-		if(parsed_dl.download_filename == "") {
-			if(parsed_dl.download_url != "" && parsed_dl.download_url.find('/') != string::npos) {
+		if(plug_outp.download_filename == "") {
+			if(plug_outp.download_url != "" && plug_outp.download_url.find('/') != string::npos) {
 				output_filename += download_folder;
-				output_filename += '/' + parsed_dl.download_url.substr(parsed_dl.download_url.find_last_of("/\\"));
+				output_filename += '/' + plug_outp.download_url.substr(plug_outp.download_url.find_last_of("/\\"));
 			}
 		} else {
 			output_filename += download_folder;
-			output_filename += '/' + parsed_dl.download_filename;
+			output_filename += '/' + plug_outp.download_filename;
 		}
 
 		// Check if we can do a download resume or if we have to start from the beginning
-        hostinfo hinfo = download->get_hostinfo();
         struct stat st;
         fstream output_file;
-        if(hinfo.allows_download_resumption_free && global_config.get_cfg_value("enable_resume") != "0" &&
+        if(download->get_hostinfo().allows_multiple && global_config.get_cfg_value("enable_resume") != "0" &&
            stat(output_filename.c_str(), &st) == 0 && st.st_size == download->downloaded_bytes) {
             curl_easy_setopt(download->handle, CURLOPT_RESUME_FROM, st.st_size);
             output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
@@ -128,14 +119,14 @@ void download_thread(download_container::iterator download) {
 
 		if(!output_file.good()) {
 			log_string(string("Could not write to file: ") + output_filename, LOG_SEVERE);
-			download->error = WRITE_FILE_ERROR;
+			download->error = PLUGIN_WRITE_FILE_ERROR;
 			download->set_status(DOWNLOAD_PENDING, true);
 			return;
 		}
 
         download->output_file = output_filename;
 
-		if(parsed_dl.download_url.empty()) {
+		if(plug_outp.download_url.empty()) {
 			log_string(string("Empty URL for download ID: ") + int_to_string(download->id), LOG_SEVERE);
 			download->error = PLUGIN_ERROR;
 			download->set_status(DOWNLOAD_PENDING, true);
@@ -144,7 +135,7 @@ void download_thread(download_container::iterator download) {
 
 		// set url
 		curl_easy_setopt(download->handle, CURLOPT_FOLLOWLOCATION, 1);
-		curl_easy_setopt(download->handle, CURLOPT_URL, parsed_dl.download_url.c_str());
+		curl_easy_setopt(download->handle, CURLOPT_URL, plug_outp.download_url.c_str());
 		// set file-writing function as callback
 		curl_easy_setopt(download->handle, CURLOPT_WRITEFUNCTION, write_file);
 		curl_easy_setopt(download->handle, CURLOPT_WRITEDATA, &output_file);
@@ -175,36 +166,34 @@ void download_thread(download_container::iterator download) {
 				} else {
 					log_string(string("Connection lost for download ID: ") + int_to_string(download->id), LOG_WARNING);
 					download->set_status(DOWNLOAD_PENDING, true);
-					download->error = CONNECTION_LOST;
+					download->error = PLUGIN_CONNECTION_LOST;
 					curl_easy_reset(download->handle);
 				}
 				return;
 			default:
 				log_string(string("Download error for download ID: ") + int_to_string(download->id), LOG_WARNING);
 				download->set_status(DOWNLOAD_PENDING, true);
-				download->error = CONNECTION_LOST;
+				download->error = PLUGIN_CONNECTION_LOST;
 				curl_easy_reset(download->handle);
 				return;
 		}
 	} else {
-		if(parsed_dl.download_parse_errmsg == "SERVER_OVERLOAD") {
+		if(success == PLUGIN_SERVER_OVERLOADED) {
 			log_string(string("Server overloaded for download ID: ") + int_to_string(download->id), LOG_WARNING);
 			download->set_status(DOWNLOAD_WAITING, true);
-			download->wait_seconds = parsed_dl.download_parse_wait;
 			return;
-		} else if(parsed_dl.download_parse_errmsg == "LIMIT_REACHED") {
+		} else if(success == PLUGIN_LIMIT_REACHED) {
 			log_string(string("Download limit reached for download ID: ") + int_to_string(download->id) + " (" + download->get_host() + ")", LOG_WARNING);
 			download->set_status(DOWNLOAD_WAITING, true);
-			download->wait_seconds = parsed_dl.download_parse_wait;
 			return;
-		} else if(parsed_dl.download_parse_errmsg == "CONNECTION_FAILED") {
+		} else if(success == PLUGIN_CONNECTION_ERROR) {
 			log_string(string("Plugin failed to connect for ID:") + int_to_string(download->id), LOG_WARNING);
-			download->error = CONNECTION_LOST;
+			download->error = PLUGIN_CONNECTION_ERROR;
 			download->set_status(DOWNLOAD_INACTIVE, true);
 			return;
-		} else if(parsed_dl.download_parse_errmsg == "FILE_NOT_FOUND") {
+		} else if(success == PLUGIN_FILE_NOT_FOUND) {
 			log_string(string("File could not be found on the server for ID: ") + int_to_string(download->id), LOG_WARNING);
-			download->error = FILE_NOT_FOUND;
+			download->error = PLUGIN_FILE_NOT_FOUND;
 			download->set_status(DOWNLOAD_INACTIVE, true);
 			return;
 		}

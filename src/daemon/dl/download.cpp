@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dlfcn.h>
 
 #include "download.h"
 #include "download_container.h"
@@ -20,7 +21,7 @@ extern std::string program_root;
 extern download_container global_download_list;
 
 download::download(std::string &url, int next_id)
-	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(NO_ERROR), status(DOWNLOAD_PENDING) {
+	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS), status(DOWNLOAD_PENDING) {
 	handle = curl_easy_init();
 	time_t rawtime;
 	time(&rawtime);
@@ -81,7 +82,7 @@ void download::from_serialized(std::string &serializedDL) {
 		++curr_pos;
 		++entry_num;
 	}
-	error = NO_ERROR;
+	error = PLUGIN_SUCCESS;
 	wait_seconds = 0;
 	handle = curl_easy_init();
 }
@@ -96,65 +97,56 @@ std::string download::serialize() {
 	return ss.str();
 }
 
-int download::get_download(parsed_download &parsed_dl) {
-    parsed_dl.download_url = "";
-    parsed_dl.download_filename = "";
-    parsed_dl.cookie_file = "";
-    parsed_dl.wait_before_download = 0;
-    parsed_dl.download_parse_success = false;
-    parsed_dl.download_parse_errmsg = "";
-    parsed_dl.download_parse_wait = 0;
-    parsed_dl.plugin_return_val = 0;
+plugin_status download::get_download(plugin_output &poutp) {
+	plugin_input pinp;
+	curl_easy_reset(handle);
 
 	string host(get_host());
 	string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);
 	if(host == "") {
-		return INVALID_HOST;
+		return PLUGIN_INVALID_HOST;
 	}
 
 	struct stat st;
 	if(stat(plugindir.c_str(), &st) != 0) {
-		return INVALID_PLUGIN_PATH;
+		return PLUGIN_INVALID_PATH;
 	}
 
-	string pluginfile(plugindir + host);
+	string pluginfile(plugindir + host + ".so");
 	bool use_generic = false;
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;
 	}
 
-	if(stat(string(plugindir + "/plugin_comm").c_str(), &st) != 0) {
-		mkdir(string(plugindir + "/plugin_comm").c_str(), 0755);
-	}
-
 	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
 	if(use_generic) {
 	    log_string("No plugin found, using generic download", LOG_WARNING);
-		parsed_dl.download_url = url;
-		parsed_dl.download_parse_success = 1;
-		return 0;
+	    poutp.download_url = url.c_str();
+		return PLUGIN_SUCCESS;
 	}
 
-	std::string ex(plugindir + '/' + host + ' ' + int_to_string(id) + ' ' + url);
-	parsed_dl.plugin_return_val = system(ex.c_str());
-	if(parsed_dl.plugin_return_val == 255) {
-		parsed_dl.plugin_return_val = -1;
-	}
+	// Load the plugin function needed
+	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
+    if (!handle) {
+		log_string(string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
+        return PLUGIN_ERROR;
+    }
 
-	std::string tmpfile(plugindir + "/plugin_comm/" + int_to_string(id));
-	cfgfile plugin_output(tmpfile, false);
+	dlerror();    // Clear any existing error
 
-	parsed_dl.download_url = plugin_output.get_cfg_value("download_url");
-	parsed_dl.download_filename = plugin_output.get_cfg_value("download_filename");
-	parsed_dl.cookie_file = plugin_output.get_cfg_value("cookie_file");
-	parsed_dl.wait_before_download = atoi(plugin_output.get_cfg_value("wait_before_download").c_str());
-	parsed_dl.download_parse_success = (bool)atoi(plugin_output.get_cfg_value("download_parse_success").c_str());
-	parsed_dl.download_parse_errmsg = plugin_output.get_cfg_value("download_parse_errmsg");
-	parsed_dl.download_parse_wait = atoi(plugin_output.get_cfg_value("download_parse_wait").c_str());
+	plugin_status (*plugin_exec_func)(download&, CURL*, plugin_input&, plugin_output&);
+    plugin_exec_func = (plugin_status (*)(download&, CURL*, plugin_input&, plugin_output&))dlsym(handle, "plugin_exec");
 
-	remove(tmpfile.c_str());
-	return 0;
+    char *error;
+    if ((error = dlerror()) != NULL)  {
+    	log_string(string("Unable to execute plugin: ") + error, LOG_SEVERE);
+    	return PLUGIN_ERROR;
+    }
+
+	plugin_status retval = plugin_exec_func(*this, handle, pinp, poutp);
+    dlclose(handle);
+    return retval;
 }
 
 
@@ -172,55 +164,32 @@ std::string download::get_host() {
 
 }
 
-hostinfo download::get_hostinfo() {
-	string hostinfo_fn = global_config.get_cfg_value("plugin_dir") + "/hostinfo/" + get_host();
-	correct_path(hostinfo_fn);
-	hostinfo hinfo;
-	struct stat st;
-	if(stat(hostinfo_fn.c_str(), &st) != 0) {
-		hinfo.offers_premium = false;
-		hinfo.allows_multiple_downloads_free = true,
-		hinfo.allows_download_resumption_free = true;
-		hinfo.requires_cookie = false;
-		return hinfo;
-	}
-
-	cfgfile hostinfo_file(hostinfo_fn, false);
-	hinfo.offers_premium = (bool)atoi(hostinfo_file.get_cfg_value("offers_premium").c_str());
-	hinfo.allows_multiple_downloads_free = (bool)atoi(hostinfo_file.get_cfg_value("allows_multiple_downloads_free").c_str());
-	hinfo.allows_multiple_downloads_premium = (bool)atoi(hostinfo_file.get_cfg_value("allows_multiple_downloads_premium").c_str());
-	hinfo.allows_download_resumption_free = (bool)atoi(hostinfo_file.get_cfg_value("allows_download_resumption_free").c_str());
-	hinfo.allows_download_resumption_premium = (bool)atoi(hostinfo_file.get_cfg_value("allows_download_resumption_premium").c_str());
-	hinfo.requires_cookie = (bool)atoi(hostinfo_file.get_cfg_value("requires_cookie").c_str());
-	string auth_type = hostinfo_file.get_cfg_value("premium_auth_type");
-	if(auth_type == "http-auth") {
-		hinfo.premium_auth_type = HTTP_AUTH;
-	} else {
-		hinfo.premium_auth_type = NO_AUTH;
-	}
-	return hinfo;
-}
-
 const char* download::get_error_str() {
 	switch(error) {
-		case NO_ERROR:
-			return "NO_ERROR";
-		case MISSING_PLUGIN:
-			return "MISSING_PLUGIN";
-		case INVALID_HOST:
-			return "INVALID_HOST";
-		case INVALID_PLUGIN_PATH:
-			return "INVALID_PLUGIN_PATH";
+		case PLUGIN_SUCCESS:
+			return "PLUGIN_SUCCESS";
+		case PLUGIN_MISSING:
+			return "PLUGIN_MISSING";
+		case PLUGIN_INVALID_HOST:
+			return "PLUGIN_INVALID_HOST";
+		case PLUGIN_INVALID_PATH:
+			return "PLUGIN_INVALID_PATH";
+		case PLUGIN_CONNECTION_LOST:
+			return "PLUGIN_CONNECTION_LOST";
+		case PLUGIN_FILE_NOT_FOUND:
+			return "PLUGIN_FILE_NOT_FOUND";
+		case PLUGIN_WRITE_FILE_ERROR:
+			return "PLUGIN_WRITE_FILE_ERROR";
 		case PLUGIN_ERROR:
 			return "PLUGIN_ERROR";
-		case CONNECTION_LOST:
-			return "CONNECTION_LOST";
-		case FILE_NOT_FOUND:
-			return "FILE_NOT_FOUND";
-		case WRITE_FILE_ERROR:
-			return "WRITE_FILE_ERROR";
+		case PLUGIN_LIMIT_REACHED:
+			return "PLUGIN_LIMIT_REACHED";
+		case PLUGIN_CONNECTION_ERROR:
+			return "PLUGIN_CONNECTION_ERROR";
+		case PLUGIN_SERVER_OVERLOADED:
+			return "PLUGIN_SERVER_OVERLOADED";
 	}
-	return "UNKNOWN_ERROR";
+	return "PLUGIN_UNKNOWN_ERROR";
 }
 
 const char* download::get_status_str() {
@@ -263,6 +232,61 @@ void download::set_status(download_status st, bool force) {
 
 download_status download::get_status() {
 	return status;
+}
+
+plugin_output download::get_hostinfo() {
+	plugin_input inp;
+	plugin_output outp;
+	outp.allows_resumption = false;
+	outp.allows_multiple = false;
+
+	string host(get_host());
+	string plugindir = global_config.get_cfg_value("plugin_dir");
+	correct_path(plugindir);
+	if(host == "") {
+		return outp;
+	}
+
+	struct stat st;
+	if(stat(plugindir.c_str(), &st) != 0) {
+		return outp;
+	}
+
+	string pluginfile(plugindir + host + ".so");
+	bool use_generic = false;
+	if(stat(pluginfile.c_str(), &st) != 0) {
+		use_generic = true;
+	}
+
+	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
+	if(use_generic) {
+	    log_string("No plugin found, using generic download", LOG_WARNING);
+	    outp.allows_multiple = true;
+	    outp.allows_resumption = true;
+		return outp;
+	}
+
+	// Load the plugin function needed
+	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
+    if (!handle) {
+		log_string(string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
+        return outp;
+    }
+
+	dlerror();    // Clear any existing error
+
+	void (*plugin_getinfo)(plugin_input&, plugin_output&);
+    plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(handle, "plugin_getinfo");
+
+    char *error;
+    if ((error = dlerror()) != NULL)  {
+    	log_string(string("Unable to get plugin information: ") + error, LOG_SEVERE);
+    	return outp;
+    }
+
+	plugin_getinfo(inp, outp);
+    dlclose(handle);
+    return outp;
 }
 
 

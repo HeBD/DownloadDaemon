@@ -225,7 +225,7 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 		}
 
 	}else if(splitted_line[4] == "DOWNLOAD_INACTIVE"){ // TODO: test the rest of the status stuff!
-		if(splitted_line[8] == "NO_ERROR"){
+		if(splitted_line[8] == "PLUGIN_SUCCESS"){
 			color = "YELLOW";
 			status_text = "Download Inactive.";
 
@@ -235,7 +235,7 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 		}
 
 	}else if(splitted_line[4] == "DOWNLOAD_PENDING"){
-		if(splitted_line[8] == "NO_ERROR"){
+		if(splitted_line[8] == "PLUGIN_SUCCESS"){
 			status_text = "Download Pending.";
 
 		}else{ //error occured

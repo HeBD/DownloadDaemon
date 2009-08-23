@@ -5,32 +5,21 @@
 #include <fstream>
 #include <curl/curl.h>
 
-enum download_error { NO_ERROR = 1, MISSING_PLUGIN, INVALID_HOST, INVALID_PLUGIN_PATH, PLUGIN_ERROR, CONNECTION_LOST, FILE_NOT_FOUND, WRITE_FILE_ERROR };
-enum auth_type { NO_AUTH = 1, HTTP_AUTH };
 enum download_status { DOWNLOAD_PENDING = 1, DOWNLOAD_INACTIVE, DOWNLOAD_FINISHED, DOWNLOAD_RUNNING, DOWNLOAD_WAITING, DOWNLOAD_DELETED, DOWNLOAD_RECONNECTING };
+enum plugin_status { PLUGIN_SUCCESS = 1, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,
+					 PLUGIN_MISSING, PLUGIN_INVALID_HOST, PLUGIN_INVALID_PATH, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR };
 
-struct parsed_download {
+struct plugin_output {
 	std::string download_url;
 	std::string download_filename;
-	std::string cookie_file;
-	int wait_before_download;
-	bool download_parse_success;
-	std::string download_parse_errmsg;
-	int download_parse_wait;
-	int plugin_return_val;
+	bool allows_resumption;
+	bool allows_multiple;
 };
 
-struct hostinfo {
-	bool offers_premium;
-	bool allows_multiple_downloads_free;
-	bool allows_multiple_downloads_premium;
-	bool allows_download_resumption_free;
-	bool allows_download_resumption_premium;
-	bool requires_cookie;
-	auth_type premium_auth_type;
+struct plugin_input {
+	std::string premium_user;
+	std::string premium_password;
 };
-
-
 
 class download {
 public:
@@ -55,10 +44,9 @@ public:
 	void from_serialized(std::string &serializedDL);
 
 	/** execute the correct plugin with parameters and return information on the download
-	* @param parsed_dl Structure in which all information required to start the download is stored
 	* @returns success status
 	*/
-	int get_download(parsed_download &parsed_dl);
+	plugin_status get_download(plugin_output &outp);
 
 	/** Serialize the download object to store it in the file
 	* @returns The serialized string
@@ -69,11 +57,6 @@ public:
 	* @returns host-string
 	*/
 	std::string get_host();
-
-	/** Get Info about a host
-	* @returns hostinfo structure of the host
-	*/
-	hostinfo get_hostinfo();
 
 	/** Get the defines from above as a string literal
 	* @returns the resulting error string
@@ -97,6 +80,8 @@ public:
 	*/
 	download_status get_status();
 
+	plugin_output get_hostinfo();
+
 	std::string url;
 	std::string comment;
 
@@ -106,7 +91,7 @@ public:
 	long downloaded_bytes;
 	long size;
 	int wait_seconds;
-	download_error error;
+	plugin_status error;
 	CURL* handle;
 	std::string output_file;
 

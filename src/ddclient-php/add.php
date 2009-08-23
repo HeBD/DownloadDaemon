@@ -12,7 +12,7 @@
 	<div align="center">
 	<?php if(!isset($_POST['submit_single']) && !isset($_POST['submit_multiple'])) { ?>
 	<br>
-	Add singe Download (no title neccessary):
+	Add singe Download (no title necessary):
 	<form action="add.php" method="post">
 		Title: <input type="text" name="title" size="100"> <br>
 		URL: <input type="text" name="url" size="100"> <br>

@@ -1,8 +1,6 @@
+#include "plugin_helpers.h"
 #include <curl/curl.h>
-#include <string>
 #include <cstdlib>
-#include <fstream>
-#include <iostream>
 using namespace std;
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
@@ -20,38 +18,24 @@ void trim_string(std::string &str) {
 	}
 }
 
-int main(int argc, char* argv[]) {
-	if(argc < 3)
-		return -1;
-
-	string output_fn(argv[0]);
-	output_fn = output_fn.substr(0, output_fn.find_last_of('/'));
-	output_fn += "/plugin_comm/";
-	output_fn += argv[1];
-	fstream output_file(output_fn.c_str(), ios::out);
+extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_input &inp, plugin_output &outp) {
 	CURL* handle = curl_easy_init();
 	string resultstr;
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
-	curl_easy_setopt(handle, CURLOPT_URL, argv[2]);
+	curl_easy_setopt(handle, CURLOPT_URL, get_url(dl));
 	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
 	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
 	int success = curl_easy_perform(handle);
 
 	if(success != 0) {
-		output_file << "download_parse_success = 0\n";
-		output_file << "download_parse_errmsg = CONNECTION_FAILED\n";
-		output_file.close();
-		return 0;
+		return PLUGIN_CONNECTION_ERROR;
 	}
 
 	if(resultstr.find("File doesn't exist") != string::npos || resultstr.find("404 Not Found") != string::npos ||
 	   resultstr.find("The file status can only be queried by premium users") != string::npos) {
-		output_file << "download_parse_success = 0\n";
-		output_file << "download_parse_errmsg = FILE_NOT_FOUND\n";
-		output_file.close();
-		return 0;
+		return PLUGIN_FILE_NOT_FOUND;
 	}
 
 	size_t pos;
@@ -60,25 +44,17 @@ int main(int argc, char* argv[]) {
 		pos += 9;
 		size_t end = resultstr.find(' ', pos);
 		string wait_time = resultstr.substr(pos, end - pos);
-		output_file << "download_parse_success = 0\n";
-		output_file << "download_parse_errmsg = LIMIT_REACHED\n";
-		unsigned int wait_secs = atoi(wait_time.c_str()) * 60;
-		output_file << "download_parse_wait = " << wait_secs;
-		output_file.close();
-		return 0;
+		set_wait_time(dl, atoi(wait_time.c_str()) * 60);
+		return PLUGIN_LIMIT_REACHED;
 	}
 
 	if((pos = resultstr.find("name=\"download_form\"")) == string::npos || resultstr.find("Filename:") == string::npos) {
-		output_file << "download_parse_success = 0\n";
-		output_file.close();
-		return -1;
+		return PLUGIN_ERROR;
 	}
 
-	output_file << "download_parse_success = 1\n";
 	pos = resultstr.find("http://", pos);
 	size_t end = resultstr.find('\"', pos);
-	std::string download_url = resultstr.substr(pos, end - pos);
-	output_file << "download_url = " + download_url + '\n';
+	outp.download_url = resultstr.substr(pos, end - pos);
 
 	std::string filename;
 	pos = resultstr.find("Filename:");
@@ -92,8 +68,17 @@ int main(int argc, char* argv[]) {
 	end = resultstr.find("</td>", pos);
 	filetype = resultstr.substr(pos, end - pos);
 	trim_string(filetype);
-	output_file << "download_filename = " << filename << filetype << '\n';
-	output_file.close();
-
+	filename += filetype;
+	outp.download_filename = filename;
+	return PLUGIN_SUCCESS;
 }
 
+extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
+	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+		outp.allows_resumption = true;
+		outp.allows_multiple = true;
+	} else {
+		outp.allows_resumption = false;
+		outp.allows_multiple = false;
+	}
+}

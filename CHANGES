@@ -1,4 +1,11 @@
 2009-08-23
+   [adrian]
+	- Rewrote complete plugin system to use shared libraries instead of executables
+	- Changed possible error-string for DL LIST
+	- fixed small bugs in ddclient-php
+	- made ddclient-wx compatible with new status messages
+	- updated uploaded.to/rapidshare.com plugins to fit in the new system
+	- updated plugin-writing documentation
    [susanne]
 	- added file delete before deleting the download at ddclient-wx
 	- ddclient-wx now asks you if you really want to delete downloads

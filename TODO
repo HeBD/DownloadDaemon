@@ -1,11 +1,9 @@
 - correct socket check (to see if the connection is still ok)
 - vector::iterator is NOT thread safe for reading, if a writer is active: Race condition in download_thread.cpp, *download may change while download_thread is active
-- (very small one): php client, add downloads, 3rd line: correct spelling of necessary
 - find a way to cross-compile it to ARMs (scratchbox) - succeeded in building a statically linked binary, but curl_easy_perform crashes (seg fault)
 - put DownloadDaemon and clients in proper unix/windows-specific paths instead of just /opt/...
 - make it possible to download files through the mgmt interface
 - compile netpptk and cfgfile as shared libraries
-- implement all the # not implemented-s in hostinfo
 - implement premium account support
 - implement some type of container format to import/export huge lists
 - write a few plugins
@@ -13,4 +11,3 @@
 - speed regulation
 - extend netpptk to get endpoint info and display connecting IPs in logfile
 - Make a multiuser-system out of downloaddaemon with partly individual configuration (download-folder) and administration...
-- Rewrite the plugin systems to use dynamicly loaded shared libraries instead of executables.
