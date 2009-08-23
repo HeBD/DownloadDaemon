@@ -10,7 +10,6 @@
 #ifndef DDCLIENT_WX_ADD_DIALOG_H
 #define DDCLIENT_WX_ADD_DIALOG_H
 
-//#include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/dialog.h>
 #include <wx/stattext.h>
 #include <wx/button.h>

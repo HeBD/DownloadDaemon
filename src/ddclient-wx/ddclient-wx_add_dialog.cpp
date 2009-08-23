@@ -84,12 +84,12 @@ void add_dialog::on_add_one(wxCommandEvent &event){
 	string url = string((url_input->GetValue()).mb_str());
 
 	 // exchange every | inside the title with a blank
-	size_t titlefind;
-	titlefind = title.find("|");
+	size_t title_find;
+	title_find = title.find("|");
 
-	while(titlefind != string::npos){
-		title.at(titlefind) = ' ';
-		titlefind = title.find("|");
+	while(title_find != string::npos){
+		title.at(title_find) = ' ';
+		title_find = title.find("|");
 	}
 
 	// check connection

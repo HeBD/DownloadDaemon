@@ -1,3 +1,4 @@
+- correct socket check (to see if the connection is still ok)
 - vector::iterator is NOT thread safe for reading, if a writer is active: Race condition in download_thread.cpp, *download may change while download_thread is active
 - (very small one): php client, add downloads, 3rd line: correct spelling of necessary
 - find a way to cross-compile it to ARMs (scratchbox) - succeeded in building a statically linked binary, but curl_easy_perform crashes (seg fault)

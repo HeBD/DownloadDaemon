@@ -46,7 +46,6 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	SetClientSize(wxSize(750,500));
 	SetMinSize(wxSize(750,500));
 	CenterOnScreen();
-	//SetIcon(); // later
 
 	add_bars();
 	add_content();
@@ -75,7 +74,7 @@ void myframe::add_bars(){
 	file_menu->Append(id_menu_quit, wxT("&Quit\tAlt-F4"), wxT("Quit"));
 	menu->Append(file_menu, wxT("&File"));
 
-	wxMenu *help_menu = new wxMenu(_T(""));
+	help_menu = new wxMenu(_T(""));
 	help_menu->Append(id_menu_about, wxT("&About\tF1"), wxT("About"));
 	menu->Append(help_menu, wxT("&Help"));
 

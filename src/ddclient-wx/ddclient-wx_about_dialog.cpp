@@ -21,15 +21,15 @@ wxString wxbuildinfo(){
     wxString wxbuild(wxVERSION_STRING);
 
 	#if defined(__WXMSW__)
-	wxbuild << _T("-Windows");
+		wxbuild << _T("-Windows");
 	#elif defined(__UNIX__)
-	wxbuild << _T("-Linux");
+		wxbuild << _T("-Linux");
 	#endif // defined(__WXMSW__)
 
 	#if wxUSE_UNICODE
-	wxbuild << _T("-unicode build");
+		wxbuild << _T("-unicode build");
 	#else
-	wxbuild << _T("-ANSI build");
+		wxbuild << _T("-ANSI build");
 	#endif // wxUSE_UNICODE
 
     return wxbuild;

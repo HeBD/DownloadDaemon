@@ -134,12 +134,12 @@ void connect_dialog::on_connect(wxCommandEvent &event){ //TODO: needs more tests
 			Destroy();
 
 		}else{
-			delete(mysock);
+			delete mysock;
 		}
 
 	}else{ // connection failed due to host (IP/URL or port)
-		wxMessageBox(wxT("\nConnection failed (wrong IP/URL or port).\t\t\nPlease try again."), wxT("connection failed"));
-		delete(mysock);
+		wxMessageBox(wxT("\nConnection failed (wrong IP/URL or port).\t\t\nPlease try again."), wxT("Connection failed"));
+		delete mysock;
 	}
 	// the dialog doesn't close with an error (so you don't have to type everything again), you have to get an connection or press cancel to do so
 }
