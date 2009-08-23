@@ -18,8 +18,8 @@ const long myframe::id_menu_about = wxNewId();
 const long myframe::id_toolbar_connect = wxNewId();
 const long myframe::id_toolbar_add = wxNewId();
 const long myframe::id_toolbar_delete = wxNewId();
-const long myframe::id_toolbar_stop = wxNewId();
-const long myframe::id_toolbar_start = wxNewId();
+const long myframe::id_toolbar_deactivate = wxNewId();
+const long myframe::id_toolbar_activate = wxNewId();
 
 
 // event table (has to be after creating IDs, won't work otherwise)
@@ -29,8 +29,8 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_toolbar_connect, myframe::on_connect)
 	EVT_MENU(id_toolbar_add, myframe::on_add)
 	EVT_MENU(id_toolbar_delete, myframe::on_delete)
-	EVT_MENU(id_toolbar_stop, myframe::on_stop)
-	EVT_MENU(id_toolbar_start, myframe::on_start)
+	EVT_MENU(id_toolbar_deactivate, myframe::on_deactivate)
+	EVT_MENU(id_toolbar_activate, myframe::on_activate)
 	EVT_SIZE(myframe::on_resize)
 END_EVENT_TABLE()
 
@@ -90,8 +90,8 @@ void myframe::add_bars(){
 	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_DEL_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download"), wxEmptyString);
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_stop, wxT("Stop"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CROSS_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Stop downloading files"), wxEmptyString);
-	toolbar->AddTool(id_toolbar_start, wxT("Start"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_TICK_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Start downloading files"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_deactivate, wxT("Deactivate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CROSS_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Download"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_TICK_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Download"), wxEmptyString);
 
 	toolbar->Realize();
 	SetToolBar(toolbar);
@@ -182,6 +182,7 @@ void myframe::fill_list(){
 		content = new_content;
 
 		mx.unlock();
+		Refresh();
 
 		sleep(2); // reload every two seconds
 	}
@@ -189,7 +190,7 @@ void myframe::fill_list(){
 }
 
 
-string myframe::build_status(string &status_text, vector<string> &splitted_line){ // TODO: test every possible status
+string myframe::build_status(string &status_text, vector<string> &splitted_line){
 	string color = "WHITE";
 
 	if(splitted_line[4] == "DOWNLOAD_RUNNING"){
@@ -434,11 +435,16 @@ void myframe::on_delete(wxCommandEvent &event){
 						int del_file = file_dialog.ShowModal();
 
 						if(del_file == wxID_YES){ // user clicked yes to delete
+							mysock->send("DDP DL DEACTIVATE " + id);
+							mysock->recv(answer);
+
 							mysock->send("DDP FILE DEL " + id);
 							mysock->recv(answer);
 
-							if(answer.find("109") == 0) // 109 FILE <-- file operation on a file that does not exist
-								error_occured = true;
+							if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
+								string message = "Error occured at deleting File from ID " + id;
+								wxMessageBox(wxString(message.c_str(), wxConvUTF8), wxT("Error"));
+							}
 
 						}
 					}
@@ -455,20 +461,20 @@ void myframe::on_delete(wxCommandEvent &event){
 		mx.unlock();
 
 		if(error_occured)
-			wxMessageBox(wxT("Error occured at deleting Downloads."), wxT("Error"));
+			wxMessageBox(wxT("Error occured at deleting Download(s)."), wxT("Error"));
 	}
 
 	return;
  }
 
 
-void myframe::on_stop(wxCommandEvent &event){ // TODO: realize
+void myframe::on_deactivate(wxCommandEvent &event){ // TODO: realize
 	wxMessageBox(wxT("\nDummy Dialog"), wxT("Dummy"));
 	return;
  }
 
 
-void myframe::on_start(wxCommandEvent &event){ // TODO: realize
+void myframe::on_activate(wxCommandEvent &event){ // TODO: realize
 	wxMessageBox(wxT("\nDummy Dialog"), wxT("Dummy"));
 	return;
  }

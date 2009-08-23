@@ -70,7 +70,7 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString
 
 
 // event handle methods
-void connect_dialog::on_connect(wxCommandEvent &event){ //TODO: needs more tests
+void connect_dialog::on_connect(wxCommandEvent &event){
 
 	// getting user input
 	std::string host = std::string(host_input->GetValue().mb_str());

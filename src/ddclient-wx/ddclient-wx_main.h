@@ -94,8 +94,8 @@ class myframe : public wxFrame{
 		static const long id_toolbar_connect;
 		static const long id_toolbar_add;
 		static const long id_toolbar_delete;
-		static const long id_toolbar_stop;
-		static const long id_toolbar_start;
+		static const long id_toolbar_deactivate;
+		static const long id_toolbar_activate;
 
 		void add_bars();
 		void add_content();
@@ -113,8 +113,8 @@ class myframe : public wxFrame{
 		void on_connect(wxCommandEvent &event);
 		void on_add(wxCommandEvent &event);
 		void on_delete(wxCommandEvent &event);
-		void on_stop(wxCommandEvent &event);
-		void on_start(wxCommandEvent &event);
+		void on_deactivate(wxCommandEvent &event);
+		void on_activate(wxCommandEvent &event);
 		void on_resize(wxSizeEvent &event);
 
 		DECLARE_EVENT_TABLE()

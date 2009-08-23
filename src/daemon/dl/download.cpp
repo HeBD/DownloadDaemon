@@ -252,6 +252,7 @@ void download::set_status(download_status st, bool force) {
 	if(status == DOWNLOAD_DELETED) {
 		return;
 	} else if(st == DOWNLOAD_DELETED && status != DOWNLOAD_RUNNING) {
+		status = st;
 		curl_easy_cleanup(handle);
 		global_download_list.erase(global_download_list.get_download_by_id(id));
 	} else {

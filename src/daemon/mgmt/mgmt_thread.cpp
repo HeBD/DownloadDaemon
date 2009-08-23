@@ -339,8 +339,10 @@ void target_dl_deactivate(string &data, tkSock *sock) {
 		download_status old_status = it->get_status();
 		if(it->get_status() == DOWNLOAD_RUNNING) {
 			curl_easy_setopt(it->handle, CURLOPT_TIMEOUT, 1);
+			it->set_status(DOWNLOAD_INACTIVE, true);
+		} else {
+			it->set_status(DOWNLOAD_INACTIVE);
 		}
-		it->set_status(DOWNLOAD_INACTIVE);
 		it->wait_seconds = 0;
 		it->size = 0;
 		it->downloaded_bytes = 0;
