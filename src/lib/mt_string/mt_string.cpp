@@ -33,7 +33,7 @@ mt_string::mt_string ( const mt_string& str, size_t pos, size_t n) : real_string
 mt_string::mt_string ( const char * s, size_t n ) : real_string(s, n) {}
 mt_string::mt_string ( const char * s ) : real_string(s) {}
 mt_string::mt_string ( size_t n, char c ) : real_string(n, c) {}
-mt_string::mt_string ( std::string str) : real_string(str) {}
+mt_string::mt_string ( const std::string &str) : real_string(str) {}
 mt_string::~mt_string () { boost::mutex::scoped_lock lock(mt_string_mutex); }
 
 mt_string& mt_string::operator= ( const mt_string& str ) { boost::mutex::scoped_lock lock(mt_string_mutex); real_string = str.real_string; return *this;}

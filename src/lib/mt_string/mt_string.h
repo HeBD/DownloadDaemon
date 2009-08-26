@@ -37,7 +37,7 @@ public:
 	mt_string ( const char * s, size_t n );
 	mt_string ( const char * s );
 	mt_string ( size_t n, char c );
-	mt_string ( std::string str);
+	mt_string ( const std::string &str);
 	~mt_string ();
 
 	mt_string& operator= ( const mt_string& str );

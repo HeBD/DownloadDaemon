@@ -53,28 +53,34 @@ public:
 	*	@param port Port to use
 	*	@returns True on success
 	*/
-	bool connect(const mt_string host, const int port);
+	bool connect(const std::string host, const int port);
 
 	/** Send data over the socket
 	*	@param s Data to send
 	*	@returns True on success
 	*/
-	bool send(const mt_string &s);
+	bool send(const std::string &s);
+	bool send(const mt_string &s) { return send(s.c_str()); }
+	bool send(const char* s) { return send(std::string(s)); }
 
 	/** Receive data from a socket
 	*	@param s String to store the received data
 	*	@returns The number of received bytes, negative value on error
 	*/
-	int recv(mt_string &s);
+	int recv(std::string &s);
+	int recv(mt_string &s) { std::string a; int ret = recv(a); s = a; return ret; }
 
 	/** Convert the object to book to use easy if(..) constructs for validity-checks */
 	operator bool() const;
 
 	/** Read data from a string to the socket to send it */
-	const tkSock& operator<< (const mt_string&);
+	const tkSock& operator<< (const std::string&);
+	const tkSock& operator<< (const mt_string& s) { operator<<(s.c_str()); return *this; }
+	const tkSock& operator<< (const char* s) { operator<<(std::string(s)); return *this;}
 
 	/** Read data from a socket and save it in a string */
-	const tkSock& operator>> (mt_string&);
+	const tkSock& operator>> (std::string&);
+	const tkSock& operator>> (mt_string &s) { std::string a; recv(a); s = a; return *this; }
 
 	/** Returns the socket descriptor for manual handling */
 	int get_sockdesc() const {return m_sock;}
@@ -108,8 +114,8 @@ private:
 	unsigned int m_open_connections;
 	boost::thread* auto_accept_thread;
 	bool stop_threads;
-	mt_string append_header(mt_string data);
-	int remove_header(mt_string &data);
+	std::string append_header(std::string data);
+	int remove_header(std::string &data);
 };
 
 std::ostream& operator<<(std::ostream& stream, tkSock &sock);

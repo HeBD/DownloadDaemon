@@ -193,7 +193,7 @@ void tkSock::auto_accept_stop() {
 	auto_accept_thread = 0;
 }
 
-bool tkSock::connect(const mt_string host, const int port) {
+bool tkSock::connect(const std::string host, const int port) {
 	struct hostent *host_info;
 	unsigned long addr;
 	if((addr = inet_addr(host.c_str())) != INADDR_NONE) {
@@ -220,9 +220,9 @@ bool tkSock::connect(const mt_string host, const int port) {
 	return false;
 }
 
-bool tkSock::send(const mt_string &s) {
+bool tkSock::send(const std::string &s) {
 	int status = 0;
-	mt_string s_new;
+	std::string s_new;
 	s_new = append_header(s);
 	do {
 		if(!valid) {
@@ -238,7 +238,7 @@ bool tkSock::send(const mt_string &s) {
 	return true;
 }
 
-int tkSock::recv(mt_string& s) {
+int tkSock::recv(std::string& s) {
 	char initbuf[21];
 	s = "";
 	memset(initbuf, 0, 21);
@@ -288,22 +288,22 @@ int tkSock::recv(mt_string& s) {
 	return status;
 }
 
-mt_string tkSock::append_header(mt_string data) {
+std::string tkSock::append_header(std::string data) {
 	int len = data.size();
 	std::stringstream ss;
 	ss << len;
-	mt_string lenstr;
+	std::string lenstr;
 	ss >> lenstr;
 	data = lenstr + ':' + data;
 	return data;
 }
 
-int tkSock::remove_header(mt_string &data) {
+int tkSock::remove_header(std::string &data) {
 	size_t seperator_pos = data.find(':');
-	if(seperator_pos == mt_string::npos) {
+	if(seperator_pos == std::string::npos) {
 		return -1;
 	}
-	mt_string NumberString;
+	std::string NumberString;
 	int retval;
 	NumberString = data.substr(0, seperator_pos);
 	std::stringstream ss;
@@ -317,19 +317,19 @@ tkSock::operator bool() const {
 	return ((m_sock > 0) && (valid == true));
 }
 
-const tkSock& tkSock::operator<< (const mt_string& s) {
+const tkSock& tkSock::operator<< (const std::string& s) {
 	tkSock::send(s);
 	return *this;
 }
 
-const tkSock& tkSock::operator>> (mt_string& s) {
+const tkSock& tkSock::operator>> (std::string& s) {
 	tkSock::recv(s);
 	return *this;
 }
 
 
 std::ostream& operator<<(std::ostream& stream, tkSock &sock) {
-	mt_string data;
+	std::string data;
 	sock.recv(data);
 
 	stream << data;
@@ -337,7 +337,7 @@ std::ostream& operator<<(std::ostream& stream, tkSock &sock) {
 }
 
 std::istream& operator>>(std::istream& stream, tkSock &sock) {
-	mt_string data;
+	std::string data;
 	stream >> data;
 	sock.send(data);
 	return stream;
