@@ -157,16 +157,16 @@ void myframe::add_content(){
 	panel_downloads->SetSizer(sizer_downloads);
 
 	// all download lists
-	list = new wxListCtrl(panel_downloads, wxID_ANY, wxPoint(120, -46), wxSize(0,0), wxLC_REPORT);
+	list = new wxListCtrl(panel_downloads, wxID_ANY, wxPoint(120, -46), wxDefaultSize, wxLC_REPORT);
 	sizer_downloads->Add(list , 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 
 
 	// columns
-	list->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
-	list->InsertColumn(1, wxT("Added"), wxLIST_AUTOSIZE_USEHEADER, 190);
-	list->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 100);
-	list->InsertColumn(3, wxT("\tURL\t"), wxLIST_AUTOSIZE_USEHEADER, 200);
-	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 80);
+	list->InsertColumn(0, wxT("ID"), 0, 50);
+	list->InsertColumn(1, wxT("Added"), 0, 190);
+	list->InsertColumn(2, wxT("Title"), 0, 100);
+	list->InsertColumn(3, wxT("\tURL\t"), 0, 200);
+	list->InsertColumn(4, wxT("Status"), 0, 80);
 
 	return;
 }
@@ -333,7 +333,7 @@ void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content
 
 	// compare the i-th vector in content with the i-th vector in new_content
 	while((new_content_it < new_content_end) && (old_content_it < content.end())){
-		compare_vector(line_nr, *new_content_it, (*old_content_it).begin(), (*old_content_it).end());
+		compare_vector(line_nr, *new_content_it, old_content_it->begin(), old_content_it->end());
 
 		new_content_it++;
 		old_content_it++;
