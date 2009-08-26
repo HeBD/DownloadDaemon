@@ -22,15 +22,15 @@ struct plugin_input {
 */
 
 void set_wait_time(download &dl, int seconds) {
-	dl.wait_seconds = seconds;
+	dl.set_wait_seconds(seconds);
 }
 
 int get_wait_time(download &dl) {
-	return dl.wait_seconds;
+	return dl.get_wait_seconds();
 }
 
 const char* get_url(download &dl) {
-	return dl.url.c_str();
+	return dl.get_url().c_str();
 }
 
 #endif // PLUGIN_HELPERS_H_INCLUDED
