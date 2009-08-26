@@ -23,7 +23,7 @@ extern cfgfile global_config;
 
 int main(int argc, char* argv[]) {
 	if(argc == 2) {
-		string argv1 = argv[1];
+		mt_string argv1 = argv[1];
 		if(argv1 == "-d" || argv1 == "--daemon") {
 			int i = fork();
 			if (i < 0) return 1; /* fork error */
@@ -35,25 +35,24 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	string root_dir(argv[0]);
-
+	mt_string root_dir(argv[0]);
 	root_dir = root_dir.substr(0, root_dir.find_last_of("/\\"));
 	program_root = root_dir;
 	program_root += '/';
 
 	struct stat st;
-	if(stat(string(root_dir + "/conf/downloaddaemon.conf").c_str(), &st) != 0) {
+	if(stat(mt_string(root_dir + "/conf/downloaddaemon.conf").c_str(), &st) != 0) {
 		cout << "Could not locate configuration file!" << endl;
 		exit(-1);
 	}
-	if(stat(string(root_dir + "/conf/routerinfo.conf").c_str(), &st) != 0) {
+	if(stat(mt_string(root_dir + "/conf/routerinfo.conf").c_str(), &st) != 0) {
 	    cout << "Could not locate router configuration file!" << endl;
 	    exit(-1);
 	}
 	global_config.open_cfg_file(root_dir + "/conf/downloaddaemon.conf", true);
 	global_router_config.open_cfg_file(root_dir + "/conf/routerinfo.conf", true);
 
-	string dlist_fn = global_config.get_cfg_value("dlist_file");
+	mt_string dlist_fn = global_config.get_cfg_value("dlist_file");
 	correct_path(dlist_fn);
 	global_download_list.from_file(dlist_fn.c_str());
 

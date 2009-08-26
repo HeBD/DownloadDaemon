@@ -17,11 +17,13 @@
 using namespace std;
 
 extern cfgfile global_config;
-extern std::string program_root;
+extern mt_string program_root;
 extern download_container global_download_list;
+extern boost::mutex download_container_mutex;
 
-download::download(std::string &url, int next_id)
+download::download(mt_string &url, int next_id)
 	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS), status(DOWNLOAD_PENDING) {
+	boost::mutex::scoped_lock lock(download_mutex);
 	handle = curl_easy_init();
 	time_t rawtime;
 	time(&rawtime);
@@ -29,15 +31,16 @@ download::download(std::string &url, int next_id)
 	add_date.erase(add_date.length() - 1);
 }
 
-download::download(std::string &serializedDL) {
+download::download(mt_string &serializedDL) {
 	from_serialized(serializedDL);
 }
 
-void download::from_serialized(std::string &serializedDL) {
-	std::string current_entry;
+void download::from_serialized(mt_string &serializedDL) {
+	boost::mutex::scoped_lock lock(download_mutex);
+	mt_string current_entry;
 	size_t curr_pos = 0;
 	size_t entry_num = 0;
-	while(serializedDL.find('|', curr_pos) != string::npos) {
+	while(serializedDL.find('|', curr_pos) != mt_string::npos) {
 		current_entry = serializedDL.substr(curr_pos, serializedDL.find('|', curr_pos) - curr_pos);
 		curr_pos = serializedDL.find('|', curr_pos);
 		if(serializedDL[curr_pos - 1] == '\\') {
@@ -87,7 +90,33 @@ void download::from_serialized(std::string &serializedDL) {
 	handle = curl_easy_init();
 }
 
-std::string download::serialize() {
+download::download(const download& dl) : url(dl.url), comment(dl.comment), add_date(dl.add_date), id(dl.id), downloaded_bytes(dl.downloaded_bytes),
+										 size(dl.size), wait_seconds(dl.wait_seconds), error(dl.error), output_file(dl.output_file), status(dl.status) {
+	boost::mutex::scoped_lock lock(download_mutex);
+	handle = curl_easy_init();
+}
+
+void download::operator=(const download& dl) {
+	boost::mutex::scoped_lock lock(download_mutex);
+	url = dl.url;
+	comment = dl.comment;
+	add_date = dl.add_date;
+	id = dl.id;
+	downloaded_bytes = dl.downloaded_bytes;
+	size = dl.size;
+	wait_seconds = dl.wait_seconds;
+	error = dl.error;
+	output_file = dl.output_file;
+	status = dl.status;
+}
+
+download::~download() {
+	boost::mutex::scoped_lock lock(download_mutex);
+	curl_easy_cleanup(handle);
+}
+
+mt_string download::serialize() {
+	boost::mutex::scoped_lock lock(download_mutex);
 	if(status == DOWNLOAD_DELETED) {
 		return "";
 	}
@@ -98,11 +127,14 @@ std::string download::serialize() {
 }
 
 plugin_status download::get_download(plugin_output &poutp) {
+	boost::mutex::scoped_lock lock(download_mutex);
 	plugin_input pinp;
 	curl_easy_reset(handle);
 
-	string host(get_host());
-	string plugindir = global_config.get_cfg_value("plugin_dir");
+	download_mutex.unlock();
+	mt_string host(get_host());
+	download_mutex.lock();
+	mt_string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);
 	if(host == "") {
 		return PLUGIN_INVALID_HOST;
@@ -113,7 +145,7 @@ plugin_status download::get_download(plugin_output &poutp) {
 		return PLUGIN_INVALID_PATH;
 	}
 
-	string pluginfile(plugindir + "lib" + host + ".so");
+	mt_string pluginfile(plugindir + "lib" + host + ".so");
 	bool use_generic = false;
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;
@@ -129,7 +161,7 @@ plugin_status download::get_download(plugin_output &poutp) {
 	// Load the plugin function needed
 	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
     if (!handle) {
-		log_string(string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
+		log_string(mt_string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
         return PLUGIN_ERROR;
     }
 
@@ -140,22 +172,24 @@ plugin_status download::get_download(plugin_output &poutp) {
 
     char *error;
     if ((error = dlerror()) != NULL)  {
-    	log_string(string("Unable to execute plugin: ") + error, LOG_SEVERE);
+    	log_string(mt_string("Unable to execute plugin: ") + error, LOG_SEVERE);
     	return PLUGIN_ERROR;
     }
-
+	download_mutex.unlock();
 	plugin_status retval = plugin_exec_func(*this, handle, pinp, poutp);
+	download_mutex.lock();
     dlclose(handle);
     return retval;
 }
 
 
-std::string download::get_host() {
+mt_string download::get_host() {
+	boost::mutex::scoped_lock lock(download_mutex);
 	size_t startpos = 0;
 
-	if(url.find("www.") != std::string::npos) {
+	if(url.find("www.") != mt_string::npos) {
 		startpos = url.find('.') + 1;
-	} else if(url.find("http://") != std::string::npos || url.find("ftp://") != std::string::npos) {
+	} else if(url.find("http://") != mt_string::npos || url.find("ftp://") != mt_string::npos) {
 		startpos = url.find('/') + 2;
 	} else {
 		return "";
@@ -165,6 +199,7 @@ std::string download::get_host() {
 }
 
 const char* download::get_error_str() {
+	boost::mutex::scoped_lock lock(download_mutex);
 	switch(error) {
 		case PLUGIN_SUCCESS:
 			return "PLUGIN_SUCCESS";
@@ -193,6 +228,7 @@ const char* download::get_error_str() {
 }
 
 const char* download::get_status_str() {
+	boost::mutex::scoped_lock lock(download_mutex);
 	switch(status) {
 		case DOWNLOAD_PENDING:
 			return "DOWNLOAD_PENDING";
@@ -213,35 +249,45 @@ const char* download::get_status_str() {
 }
 
 void download::set_status(download_status st, bool force) {
+	// Do not use a scoped lock here! it will cause a segmentation fault in some cases, because global_download_list.erase(...) will
+	// cause *this to be destroyed. therefore the mutex shall not be accessed AFTER this call. With a scoped_lock, this happens automatically.
+	download_mutex.lock();
 	if(force) {
 		status = st;
+		download_mutex.unlock();
 		return;
 	}
 
 	if(status == DOWNLOAD_DELETED) {
+		download_mutex.unlock();
 		return;
 	} else if(st == DOWNLOAD_DELETED && status != DOWNLOAD_RUNNING) {
 		status = st;
-		curl_easy_cleanup(handle);
+		download_mutex.unlock();
 		global_download_list.erase(global_download_list.get_download_by_id(id));
 	} else {
 		status = st;
+		download_mutex.unlock();
 		global_download_list.dump_to_file();
 	}
 }
 
 download_status download::get_status() {
+	boost::mutex::scoped_lock lock(download_mutex);
 	return status;
 }
 
 plugin_output download::get_hostinfo() {
+	boost::mutex::scoped_lock lock(download_mutex);
 	plugin_input inp;
 	plugin_output outp;
 	outp.allows_resumption = false;
 	outp.allows_multiple = false;
 
-	string host(get_host());
-	string plugindir = global_config.get_cfg_value("plugin_dir");
+	download_mutex.unlock();
+	mt_string host(get_host());
+	download_mutex.lock();
+	mt_string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);
 	if(host == "") {
 		return outp;
@@ -252,7 +298,7 @@ plugin_output download::get_hostinfo() {
 		return outp;
 	}
 
-	string pluginfile(plugindir + "lib" + host + ".so");
+	mt_string pluginfile(plugindir + "lib" + host + ".so");
 	bool use_generic = false;
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;
@@ -269,7 +315,7 @@ plugin_output download::get_hostinfo() {
 	// Load the plugin function needed
 	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
     if (!handle) {
-		log_string(string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
+		log_string(mt_string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
         return outp;
     }
 
@@ -280,7 +326,7 @@ plugin_output download::get_hostinfo() {
 
     char *error;
     if ((error = dlerror()) != NULL)  {
-    	log_string(string("Unable to get plugin information: ") + error, LOG_SEVERE);
+    	log_string(mt_string("Unable to get plugin information: ") + error, LOG_SEVERE);
     	return outp;
     }
 

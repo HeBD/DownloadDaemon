@@ -4,12 +4,12 @@
 using namespace std;
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
-	string *blubb = (string*)userp;
+	mt_string *blubb = (mt_string*)userp;
 	blubb->append((char*)buffer, nmemb);
 	return nmemb;
 }
 
-void trim_string(std::string &str) {
+void trim_string(mt_string &str) {
 	while(str.length() > 0 && isspace(str[0])) {
 		str.erase(str.begin());
 	}
@@ -20,7 +20,7 @@ void trim_string(std::string &str) {
 
 extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_input &inp, plugin_output &outp) {
 	CURL* handle = curl_easy_init();
-	string resultstr;
+	mt_string resultstr;
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
 	curl_easy_setopt(handle, CURLOPT_URL, get_url(dl));
@@ -33,22 +33,22 @@ extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_inp
 		return PLUGIN_CONNECTION_ERROR;
 	}
 
-	if(resultstr.find("File doesn't exist") != string::npos || resultstr.find("404 Not Found") != string::npos ||
+	if(resultstr.find("File doesn't exist") != mt_string::npos || resultstr.find("404 Not Found") != string::npos ||
 	   resultstr.find("The file status can only be queried by premium users") != string::npos) {
 		return PLUGIN_FILE_NOT_FOUND;
 	}
 
 	size_t pos;
-	if((pos = resultstr.find("You have reached a maximum number of downloads or used up your Free-Traffic!")) != string::npos) {
+	if((pos = resultstr.find("You have reached a maximum number of downloads or used up your Free-Traffic!")) != mt_string::npos) {
 		pos = resultstr.find("(Or wait ", pos);
 		pos += 9;
 		size_t end = resultstr.find(' ', pos);
-		string wait_time = resultstr.substr(pos, end - pos);
+		mt_string wait_time = resultstr.substr(pos, end - pos);
 		set_wait_time(dl, atoi(wait_time.c_str()) * 60);
 		return PLUGIN_LIMIT_REACHED;
 	}
 
-	if((pos = resultstr.find("name=\"download_form\"")) == string::npos || resultstr.find("Filename:") == string::npos) {
+	if((pos = resultstr.find("name=\"download_form\"")) == mt_string::npos || resultstr.find("Filename:") == mt_string::npos) {
 		return PLUGIN_ERROR;
 	}
 
@@ -56,13 +56,13 @@ extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_inp
 	size_t end = resultstr.find('\"', pos);
 	outp.download_url = resultstr.substr(pos, end - pos);
 
-	std::string filename;
+	mt_string filename;
 	pos = resultstr.find("Filename:");
 	pos = resultstr.find("<b>", pos) + 3;
 	end = resultstr.find("</b>", pos);
 	filename = resultstr.substr(pos, end - pos);
 	trim_string(filename);
-	std::string filetype;
+	mt_string filetype;
 	pos = resultstr.find("Filetype:");
 	pos = resultstr.find("<td>", pos) + 4;
 	end = resultstr.find("</td>", pos);

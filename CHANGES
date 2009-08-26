@@ -1,4 +1,7 @@
 2009-08-26
+   [adrian]
+	- Tried to make everything a bit more threadsafe
+	- implemented mt_string, a wrapper around std::string to make it threadsafe
    [susanne]
 	- added configure dialog at ddclient-wx, which only changes the password right now
 	- downloading can now be activated and deactivated for all downloads at once at ddclient-wx

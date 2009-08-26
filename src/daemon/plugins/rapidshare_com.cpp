@@ -4,14 +4,14 @@
 using namespace std;
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
-	string *blubb = (string*)userp;
+	mt_string *blubb = (mt_string*)userp;
 	blubb->append((char*)buffer, nmemb);
 	return nmemb;
 }
 
 extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_input &inp, plugin_output &outp) {
 	CURL* prepare_handle = curl_easy_init();
-	string resultstr;
+	mt_string resultstr;
 	curl_easy_setopt(prepare_handle, CURLOPT_URL, get_url(dl));
 	curl_easy_setopt(prepare_handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(prepare_handle, CURLOPT_WRITEDATA, &resultstr);
@@ -21,16 +21,16 @@ extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_inp
 		return PLUGIN_CONNECTION_ERROR;
 	}
 
-	if(resultstr.find("The file could not be found") != string::npos || resultstr.find("404 Not Found") != string::npos) {
+	if(resultstr.find("The file could not be found") != mt_string::npos || resultstr.find("404 Not Found") != mt_string::npos) {
 		return PLUGIN_FILE_NOT_FOUND;
 	}
 
 	unsigned int pos;
-	if((pos = resultstr.find("<form id=\"ff\"")) == string::npos) {
+	if((pos = resultstr.find("<form id=\"ff\"")) == mt_string::npos) {
 		return PLUGIN_ERROR;
 	}
 
-	string url;
+	mt_string url;
 	pos = resultstr.find("http://", pos);
 	unsigned int end = resultstr.find('\"', pos);
 
@@ -44,20 +44,20 @@ extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_inp
 	curl_easy_setopt(prepare_handle, CURLOPT_POSTFIELDS, "dl.start=\"Free\"");
 	curl_easy_perform(prepare_handle);
 
-	if(resultstr.find("Or try again in about") != string::npos) {
+	if(resultstr.find("Or try again in about") != mt_string::npos) {
 		pos = resultstr.find("Or try again in about");
 		pos = resultstr.find("about", pos);
 		pos = resultstr.find(' ', pos);
 		++pos;
 		end = resultstr.find(' ', pos);
-		string have_to_wait(resultstr.substr(pos, end - pos));
+		mt_string have_to_wait(resultstr.substr(pos, end - pos));
 		set_wait_time(dl, atoi(have_to_wait.c_str()) * 60);
 		return PLUGIN_LIMIT_REACHED;
-	} else if(resultstr.find("Please try again in 2 minutes") != string::npos) {
+	} else if(resultstr.find("Please try again in 2 minutes") != mt_string::npos) {
 		set_wait_time(dl, 120);
 		return PLUGIN_SERVER_OVERLOADED;
 	} else {
-		if((pos = resultstr.find("var c")) == string::npos) {
+		if((pos = resultstr.find("var c")) == mt_string::npos) {
 			// Unable to get the wait time, will wait 135 seconds
 			set_wait_time(dl, 135);
 		} else {
@@ -66,7 +66,7 @@ extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_inp
 			set_wait_time(dl, atoi(resultstr.substr(pos, end).c_str()));
 		}
 
-		if((pos = resultstr.find("<form name=\"dlf\"")) == string::npos) {
+		if((pos = resultstr.find("<form name=\"dlf\"")) == mt_string::npos) {
 			return PLUGIN_ERROR;
 		}
 

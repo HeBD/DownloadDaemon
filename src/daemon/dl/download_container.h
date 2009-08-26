@@ -6,10 +6,31 @@
 #include <vector>
 #include <boost/thread.hpp>
 
+
+extern boost::mutex download_container_mutex;
+
 class download_container {
 public:
-	typedef std::vector<download>::iterator iterator;
-
+	class iterator {
+	public:
+		iterator() {}
+		iterator(std::vector<download>::iterator it) { boost::mutex::scoped_lock(download_container_mutex); download_iterator = it; }
+		download_container::iterator operator++() { boost::mutex::scoped_lock(download_container_mutex); ++download_iterator; return *this; }
+		download_container::iterator operator--() { boost::mutex::scoped_lock(download_container_mutex); --download_iterator; return *this; }
+		download_container::iterator operator++(int i) { boost::mutex::scoped_lock(download_container_mutex); download_container::iterator tmp = *this; ++download_iterator; return tmp; }
+		download_container::iterator operator--(int i) { boost::mutex::scoped_lock(download_container_mutex); download_container::iterator tmp = *this; --download_iterator; return tmp; }
+		download operator*() { boost::mutex::scoped_lock(download_container_mutex); return *download_iterator; }
+		download* operator->() { boost::mutex::scoped_lock(download_container_mutex); return &(*download_iterator); }
+		download_container::iterator operator+(size_t i) { boost::mutex::scoped_lock(download_container_mutex); download_container::iterator it(*this); it.download_iterator += i; return it; }
+		download_container::iterator operator-(size_t i) { boost::mutex::scoped_lock(download_container_mutex); download_container::iterator it(*this); it.download_iterator -= i; return it; }
+		download_container::iterator operator+=(size_t i) { boost::mutex::scoped_lock(download_container_mutex); download_iterator += i; return *this; }
+		download_container::iterator operator -=(size_t i) { boost::mutex::scoped_lock(download_container_mutex); download_iterator -= i; return *this; }
+		bool operator==(iterator it) { boost::mutex::scoped_lock(download_container_mutex); return download_iterator == it.download_iterator; }
+		bool operator!=(iterator it) { boost::mutex::scoped_lock(download_container_mutex); return  download_iterator != it.download_iterator; }
+		operator std::vector<download>::iterator() { boost::mutex::scoped_lock(download_container_mutex); return download_iterator; }
+	private:
+		std::vector<download>::iterator download_iterator;
+	};
 	/** Constructor taking a filename from which the list should be read
 	*	@param filename Path to the dlist file
 	*/
@@ -29,17 +50,17 @@ public:
 	*	@param id download ID to search for
 	*	@returns Iterator to this id
 	*/
-	iterator get_download_by_id(int id);
+	download_container::iterator get_download_by_id(int id);
 
 	/** Iterator to first element
 	* @returns first element iterator
 	*/
-	iterator begin() { return download_list.begin(); }
+	iterator begin() { return iterator(download_list.begin()); }
 
 	/** Retruns an iterator to the past-end of the list
 	* @returns past-end-iterator
 	*/
-	iterator end() { return download_list.end(); }
+	download_container::iterator end() { return iterator(download_list.end()); }
 
 	/** Check if download list is empty
 	*	@returns True if empty
@@ -50,7 +71,7 @@ public:
 	*	@param dl Download object to add
 	*	@returns true on success
 	*/
-	bool push_back(download &dl);
+	bool push_back(download dl);
 
 	/** Erases the last download
 	*	@returns true on success
@@ -98,12 +119,9 @@ public:
  	*/
 	iterator get_next_downloadable();
 
-	boost::mutex list_mutex;
-	boost::mutex file_mutex;
-
 private:
 
-	std::string list_file;
+	mt_string list_file;
 	std::vector<download> download_list;
 };
 

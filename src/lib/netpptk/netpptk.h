@@ -1,7 +1,7 @@
 #ifndef NETPPTK_H_
 #define NETPPTK_H_
 
-#include <string>
+#include "../mt_string/mt_string.h"
 #include <boost/thread.hpp>
 
 #ifdef _WIN32
@@ -53,28 +53,28 @@ public:
 	*	@param port Port to use
 	*	@returns True on success
 	*/
-	bool connect(const std::string host, const int port);
+	bool connect(const mt_string host, const int port);
 
 	/** Send data over the socket
 	*	@param s Data to send
 	*	@returns True on success
 	*/
-	bool send(const std::string &s);
+	bool send(const mt_string &s);
 
 	/** Receive data from a socket
 	*	@param s String to store the received data
 	*	@returns The number of received bytes, negative value on error
 	*/
-	int recv(std::string &s);
+	int recv(mt_string &s);
 
 	/** Convert the object to book to use easy if(..) constructs for validity-checks */
 	operator bool() const;
 
 	/** Read data from a string to the socket to send it */
-	const tkSock& operator<< (const std::string&);
+	const tkSock& operator<< (const mt_string&);
 
 	/** Read data from a socket and save it in a string */
-	const tkSock& operator>> (std::string&);
+	const tkSock& operator>> (mt_string&);
 
 	/** Returns the socket descriptor for manual handling */
 	int get_sockdesc() const {return m_sock;}
@@ -108,8 +108,8 @@ private:
 	unsigned int m_open_connections;
 	boost::thread* auto_accept_thread;
 	bool stop_threads;
-	std::string append_header(std::string data);
-	int remove_header(std::string &data);
+	mt_string append_header(mt_string data);
+	int remove_header(mt_string &data);
 };
 
 std::ostream& operator<<(std::ostream& stream, tkSock &sock);
@@ -127,14 +127,14 @@ public:
 
 	ERROR_CODE error;
 
-	std::string what() {
+	mt_string what() {
 		if(error == SOCKET_CREATION_FAILED)
-			return std::string("Socket creation failed");;
+			return mt_string("Socket creation failed");;
 		if(error == UNKNOWN_HOST)
-			return std::string("Unknown Host");
+			return mt_string("Unknown Host");
 		if(error == CONNECTION_PROBLEM)
-			return std::string("A Problem occured while trying to handle a connection");
-		return std::string("");
+			return mt_string("A Problem occured while trying to handle a connection");
+		return mt_string("");
 	}
 };
 

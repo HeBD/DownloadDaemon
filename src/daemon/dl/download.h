@@ -4,21 +4,23 @@
 #include <string>
 #include <fstream>
 #include <curl/curl.h>
+#include <boost/thread.hpp>
+#include "../../lib/mt_string/mt_string.h"
 
 enum download_status { DOWNLOAD_PENDING = 1, DOWNLOAD_INACTIVE, DOWNLOAD_FINISHED, DOWNLOAD_RUNNING, DOWNLOAD_WAITING, DOWNLOAD_DELETED, DOWNLOAD_RECONNECTING };
 enum plugin_status { PLUGIN_SUCCESS = 1, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,
 					 PLUGIN_MISSING, PLUGIN_INVALID_HOST, PLUGIN_INVALID_PATH, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR };
 
 struct plugin_output {
-	std::string download_url;
-	std::string download_filename;
+	mt_string download_url;
+	mt_string download_filename;
 	bool allows_resumption;
 	bool allows_multiple;
 };
 
 struct plugin_input {
-	std::string premium_user;
-	std::string premium_password;
+	mt_string premium_user;
+	mt_string premium_password;
 };
 
 class download {
@@ -27,12 +29,26 @@ public:
 	* @param url Download URL
 	* @param next_id The ID this download should get
 	*/
-	download(std::string &url, int next_id);
+	download(mt_string &url, int next_id);
 
 	/** Constructor from a serialized download from file
 	* @param serializedDL Serialized Download string
 	*/
-	download(std::string &serializedDL);
+	download(mt_string &serializedDL);
+
+	/** Copy constructor because we are not allowed to copy a boost::mutex
+	* @param dl Download object to copy
+	*/
+	download(const download& dl);
+
+	/** needed because of boost::mutex noncopyability
+	* @param dl download object to assign
+	*/
+	void operator=(const download& dl);
+
+	/** Destructor to clean up the curl handle
+	*/
+	~download();
 
 	/** Simple constructor
 	*/
@@ -41,7 +57,7 @@ public:
 	/** Initialize a download object with a serialized download string
 	* @param serializedDL Serialized download
 	*/
-	void from_serialized(std::string &serializedDL);
+	void from_serialized(mt_string &serializedDL);
 
 	/** execute the correct plugin with parameters and return information on the download
 	* @returns success status
@@ -51,12 +67,12 @@ public:
 	/** Serialize the download object to store it in the file
 	* @returns The serialized string
 	*/
-	std::string serialize();
+	mt_string serialize();
 
 	/** Find out the hoster (needed to call the correct plugin)
 	* @returns host-string
 	*/
-	std::string get_host();
+	mt_string get_host();
 
 	/** Get the defines from above as a string literal
 	* @returns the resulting error string
@@ -82,22 +98,52 @@ public:
 
 	plugin_output get_hostinfo();
 
-	std::string url;
-	std::string comment;
+	const mt_string& get_url() { boost::mutex::scoped_lock lock(download_mutex); return url; }
+	void set_url(const mt_string &str) { boost::mutex::scoped_lock lock(download_mutex); url = str; }
+
+	const mt_string& get_comment() { boost::mutex::scoped_lock lock(download_mutex); return comment; }
+	void set_comment(const mt_string &str) { boost::mutex::scoped_lock lock(download_mutex); comment = str; }
+
+	const mt_string& get_add_date() { boost::mutex::scoped_lock lock(download_mutex); return add_date; }
+	void set_add_date(const mt_string &str) { boost::mutex::scoped_lock lock(download_mutex); add_date = str; }
+
+	int get_id() { boost::mutex::scoped_lock lock(download_mutex); return id; }
+	void set_id(int id) { boost::mutex::scoped_lock lock(download_mutex); this->id = id; }
+
+	long get_downloaded_bytes() { boost::mutex::scoped_lock lock(download_mutex); return downloaded_bytes; }
+	void set_downloaded_bytes(long downloaded_bytes) { boost::mutex::scoped_lock lock(download_mutex); this->downloaded_bytes = downloaded_bytes; }
+
+	long get_size() { boost::mutex::scoped_lock lock(download_mutex); return size; }
+	void set_size(long size) { boost::mutex::scoped_lock lock(download_mutex); this->size = size; }
+
+	int get_wait_seconds() { boost::mutex::scoped_lock lock(download_mutex); return wait_seconds; }
+	void set_wait_seconds(int wait_seconds) { boost::mutex::scoped_lock lock(download_mutex); this->wait_seconds = wait_seconds; }
+
+	plugin_status get_plugin_status() { boost::mutex::scoped_lock lock(download_mutex); return error; }
+	void set_plugin_status(plugin_status st) { boost::mutex::scoped_lock lock(download_mutex); this->error = st; }
+
+	CURL* get_handle() { boost::mutex::scoped_lock lock(download_mutex); return handle; }
+
+	const mt_string& get_output_file() { boost::mutex::scoped_lock lock(download_mutex); return output_file; }
+	void set_output_file(const mt_string &str) { boost::mutex::scoped_lock lock(download_mutex); output_file = str; }
+
+	friend bool operator<(const download& x, const download& y);
+
+private:
+	mt_string url;
+	mt_string comment;
 
 
-	std::string add_date;
+	mt_string add_date;
 	int id;
 	long downloaded_bytes;
 	long size;
 	int wait_seconds;
 	plugin_status error;
 	CURL* handle;
-	std::string output_file;
+	mt_string output_file;
 
-
-
-private:
+	boost::mutex download_mutex;
 	download_status status;
 
 };

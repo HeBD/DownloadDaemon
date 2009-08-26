@@ -219,6 +219,12 @@
 		<Unit filename="src/lib/cfgfile/cfgfile.h">
 			<Option target="Daemon" />
 		</Unit>
+		<Unit filename="src/lib/mt_string/mt_string.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/lib/mt_string/mt_string.h">
+			<Option target="Daemon" />
+		</Unit>
 		<Unit filename="src/lib/netpptk/netpptk.cpp">
 			<Option target="Daemon" />
 			<Option target="DDClient" />

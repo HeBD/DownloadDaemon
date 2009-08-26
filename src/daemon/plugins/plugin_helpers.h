@@ -9,15 +9,15 @@
 					 PLUGIN_MISSING, PLUGIN_INVALID_HOST, PLUGIN_INVALID_PATH, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR };
 
 struct plugin_output {
-	std::string download_url;
-	std::string download_filename;
+	mt_string download_url;
+	mt_string download_filename;
 	bool allows_resumption;
 	bool allows_multiple;
 };
 
 struct plugin_input {
-	std::string premium_user;
-	std::string premium_password;
+	mt_string premium_user;
+	mt_string premium_password;
 };
 */
 

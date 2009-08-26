@@ -17,17 +17,17 @@ using namespace std;
 extern download_container global_download_list;
 extern cfgfile global_config;
 extern cfgfile global_router_config;
-extern string program_root;
+extern mt_string program_root;
 
 void tick_downloads() {
 	while(true) {
 		for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-			if(it->wait_seconds > 0 && it->get_status() == DOWNLOAD_WAITING) {
-				--it->wait_seconds;
-			} else if(it->wait_seconds == 0 && it->get_status() == DOWNLOAD_WAITING) {
+			if(it->get_wait_seconds() > 0 && it->get_status() == DOWNLOAD_WAITING) {
+				it->set_wait_seconds(it->get_wait_seconds() - 1);
+			} else if(it->get_wait_seconds() == 0 && it->get_status() == DOWNLOAD_WAITING) {
 				it->set_status(DOWNLOAD_PENDING);
-			} else if(it->wait_seconds > 0 && it->get_status() == DOWNLOAD_INACTIVE) {
-				it->wait_seconds = 0;
+			} else if(it->get_wait_seconds() > 0 && it->get_status() == DOWNLOAD_INACTIVE) {
+				it->set_wait_seconds(0);
 			}
 		}
 
@@ -36,11 +36,11 @@ void tick_downloads() {
 }
 
 void reconnect() {
-	std::string reconnect_plugin;
-	std::string reconnect_policy;
-	std::string router_ip;
-	std::string router_username;
-	std::string router_password;
+	mt_string reconnect_plugin;
+	mt_string reconnect_policy;
+	mt_string router_ip;
+	mt_string router_username;
+	mt_string router_password;
 	while(true) {
 	    if(global_config.get_cfg_value("enable_reconnect") == "0") {
 	        sleep(10);
@@ -121,7 +121,7 @@ void reconnect() {
 
 
 		if(reconnect_needed && reconnect_allowed) {
-			string reconnect_script = program_root + "/reconnect/" + reconnect_plugin;
+			mt_string reconnect_script = program_root + "/reconnect/" + reconnect_plugin;
 			struct stat st;
 			if(stat(reconnect_script.c_str(), &st) != 0) {
 				log_string("Reconnect script for selected router model not found!", LOG_SEVERE);
@@ -130,7 +130,7 @@ void reconnect() {
 			}
 
 			log_string("Reconnecting now!", LOG_WARNING);
-			string ex = reconnect_script + ' ' + router_ip + ' ' + router_username + ' ' + router_password;
+			mt_string ex = reconnect_script + ' ' + router_ip + ' ' + router_username + ' ' + router_password;
 			if(system(ex.c_str()) == 0) {
                 for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
                     if(it->get_status() == DOWNLOAD_WAITING) {

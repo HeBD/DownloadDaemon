@@ -1,23 +1,23 @@
 #include "download_container.h"
 #include "download.h"
 #include "../../lib/cfgfile/cfgfile.h"
-#include <string>
+#include "../../lib/mt_string/mt_string.h"
 using namespace std;
 
-extern string program_root;
+extern mt_string program_root;
 extern cfgfile global_config;
+boost::mutex download_container_mutex;
 
 download_container::download_container(const char* filename) {
 	from_file(filename);
 }
 
 bool download_container::from_file(const char* filename) {
-	boost::mutex::scoped_lock(list_mutex);
 	list_file = filename;
 	ifstream dlist(filename);
-	string line;
+	mt_string line;
 	while(getline(dlist, line)) {
-		download_list.push_back(download(line));
+		push_back(download(line));
 	}
 	if(!dlist.good()) {
 		dlist.close();
@@ -29,7 +29,7 @@ bool download_container::from_file(const char* filename) {
 
 download_container::iterator download_container::get_download_by_id(int id) {
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(it->id == id) {
+		if(it->get_id() == id) {
 			return it;
 		}
 	}
@@ -37,7 +37,6 @@ download_container::iterator download_container::get_download_by_id(int id) {
 }
 
 int download_container::running_downloads() {
-	boost::mutex::scoped_lock(list_mutex);
 	int running_downloads = 0;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_RUNNING) {
@@ -48,6 +47,7 @@ int download_container::running_downloads() {
 }
 
 int download_container::total_downloads() {
+	boost::mutex::scoped_lock(download_container_mutex);
 	return download_list.size();
 }
 
@@ -60,7 +60,6 @@ bool download_container::dump_to_file() {
 	if(!dlfile.good()) {
 		return false;
 	}
-	boost::mutex::scoped_lock(file_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		dlfile << it->serialize();
 	}
@@ -68,8 +67,8 @@ bool download_container::dump_to_file() {
 	return true;
 }
 
-bool download_container::push_back(download &dl) {
-	boost::mutex::scoped_lock(list_mutex);
+bool download_container::push_back(download dl) {
+	boost::mutex::scoped_lock(download_container_mutex);
 	download_list.push_back(dl);
 	if(!dump_to_file()) {
 		download_list.pop_back();
@@ -79,7 +78,7 @@ bool download_container::push_back(download &dl) {
 }
 
 bool download_container::pop_back() {
-	boost::mutex::scoped_lock(list_mutex);
+	boost::mutex::scoped_lock(download_container_mutex);
 	download tmpdl = download_list.back();
 	download_list.pop_back();
 	if(!dump_to_file()) {
@@ -90,12 +89,13 @@ bool download_container::pop_back() {
 }
 
 bool download_container::erase(download_container::iterator it) {
-	boost::mutex::scoped_lock(list_mutex);
 	if(it == download_list.end()) {
 		return false;
 	}
 	download tmpdl = *it;
+	download_container_mutex.lock();
 	download_list.erase(it);
+	download_container_mutex.unlock();
 	if(!dump_to_file()) {
 		download_list.push_back(tmpdl);
 		return false;
@@ -104,7 +104,6 @@ bool download_container::erase(download_container::iterator it) {
 }
 
 int download_container::move_up(int id) {
-	boost::mutex::scoped_lock(list_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.begin() || it == download_list.end()) {
 		return -1;
@@ -119,12 +118,12 @@ int download_container::move_up(int id) {
 		}
 	}
 
-	int iddown = it2->id;
-	it2->id = it->id;
-	it->id = iddown;
+	int iddown = it2->get_id();
+	it2->set_id(it->get_id());
+	it->set_id(iddown);
 	if(!dump_to_file()) {
-		it->id = it2->id;
-		it2->id = iddown;
+		it->set_id(it2->get_id());
+		it2->set_id(iddown);
 		return -2;
 	}
 	arrange_by_id();
@@ -132,23 +131,21 @@ int download_container::move_up(int id) {
 }
 
 int download_container::get_next_id() {
-	boost::mutex::scoped_lock(list_mutex);
 	int max_id = -1;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(it->id > max_id) {
-			max_id = it->id;
+		if(it->get_id() > max_id) {
+			max_id = it->get_id();
 		}
 	}
 	return ++max_id;
 }
 
 void download_container::arrange_by_id() {
-	boost::mutex::scoped_lock(list_mutex);
+	boost::mutex::scoped_lock(download_container_mutex);
 	sort(download_list.begin(), download_list.end());
 }
 
 download_container::iterator download_container::get_next_downloadable() {
-	boost::mutex::scoped_lock(list_mutex);
 	download_container::iterator downloadable = download_list.end();
 	if(download_list.empty() || running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())
 	   || global_config.get_cfg_value("downloading_active") == "0") {
@@ -156,8 +153,8 @@ download_container::iterator download_container::get_next_downloadable() {
 	}
 
 	// Checking if we are in download-time...
-	string dl_start(global_config.get_cfg_value("download_timing_start"));
-	if(global_config.get_cfg_value("download_timing_start").find(':') != string::npos && !global_config.get_cfg_value("download_timing_end").find(':') != string::npos ) {
+	mt_string dl_start(global_config.get_cfg_value("download_timing_start"));
+	if(global_config.get_cfg_value("download_timing_start").find(':') != mt_string::npos && !global_config.get_cfg_value("download_timing_end").find(':') != mt_string::npos ) {
 		time_t rawtime;
 		struct tm * current_time;
 		time ( &rawtime );
@@ -207,7 +204,7 @@ download_container::iterator download_container::get_next_downloadable() {
 	for(iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->get_status() != DOWNLOAD_INACTIVE && it->get_status() != DOWNLOAD_FINISHED && it->get_status() != DOWNLOAD_RUNNING
 		   && it->get_status() != DOWNLOAD_WAITING && it->get_status() != DOWNLOAD_DELETED) {
-			string current_host(it->get_host());
+			mt_string current_host(it->get_host());
 			bool can_attach = true;
 			for(download_container::iterator it2 = download_list.begin(); it2 != download_list.end(); ++it2) {
 				if(it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING) && !it2->get_hostinfo().allows_multiple) {
