@@ -33,6 +33,8 @@
 #include "ddclient-wx_connect_dialog.h"
 #include "ddclient-wx_about_dialog.h"
 #include "ddclient-wx_add_dialog.h"
+#include "ddclient-wx_configure_dialog.h"
+
 #include "../lib/netpptk/netpptk.h"
 #if defined(__WXMSW__)
     #include <wx/msw/winundef.h> // Because of conflicting wxWidgets and windows.h
@@ -47,7 +49,12 @@ class myframe : public wxFrame{
 
 		/** Constructor with standard wxFrame Parameters */
 		myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxWindowID id=wxID_ANY);
+
+		/** Destructor */
 		~myframe();
+
+		/** Updates Status of the Program, should be called after Connecting to a Server */
+		void update_status();
 
 		// getter and setter methods
 		/** Setter for Attributes of Connection with DownloadDaemon Server
@@ -82,6 +89,8 @@ class myframe : public wxFrame{
 		wxMenu *file_menu;
 		wxMenu *help_menu;
 		wxToolBar *toolbar;
+		wxToolBarToolBase *download_activate;
+		wxToolBarToolBase *download_deactivate;
 
 		// elements for content
 		wxPanel *panel_downloads;
@@ -96,6 +105,9 @@ class myframe : public wxFrame{
 		static const long id_toolbar_delete;
 		static const long id_toolbar_deactivate;
 		static const long id_toolbar_activate;
+		static const long id_toolbar_configure;
+		static const long id_toolbar_download_activate;
+		static const long id_toolbar_download_deactivate;
 
 		void add_bars();
 		void add_content();
@@ -115,6 +127,9 @@ class myframe : public wxFrame{
 		void on_delete(wxCommandEvent &event);
 		void on_deactivate(wxCommandEvent &event);
 		void on_activate(wxCommandEvent &event);
+		void on_configure(wxCommandEvent &event);
+		void on_download_activate(wxCommandEvent &event);
+		void on_download_deactivate(wxCommandEvent &event);
 		void on_resize(wxSizeEvent &event);
 
 		DECLARE_EVENT_TABLE()

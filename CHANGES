@@ -1,3 +1,8 @@
+2009-08-26
+   [susanne]
+	- added configure dialog at ddclient-wx, which only changes the password right now
+	- downloading can now be activated and deactivated for all downloads at once at ddclient-wx
+
 2009-08-23
    [adrian]
 	- Rewrote complete plugin system to use shared libraries instead of executables

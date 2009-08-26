@@ -130,6 +130,7 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 
 			myparent->set_connection_attributes(mysock, pass);
 			mx->unlock();
+			myparent->update_status();
 
 			Destroy();
 

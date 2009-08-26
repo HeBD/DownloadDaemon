@@ -20,6 +20,9 @@ const long myframe::id_toolbar_add = wxNewId();
 const long myframe::id_toolbar_delete = wxNewId();
 const long myframe::id_toolbar_deactivate = wxNewId();
 const long myframe::id_toolbar_activate = wxNewId();
+const long myframe::id_toolbar_configure = wxNewId();
+const long myframe::id_toolbar_download_activate = wxNewId();
+const long myframe::id_toolbar_download_deactivate = wxNewId();
 
 
 // event table (has to be after creating IDs, won't work otherwise)
@@ -31,6 +34,9 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_toolbar_delete, myframe::on_delete)
 	EVT_MENU(id_toolbar_deactivate, myframe::on_deactivate)
 	EVT_MENU(id_toolbar_activate, myframe::on_activate)
+	EVT_MENU(id_toolbar_configure, myframe::on_configure)
+	EVT_MENU(id_toolbar_download_activate, myframe::on_download_activate)
+	EVT_MENU(id_toolbar_download_deactivate, myframe::on_download_deactivate)
 	EVT_SIZE(myframe::on_resize)
 END_EVENT_TABLE()
 
@@ -66,6 +72,35 @@ myframe::~myframe(){
 }
 
 
+void myframe::update_status(){
+
+	if(mysock == NULL || !*mysock){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before activate Downloading."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
+
+	}else{
+		string answer;
+
+		mx.lock();
+		mysock->send("DDP VAR GET downloading_active");
+		mysock->recv(answer);
+
+		if(answer == "1"){ // downloading active
+			toolbar->RemoveTool(id_toolbar_download_activate);
+		}else if(answer =="0"){ // downloadin not active
+			toolbar->RemoveTool(id_toolbar_download_deactivate);
+		}else{
+			// should never be reached
+		}
+
+		SetStatusText(wxT("Connected"),1);
+
+		mx.unlock();
+	}
+
+	return;
+}
+
 void myframe::add_bars(){
 
 	// menubar
@@ -84,16 +119,23 @@ void myframe::add_bars(){
 	// toolbar with icons
 	toolbar = new wxToolBar(this, wxID_ANY);
 
-	// wxToolBarToolBase *connect_item = // not needed
-	toolbar->AddTool(id_toolbar_connect, wxT("Connect"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_EXECUTABLE_FILE")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Connect to a DownloadDaemon"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_connect, wxT("Connect"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_EXECUTABLE_FILE")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Connect to a DownloadDaemon Server"), wxEmptyString);
 	toolbar->AddSeparator();
 
 	toolbar->AddTool(id_toolbar_add, wxT("Add"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_ADD_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Add a new Download"), wxEmptyString);
 	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_DEL_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download"), wxEmptyString);
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_deactivate, wxT("Deactivate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CROSS_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Download"), wxEmptyString);
-	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_TICK_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Download"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_deactivate, wxT("Deactivate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CROSS_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate the selected Download"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_TICK_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Activate the selected Download"), wxEmptyString);
+
+	toolbar->AddSeparator();
+	toolbar->AddTool(id_toolbar_configure, wxT("Configure"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_HELP_SETTINGS")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Configure DownloadDaemon Server"), wxEmptyString);
+	toolbar->AddSeparator();
+
+	download_activate = toolbar->AddTool(id_toolbar_download_activate, wxT("Activate Downloading"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_NEW")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Downloading"), wxEmptyString);
+	download_deactivate = toolbar->AddTool(id_toolbar_download_deactivate, wxT("Deactivate Downloading"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CUT")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Downloading"), wxEmptyString);
+
 
 	toolbar->Realize();
 	SetToolBar(toolbar);
@@ -102,7 +144,7 @@ void myframe::add_bars(){
 	// statusbar
 	CreateStatusBar(2);
 	SetStatusText(wxT("DownloadDaemon-ClientWX"),0);
-	SetStatusText(wxT(".."),1);
+	SetStatusText(wxT("Not connected"),1);
 
 	return;
 }
@@ -133,9 +175,12 @@ void myframe::add_content(){
 void myframe::fill_list(){
 	while(true){ // for boost::thread
 		if(mysock == NULL || !*mysock){
+			SetStatusText(wxT("Not connected"),1);
 			sleep(2);
 			continue;
 		}
+
+		SetStatusText(wxT("Connected"),1);
 
 		vector<vector<string> > new_content;
 		vector<string> splitted_line;
@@ -389,10 +434,11 @@ void myframe::on_about(wxCommandEvent &event){
 
 
 void myframe::on_add(wxCommandEvent &event){
-	if(mysock == NULL || !*mysock) // if there is no active connection
+	if(mysock == NULL || !*mysock){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
 
-	else{
+	}else{
 		add_dialog dialog(this);
 		dialog.ShowModal();
 	}
@@ -408,6 +454,7 @@ void myframe::on_delete(wxCommandEvent &event){
 
 	if(mysock == NULL || !*mysock){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before deleting Downloads."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
 
 	}else{ // we have a connection
 
@@ -469,16 +516,131 @@ void myframe::on_delete(wxCommandEvent &event){
  }
 
 
-void myframe::on_deactivate(wxCommandEvent &event){ // TODO: realize
-	wxMessageBox(wxT("\nDummy Dialog"), wxT("Dummy"));
+void myframe::on_deactivate(wxCommandEvent &event){
+	vector<int>::iterator it;
+	string id, answer;
+
+	if(mysock == NULL || !*mysock){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before deactivating Downloads."), wxT("No Connection to Server"));
+
+	}else{ // we have a connection
+
+		mx.lock();
+
+		find_selected_lines(); // save selection into selected_lines
+		if(!selected_lines.empty()){
+
+			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+				id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+
+				mysock->send("DDP DL DEACTIVATE " + id);
+				mysock->recv(answer); // might receive error 107 DEACTIVATE, but that doesn't matter
+			}
+
+		}
+
+		mx.unlock();
+	}
+
 	return;
  }
 
 
-void myframe::on_activate(wxCommandEvent &event){ // TODO: realize
-	wxMessageBox(wxT("\nDummy Dialog"), wxT("Dummy"));
+void myframe::on_activate(wxCommandEvent &event){
+	vector<int>::iterator it;
+	string id, answer;
+
+	if(mysock == NULL || !*mysock){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before activating Downloads."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
+
+	}else{ // we have a connection
+
+		mx.lock();
+
+		find_selected_lines(); // save selection into selected_lines
+		if(!selected_lines.empty()){
+
+			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+				id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+
+				mysock->send("DDP DL ACTIVATE " + id);
+				mysock->recv(answer); // might receive error 106 ACTIVATE, but that doesn't matter
+			}
+
+		}
+
+		mx.unlock();
+	}
+
 	return;
  }
+
+
+void myframe::on_configure(wxCommandEvent &event){
+	if(mysock == NULL || !*mysock){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before configurating\nDownloadDaemon Server."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
+
+	}else{
+		configure_dialog dialog(this);
+		dialog.ShowModal();
+	}
+
+	return;
+}
+
+
+void myframe::on_download_activate(wxCommandEvent &event){
+	if(mysock == NULL || !*mysock){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before activate Downloading."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
+
+	}else{
+		string answer;
+
+		mx.lock();
+
+		mysock->send("DDP VAR SET downloading_active = 1");
+		mysock->recv(answer);
+
+		mx.unlock();
+
+		// update toolbar
+		toolbar->RemoveTool(id_toolbar_download_activate);
+		toolbar->RemoveTool(id_toolbar_download_deactivate);
+		toolbar->AddTool(download_deactivate);
+	}
+
+	return;
+}
+
+
+void myframe::on_download_deactivate(wxCommandEvent &event){
+	if(mysock == NULL || !*mysock){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before deactivate Downloading."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
+
+	}else{
+		string answer;
+
+		mx.lock();
+
+		mysock->send("DDP VAR SET downloading_active = 0");
+		mysock->recv(answer);
+
+		mx.unlock();
+
+		// update toolbar
+		toolbar->RemoveTool(id_toolbar_download_activate);
+		toolbar->RemoveTool(id_toolbar_download_deactivate);
+		toolbar->AddTool(download_activate);
+
+
+	}
+
+	return;
+}
 
 
  void myframe::on_resize(wxSizeEvent &event){
