@@ -26,17 +26,12 @@ IF(Boost_FOUND AND CURL_FOUND)
 	TARGET_LINK_LIBRARIES(DownloadDaemon ${Boost_LIBRARIES} ${CURL_LIBRARIES})
 ENDIF(Boost_FOUND AND CURL_FOUND)
 
-add_custom_command(TARGET DownloadDaemon POST_BUILD 
-	COMMAND mkdir ${PROJECT_BINARY_DIR}/bin ${PROJECT_BINARY_DIR}/share
-	COMMAND mv ${PROJECT_BINARY_DIR}/DownloadDaemon ${PROJECT_BINARY_DIR}/bin/
-	COMMAND
-
-#install(TARGETS DownloadDaemon DESTINATION /opt/downloaddaemon/)
-#install(FILES ../../program_data/LICENCE DESTINATION /opt/downloaddaemon) 
-#install(FILES ../../program_data/conf/downloaddaemon.conf DESTINATION /opt/downloaddaemon/conf)
-#install(FILES ../../program_data/downloaddaemon DESTINATION bin PERMISSIONS WORLD_EXECUTE WORLD_READ GROUP_EXECUTE GROUP_READ OWNER_EXECUTE OWNER_READ OWNER_WRITE)
-#install(FILES ../../program_data/conf/routerinfo.conf DESTINATION /opt/downloaddaemon/conf)
-#install(CODE "FILE(MAKE_DIRECTORY /opt/downloaddaemon/downloads)")
+install(TARGETS DownloadDaemon DESTINATION /opt/downloaddaemon/)
+install(FILES ../../program_data/LICENCE DESTINATION /opt/downloaddaemon) 
+install(FILES ../../program_data/conf/downloaddaemon.conf DESTINATION /opt/downloaddaemon/conf)
+install(FILES ../../program_data/downloaddaemon DESTINATION bin PERMISSIONS WORLD_EXECUTE WORLD_READ GROUP_EXECUTE GROUP_READ OWNER_EXECUTE OWNER_READ OWNER_WRITE)
+install(FILES ../../program_data/conf/routerinfo.conf DESTINATION /opt/downloaddaemon/conf)
+install(CODE "FILE(MAKE_DIRECTORY /opt/downloaddaemon/downloads)")
 
 
 #install(FILES ../../program_data/downloads DESTINATION /opt/downloaddaemon/)

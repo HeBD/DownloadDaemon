@@ -46,14 +46,13 @@ void mgmt_thread_main() {
  * @param sock the socket we get for communication with the other side
  */
 void connection_handler(tkSock *sock) {
-	log_string("Incoming connection from " + sock->get_peer_name(), LOG_DEBUG);
 	mt_string data;
 	mt_string passwd(global_config.get_cfg_value("mgmt_password"));
 	if(*sock && passwd != "") {
 		*sock << "102 AUTHENTICATION";
 		*sock >> data;
 		if(data != passwd) {
-			log_string("Authentication failed. " + sock->get_peer_name() + " entered a wrong password", LOG_WARNING);
+			log_string("Authentication failed, wrong password", LOG_WARNING);
 			if(*sock) *sock << "102 AUTHENTICATION";
 			return;
 		} else {
