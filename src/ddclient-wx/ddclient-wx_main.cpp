@@ -25,6 +25,14 @@ const long myframe::id_toolbar_download_activate = wxNewId();
 const long myframe::id_toolbar_download_deactivate = wxNewId();
 
 
+// for custom event
+BEGIN_DECLARE_EVENT_TYPES()
+	DECLARE_LOCAL_EVENT_TYPE(wxEVT_reload_list, wxNewEventType())
+END_DECLARE_EVENT_TYPES()
+
+DEFINE_LOCAL_EVENT_TYPE(wxEVT_reload_list)
+
+
 // event table (has to be after creating IDs, won't work otherwise)
 BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_menu_quit, myframe::on_quit)
@@ -38,6 +46,7 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_toolbar_download_activate, myframe::on_download_activate)
 	EVT_MENU(id_toolbar_download_deactivate, myframe::on_download_deactivate)
 	EVT_SIZE(myframe::on_resize)
+	EVT_CUSTOM(wxEVT_reload_list, wxID_ANY, myframe::on_reload )
 END_EVENT_TABLE()
 
 
@@ -56,14 +65,13 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	CenterOnScreen();
 
 	add_bars();
-	add_content();
+	add_components();
 
 	Layout();
 	Fit();
 
 	mysock = new tkSock();
-	boost::thread(boost::bind(&myframe::fill_list, this));
-
+	boost::thread(boost::bind(&myframe::get_content, this));
 }
 
 
@@ -150,29 +158,29 @@ void myframe::add_bars(){
 }
 
 
-void myframe::add_content(){
+void myframe::add_components(){
 
 	panel_downloads = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 	sizer_downloads = new wxBoxSizer(wxHORIZONTAL); // lines/rows, colums, vgap, hgap
 	panel_downloads->SetSizer(sizer_downloads);
 
 	// all download lists
-	list = new wxListCtrl(panel_downloads, wxID_ANY, wxPoint(120, -46), wxDefaultSize, wxLC_REPORT);
+	list = new wxListCtrl(panel_downloads, wxID_ANY, wxPoint(120, -46), wxSize(0,0), wxLC_REPORT);
 	sizer_downloads->Add(list , 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 
 
 	// columns
-	list->InsertColumn(0, wxT("ID"), 0, 50);
-	list->InsertColumn(1, wxT("Added"), 0, 190);
-	list->InsertColumn(2, wxT("Title"), 0, 100);
-	list->InsertColumn(3, wxT("\tURL\t"), 0, 200);
-	list->InsertColumn(4, wxT("Status"), 0, 80);
+	list->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
+	list->InsertColumn(1, wxT("Added"), wxLIST_AUTOSIZE_USEHEADER, 190);
+	list->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 100);
+	list->InsertColumn(3, wxT("\tURL\t"), wxLIST_AUTOSIZE_USEHEADER, 200);
+	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 80);
 
 	return;
 }
 
 
-void myframe::fill_list(){
+void myframe::get_content(){
 	while(true){ // for boost::thread
 		if(mysock == NULL || !*mysock){
 			SetStatusText(wxT("Not connected"),1);
@@ -182,12 +190,12 @@ void myframe::fill_list(){
 
 		SetStatusText(wxT("Connected"),1);
 
-		vector<vector<string> > new_content;
 		vector<string> splitted_line;
 		string answer, line, tab;
 		size_t lineend = 1, tabend = 1, column_nr, line_nr = 0;
 
 		mx.lock();
+		new_content.clear();
 
 		mysock->send("DDP DL LIST");
 		mysock->recv(answer);
@@ -225,10 +233,12 @@ void myframe::fill_list(){
 			splitted_line.clear();
 		}
 
-		compare_vectorvector(new_content.begin(), new_content.end());
-		content = new_content;
-
 		mx.unlock();
+
+		// send event to reload list
+		wxCommandEvent event(wxEVT_reload_list, GetId());
+		event.SetEventObject(this);
+		GetEventHandler()->ProcessEvent(event);
 
 		sleep(2); // reload every two seconds
 	}
@@ -249,18 +259,17 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 			stringstream stream_buffer;
 			stream_buffer << "Download Running: ";
 
-			if(splitted_line[6] == "0"){ // download size unknown
+			if(splitted_line[6] == "0" || splitted_line[6] == "1"){ // download size unknown
 				stream_buffer << "0.00% - ";
 
-				if(splitted_line[5] == "0") // nothing downloaded yet
+				if(splitted_line[5] == "0" || splitted_line[5] == "1") // nothing downloaded yet
 					stream_buffer << "0.00 MB/ 0.00 MB";
 				else // something downloaded
 					stream_buffer << setprecision(3) << (float)atoi(splitted_line[5].c_str()) / 1048576 << " MB/ 0.00 MB";
 
 			}else{ // download size known
-				if(splitted_line[5] == "0") // nothing downloaded yet
+				if(splitted_line[5] == "0" || splitted_line[5] == "1") // nothing downloaded yet
 					stream_buffer << "0.00% - 0.00 MB/ " << (float)atoi(splitted_line[6].c_str()) / 1048576 << " MB";
-
 				else{ // download size known and something downloaded
 					stream_buffer << setprecision(3) << (float)atoi(splitted_line[5].c_str()) / (float)atoi(splitted_line[6].c_str()) * 100 << "% - ";
 					stream_buffer << setprecision(3) << (float)atoi(splitted_line[5].c_str()) / 1048576 << " MB/ ";
@@ -324,16 +333,18 @@ void myframe::find_selected_lines(){
 
 
 // methods for comparing and actualizing content if necessary
-void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content_it, vector<vector<string> >::iterator new_content_end){
+void myframe::compare_vectorvector(){
 
 	vector<vector<string> >::iterator old_content_it = content.begin();
+	vector<vector<string> >::iterator new_content_it = new_content.begin();
+
 	size_t line_nr = 0, line_index;
 	string status_text, color;
 
 
 	// compare the i-th vector in content with the i-th vector in new_content
-	while((new_content_it < new_content_end) && (old_content_it < content.end())){
-		compare_vector(line_nr, *new_content_it, old_content_it->begin(), old_content_it->end());
+	while((new_content_it < new_content.end()) && (old_content_it < content.end())){
+		compare_vector(line_nr, *new_content_it, *old_content_it);
 
 		new_content_it++;
 		old_content_it++;
@@ -341,15 +352,14 @@ void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content
 	}
 
 
-	if(new_content_it < new_content_end){ // there are more new lines then old ones
-
-		while(new_content_it < new_content_end){
+	if(new_content_it < new_content.end()){ // there are more new lines then old ones
+		while(new_content_it < new_content.end()){
 
 			// insert content
-			line_index = list->InsertItem(line_nr, wxString((*new_content_it)[0].c_str(), wxConvUTF8));
+			line_index = list->InsertItem(line_nr, wxString(new_content_it->at(0).c_str(), wxConvUTF8));
 
 			for(int i=1; i<4; i++) // column 1 to 3
-				list->SetItem(line_index, i, wxString((*new_content_it)[i].c_str(), wxConvUTF8));
+				list->SetItem(line_index, i, wxString(new_content_it->at(i).c_str(), wxConvUTF8));
 
 			// status column
 			color = build_status(status_text, *new_content_it);
@@ -360,7 +370,7 @@ void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content
 			line_nr++;
 		}
 
-	}else if(old_content_it < content.end()){ // there are more old lines then new ones
+	}else if(old_content_it < content.end()){ // there are more old lines than new ones
 		while(old_content_it < content.end()){
 
 			// delete content
@@ -375,7 +385,10 @@ void myframe::compare_vectorvector(vector<vector<string> >::iterator new_content
 }
 
 
-void myframe::compare_vector(size_t line_nr, vector<string> &splitted_line_new, vector<string>::iterator it_old, vector<string>::iterator end_old){
+void myframe::compare_vector(size_t line_nr, vector<string> &splitted_line_new, vector<string> &splitted_line_old){
+
+	vector<string>::iterator it_old = splitted_line_old.begin();
+	vector<string>::iterator end_old = splitted_line_old.end();
 	vector<string>::iterator it_new = splitted_line_new.begin();
 	vector<string>::iterator end_new = splitted_line_new.end();
 
@@ -389,7 +402,7 @@ void myframe::compare_vector(size_t line_nr, vector<string> &splitted_line_new, 
 		if(*it_new != *it_old){ // content of column_new != content of column_old
 
 			if(column_nr < 4) // direct input for columns 0 to 3
-				list->SetItem(line_nr, column_nr, wxString((*it_new).c_str(), wxConvUTF8));
+				list->SetItem(line_nr, column_nr, wxString(it_new->c_str(), wxConvUTF8));
 
 			else // status column
 				status_change = true;
@@ -653,12 +666,30 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 		int width = GetClientSize().GetWidth();
 		width -= 255; // minus width of fix sized columns
 
+		#if defined(__WXMSW__)
+			width -= 10;
+		#endif // defined(__WXMSW__)
+
 		list->SetColumnWidth(2, width/4); // only column 2 to 4, because 0 and 1 have fix sizes
 		list->SetColumnWidth(3, width/2);
 		list->SetColumnWidth(4, width/4);
  	}
 	return;
  }
+
+
+void myframe::on_reload(wxEvent &event){
+
+	mx.lock();
+
+	compare_vectorvector();
+	content.clear();
+	content = new_content;
+
+	mx.unlock();
+
+	return;
+}
 
 
 // getter and setter methods

@@ -76,6 +76,7 @@ class myframe : public wxFrame{
 	private:
 
 		vector<vector<string> > content;
+		vector<vector<string> > new_content;
 		vector<int> selected_lines;
 		wxString working_dir;
 		boost::mutex mx;
@@ -110,14 +111,14 @@ class myframe : public wxFrame{
 		static const long id_toolbar_download_deactivate;
 
 		void add_bars();
-		void add_content();
-		void fill_list();
+		void add_components();
+		void get_content();
 		string build_status(string &status_text, vector<string> &splitted_line);
 		void find_selected_lines();
 
 		// methods for comparing and actualizing content if necessary
-		void compare_vectorvector(vector<vector<string> >::iterator new_content_it, vector<vector<string> >::iterator new_content_end);
-		void compare_vector(size_t line_nr, vector<string> &splitted_line_new, vector<string>::iterator it_old, vector<string>::iterator end_old);
+		void compare_vectorvector();
+		void compare_vector(size_t line_nr, vector<string> &splitted_line_new, vector<string> &splitted_line_old);
 
 		// event handle methods
 		void on_quit(wxCommandEvent &event);
@@ -131,6 +132,7 @@ class myframe : public wxFrame{
 		void on_download_activate(wxCommandEvent &event);
 		void on_download_deactivate(wxCommandEvent &event);
 		void on_resize(wxSizeEvent &event);
+		void on_reload(wxEvent &event);
 
 		DECLARE_EVENT_TABLE()
 };
