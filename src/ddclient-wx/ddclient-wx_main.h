@@ -29,6 +29,7 @@
 #include <wx/string.h>
 #include <wx/gdicmn.h> // color database
 #include <wx/string.h>
+#include <wx/filename.h>
 #include <wx/file.h>
 
 #include "ddclient-wx_connect_dialog.h"

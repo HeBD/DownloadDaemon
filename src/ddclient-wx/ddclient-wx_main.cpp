@@ -87,10 +87,9 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	}
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
-	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
 	working_dir += wxT("/share/ddclient-wx/");
-	//wxFileName fn(working_dir);
-	//fn.SetCwd();
+	wxFileName fn(working_dir);
+	fn.SetCwd();
 
 	SetClientSize(wxSize(750,500));
 	SetMinSize(wxSize(750,500));
