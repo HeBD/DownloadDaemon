@@ -53,6 +53,7 @@ END_EVENT_TABLE()
 myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxWindowID id):
 	wxFrame(parent, id, title){
 
+	// getting working dir
 	working_dir = parameter;
 	if(working_dir.find_first_of(wxT("/\\")) == wxString::npos) {
 		// no / in argv[0]? this means that it's in the path... let's find out where.
@@ -84,6 +85,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 			working_dir = curr_path;
 		}
 	}
+	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
 	working_dir += wxT("/share/ddclient-wx/");
@@ -161,7 +163,7 @@ void myframe::add_bars(){
 	toolbar->AddSeparator();
 
 	toolbar->AddTool(id_toolbar_add, wxT("Add"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_ADD_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Add a new Download"), wxEmptyString);
-	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_DEL_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_DEL_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download(s)"), wxEmptyString);
 	toolbar->AddSeparator();
 
 	toolbar->AddTool(id_toolbar_deactivate, wxT("Deactivate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CROSS_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate the selected Download"), wxEmptyString);
