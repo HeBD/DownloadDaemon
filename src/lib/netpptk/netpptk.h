@@ -101,6 +101,11 @@ public:
 	/** Join the auto-accept threads for terminating programs */
 	void auto_accept_join();
 
+	/** Gets the ip-address of the "other side" of the connection
+	*	@reutrns Peer ip-address, empty string if it fails
+	*/
+	std::string get_peer_name();
+
 
 private:
 	void auto_accept_threadfunc(void(*handle) (tkSock*));

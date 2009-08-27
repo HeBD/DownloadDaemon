@@ -288,6 +288,35 @@ int tkSock::recv(std::string& s) {
 	return status;
 }
 
+std::string tkSock::get_peer_name() {
+	if(!valid) {
+		return "";
+	}
+	struct sockaddr_storage name;
+
+	#ifdef _WIN32
+		int size = sizeof(name);
+	#else
+		socklen_t size = sizeof(name);
+	#endif
+
+	if(getpeername(m_sock, (sockaddr*)&name, &size) != 0) {
+		valid = false;
+		return "";
+	}
+	char ipstr[INET6_ADDRSTRLEN];
+
+
+	if (name.ss_family == AF_INET) {
+		struct sockaddr_in *s = (struct sockaddr_in *)&name;
+		inet_ntop(AF_INET, &s->sin_addr, ipstr, sizeof ipstr);
+	} else {
+		struct sockaddr_in6 *s = (struct sockaddr_in6 *)&name;
+		inet_ntop(AF_INET6, &s->sin6_addr, ipstr, sizeof ipstr);
+	}
+	return ipstr;
+}
+
 std::string tkSock::append_header(std::string data) {
 	int len = data.size();
 	std::stringstream ss;
@@ -326,7 +355,6 @@ const tkSock& tkSock::operator>> (std::string& s) {
 	tkSock::recv(s);
 	return *this;
 }
-
 
 std::ostream& operator<<(std::ostream& stream, tkSock &sock) {
 	std::string data;
