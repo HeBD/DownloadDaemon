@@ -21,7 +21,7 @@ extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_inp
 		return PLUGIN_CONNECTION_ERROR;
 	}
 
-	if(resultstr.find("The file could not be found") != mt_string::npos || resultstr.find("404 Not Found") != mt_string::npos) {
+	if(resultstr.find("The file could not be found") != mt_string::npos || resultstr.find("404 Not Found") != mt_string::npos || resultstr.find("file has been removed") != mt_string::npos) {
 		return PLUGIN_FILE_NOT_FOUND;
 	}
 

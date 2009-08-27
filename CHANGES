@@ -1,5 +1,6 @@
 2009-08-27
    [adrian]
+	- fixed bug in rapidshare plugin which results in a infinite loop if a file was removed from the server
 	- ddclient-wx now uses proper bin and share folders and correctly locates itsself in $PATH
 	- added possibility to get endpoint info
 	- added logging of where a connection comes from and who entered wrong passwords (ip-addresses)
