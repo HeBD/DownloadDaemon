@@ -1,5 +1,8 @@
 2009-08-27
    [adrian]
+	- ddclient-wx now useses proper bin and share-folders
+	- added possibility to get endpoint info
+	- added logging of where a connection comes from and who entered wrong passwords (ip-addresses)
 	- fixed event-sending to reload download list in ddclient-wx
    [susanne]
 	- changed download list reloading to be done by gui thread via custom event at ddclient-wx

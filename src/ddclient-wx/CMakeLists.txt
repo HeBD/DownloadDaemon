@@ -2,13 +2,16 @@ cmake_minimum_required (VERSION 2.6)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-SET(ddclient_wx_SRCS	ddclient-wx_connect_dialog.cpp
-			ddclient-wx.cpp  
-			ddclient-wx_main.cpp
-			ddclient-wx_about_dialog.cpp
+SET(ddclient_wx_SRCS	ddclient-wx_about_dialog.cpp
+			ddclient-wx_configure_dialog.cpp
+			ddclient-wx.cpp
 			ddclient-wx_picture.cpp
+			ddclient-wx_add_dialog.cpp
+			ddclient-wx_connect_dialog.cpp
+			ddclient-wx_main.cpp
 			../lib/netpptk/netpptk.cpp 
-			../lib/cfgfile/cfgfile.cpp)
+			../lib/cfgfile/cfgfile.cpp
+			../lib/mt_string/mt_string.cpp)
 
 find_package(Boost REQUIRED COMPONENTS thread)
 find_package(wxWidgets REQUIRED base core)
@@ -23,4 +26,5 @@ IF(Boost_FOUND AND wxWidgets_FOUND)
 ENDIF(Boost_FOUND AND wxWidgets_FOUND)
 
 install(TARGETS ddclient-wx DESTINATION bin)
+install(FILES ../../ddclient-wx_data/img/teufelchen_about.png share/ddclient-wx/img/teufelchen_about.png)
 # need to check where to install img

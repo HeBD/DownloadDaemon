@@ -14,6 +14,7 @@ SET(daemon_SRCS downloaddaemon.cpp
 		dl/download.cpp 
 		../lib/netpptk/netpptk.cpp 
 		../lib/cfgfile/cfgfile.cpp
+		../lib/mt_string/mt_string.cpp
 		dl/download_container.cpp)
 
 
