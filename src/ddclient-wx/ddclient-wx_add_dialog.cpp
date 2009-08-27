@@ -71,8 +71,6 @@ add_dialog::add_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Ad
 	SetSizer(dialog_sizer);
 	Layout();
 	Fit();
-
-	return;
 }
 
 
@@ -96,7 +94,7 @@ void add_dialog::on_add_one(wxCommandEvent &event){
 	myframe *myparent = (myframe *) GetParent();
 	tkSock *mysock = myparent->get_connection_attributes();
 
-	if(mysock == NULL || !*mysock) // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == "") // if there is no active connection
 		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
 
 	else{ // send data to server
@@ -125,7 +123,7 @@ void add_dialog::on_add_many(wxCommandEvent &event){
 	myframe *myparent = (myframe *) GetParent();
 	tkSock *mysock = myparent->get_connection_attributes();
 
-	if(mysock == NULL || !*mysock){ // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
 
 	}else{ // we have a connection

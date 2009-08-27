@@ -58,8 +58,6 @@ configure_dialog::configure_dialog(wxWindow *parent) : wxDialog(parent, -1, wxSt
 	SetSizer(dialog_sizer);
 	Layout();
 	Fit();
-
-	return;
 }
 
 
@@ -74,7 +72,7 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 	myframe *myparent = (myframe *) GetParent();
 	tkSock *mysock = myparent->get_connection_attributes();
 
-	if(mysock == NULL || !*mysock){ // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
 
 	}else{ // we have a connection
@@ -94,11 +92,9 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 	}
 
 	Destroy();
-	return;
 }
 
 
 void configure_dialog::on_cancel(wxCommandEvent &event){
 	Destroy();
-	return;
 }

@@ -7,6 +7,9 @@
 	- fixed event-sending to reload download list in ddclient-wx
    [susanne]
 	- changed download list reloading to be done by gui thread via custom event at ddclient-wx
+	- added a menu entry and shortcut for most of the toolbar buttons at ddclient-wx
+	- about dialog at ddclient-wx now shows the build date and time
+	- added deselection of all lines after deleting some at ddclient-wx
 
 2009-08-26
    [adrian]

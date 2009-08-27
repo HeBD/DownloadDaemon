@@ -117,6 +117,7 @@ class myframe : public wxFrame{
 		void get_content();
 		string build_status(string &status_text, vector<string> &splitted_line);
 		void find_selected_lines();
+		void deselect_lines();
 
 		// methods for comparing and actualizing content if necessary
 		void compare_vectorvector();

@@ -64,8 +64,6 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString
 	SetSizer(dialog_sizer);
 	Layout();
 	Fit();
-
-	return;
 }
 
 

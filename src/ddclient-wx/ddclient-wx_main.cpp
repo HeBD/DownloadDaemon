@@ -55,16 +55,20 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 	// getting working dir
 	working_dir = parameter;
+
 	if(working_dir.find_first_of(wxT("/\\")) == wxString::npos) {
 		// no / in argv[0]? this means that it's in the path... let's find out where.
+
 		wxString env_path;
 		wxGetEnv(wxT("PATH"), &env_path);
 		wxString curr_path;
 		size_t curr_pos = 0, last_pos = 0;
 		bool found = false;
+
 		while((curr_pos = env_path.find_first_of(wxT(";:"), curr_pos)) != wxString::npos) {
 			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
 			curr_path += wxT("/ddclient-wx");
+
 			if(wxFile::Exists(curr_path)) {
 				found = true;
 				break;
@@ -72,6 +76,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 			last_pos = ++curr_pos;
 		}
+
 		if(!found) {
 			// search the last folder of $PATH which is not included in the while loop
 			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
@@ -80,11 +85,14 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 				found = true;
 			}
 		}
+
 		if(found) {
-			// Successfully located the file..
+			// successfully located the file..
 			working_dir = curr_path;
 		}
 	}
+
+
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
 	working_dir += wxT("/share/ddclient-wx/");
@@ -113,7 +121,7 @@ myframe::~myframe(){
 
 void myframe::update_status(){
 
-	if(mysock == NULL || !*mysock){ // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before activate Downloading."), wxT("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
 
@@ -136,8 +144,6 @@ void myframe::update_status(){
 
 		mx.unlock();
 	}
-
-	return;
 }
 
 void myframe::add_bars(){
@@ -147,11 +153,24 @@ void myframe::add_bars(){
 	SetMenuBar(menu);
 
 	file_menu = new wxMenu(_T(""));
+
+	file_menu->Append(id_toolbar_connect, wxT("&Connect...\tAlt-C"), wxT("Connect"));
+	file_menu->Append(id_toolbar_configure, wxT("&Configure...\tAlt-P"), wxT("Configure"));
+	file_menu->AppendSeparator();
+
+	file_menu->Append(id_toolbar_deactivate, wxT("&Deactivate Download\tAlt-I"), wxT("Deactivate Download"));
+	file_menu->Append(id_toolbar_activate, wxT("&Activate Download\tAlt-R"), wxT("Activate Download"));
+	file_menu->AppendSeparator();
+
+	file_menu->Append(id_toolbar_add, wxT("&Add Downloads...\tAlt-A"), wxT("Add Downloads"));
+	file_menu->Append(id_toolbar_delete, wxT("&Delete Downloads\tAlt-D"), wxT("Delete Downloads"));
+	file_menu->AppendSeparator();
+
 	file_menu->Append(id_menu_quit, wxT("&Quit\tAlt-F4"), wxT("Quit"));
 	menu->Append(file_menu, wxT("&File"));
 
 	help_menu = new wxMenu(_T(""));
-	help_menu->Append(id_menu_about, wxT("&About\tF1"), wxT("About"));
+	help_menu->Append(id_menu_about, wxT("&About...\tF1"), wxT("About"));
 	menu->Append(help_menu, wxT("&Help"));
 
 
@@ -184,8 +203,6 @@ void myframe::add_bars(){
 	CreateStatusBar(2);
 	SetStatusText(wxT("DownloadDaemon-ClientWX"),0);
 	SetStatusText(wxT("Not connected"),1);
-
-	return;
 }
 
 
@@ -206,14 +223,12 @@ void myframe::add_components(){
 	list->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 100);
 	list->InsertColumn(3, wxT("\tURL\t"), wxLIST_AUTOSIZE_USEHEADER, 200);
 	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 80);
-
-	return;
 }
 
 
 void myframe::get_content(){
 	while(true){ // for boost::thread
-		if(mysock == NULL || !*mysock){
+		if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){
 			SetStatusText(wxT("Not connected"),1);
 			sleep(2);
 			continue;
@@ -272,7 +287,6 @@ void myframe::get_content(){
 
 		sleep(2); // reload every two seconds
 	}
-	return;
 }
 
 
@@ -357,8 +371,19 @@ void myframe::find_selected_lines(){
 		else // found a selected one
 			selected_lines.push_back(item_index);
 	  }
+}
 
-	return;
+void myframe::deselect_lines(){
+	long item_index = -1;
+
+	while(true){
+		item_index = list->GetNextItem(item_index, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED); // gets the next selected item
+
+		if (item_index == -1) // no selected ones left => leave loop
+			break;
+		else // found a selected one
+			list->SetItemState(item_index, 0, wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+	  }
 }
 
 
@@ -410,8 +435,6 @@ void myframe::compare_vectorvector(){
 			// line_nr stays the same!
 		}
 	}
-
-	return;
 }
 
 
@@ -448,36 +471,29 @@ void myframe::compare_vector(size_t line_nr, vector<string> &splitted_line_new, 
 		list->SetItemBackgroundColour(line_nr, wxString(color.c_str(), wxConvUTF8));
 		list->SetItem(line_nr, 4, wxString(status_text.c_str(), wxConvUTF8));
 	}
-
-	return;
 }
 
 
 // event handle methods
 void myframe::on_quit(wxCommandEvent &event){
 	Close();
-	return;
 }
 
 
 void myframe::on_about(wxCommandEvent &event){
 	about_dialog dialog(working_dir, this);
 	dialog.ShowModal();
-
-	return;
 }
 
 
  void myframe::on_connect(wxCommandEvent &event){
 	connect_dialog dialog(this);
 	dialog.ShowModal();
-
-	return;
  }
 
 
 void myframe::on_add(wxCommandEvent &event){
-	if(mysock == NULL || !*mysock){ // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
 
@@ -485,8 +501,6 @@ void myframe::on_add(wxCommandEvent &event){
 		add_dialog dialog(this);
 		dialog.ShowModal();
 	}
-
-	return;
  }
 
 
@@ -495,7 +509,7 @@ void myframe::on_delete(wxCommandEvent &event){
 	string id, answer;
 	bool error_occured = false;
 
-	if(mysock == NULL || !*mysock){ // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before deleting Downloads."), wxT("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
 
@@ -549,13 +563,12 @@ void myframe::on_delete(wxCommandEvent &event){
 			}
 		}
 
+		deselect_lines();
 		mx.unlock();
 
 		if(error_occured)
 			wxMessageBox(wxT("Error occured at deleting Download(s)."), wxT("Error"));
 	}
-
-	return;
  }
 
 
@@ -563,7 +576,7 @@ void myframe::on_deactivate(wxCommandEvent &event){
 	vector<int>::iterator it;
 	string id, answer;
 
-	if(mysock == NULL || !*mysock){ // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before deactivating Downloads."), wxT("No Connection to Server"));
 
 	}else{ // we have a connection
@@ -584,8 +597,6 @@ void myframe::on_deactivate(wxCommandEvent &event){
 
 		mx.unlock();
 	}
-
-	return;
  }
 
 
@@ -593,7 +604,7 @@ void myframe::on_activate(wxCommandEvent &event){
 	vector<int>::iterator it;
 	string id, answer;
 
-	if(mysock == NULL || !*mysock){ // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before activating Downloads."), wxT("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
 
@@ -615,13 +626,11 @@ void myframe::on_activate(wxCommandEvent &event){
 
 		mx.unlock();
 	}
-
-	return;
  }
 
 
 void myframe::on_configure(wxCommandEvent &event){
-	if(mysock == NULL || !*mysock){ // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before configurating\nDownloadDaemon Server."), wxT("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
 
@@ -629,13 +638,11 @@ void myframe::on_configure(wxCommandEvent &event){
 		configure_dialog dialog(this);
 		dialog.ShowModal();
 	}
-
-	return;
 }
 
 
 void myframe::on_download_activate(wxCommandEvent &event){
-	if(mysock == NULL || !*mysock){ // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before activate Downloading."), wxT("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
 
@@ -654,13 +661,11 @@ void myframe::on_download_activate(wxCommandEvent &event){
 		toolbar->RemoveTool(id_toolbar_download_deactivate);
 		toolbar->AddTool(download_deactivate);
 	}
-
-	return;
 }
 
 
 void myframe::on_download_deactivate(wxCommandEvent &event){
-	if(mysock == NULL || !*mysock){ // if there is no active connection
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please connect before deactivate Downloading."), wxT("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
 
@@ -681,8 +686,6 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 
 
 	}
-
-	return;
 }
 
 
@@ -704,7 +707,6 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 		list->SetColumnWidth(3, width/2);
 		list->SetColumnWidth(4, width/4);
  	}
-	return;
  }
 
 
@@ -717,8 +719,6 @@ void myframe::on_reload(wxEvent &event){
 	content = new_content;
 
 	mx.unlock();
-
-	return;
 }
 
 
