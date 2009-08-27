@@ -14,7 +14,7 @@ SET(ddclient_wx_SRCS	ddclient-wx_about_dialog.cpp
 			../lib/mt_string/mt_string.cpp)
 
 find_package(Boost REQUIRED COMPONENTS thread)
-find_package(wxWidgets REQUIRED base core)
+find_package(wxWidgets REQUIRED base core richtext)
 
 IF(Boost_FOUND AND wxWidgets_FOUND)
 	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
@@ -26,5 +26,5 @@ IF(Boost_FOUND AND wxWidgets_FOUND)
 ENDIF(Boost_FOUND AND wxWidgets_FOUND)
 
 install(TARGETS ddclient-wx DESTINATION bin)
-install(FILES ../../ddclient-wx_data/img/teufelchen_about.png share/ddclient-wx/img/teufelchen_about.png)
+install(FILES ../../share/ddclient-wx/img/teufelchen_about.png DESTINATION share/ddclient-wx/img/)
 # need to check where to install img
