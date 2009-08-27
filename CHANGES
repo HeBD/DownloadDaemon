@@ -1,6 +1,8 @@
 2009-08-27
    [adrian]
-	- fixed event-sending to update download list in ddclient-wx
+	- fixed event-sending to reload download list in ddclient-wx
+   [susanne]
+	- changed download list reloading to be done by gui thread via custom event at ddclient-wx
 
 2009-08-26
    [adrian]
