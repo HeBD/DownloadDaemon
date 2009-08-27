@@ -237,8 +237,7 @@ void myframe::get_content(){
 
 		// send event to reload list
 		wxCommandEvent event(wxEVT_reload_list, GetId());
-		event.SetEventObject(this);
-		GetEventHandler()->ProcessEvent(event);
+		wxPostEvent(this, event);
 
 		sleep(2); // reload every two seconds
 	}

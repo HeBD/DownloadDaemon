@@ -1,3 +1,7 @@
+2009-08-27
+   [adrian]
+	- fixed event-sending to update download list in ddclient-wx
+
 2009-08-26
    [adrian]
 	- Tried to make everything a bit more threadsafe
