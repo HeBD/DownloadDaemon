@@ -15,6 +15,7 @@
 // IDs
 const long myframe::id_menu_quit = wxNewId();
 const long myframe::id_menu_about = wxNewId();
+const long myframe::id_menu_select_all_lines = wxNewId();
 const long myframe::id_toolbar_connect = wxNewId();
 const long myframe::id_toolbar_add = wxNewId();
 const long myframe::id_toolbar_delete = wxNewId();
@@ -37,6 +38,7 @@ DEFINE_LOCAL_EVENT_TYPE(wxEVT_reload_list)
 BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_menu_quit, myframe::on_quit)
 	EVT_MENU(id_menu_about, myframe::on_about)
+	EVT_MENU(id_menu_select_all_lines, myframe::on_select_all_lines)
 	EVT_MENU(id_toolbar_connect, myframe::on_connect)
 	EVT_MENU(id_toolbar_add, myframe::on_add)
 	EVT_MENU(id_toolbar_delete, myframe::on_delete)
@@ -164,6 +166,7 @@ void myframe::add_bars(){
 
 	file_menu->Append(id_toolbar_add, wxT("&Add Downloads...\tAlt-A"), wxT("Add Downloads"));
 	file_menu->Append(id_toolbar_delete, wxT("&Delete Downloads\tAlt-D"), wxT("Delete Downloads"));
+	file_menu->Append(id_menu_select_all_lines, wxT("&Select all\tCtrl-A"), wxT("Select all"));
 	file_menu->AppendSeparator();
 
 	file_menu->Append(id_menu_quit, wxT("&Quit\tAlt-F4"), wxT("Quit"));
@@ -373,6 +376,21 @@ void myframe::find_selected_lines(){
 	  }
 }
 
+
+void myframe::select_lines(){
+	long item_index = -1;
+
+	while(true){
+		item_index = list->GetNextItem(item_index, wxLIST_NEXT_ALL, wxLIST_STATE_DONTCARE); // gets the next item
+
+		if (item_index == -1) // no item left => leave loop
+			break;
+		else // found a selected one
+			list->SetItemState(item_index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+	  }
+}
+
+
 void myframe::deselect_lines(){
 	long item_index = -1;
 
@@ -483,6 +501,14 @@ void myframe::on_quit(wxCommandEvent &event){
 void myframe::on_about(wxCommandEvent &event){
 	about_dialog dialog(working_dir, this);
 	dialog.ShowModal();
+}
+
+
+void myframe::on_select_all_lines(wxCommandEvent &event){
+
+	mx.lock();
+	select_lines();
+	mx.unlock();
 }
 
 
@@ -724,7 +750,7 @@ void myframe::on_reload(wxEvent &event){
 
 // getter and setter methods
 void myframe::set_connection_attributes(tkSock *mysock, string password){
-		this->mysock = mysock;
+	this->mysock = mysock;
 }
 
 

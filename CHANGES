@@ -1,3 +1,8 @@
+2009-08-28
+   [susanne]
+	- added shortcut ctrl+a for all line selection at ddclient-wx
+	- finished configure dialog gui at ddclient-wx, does only change the password right now
+
 2009-08-27
    [adrian]
 	- fixed bug in rapidshare plugin which results in a infinite loop if a file was removed from the server

@@ -103,6 +103,7 @@ class myframe : public wxFrame{
 		// element IDs
 		static const long id_menu_quit;
 		static const long id_menu_about;
+		static const long id_menu_select_all_lines;
 		static const long id_toolbar_connect;
 		static const long id_toolbar_add;
 		static const long id_toolbar_delete;
@@ -117,6 +118,7 @@ class myframe : public wxFrame{
 		void get_content();
 		string build_status(string &status_text, vector<string> &splitted_line);
 		void find_selected_lines();
+		void select_lines();
 		void deselect_lines();
 
 		// methods for comparing and actualizing content if necessary
@@ -126,6 +128,7 @@ class myframe : public wxFrame{
 		// event handle methods
 		void on_quit(wxCommandEvent &event);
 		void on_about(wxCommandEvent &event);
+		void on_select_all_lines(wxCommandEvent &event);
 		void on_connect(wxCommandEvent &event);
 		void on_add(wxCommandEvent &event);
 		void on_delete(wxCommandEvent &event);
