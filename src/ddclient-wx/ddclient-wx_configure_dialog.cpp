@@ -27,7 +27,7 @@ END_EVENT_TABLE()
 
 configure_dialog::configure_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Configure DownloadDaemon Server"))){
 
-	notebook = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxSize(300, 200));
+	notebook = new wxNotebook(this, -1, wxDefaultPosition, wxSize(300, 200));
 
 	create_download_panel();
 	create_pass_panel();
@@ -45,7 +45,7 @@ configure_dialog::configure_dialog(wxWindow *parent) : wxDialog(parent, -1, wxSt
 
 void configure_dialog::create_download_panel(){
 	// creating elements
-	download_panel = new wxPanel(notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	download_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_download_sizer = new wxBoxSizer(wxVERTICAL);
 	outer_time_sizer = new wxStaticBoxSizer(wxHORIZONTAL,download_panel,wxT("Download Time"));
@@ -106,7 +106,7 @@ void configure_dialog::create_download_panel(){
 
 void configure_dialog::create_pass_panel(){
 	// creating elements
-	pass_panel = new wxPanel(notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	pass_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_pass_sizer = new wxBoxSizer(wxVERTICAL);
 	outer_pass_sizer = new wxStaticBoxSizer(wxHORIZONTAL,pass_panel,wxT("Change Password"));
@@ -141,7 +141,7 @@ void configure_dialog::create_pass_panel(){
 
 void configure_dialog::create_log_panel(){
 	// creating elements
-	log_panel = new wxPanel(notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	log_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_log_sizer = new wxBoxSizer(wxVERTICAL);
 	outer_log_activity_sizer = new wxStaticBoxSizer(wxVERTICAL,log_panel,wxT("Logging Activity"));
@@ -153,14 +153,14 @@ void configure_dialog::create_log_panel(){
 	exp_log_output_text = new wxStaticText(log_panel, -1, wxT("This option specifies the destination for log-output and can either be a filename, stderr\nor stdout for local console output"));
 	log_output_text = new wxStaticText(log_panel, -1, wxT("Log File"));
 
-	log_output_input = new wxTextCtrl(log_panel,-1,wxT(""), wxDefaultPosition, wxSize(400, 25));
+	log_output_input = new wxTextCtrl(log_panel, -1,wxT(""), wxDefaultPosition, wxSize(400, 25));
 
 	wxArrayString activity;
 	activity.Add(wxT("Debug"));
 	activity.Add(wxT("Warning"));
 	activity.Add(wxT("Severe"));
 	activity.Add(wxT("Off"));
-	log_activity_choice = new wxChoice(log_panel, wxID_ANY, wxDefaultPosition, wxSize(100, 30), activity);
+	log_activity_choice = new wxChoice(log_panel, -1, wxDefaultPosition, wxSize(100, 30), activity);
 
 	log_button = new wxButton(log_panel, id_log_change, wxT("Change Password"));
 	log_cancel_button = new wxButton(log_panel, wxID_CANCEL, wxT("Cancel"));
