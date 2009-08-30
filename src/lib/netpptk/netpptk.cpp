@@ -9,7 +9,7 @@
     #include <winsock2.h>
     #include <ws2tcpip.h>
     #include <io.h>
-    #define sleep(x) Sleep(x)
+    #define sleep(x) Sleep(x * 1000)
 #else
 	#include <sys/types.h>
 	#include <sys/socket.h>

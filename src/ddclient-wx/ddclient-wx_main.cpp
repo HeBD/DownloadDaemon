@@ -9,7 +9,7 @@
 
 #include "ddclient-wx_main.h"
 #ifdef _WIN32
-    #define sleep(x) Sleep(x)
+    #define sleep(x) Sleep(x * 1000)
 #endif
 
 // IDs
