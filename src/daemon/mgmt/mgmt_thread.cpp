@@ -296,7 +296,7 @@ void target_dl_down(mt_string &data, tkSock *sock) {
 		}
 	}
 
-	switch(global_download_list.move_up(atoi(data.c_str()))) {
+	switch(global_download_list.move_up(it->get_id())) {
 		case 0:
 			log_string(mt_string("Moved download ID: ") + data + " downwards", LOG_DEBUG);
 			*sock << "100 SUCCESS"; break;

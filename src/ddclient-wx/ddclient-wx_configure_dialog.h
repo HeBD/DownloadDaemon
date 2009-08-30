@@ -101,11 +101,11 @@ class configure_dialog : public wxDialog{
 		void create_download_panel();
 		void create_pass_panel();
 		void create_log_panel();
+		wxString get_var(const std::string &var);
 
 		// event handle methods
-		void on_download_change(wxCommandEvent &event);
+		void on_apply(wxCommandEvent &event);
 		void on_pass_change(wxCommandEvent &event);
-		void on_log_change(wxCommandEvent &event);
 		void on_cancel(wxCommandEvent &event);
 
 		DECLARE_EVENT_TABLE()

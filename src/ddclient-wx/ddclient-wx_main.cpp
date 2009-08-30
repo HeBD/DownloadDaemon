@@ -21,6 +21,8 @@ const long myframe::id_toolbar_add = wxNewId();
 const long myframe::id_toolbar_delete = wxNewId();
 const long myframe::id_toolbar_deactivate = wxNewId();
 const long myframe::id_toolbar_activate = wxNewId();
+const long myframe::id_toolbar_priority_up = wxNewId();
+const long myframe::id_toolbar_priority_down = wxNewId();
 const long myframe::id_toolbar_configure = wxNewId();
 const long myframe::id_toolbar_download_activate = wxNewId();
 const long myframe::id_toolbar_download_deactivate = wxNewId();
@@ -44,6 +46,8 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_toolbar_delete, myframe::on_delete)
 	EVT_MENU(id_toolbar_deactivate, myframe::on_deactivate)
 	EVT_MENU(id_toolbar_activate, myframe::on_activate)
+	EVT_MENU(id_toolbar_priority_up, myframe::on_priority_up)
+	EVT_MENU(id_toolbar_priority_down, myframe::on_priority_down)
 	EVT_MENU(id_toolbar_configure, myframe::on_configure)
 	EVT_MENU(id_toolbar_download_activate, myframe::on_download_activate)
 	EVT_MENU(id_toolbar_download_deactivate, myframe::on_download_deactivate)
@@ -189,14 +193,17 @@ void myframe::add_bars(){
 
 	toolbar->AddTool(id_toolbar_deactivate, wxT("Deactivate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CROSS_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate the selected Download"), wxEmptyString);
 	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_TICK_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Activate the selected Download"), wxEmptyString);
-
 	toolbar->AddSeparator();
+
+	toolbar->AddTool(id_toolbar_priority_up, wxT("Increase Priority"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_GO_UP")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Increase Priority of the selected Download"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_priority_down, wxT("Decrease Priority"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_GO_DOWN")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Decrease Priority of the selected Download"), wxEmptyString);
+	toolbar->AddSeparator();
+
 	toolbar->AddTool(id_toolbar_configure, wxT("Configure"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_HELP_SETTINGS")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Configure DownloadDaemon Server"), wxEmptyString);
 	toolbar->AddSeparator();
 
 	download_activate = toolbar->AddTool(id_toolbar_download_activate, wxT("Activate Downloading"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_NEW")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Downloading"), wxEmptyString);
 	download_deactivate = toolbar->AddTool(id_toolbar_download_deactivate, wxT("Deactivate Downloading"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CUT")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Downloading"), wxEmptyString);
-
 
 	toolbar->Realize();
 	SetToolBar(toolbar);
@@ -653,6 +660,70 @@ void myframe::on_activate(wxCommandEvent &event){
 		mx.unlock();
 	}
  }
+
+
+ void myframe::on_priority_up(wxCommandEvent &event){
+	vector<int>::iterator it;
+	string id, answer;
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before increasing Priority."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
+
+	}else{ // we have a connection
+
+		mx.lock();
+
+		find_selected_lines(); // save selection into selected_lines
+		if(!selected_lines.empty()){
+
+			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+				id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+
+				mysock->send("DDP DL UP " + id);
+				mysock->recv(answer); // might receive error 104 ID, but that doesn't matter
+			}
+
+		}
+
+		deselect_lines();
+		mx.unlock();
+	}
+}
+
+
+void myframe::on_priority_down(wxCommandEvent &event){
+	vector<int>::reverse_iterator rit;
+	string id, answer;
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before increasing Priority."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
+
+	}else{ // we have a connection
+
+		mx.lock();
+
+		find_selected_lines(); // save selection into selected_lines
+		if(!selected_lines.empty()){
+
+			for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); rit++){ // has to be done from the last to the first line
+				id = (content[*rit])[0]; // gets the id of the line, which index is stored in selected_lines
+
+				mysock->send("DDP DL DOWN " + id);
+				mysock->recv(answer);
+
+				if(answer.find("104") == 0) // 104 ID <-- tried to move the bottom download down
+						break;
+
+			}
+
+		}
+
+		deselect_lines();
+		mx.unlock();
+	}
+}
 
 
 void myframe::on_configure(wxCommandEvent &event){

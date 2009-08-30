@@ -18,9 +18,9 @@ const long configure_dialog::id_log_change = wxNewId();
 
 // event table
 BEGIN_EVENT_TABLE(configure_dialog, wxDialog)
-	EVT_BUTTON(id_download_change, configure_dialog::on_download_change)
+	EVT_BUTTON(id_download_change, configure_dialog::on_apply)
 	EVT_BUTTON(id_pass_change, configure_dialog::on_pass_change)
-	EVT_BUTTON(id_log_change, configure_dialog::on_log_change)
+	EVT_BUTTON(id_log_change, configure_dialog::on_apply)
 	EVT_BUTTON(wxID_CANCEL, configure_dialog::on_cancel)
 END_EVENT_TABLE()
 
@@ -64,11 +64,11 @@ void configure_dialog::create_download_panel(){
 	exp_count_text = new wxStaticText(download_panel, -1, wxT("Here you can specify how many downloads may run at the same time."));
 	count_text = new wxStaticText(download_panel, -1, wxT("Simultaneous downloads"));
 
-	start_time_input = new wxTextCtrl(download_panel,-1,wxT(""), wxDefaultPosition, wxSize(100, 25));
+	start_time_input = new wxTextCtrl(download_panel,-1, get_var("download_timing_start"), wxDefaultPosition, wxSize(100, 25));
 	start_time_input->SetFocus();
-	end_time_input = new wxTextCtrl(download_panel,-1,wxT(""), wxDefaultPosition, wxSize(100, 25));
-	save_dir_input = new wxTextCtrl(download_panel,-1,wxT(""), wxDefaultPosition, wxSize(400, 25));
-	count_input = new wxTextCtrl(download_panel,-1,wxT(""), wxDefaultPosition, wxSize(100, 25));
+	end_time_input = new wxTextCtrl(download_panel, -1, get_var("download_timing_end"), wxDefaultPosition, wxSize(100, 25));
+	save_dir_input = new wxTextCtrl(download_panel, -1, get_var("download_folder"), wxDefaultPosition, wxSize(400, 25));
+	count_input = new wxTextCtrl(download_panel, -1, get_var("simultaneous_downloads"), wxDefaultPosition, wxSize(100, 25));
 
 	download_button = new wxButton(download_panel, id_download_change, wxT("Apply"));
 	download_cancel_button = new wxButton(download_panel, wxID_CANCEL, wxT("Cancel"));
@@ -116,8 +116,8 @@ void configure_dialog::create_pass_panel(){
 	old_pass_text = new wxStaticText(pass_panel, -1, wxT("Old Password"));
 	new_pass_text = new wxStaticText(pass_panel, -1, wxT("New Password"));
 
-	old_pass_input = new wxTextCtrl(pass_panel,-1,wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
-	new_pass_input = new wxTextCtrl(pass_panel,-1,wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
+	old_pass_input = new wxTextCtrl(pass_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
+	new_pass_input = new wxTextCtrl(pass_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
 
 	pass_button = new wxButton(pass_panel, id_pass_change, wxT("Change Password"));
 	pass_cancel_button = new wxButton(pass_panel, wxID_CANCEL, wxT("Cancel"));
@@ -153,7 +153,20 @@ void configure_dialog::create_log_panel(){
 	exp_log_output_text = new wxStaticText(log_panel, -1, wxT("This option specifies the destination for log-output and can either be a filename, stderr\nor stdout for local console output"));
 	log_output_text = new wxStaticText(log_panel, -1, wxT("Log File"));
 
-	log_output_input = new wxTextCtrl(log_panel, -1,wxT(""), wxDefaultPosition, wxSize(400, 25));
+	log_output_input = new wxTextCtrl(log_panel, -1, get_var("log_file"), wxDefaultPosition, wxSize(400, 25));
+
+	// wxChoice log_activity
+	wxString old_activity = get_var("log_level");
+	int selection = 0;
+
+	if(old_activity == wxT("DEBUG"))
+		selection = 0;
+	else if(old_activity == wxT("WARNING"))
+		selection = 1;
+	else if(old_activity == wxT("SEVERE"))
+		selection = 2;
+	else if(old_activity == wxT("OFF"))
+		selection = 3;
 
 	wxArrayString activity;
 	activity.Add(wxT("Debug"));
@@ -161,8 +174,9 @@ void configure_dialog::create_log_panel(){
 	activity.Add(wxT("Severe"));
 	activity.Add(wxT("Off"));
 	log_activity_choice = new wxChoice(log_panel, -1, wxDefaultPosition, wxSize(100, 30), activity);
+	log_activity_choice->SetSelection(selection);
 
-	log_button = new wxButton(log_panel, id_log_change, wxT("Change Password"));
+	log_button = new wxButton(log_panel, id_log_change, wxT("Apply"));
 	log_cancel_button = new wxButton(log_panel, wxID_CANCEL, wxT("Cancel"));
 
 	// filling sizers
@@ -185,18 +199,54 @@ void configure_dialog::create_log_panel(){
 }
 
 
-// event handle methods
-void configure_dialog::on_download_change(wxCommandEvent &event){ // TODO: realize
-	wxMessageBox(wxT("I'm useless."), wxT("D:"));
-	Destroy();
+wxString configure_dialog::get_var(const string &var){
+	string answer;
+
+	// check connection
+	myframe *myparent = (myframe *) GetParent();
+	tkSock *mysock = myparent->get_connection_attributes();
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+
+	}else{ // we have a connection
+		boost::mutex *mx = myparent->get_mutex();
+		mx->lock();
+
+		mysock->send("DDP VAR GET " + var);
+		mysock->recv(answer);
+
+		mx->unlock();
+	}
+
+	return wxString(answer.c_str(), wxConvUTF8);
 }
 
 
-void configure_dialog::on_pass_change(wxCommandEvent &event){
+// event handle methods
+void configure_dialog::on_apply(wxCommandEvent &event){
 
 	// getting user input
-	std::string old_pass = std::string(old_pass_input->GetValue().mb_str());
-	std::string new_pass = std::string(new_pass_input->GetValue().mb_str());
+	string start_time = string(start_time_input->GetValue().mb_str());
+	string end_time = string(end_time_input->GetValue().mb_str());
+	string save_dir = string(save_dir_input->GetValue().mb_str());
+	string count = string(count_input->GetValue().mb_str());
+
+	string log_output = string(log_output_input->GetValue().mb_str());
+	string activity_level;
+	int selection = log_activity_choice->GetCurrentSelection();
+
+	switch (selection){
+		case 0: 	activity_level = "DEBUG";
+					break;
+		case 1: 	activity_level = "WARNING";
+					break;
+		case 2: 	activity_level = "SEVERE";
+					break;
+		case 3: 	activity_level = "OFF";
+					break;
+	}
+
 
 	// check connection
 	myframe *myparent = (myframe *) GetParent();
@@ -211,12 +261,31 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 		boost::mutex *mx = myparent->get_mutex();
 		mx->lock();
 
-		mysock->send("DDP VAR SET mgmt_password = " + old_pass + " ; " + new_pass);
+		// download times
+		mysock->send("DDP VAR SET download_timing_start = " + start_time);
+		mysock->recv(answer);
+
+		mysock->send("DDP VAR SET download_timing_end = " + end_time);
+		mysock->recv(answer);
+
+		// download folder
+		mysock->send("DDP VAR SET download_folder = " + save_dir);
+		mysock->recv(answer);
+
+		// download count
+		mysock->send("DDP VAR SET simultaneous_downloads = " + count);
+		mysock->recv(answer);
+
+		// log output
+		mysock->send("DDP VAR SET log_file = " + log_output);
 		mysock->recv(answer);
 
 		if(answer.find("102") == 0) // 102 AUTHENTICATION	<-- Authentication failed
-			wxMessageBox(wxT("Failed to reset the Password."), wxT("Password Error"));
+			wxMessageBox(wxT("Failed to change Log Output."), wxT("Password Error"));
 
+		// log activity
+		mysock->send("DDP VAR SET log_level = " + activity_level);
+		mysock->recv(answer);
 
 		mx->unlock();
 	}
@@ -225,8 +294,35 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 }
 
 
-void configure_dialog::on_log_change(wxCommandEvent &event){ // TODO: realize
-	wxMessageBox(wxT("I'm useless."), wxT("D:"));
+void configure_dialog::on_pass_change(wxCommandEvent &event){
+
+	// getting user input
+	string old_pass = string(old_pass_input->GetValue().mb_str());
+	string new_pass = string(new_pass_input->GetValue().mb_str());
+
+	// check connection
+	myframe *myparent = (myframe *) GetParent();
+	tkSock *mysock = myparent->get_connection_attributes();
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+
+	}else{ // we have a connection
+		string answer;
+
+		boost::mutex *mx = myparent->get_mutex();
+		mx->lock();
+
+		// password
+		mysock->send("DDP VAR SET mgmt_password = " + old_pass + " ; " + new_pass);
+		mysock->recv(answer);
+
+		if(answer.find("102") == 0) // 102 AUTHENTICATION	<-- Authentication failed
+			wxMessageBox(wxT("Failed to reset the Password."), wxT("Password Error"));
+
+		mx->unlock();
+	}
+
 	Destroy();
 }
 
