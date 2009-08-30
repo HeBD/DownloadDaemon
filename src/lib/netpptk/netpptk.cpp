@@ -25,6 +25,31 @@
 // Static socket-instance counter (needed for the Windows-init, and cleanup code)
 int tkSock::m_instanceCount = 0;
 
+
+// Windows XP and before does not definet inet_ntop...
+#ifdef _WIN32
+const char *inet_ntop(int af, const void *src, char *dst, socklen_t cnt) {
+        if (af == AF_INET) {
+                struct sockaddr_in in;
+                memset(&in, 0, sizeof(in));
+                in.sin_family = AF_INET;
+                memcpy(&in.sin_addr, src, sizeof(struct in_addr));
+                getnameinfo((struct sockaddr *)&in, sizeof(struct sockaddr_in), dst, cnt, NULL, 0, NI_NUMERICHOST);
+                return dst;
+        }
+        else if (af == AF_INET6) {
+                struct sockaddr_in6 in;
+                memset(&in, 0, sizeof(in));
+                in.sin6_family = AF_INET6;
+                memcpy(&in.sin6_addr, src, sizeof(struct in_addr6));
+                getnameinfo((struct sockaddr *)&in, sizeof(struct sockaddr_in6), dst, cnt, NULL, 0, NI_NUMERICHOST);
+                return dst;
+        }
+        return NULL;
+}
+#endif
+
+
 tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0), auto_accept_thread(0) {
 	valid = false;
 	#ifdef _WIN32
