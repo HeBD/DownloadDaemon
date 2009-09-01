@@ -1,6 +1,7 @@
 2009-09-01
    [susanne]
 	- fixed downloading activation/deactivation for windows (OS) and added menu item at ddclient-wx
+	- added program icon and own toolbar icons at ddclient-wx
 
 2009-08-30
    [adrian]

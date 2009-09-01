@@ -108,6 +108,8 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	SetClientSize(wxSize(750,500));
 	SetMinSize(wxSize(750,500));
 	CenterOnScreen();
+	SetIcon(wxIcon(working_dir + wxT("img/logoDD.xpm")));
+
 
 	add_bars();
 	add_components();
@@ -196,26 +198,26 @@ void myframe::add_bars(){
 	// toolbar with icons
 	toolbar = new wxToolBar(this, wxID_ANY);
 
-	toolbar->AddTool(id_toolbar_connect, wxT("Connect"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_EXECUTABLE_FILE")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Connect to a DownloadDaemon Server"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_connect, wxT("Connect"), wxBitmap(working_dir + wxT("img/1_connect.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Connect to a DownloadDaemon Server"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_add, wxT("Add"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_ADD_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Add a new Download"), wxEmptyString);
-	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_DEL_BOOKMARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download(s)"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_add, wxT("Add"), wxBitmap(working_dir + wxT("img/2_add.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Add a new Download"));
+	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxBitmap(working_dir + wxT("img/3_delete.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download(s)"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_deactivate, wxT("Deactivate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CROSS_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate the selected Download"), wxEmptyString);
-	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_TICK_MARK")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Activate the selected Download"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_deactivate, wxT("Deactivate"), wxBitmap(working_dir + wxT("img/4_stop.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate the selected Download"));
+	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxBitmap(working_dir + wxT("img/5_start.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Activate the selected Download"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_priority_up, wxT("Increase Priority"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_GO_UP")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Increase Priority of the selected Download"), wxEmptyString);
-	toolbar->AddTool(id_toolbar_priority_down, wxT("Decrease Priority"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_GO_DOWN")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Decrease Priority of the selected Download"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_priority_up, wxT("Increase Priority"), wxBitmap(working_dir + wxT("img/6_up.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Increase Priority of the selected Download"));
+	toolbar->AddTool(id_toolbar_priority_down, wxT("Decrease Priority"), wxBitmap(working_dir + wxT("img/7_down.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Decrease Priority of the selected Download"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_configure, wxT("Configure"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_HELP_SETTINGS")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Configure DownloadDaemon Server"), wxEmptyString);
+	toolbar->AddTool(id_toolbar_configure, wxT("Configure"), wxBitmap(working_dir + wxT("img/8_configure.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Configure DownloadDaemon Server"));
 	toolbar->AddSeparator();
 
-	download_activate = toolbar->AddTool(id_toolbar_download_activate, wxT("Activate Downloading"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_NEW")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Downloading"), wxEmptyString);
-	download_deactivate = toolbar->AddTool(id_toolbar_download_deactivate, wxT("Deactivate Downloading"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CUT")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Downloading"), wxEmptyString);
+	download_activate = toolbar->AddTool(id_toolbar_download_activate, wxT("Activate Downloading"), wxBitmap(working_dir + wxT("img/9_activate.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Downloading"));
+	download_deactivate = toolbar->AddTool(id_toolbar_download_deactivate, wxT("Deactivate Downloading"), wxBitmap(working_dir + wxT("img/9_deactivate.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Downloading"));
 
 	toolbar->Realize();
 
