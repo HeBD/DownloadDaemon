@@ -196,7 +196,7 @@ void myframe::add_bars(){
 
 
 	// toolbar with icons
-	toolbar = new wxToolBar(this, wxID_ANY);
+	toolbar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL|wxTB_FLAT);
 
 	toolbar->AddTool(id_toolbar_connect, wxT("Connect"), wxBitmap(working_dir + wxT("img/1_connect.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Connect to a DownloadDaemon Server"));
 	toolbar->AddSeparator();
