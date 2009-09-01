@@ -128,7 +128,7 @@ myframe::~myframe(){
 void myframe::update_status(){
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before activate Downloading."), wxT("No Connection to Server"));
+		wxMessageBox(wxT("Please reconnect."), wxT("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
 
 	}else{
@@ -138,10 +138,14 @@ void myframe::update_status(){
 		mysock->send("DDP VAR GET downloading_active");
 		mysock->recv(answer);
 
+		// removing both icons, even when maybe only one is shown
+		toolbar->RemoveTool(id_toolbar_download_activate);
+		toolbar->RemoveTool(id_toolbar_download_deactivate);
+
 		if(answer == "1"){ // downloading active
-			toolbar->RemoveTool(id_toolbar_download_activate);
+			toolbar->AddTool(download_deactivate);
 		}else if(answer =="0"){ // downloadin not active
-			toolbar->RemoveTool(id_toolbar_download_deactivate);
+			toolbar->AddTool(download_activate);
 		}else{
 			// should never be reached
 		}
@@ -204,6 +208,9 @@ void myframe::add_bars(){
 
 	download_activate = toolbar->AddTool(id_toolbar_download_activate, wxT("Activate Downloading"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_NEW")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Downloading"), wxEmptyString);
 	download_deactivate = toolbar->AddTool(id_toolbar_download_deactivate, wxT("Deactivate Downloading"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CUT")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Downloading"), wxEmptyString);
+	toolbar->RemoveTool(id_toolbar_download_activate); // these 2 toolbar icons are created for later use
+	toolbar->RemoveTool(id_toolbar_download_deactivate);
+
 
 	toolbar->Realize();
 	SetToolBar(toolbar);
