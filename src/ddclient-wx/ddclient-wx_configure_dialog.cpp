@@ -40,6 +40,7 @@ configure_dialog::configure_dialog(wxWindow *parent) : wxDialog(parent, -1, wxSt
 	notebook->Fit();
 	Layout();
 	Fit();
+	CenterOnScreen();
 }
 
 

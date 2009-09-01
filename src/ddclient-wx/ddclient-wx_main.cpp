@@ -63,7 +63,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	working_dir = parameter;
 
 	if(working_dir.find_first_of(wxT("/\\")) == wxString::npos) {
-		// no / in argv[0]? this means that it's in the path... let's find out where.
+		// no / in argv[0]? this means that it's in the path.. let's find out where.
 
 		wxString env_path;
 		wxGetEnv(wxT("PATH"), &env_path);
@@ -144,8 +144,10 @@ void myframe::update_status(){
 
 		if(answer == "1"){ // downloading active
 			toolbar->AddTool(download_deactivate);
+			file_menu->Enable(id_toolbar_download_deactivate, true);
 		}else if(answer =="0"){ // downloadin not active
 			toolbar->AddTool(download_activate);
+			file_menu->Enable(id_toolbar_download_activate, true);
 		}else{
 			// should never be reached
 		}
@@ -166,15 +168,19 @@ void myframe::add_bars(){
 
 	file_menu = new wxMenu(_T(""));
 
-	file_menu->Append(id_toolbar_connect, wxT("&Connect...\tAlt-C"), wxT("Connect"));
-	file_menu->Append(id_toolbar_configure, wxT("&Configure...\tAlt-P"), wxT("Configure"));
+	file_menu->Append(id_toolbar_connect, wxT("&Connect..\tAlt-C"), wxT("Connect"));
+	file_menu->Append(id_toolbar_configure, wxT("&Configure..\tAlt-P"), wxT("Configure"));
+	file_menu->Append(id_toolbar_download_activate, wxT("&Activate Downloading\tF2"), wxT("Activate Downloading"));
+	file_menu->Append(id_toolbar_download_deactivate, wxT("&Deactivate Downloading\tF3"), wxT("Deactivate Downloading"));
+	file_menu->Enable(id_toolbar_download_activate, false); // those two are not enabled from the start
+	file_menu->Enable(id_toolbar_download_deactivate, false);
 	file_menu->AppendSeparator();
 
 	file_menu->Append(id_toolbar_deactivate, wxT("&Deactivate Download\tAlt-I"), wxT("Deactivate Download"));
 	file_menu->Append(id_toolbar_activate, wxT("&Activate Download\tAlt-R"), wxT("Activate Download"));
 	file_menu->AppendSeparator();
 
-	file_menu->Append(id_toolbar_add, wxT("&Add Downloads...\tAlt-A"), wxT("Add Downloads"));
+	file_menu->Append(id_toolbar_add, wxT("&Add Downloads..\tAlt-A"), wxT("Add Downloads"));
 	file_menu->Append(id_toolbar_delete, wxT("&Delete Downloads\tAlt-D"), wxT("Delete Downloads"));
 	file_menu->Append(id_menu_select_all_lines, wxT("&Select all\tCtrl-A"), wxT("Select all"));
 	file_menu->AppendSeparator();
@@ -183,7 +189,7 @@ void myframe::add_bars(){
 	menu->Append(file_menu, wxT("&File"));
 
 	help_menu = new wxMenu(_T(""));
-	help_menu->Append(id_menu_about, wxT("&About...\tF1"), wxT("About"));
+	help_menu->Append(id_menu_about, wxT("&About..\tF1"), wxT("About"));
 	menu->Append(help_menu, wxT("&Help"));
 
 
@@ -768,6 +774,9 @@ void myframe::on_download_activate(wxCommandEvent &event){
 		toolbar->RemoveTool(id_toolbar_download_deactivate);
 		toolbar->AddTool(download_deactivate);
 		toolbar->Realize();
+
+		file_menu->Enable(id_toolbar_download_deactivate, true);
+		file_menu->Enable(id_toolbar_download_activate, false);
 	}
 }
 
@@ -793,7 +802,8 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 		toolbar->AddTool(download_activate);
 		toolbar->Realize();
 
-
+		file_menu->Enable(id_toolbar_download_activate, true);
+		file_menu->Enable(id_toolbar_download_deactivate, false);
 	}
 }
 
