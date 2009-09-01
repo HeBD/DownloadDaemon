@@ -150,6 +150,8 @@ void myframe::update_status(){
 			// should never be reached
 		}
 
+		toolbar->Realize();
+
 		SetStatusText(wxT("Connected"),1);
 
 		mx.unlock();
@@ -208,11 +210,12 @@ void myframe::add_bars(){
 
 	download_activate = toolbar->AddTool(id_toolbar_download_activate, wxT("Activate Downloading"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_NEW")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Downloading"), wxEmptyString);
 	download_deactivate = toolbar->AddTool(id_toolbar_download_deactivate, wxT("Deactivate Downloading"), wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_CUT")),wxART_TOOLBAR), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Downloading"), wxEmptyString);
-	toolbar->RemoveTool(id_toolbar_download_activate); // these 2 toolbar icons are created for later use
-	toolbar->RemoveTool(id_toolbar_download_deactivate);
-
 
 	toolbar->Realize();
+
+	toolbar->RemoveTool(id_toolbar_download_activate); // these two toolbar icons are created for later use
+	toolbar->RemoveTool(id_toolbar_download_deactivate);
+
 	SetToolBar(toolbar);
 
 
@@ -238,7 +241,7 @@ void myframe::add_components(){
 	list->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
 	list->InsertColumn(1, wxT("Added"), wxLIST_AUTOSIZE_USEHEADER, 190);
 	list->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 100);
-	list->InsertColumn(3, wxT("\tURL\t"), wxLIST_AUTOSIZE_USEHEADER, 200);
+	list->InsertColumn(3, wxT("URL"), wxLIST_AUTOSIZE_USEHEADER, 200);
 	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 80);
 }
 
@@ -764,6 +767,7 @@ void myframe::on_download_activate(wxCommandEvent &event){
 		toolbar->RemoveTool(id_toolbar_download_activate);
 		toolbar->RemoveTool(id_toolbar_download_deactivate);
 		toolbar->AddTool(download_deactivate);
+		toolbar->Realize();
 	}
 }
 
@@ -787,6 +791,7 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 		toolbar->RemoveTool(id_toolbar_download_activate);
 		toolbar->RemoveTool(id_toolbar_download_deactivate);
 		toolbar->AddTool(download_activate);
+		toolbar->Realize();
 
 
 	}
