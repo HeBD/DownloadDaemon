@@ -45,6 +45,9 @@ void download_thread_main() {
 void download_thread(int download) {
 	plugin_output plug_outp;
 	int success = global_download_list.prepare_download(download, plug_outp);
+	if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
+		return;
+	}
 
 	switch(success) {
 		case PLUGIN_INVALID_HOST:

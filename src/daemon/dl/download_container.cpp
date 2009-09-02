@@ -490,7 +490,6 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 
 	download_mutex.unlock();
 	plugin_status retval = plugin_exec_func(*this, dl, pinp, poutp);
-	download_mutex.lock();
     dlclose(handle);
     return retval;
 }
