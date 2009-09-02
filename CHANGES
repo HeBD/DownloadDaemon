@@ -1,3 +1,10 @@
+2009-09-02
+   [adrian]
+	- completely rewrote intern strctore of download-list modifications (very huge updates, might still be buggy)
+	- simplified plugin API a bit
+	- for now, reconnect scripts are not supported any more, will re-implement the functionality again soon
+	- improved thread safety
+
 2009-09-01
    [susanne]
 	- fixed downloading activation/deactivation for windows (OS) and added menu item at ddclient-wx

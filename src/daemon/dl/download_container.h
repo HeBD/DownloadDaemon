@@ -6,31 +6,13 @@
 #include <vector>
 #include <boost/thread.hpp>
 
-
-extern boost::mutex download_container_mutex;
+enum property { DL_ID = 0, DL_DOWNLOADED_BYTES, DL_SIZE, DL_WAIT_SECONDS, DL_PLUGIN_STATUS, DL_STATUS, DL_IS_RUNNING };
+enum string_property { DL_URL = 20, DL_COMMENT, DL_ADD_DATE, DL_OUTPUT_FILE };
+enum pointer_property { DL_HANDLE = 40 };
+enum { LIST_SUCCESS = -20, LIST_PERMISSION, LIST_ID, LIST_PROPERTY };
 
 class download_container {
 public:
-	class iterator {
-	public:
-		iterator() {}
-		iterator(std::vector<download>::iterator it) { boost::mutex::scoped_lock(download_container_mutex); download_iterator = it; }
-		download_container::iterator operator++() { boost::mutex::scoped_lock(download_container_mutex); ++download_iterator; return *this; }
-		download_container::iterator operator--() { boost::mutex::scoped_lock(download_container_mutex); --download_iterator; return *this; }
-		download_container::iterator operator++(int i) { boost::mutex::scoped_lock(download_container_mutex); download_container::iterator tmp = *this; ++download_iterator; return tmp; }
-		download_container::iterator operator--(int i) { boost::mutex::scoped_lock(download_container_mutex); download_container::iterator tmp = *this; --download_iterator; return tmp; }
-		download operator*() { boost::mutex::scoped_lock(download_container_mutex); return *download_iterator; }
-		download* operator->() { boost::mutex::scoped_lock(download_container_mutex); return &(*download_iterator); }
-		download_container::iterator operator+(size_t i) { boost::mutex::scoped_lock(download_container_mutex); download_container::iterator it(*this); it.download_iterator += i; return it; }
-		download_container::iterator operator-(size_t i) { boost::mutex::scoped_lock(download_container_mutex); download_container::iterator it(*this); it.download_iterator -= i; return it; }
-		download_container::iterator operator+=(size_t i) { boost::mutex::scoped_lock(download_container_mutex); download_iterator += i; return *this; }
-		download_container::iterator operator -=(size_t i) { boost::mutex::scoped_lock(download_container_mutex); download_iterator -= i; return *this; }
-		bool operator==(iterator it) { boost::mutex::scoped_lock(download_container_mutex); return download_iterator == it.download_iterator; }
-		bool operator!=(iterator it) { boost::mutex::scoped_lock(download_container_mutex); return  download_iterator != it.download_iterator; }
-		operator std::vector<download>::iterator() { boost::mutex::scoped_lock(download_container_mutex); return download_iterator; }
-	private:
-		std::vector<download>::iterator download_iterator;
-	};
 	/** Constructor taking a filename from which the list should be read
 	*	@param filename Path to the dlist file
 	*/
@@ -44,60 +26,17 @@ public:
 	*	@param filename Path to the dlist file
 	*	@returns true on success
 	*/
-	bool from_file(const char* filename);
-
-	/** get an iterator to a download by giving an ID
-	*	@param id download ID to search for
-	*	@returns Iterator to this id
-	*/
-	download_container::iterator get_download_by_id(int id);
-
-	/** Iterator to first element
-	* @returns first element iterator
-	*/
-	iterator begin() { return iterator(download_list.begin()); }
-
-	/** Retruns an iterator to the past-end of the list
-	* @returns past-end-iterator
-	*/
-	download_container::iterator end() { return iterator(download_list.end()); }
+	int from_file(const char* filename);
 
 	/** Check if download list is empty
 	*	@returns True if empty
 	*/
-	bool empty() { return download_list.empty(); }
-
-	/** Adds a download at the end of the list
-	*	@param dl Download object to add
-	*	@returns true on success
-	*/
-	bool push_back(download dl);
-
-	/** Erases the last download
-	*	@returns true on success
-	*/
-	bool pop_back();
-
-	/** Erase a download from the list. USE WITH CARE! NOT THREAD-SAFE!
-	*	@param it Iterator to the download that should be deleted
-	*	@returns true on success
-	*/
-	bool erase(download_container::iterator it);
-
-	/** Returns the amount of running download
-	*	@returns download count
-	*/
-	int running_downloads();
+	bool empty();
 
 	/** Returns the total amount of downloads in the list
 	*	@returns download count
 	*/
 	int total_downloads();
-
-	/** Dumps the download list from RAM to the file
-	*	@returns true on success
-	*/
-	bool dump_to_file();
 
 	/** Moves a download upwards
 	*	@param id download ID to move up
@@ -105,26 +44,95 @@ public:
 	*/
 	int move_up(int id);
 
+	int move_down(int id);
+
+	int activate(int id);
+	int deactivate(int id);
+
+
+
+	/** Gets the next downloadable item in the global download list (filters stuff like inactives, wrong time, etc)
+ 	*	@returns ID of the next download that can be downloaded or LIST_ID if there is none
+ 	*/
+	int get_next_downloadable();
+
+	int add_download(const download &dl);
+
+
+
+	int set_string_property(int id, string_property prop, mt_string value);
+	int set_int_property(int id, property prop, int value);
+	int set_pointer_property(int id, pointer_property prop, void* value);
+
+	mt_string get_string_property(int id, string_property prop);
+	void* get_pointer_property(int id, pointer_property prop);
+	int get_int_property(int id, property prop);
+
+	int prepare_download(int dl, plugin_output &poutp);
+
+	plugin_output get_hostinfo(int dl);
+
+	mt_string get_host(int dl);
+
+	void decrease_waits();
+
+	void purge_deleted();
+
+	mt_string create_client_list();
+
 	/** Gets the lowest unused ID that should be used for the next download
 	*	@returns ID
 	*/
 	int get_next_id();
 
+	int stop_download(int id);
+
+	mt_string list_file;
+
+private:
+	/** get an iterator to a download by giving an ID
+	*	@param id download ID to search for
+	*	@returns Iterator to this id
+	*/
+	std::vector<download>::iterator get_download_by_id(int id);
+
 	/** Sorts the download list by ID
 	*/
 	void arrange_by_id();
 
-	/** Gets the next downloadable item in the global download list (filters stuff like inactives, wrong time, etc)
- 	*	@returns iterator to the correct download object from the global download list, iterator to end() if nothing can be downloaded
- 	*/
-	iterator get_next_downloadable();
+	/** Dumps the download list from RAM to the file
+	*	@returns true on success
+	*/
+	bool dump_to_file();
 
-private:
+	/** Returns the amount of running download
+	*	@returns download count
+	*/
+	int running_downloads();
 
-	mt_string list_file;
+	/** Erase a download from the list completely. Not for normal use. always set the status to DOWNLOAD_DELETED instead
+	*	@param id ID of the download that should be deleted
+	*	@returns success status
+	*/
+	int remove_download(int id);
+
+
+
+	typedef std::vector<download>::iterator iterator;
+
+
 	std::vector<download> download_list;
+	boost::mutex download_mutex;
 };
 
+/** Exception class for the download container */
+class download_exception {
+public:
+	download_exception(const char* s) : w(s) {}
+	const char* what() { return w.c_str(); }
 
+private:
+	mt_string w;
+};
 
 #endif // DOWNLOAD_CONTAINER_H_INCLUDED

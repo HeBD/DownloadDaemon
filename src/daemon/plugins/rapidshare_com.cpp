@@ -9,10 +9,11 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 	return nmemb;
 }
 
-extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_input &inp, plugin_output &outp) {
+plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	CURL* prepare_handle = curl_easy_init();
+
 	mt_string resultstr;
-	curl_easy_setopt(prepare_handle, CURLOPT_URL, get_url(dl));
+	curl_easy_setopt(prepare_handle, CURLOPT_URL, get_url());
 	curl_easy_setopt(prepare_handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(prepare_handle, CURLOPT_WRITEDATA, &resultstr);
 	int success = curl_easy_perform(prepare_handle);
@@ -51,19 +52,19 @@ extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_inp
 		++pos;
 		end = resultstr.find(' ', pos);
 		mt_string have_to_wait(resultstr.substr(pos, end - pos));
-		set_wait_time(dl, atoi(have_to_wait.c_str()) * 60);
+		set_wait_time(atoi(have_to_wait.c_str()) * 60);
 		return PLUGIN_LIMIT_REACHED;
 	} else if(resultstr.find("Please try again in 2 minutes") != mt_string::npos) {
-		set_wait_time(dl, 120);
+		set_wait_time(120);
 		return PLUGIN_SERVER_OVERLOADED;
 	} else {
 		if((pos = resultstr.find("var c")) == mt_string::npos) {
 			// Unable to get the wait time, will wait 135 seconds
-			set_wait_time(dl, 135);
+			set_wait_time(135);
 		} else {
 			pos = resultstr.find("=", pos) + 1;
 			end = resultstr.find(";", pos) - 1;
-			set_wait_time(dl, atoi(resultstr.substr(pos, end).c_str()));
+			set_wait_time(atoi(resultstr.substr(pos, end).c_str()));
 		}
 
 		if((pos = resultstr.find("<form name=\"dlf\"")) == mt_string::npos) {

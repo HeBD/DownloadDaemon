@@ -18,12 +18,12 @@ void trim_string(mt_string &str) {
 	}
 }
 
-extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_input &inp, plugin_output &outp) {
+plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	CURL* handle = curl_easy_init();
 	mt_string resultstr;
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
-	curl_easy_setopt(handle, CURLOPT_URL, get_url(dl));
+	curl_easy_setopt(handle, CURLOPT_URL, get_url());
 	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
 	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
@@ -44,7 +44,7 @@ extern "C" plugin_status plugin_exec(download &dl, CURL* curl_handle, plugin_inp
 		pos += 9;
 		size_t end = resultstr.find(' ', pos);
 		mt_string wait_time = resultstr.substr(pos, end - pos);
-		set_wait_time(dl, atoi(wait_time.c_str()) * 60);
+		set_wait_time(atoi(wait_time.c_str()) * 60);
 		return PLUGIN_LIMIT_REACHED;
 	}
 

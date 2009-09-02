@@ -61,6 +61,7 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
+					<Add option="-DIS_PLUGIN" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -76,6 +77,7 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
+					<Add option="-DIS_PLUGIN" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -108,9 +110,13 @@
 		</Unit>
 		<Unit filename="src/daemon/dl/download_container.cpp">
 			<Option target="Daemon" />
+			<Option target="rapidshare_com" />
+			<Option target="uploaded_to" />
 		</Unit>
 		<Unit filename="src/daemon/dl/download_container.h">
 			<Option target="Daemon" />
+			<Option target="rapidshare_com" />
+			<Option target="uploaded_to" />
 		</Unit>
 		<Unit filename="src/daemon/dl/download_thread.cpp">
 			<Option target="Daemon" />

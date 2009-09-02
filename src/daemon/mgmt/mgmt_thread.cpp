@@ -189,19 +189,9 @@ void target_dl(mt_string &data, tkSock *sock) {
 }
 
 void target_dl_list(mt_string &data, tkSock *sock) {
-	stringstream ss;
-	for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-		if(it->get_status() == DOWNLOAD_DELETED) {
-			continue;
-		}
-		ss << it->get_id() << '|' << it->get_add_date() << '|';
-		mt_string comment = it->get_comment();
-		replace_all(comment, "|", "\\|");
-		ss << comment << '|' << it->get_url() << '|' << it->get_status_str() << '|' << it->get_downloaded_bytes() << '|' << it->get_size()
-		   << '|' << it->get_wait_seconds() << '|' << it->get_error_str() << '\n';
-	}
+
 	//log_string("Dumping download list to client", LOG_DEBUG);
-	*sock << ss.str();
+	*sock << global_download_list.create_client_list();
 }
 
 void target_dl_add(mt_string &data, tkSock *sock) {
@@ -218,12 +208,12 @@ void target_dl_add(mt_string &data, tkSock *sock) {
 	}
 	if(validate_url(url)) {
 		download dl(url, global_download_list.get_next_id());
-		dl.set_comment(comment);
+		dl.comment = comment;
 		mt_string logstr("Adding download: ");
 		logstr += dl.serialize();
 		logstr.erase(logstr.length() - 1);
 		log_string(logstr, LOG_DEBUG);
-		if(!global_download_list.push_back(dl)) {
+		if(global_download_list.add_download(dl) != LIST_SUCCESS) {
 			*sock << "110 PERMISSION";
 		} else {
 			*sock << "100 SUCCESS";
@@ -235,35 +225,40 @@ void target_dl_add(mt_string &data, tkSock *sock) {
 }
 
 void target_dl_del(mt_string &data, tkSock *sock) {
-	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
-	if(it == global_download_list.end()) {
-		*sock << "104 ID";
-		log_string(mt_string("Failed to remove download ID: ") + data, LOG_SEVERE);
-	} else {
-		curl_easy_setopt(it->get_handle(), CURLOPT_TIMEOUT, 1);
-		it->set_status(DOWNLOAD_DELETED);
-		global_download_list.dump_to_file();
-		log_string(mt_string("Removing download ID: ") + data, LOG_DEBUG);
-		*sock << "100 SUCCESS";
+	switch(global_download_list.set_int_property(string_to_int(data), DL_STATUS, DOWNLOAD_DELETED)) {
+		case LIST_PERMISSION:
+			log_string("Failed to remove download ID: " + data, LOG_SEVERE);
+			*sock << "110 PERMISSION";
+		break;
+		case LIST_SUCCESS:
+			log_string("Removing download ID: " + data, LOG_DEBUG);
+			*sock << "100 SUCCESS";
+		break;
+		default:
+			log_string("Failed to remove download ID: " + data, LOG_SEVERE);
+			*sock << "104 ID";
+		break;
 	}
 }
 
 void target_dl_stop(mt_string &data, tkSock *sock) {
-	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
-	if(it == global_download_list.end()) {
-		*sock << "104 ID";
-		log_string(mt_string("Failed to stop download ID: ") + data, LOG_SEVERE);
-	} else {
-		curl_easy_setopt(it->get_handle(), CURLOPT_TIMEOUT, 1);
-		if(it->get_status() != DOWNLOAD_INACTIVE) it->set_status(DOWNLOAD_PENDING);
-		global_download_list.dump_to_file();
-		log_string(mt_string("Stopped download ID: ") + data, LOG_DEBUG);
-		*sock << "100 SUCCESS";
+	switch(global_download_list.stop_download(atoi(data.c_str()))) {
+		case LIST_PERMISSION:
+			log_string(mt_string("Failed to stop download ID: ") + data, LOG_SEVERE);
+			*sock << "110 PERMISSION";
+		break;
+		case LIST_SUCCESS:
+			log_string(mt_string("Stopped download ID: ") + data, LOG_DEBUG);
+			*sock << "100 SUCCESS";
+		break;
+		default:
+			log_string("Failed to remove download ID: " + data, LOG_SEVERE);
+			*sock << "104 ID";
+		break;
 	}
 }
 
 void target_dl_up(mt_string &data, tkSock *sock) {
-	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
 	switch (global_download_list.move_up(atoi(data.c_str()))) {
 		case 0:
 			log_string(mt_string("Moved download ID: ") + data + " upwards", LOG_DEBUG);
@@ -278,25 +273,7 @@ void target_dl_up(mt_string &data, tkSock *sock) {
 }
 
 void target_dl_down(mt_string &data, tkSock *sock) {
-	// implemented with move_up. using ++ to get the next download and move it up, in order to move the
-	// current download down.
-	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
-	if(it == global_download_list.end() || ++it == global_download_list.end()) {
-		log_string(mt_string("Failed to move download ID: ") + data + " downwards.", LOG_SEVERE);
-		*sock << "104 ID";
-		return;
-	}
-
-	while(it->get_status() == DOWNLOAD_DELETED) {
-		++it;
-		if(it == global_download_list.end()) {
-			log_string(mt_string("Failed to move download ID: ") + data + " downwards.", LOG_SEVERE);
-			*sock << "104 ID";
-			return;
-		}
-	}
-
-	switch(global_download_list.move_up(it->get_id())) {
+	switch (global_download_list.move_down(atoi(data.c_str()))) {
 		case 0:
 			log_string(mt_string("Moved download ID: ") + data + " downwards", LOG_DEBUG);
 			*sock << "100 SUCCESS"; break;
@@ -310,50 +287,46 @@ void target_dl_down(mt_string &data, tkSock *sock) {
 }
 
 void target_dl_activate(mt_string &data, tkSock *sock) {
-	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
-	if(it == global_download_list.end()) {
-		*sock << "104 ID";
-		log_string(mt_string("Failed to activate download ID: ") + data, LOG_SEVERE);
-	} else if(it->get_status() != DOWNLOAD_INACTIVE) {
-		*sock << "106 ACTIVATE";
-		log_string(mt_string("Failed to activate download ID: ") + data, LOG_WARNING);
-	} else {
-		it->set_status(DOWNLOAD_PENDING);
-		if(!global_download_list.dump_to_file()) {
-			it->set_status(DOWNLOAD_INACTIVE);
+	switch(global_download_list.activate(atoi(data.c_str()))) {
+		case LIST_ID:
+			*sock << "104 ID";
+			log_string(mt_string("Failed to activate download ID: ") + data, LOG_SEVERE);
+		break;
+		case LIST_PERMISSION:
 			log_string(mt_string("Failed to activate download ID: ") + data, LOG_SEVERE);
 			*sock << "110 PERMISSION";
-		} else {
+		break;
+		case LIST_SUCCESS:
 			log_string(mt_string("Activated download ID: ") + data, LOG_DEBUG);
 			*sock << "100 SUCCESS";
-		}
+		break;
+		default:
+			*sock << "106 ACTIVATE";
+			log_string(mt_string("Failed to activate download ID: ") + data, LOG_WARNING);
+		break;
+
 	}
 }
 
 void target_dl_deactivate(mt_string &data, tkSock *sock) {
-	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
-	if(it == global_download_list.end()) {
-		*sock << "104 ID";
-		log_string(mt_string("Failed to deactivate download ID: ") + data, LOG_SEVERE);
-	} else {
-		download_status old_status = it->get_status();
-		if(it->get_status() == DOWNLOAD_RUNNING) {
-			curl_easy_setopt(it->get_handle(), CURLOPT_TIMEOUT, 1);
-			it->set_status(DOWNLOAD_INACTIVE, true);
-		} else {
-			it->set_status(DOWNLOAD_INACTIVE);
-		}
-		it->set_wait_seconds(0);
-		it->set_size(0);
-		it->set_downloaded_bytes(0);
-		if(!global_download_list.dump_to_file()) {
-			it->set_status(old_status);
-			log_string(mt_string("Failed to deactivate download ID: ") + data, LOG_SEVERE);
+	switch(global_download_list.deactivate(atoi(data.c_str()))) {
+		case LIST_ID:
+			*sock << "104 ID";
+			log_string(mt_string("Failed to activate download ID: ") + data, LOG_SEVERE);
+		break;
+		case LIST_PERMISSION:
+			log_string(mt_string("Failed to activate download ID: ") + data, LOG_SEVERE);
 			*sock << "110 PERMISSION";
-		} else {
-			log_string(mt_string("Deactivated download ID: ") + data, LOG_DEBUG);
+		break;
+		case LIST_SUCCESS:
+			log_string(mt_string("Activated download ID: ") + data, LOG_DEBUG);
 			*sock << "100 SUCCESS";
-		}
+		break;
+		default:
+			*sock << "107 DEACTIVATE";
+			log_string(mt_string("Failed to activate download ID: ") + data, LOG_WARNING);
+		break;
+
 	}
 }
 
@@ -469,57 +442,65 @@ void target_file(mt_string &data, tkSock *sock) {
 }
 
 void target_file_del(mt_string &data, tkSock *sock) {
-	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
-	if(it == global_download_list.end()) {
+	mt_string output_file;
+	try {
+		output_file = global_download_list.get_string_property(atoi(data.c_str()), DL_OUTPUT_FILE);
+	} catch(download_exception &e) {
 		log_string(mt_string("Failed to delete file ID: ") + data, LOG_WARNING);
 		*sock << "104 ID";
 		return;
 	}
-	if(it->get_output_file() == "" || it->get_status() == DOWNLOAD_RUNNING) {
+
+	if(output_file == "" || global_download_list.get_int_property(atoi(data.c_str()), DL_STATUS) == DOWNLOAD_RUNNING) {
 		log_string(mt_string("Failed to delete file ID: ") + data, LOG_WARNING);
 		*sock << "109 FILE";
 		return;
 	}
-	if(remove(it->get_output_file().c_str()) == 0) {
+
+	if(remove(output_file.c_str()) == 0) {
 		log_string(mt_string("Deleted file ID: ") + data, LOG_DEBUG);
 		*sock << "100 SUCCESS";
-		it->set_output_file("");
-		global_download_list.dump_to_file();
+		global_download_list.set_string_property(atoi(data.c_str()), DL_OUTPUT_FILE, "");
 	} else {
 		*sock << "109 FILE";
 	}
 }
 
 void target_file_getpath(mt_string &data, tkSock *sock) {
-	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
-	if(it == global_download_list.end()) {
+	mt_string output_file;
+	try {
+		output_file = global_download_list.get_string_property(atoi(data.c_str()), DL_OUTPUT_FILE);
+	} catch(download_exception &e) {
 		log_string(mt_string("Failed to get path of file ID: ") + data, LOG_WARNING);
 		*sock << "";
 		return;
 	}
+
 	struct stat st;
-	if(stat(it->get_output_file().c_str(), &st) != 0) {
+	if(stat(output_file.c_str(), &st) != 0) {
 		*sock << "";
 		return;
 	}
-	*sock << it->get_output_file();
+	*sock << output_file;
 }
 
 void target_file_getsize(mt_string &data, tkSock *sock) {
-	download_container::iterator it = global_download_list.get_download_by_id(atoi(data.c_str()));
-	if(it == global_download_list.end()) {
+	mt_string output_file;
+	try {
+		output_file = global_download_list.get_string_property(atoi(data.c_str()), DL_OUTPUT_FILE);
+	} catch(download_exception &e) {
 		log_string(mt_string("Failed to get size of file ID: ") + data, LOG_WARNING);
 		*sock << "-1";
 		return;
 	}
+
 	struct stat st;
-	if(stat(it->get_output_file().c_str(), &st) != 0) {
+	if(stat(output_file.c_str(), &st) != 0) {
 		log_string(mt_string("Failed to get size of file ID: ") + data, LOG_WARNING);
 		*sock << "-1";
 		return;
 	}
 	*sock << int_to_string(st.st_size);
-
 }
 
 void target_router(mt_string &data, tkSock *sock) {

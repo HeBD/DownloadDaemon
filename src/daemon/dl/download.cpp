@@ -19,11 +19,9 @@ using namespace std;
 extern cfgfile global_config;
 extern mt_string program_root;
 extern download_container global_download_list;
-extern boost::mutex download_container_mutex;
 
 download::download(mt_string &url, int next_id)
 	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS), status(DOWNLOAD_PENDING) {
-	boost::mutex::scoped_lock lock(download_mutex);
 	handle = curl_easy_init();
 	time_t rawtime;
 	time(&rawtime);
@@ -36,7 +34,6 @@ download::download(mt_string &serializedDL) {
 }
 
 void download::from_serialized(mt_string &serializedDL) {
-	boost::mutex::scoped_lock lock(download_mutex);
 	mt_string current_entry;
 	size_t curr_pos = 0;
 	size_t entry_num = 0;
@@ -92,12 +89,10 @@ void download::from_serialized(mt_string &serializedDL) {
 
 download::download(const download& dl) : url(dl.url), comment(dl.comment), add_date(dl.add_date), id(dl.id), downloaded_bytes(dl.downloaded_bytes),
 										 size(dl.size), wait_seconds(dl.wait_seconds), error(dl.error), output_file(dl.output_file), status(dl.status) {
-	boost::mutex::scoped_lock lock(download_mutex);
 	handle = curl_easy_init();
 }
 
 void download::operator=(const download& dl) {
-	boost::mutex::scoped_lock lock(download_mutex);
 	url = dl.url;
 	comment = dl.comment;
 	add_date = dl.add_date;
@@ -111,12 +106,10 @@ void download::operator=(const download& dl) {
 }
 
 download::~download() {
-	boost::mutex::scoped_lock lock(download_mutex);
 	curl_easy_cleanup(handle);
 }
 
 mt_string download::serialize() {
-	boost::mutex::scoped_lock lock(download_mutex);
 	if(status == DOWNLOAD_DELETED) {
 		return "";
 	}
@@ -126,14 +119,11 @@ mt_string download::serialize() {
 	return ss.str();
 }
 
-plugin_status download::get_download(plugin_output &poutp) {
-	boost::mutex::scoped_lock lock(download_mutex);
+/*plugin_status download::get_download(plugin_output &poutp) {
 	plugin_input pinp;
 	curl_easy_reset(handle);
 
-	download_mutex.unlock();
 	mt_string host(get_host());
-	download_mutex.lock();
 	mt_string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);
 	if(host == "") {
@@ -175,16 +165,13 @@ plugin_status download::get_download(plugin_output &poutp) {
     	log_string(mt_string("Unable to execute plugin: ") + error, LOG_SEVERE);
     	return PLUGIN_ERROR;
     }
-	download_mutex.unlock();
 	plugin_status retval = plugin_exec_func(*this, handle, pinp, poutp);
-	download_mutex.lock();
     dlclose(handle);
     return retval;
 }
-
+*/
 
 mt_string download::get_host() {
-	boost::mutex::scoped_lock lock(download_mutex);
 	size_t startpos = 0;
 
 	if(url.find("www.") != mt_string::npos) {
@@ -199,7 +186,6 @@ mt_string download::get_host() {
 }
 
 const char* download::get_error_str() {
-	boost::mutex::scoped_lock lock(download_mutex);
 	switch(error) {
 		case PLUGIN_SUCCESS:
 			return "PLUGIN_SUCCESS";
@@ -228,7 +214,6 @@ const char* download::get_error_str() {
 }
 
 const char* download::get_status_str() {
-	boost::mutex::scoped_lock lock(download_mutex);
 	switch(status) {
 		case DOWNLOAD_PENDING:
 			return "DOWNLOAD_PENDING";
@@ -248,45 +233,25 @@ const char* download::get_status_str() {
 	return "UNKNOWN_STATUS";
 }
 
-void download::set_status(download_status st, bool force) {
-	// Do not use a scoped lock here! it will cause a segmentation fault in some cases, because global_download_list.erase(...) will
-	// cause *this to be destroyed. therefore the mutex shall not be accessed AFTER this call. With a scoped_lock, this happens automatically.
-	download_mutex.lock();
-	if(force) {
-		status = st;
-		download_mutex.unlock();
-		return;
-	}
-
+void download::set_status(download_status st) {
 	if(status == DOWNLOAD_DELETED) {
-		download_mutex.unlock();
 		return;
-	} else if(st == DOWNLOAD_DELETED && status != DOWNLOAD_RUNNING) {
-		status = st;
-		download_mutex.unlock();
-		global_download_list.erase(global_download_list.get_download_by_id(id));
 	} else {
 		status = st;
-		download_mutex.unlock();
-		global_download_list.dump_to_file();
 	}
 }
 
 download_status download::get_status() {
-	boost::mutex::scoped_lock lock(download_mutex);
 	return status;
 }
 
 plugin_output download::get_hostinfo() {
-	boost::mutex::scoped_lock lock(download_mutex);
 	plugin_input inp;
 	plugin_output outp;
 	outp.allows_resumption = false;
 	outp.allows_multiple = false;
 
-	download_mutex.unlock();
 	mt_string host(get_host());
-	download_mutex.lock();
 	mt_string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);
 	if(host == "") {

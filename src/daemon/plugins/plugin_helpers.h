@@ -2,6 +2,9 @@
 #define PLUGIN_HELPERS_H_INCLUDED
 
 #include "../dl/download.h"
+#include "../dl/download_container.h"
+#include <boost/bind.hpp>
+
 
 /*
 	The following types are imported from download.h and may be/have to be used for writing plugins:
@@ -21,16 +24,26 @@ struct plugin_input {
 };
 */
 
-void set_wait_time(download &dl, int seconds) {
-	dl.set_wait_seconds(seconds);
+download_container *list;
+int dlid;
+plugin_status plugin_exec(plugin_input &pinp, plugin_output &poutp);
+
+extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, plugin_input& pinp, plugin_output& poutp) {
+	list = &dlc;
+	dlid = id;
+	return plugin_exec(pinp, poutp);
 }
 
-int get_wait_time(download &dl) {
-	return dl.get_wait_seconds();
+void set_wait_time(int seconds) {
+	list->set_int_property(dlid, DL_WAIT_SECONDS, seconds);
 }
 
-const char* get_url(download &dl) {
-	return dl.get_url().c_str();
+int get_wait_time() {
+	return list->get_int_property(dlid, DL_WAIT_SECONDS);
+}
+
+const char* get_url() {
+	return list->get_string_property(dlid, DL_URL).c_str();
 }
 
 #endif // PLUGIN_HELPERS_H_INCLUDED

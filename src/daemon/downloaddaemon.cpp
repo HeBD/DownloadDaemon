@@ -61,9 +61,9 @@ int main(int argc, char* argv[]) {
 	boost::thread mgmt_thread(mgmt_thread_main);
 	boost::thread download_thread(download_thread_main);
 	boost::thread download_ticker(tick_downloads);
-	boost::thread reconnector(reconnect);
+	//boost::thread reconnector(reconnect);
 
-	reconnector.join();
+	//reconnector.join();
 	download_ticker.join();
 	download_thread.join();
 	mgmt_thread.join();

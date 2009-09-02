@@ -21,21 +21,13 @@ extern mt_string program_root;
 
 void tick_downloads() {
 	while(true) {
-		for(download_container::iterator it = global_download_list.begin(); it != global_download_list.end(); ++it) {
-			if(it->get_wait_seconds() > 0 && it->get_status() == DOWNLOAD_WAITING) {
-				it->set_wait_seconds(it->get_wait_seconds() - 1);
-			} else if(it->get_wait_seconds() == 0 && it->get_status() == DOWNLOAD_WAITING) {
-				it->set_status(DOWNLOAD_PENDING);
-			} else if(it->get_wait_seconds() > 0 && it->get_status() == DOWNLOAD_INACTIVE) {
-				it->set_wait_seconds(0);
-			}
-		}
-
+		global_download_list.decrease_waits();
+		global_download_list.purge_deleted();
 		sleep(1);
 	}
 }
 
-void reconnect() {
+/*void reconnect() {
 	mt_string reconnect_plugin;
 	mt_string reconnect_policy;
 	mt_string router_ip;
@@ -143,4 +135,4 @@ void reconnect() {
 		}
 		sleep(10);
 	}
-}
+}*/

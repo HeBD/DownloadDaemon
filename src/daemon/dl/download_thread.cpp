@@ -11,7 +11,6 @@
 #include <sys/stat.h>
 
 #include "../../lib/cfgfile/cfgfile.h"
-#include "download.h"
 #include "download_thread.h"
 #include "download_container.h"
 #include "../tools/helperfunctions.h"
@@ -26,15 +25,15 @@ extern mt_string program_root;
 
 /** Main thread for managing downloads */
 void download_thread_main() {
-	download_container::iterator downloadable(global_download_list.end());
+	int downloadable = 0;
 	while(1) {
-		downloadable = global_download_list.end();
 		downloadable = global_download_list.get_next_downloadable();
-		if(downloadable == global_download_list.end()) {
+		if(downloadable == LIST_ID) {
 			sleep(1);
 			continue;
 		} else {
-			downloadable->set_status(DOWNLOAD_RUNNING);
+			global_download_list.set_int_property(downloadable, DL_IS_RUNNING, true);
+			global_download_list.set_int_property(downloadable, DL_STATUS, DOWNLOAD_RUNNING);
 			boost::thread t(boost::bind(download_thread, downloadable));
 		}
 	}
@@ -43,52 +42,53 @@ void download_thread_main() {
 /** This function does the magic of downloading a file, calling the right plugin, etc.
  *	@param download iterator to a download in the global download list, that we should load
  */
-void download_thread(download_container::iterator download) {
+void download_thread(int download) {
 	plugin_output plug_outp;
-	int success = download->get_download(plug_outp);
+	int success = global_download_list.prepare_download(download, plug_outp);
 
 	switch(success) {
 		case PLUGIN_INVALID_HOST:
-			download->set_plugin_status(PLUGIN_INVALID_HOST);
-			download->set_status(DOWNLOAD_INACTIVE, true);
-			log_string(mt_string("Invalid host for download ID: ") + int_to_string(download->get_id()), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_INVALID_HOST);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+			log_string(mt_string("Invalid host for download ID: ") + int_to_string(download), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		break;
 		case PLUGIN_INVALID_PATH:
-			download->set_plugin_status(PLUGIN_INVALID_PATH);
-			download->set_status(DOWNLOAD_PENDING, true);
+			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_INVALID_PATH);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			log_string("Could not locate plugin folder!", LOG_SEVERE);
 			exit(-1);
 		break;
 		case PLUGIN_MISSING:
-			download->set_plugin_status(PLUGIN_MISSING);
-			log_string(mt_string("Plugin missing for download ID: ") + int_to_string(download->get_id()), LOG_WARNING);
-			download->set_status(DOWNLOAD_INACTIVE, true);
+			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_MISSING);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+			log_string(mt_string("Plugin missing for download ID: ") + int_to_string(download), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		break;
 	}
 
 	if(success == PLUGIN_SUCCESS) {
-		download->set_plugin_status(PLUGIN_SUCCESS);
-		log_string(mt_string("Successfully parsed download ID: ") + int_to_string(download->get_id()), LOG_DEBUG);
-		if(download->get_wait_seconds() > 0) {
+		global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_SUCCESS);
+		log_string(mt_string("Successfully parsed download ID: ") + int_to_string(download), LOG_DEBUG);
+		if(global_download_list.get_int_property(download, DL_WAIT_SECONDS) > 0) {
 
-			if(download->get_status() != DOWNLOAD_DELETED) {
-				log_string(mt_string("Download ID: ") + int_to_string(download->get_id()) + " has to wait " +
-					       int_to_string(download->get_wait_seconds()) + " seconds before downloading can start", LOG_DEBUG);
+			if(global_download_list.get_int_property(download, DL_STATUS) != DOWNLOAD_DELETED) {
+				log_string(mt_string("Download ID: ") + int_to_string(download) + " has to wait " +
+					       int_to_string(global_download_list.get_int_property(download, DL_WAIT_SECONDS)) + " seconds before downloading can start", LOG_DEBUG);
+					       mt_string blah(global_download_list.get_string_property(download, DL_URL));
 			}
 
-			while(global_download_list.get_download_by_id(download->get_id()) != global_download_list.end() && download->get_wait_seconds() > 0) {
-				download->set_wait_seconds(download->get_wait_seconds() - 1);
-				sleep(1);
-				if(download->get_status() == DOWNLOAD_INACTIVE) {
-					download->set_wait_seconds(0);
-					return;
-				} else if(download->get_status() == DOWNLOAD_DELETED) {
-					curl_easy_reset(download->get_handle());
-					global_download_list.erase(download);
+			while(global_download_list.get_int_property(download, DL_WAIT_SECONDS) > 0) {
+				if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE || global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
+					global_download_list.set_int_property(download, DL_WAIT_SECONDS, 0);
+					global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 					return;
 				}
+				sleep(1);
+				global_download_list.set_int_property(download, DL_WAIT_SECONDS, global_download_list.get_int_property(download, DL_WAIT_SECONDS) - 1);
 			}
 		}
 
@@ -108,98 +108,108 @@ void download_thread(download_container::iterator download) {
 		// Check if we can do a download resume or if we have to start from the beginning
         struct stat st;
         fstream output_file;
-        if(download->get_hostinfo().allows_multiple && global_config.get_cfg_value("enable_resume") != "0" &&
-           stat(output_filename.c_str(), &st) == 0 && st.st_size == download->get_downloaded_bytes()) {
-            curl_easy_setopt(download->get_handle(), CURLOPT_RESUME_FROM, st.st_size);
+        if(global_download_list.get_hostinfo(download).allows_multiple && global_config.get_cfg_value("enable_resume") != "0" &&
+           stat(output_filename.c_str(), &st) == 0 && st.st_size == global_download_list.get_int_property(download, DL_DOWNLOADED_BYTES)) {
+            curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_RESUME_FROM, st.st_size);
             output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
-            log_string(mt_string("Download already started. Will continue to download ID: ") + int_to_string(download->get_id()), LOG_DEBUG);
+            log_string(mt_string("Download already started. Will continue to download ID: ") + int_to_string(download), LOG_DEBUG);
         } else {
             output_file.open(output_filename.c_str(), ios::out | ios::binary);
         }
 
 		if(!output_file.good()) {
 			log_string(mt_string("Could not write to file: ") + output_filename, LOG_SEVERE);
-			download->set_plugin_status(PLUGIN_WRITE_FILE_ERROR);
-			download->set_status(DOWNLOAD_PENDING, true);
+			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_WRITE_FILE_ERROR);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		}
 
-        download->set_output_file(output_filename);
+		global_download_list.set_string_property(download, DL_OUTPUT_FILE, output_filename);
 
 		if(plug_outp.download_url.empty()) {
-			log_string(mt_string("Empty URL for download ID: ") + int_to_string(download->get_id()), LOG_SEVERE);
-			download->set_plugin_status(PLUGIN_ERROR);
-			download->set_status(DOWNLOAD_PENDING, true);
+			log_string(mt_string("Empty URL for download ID: ") + int_to_string(download), LOG_SEVERE);
+			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_ERROR);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		}
 
 		// set url
-		curl_easy_setopt(download->get_handle(), CURLOPT_FOLLOWLOCATION, 1);
-		curl_easy_setopt(download->get_handle(), CURLOPT_URL, plug_outp.download_url.c_str());
+		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_FOLLOWLOCATION, 1);
+		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_URL, plug_outp.download_url.c_str());
 		// set file-writing function as callback
-		curl_easy_setopt(download->get_handle(), CURLOPT_WRITEFUNCTION, write_file);
-		curl_easy_setopt(download->get_handle(), CURLOPT_WRITEDATA, &output_file);
+		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_WRITEFUNCTION, write_file);
+		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_WRITEDATA, &output_file);
 		// show progress
-		curl_easy_setopt(download->get_handle(), CURLOPT_NOPROGRESS, 0);
-		curl_easy_setopt(download->get_handle(), CURLOPT_PROGRESSFUNCTION, report_progress);
-		curl_easy_setopt(download->get_handle(), CURLOPT_PROGRESSDATA, &download);
+		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_NOPROGRESS, 0);
+		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_PROGRESSFUNCTION, report_progress);
+		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_PROGRESSDATA, &download);
 		// set timeouts
-		curl_easy_setopt(download->get_handle(), CURLOPT_LOW_SPEED_LIMIT, 100);
-		curl_easy_setopt(download->get_handle(), CURLOPT_LOW_SPEED_TIME, 20);
+		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_LOW_SPEED_LIMIT, 100);
+		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_LOW_SPEED_TIME, 20);
 
-		log_string(mt_string("Starting download ID: ") + int_to_string(download->get_id()), LOG_DEBUG);
+		log_string(mt_string("Starting download ID: ") + int_to_string(download), LOG_DEBUG);
 
-		success = curl_easy_perform(download->get_handle());
+		success = curl_easy_perform(global_download_list.get_pointer_property(download, DL_HANDLE));
 		switch(success) {
 			case 0:
-				log_string(mt_string("Finished download ID: ") + int_to_string(download->get_id()), LOG_DEBUG);
-				download->set_status(DOWNLOAD_FINISHED, true);
-				curl_easy_reset(download->get_handle());
+				log_string(mt_string("Finished download ID: ") + int_to_string(download), LOG_DEBUG);
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_FINISHED);
+				curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
+				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				return;
 			case 28:
-				if(download->get_status() == DOWNLOAD_INACTIVE) {
-					log_string(mt_string("Stopped download ID: ") + int_to_string(download->get_id()), LOG_WARNING);
-					curl_easy_reset(download->get_handle());
-				} else if(download->get_status() == DOWNLOAD_DELETED) {
-					curl_easy_reset(download->get_handle());
-					global_download_list.erase(download);
+				if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE) {
+					log_string(mt_string("Stopped download ID: ") + int_to_string(download), LOG_WARNING);
+					curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
+				} else if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
+					curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
+					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_DELETED);
 				} else {
-					log_string(mt_string("Connection lost for download ID: ") + int_to_string(download->get_id()), LOG_WARNING);
-					download->set_status(DOWNLOAD_PENDING, true);
-					download->set_plugin_status(PLUGIN_CONNECTION_LOST);
-					curl_easy_reset(download->get_handle());
+					log_string(mt_string("Connection lost for download ID: ") + int_to_string(download), LOG_WARNING);
+					global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_CONNECTION_LOST);
+					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+					curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
 				}
+				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				return;
 			default:
-				log_string(mt_string("Download error for download ID: ") + int_to_string(download->get_id()), LOG_WARNING);
-				download->set_status(DOWNLOAD_PENDING, true);
-				download->set_plugin_status(PLUGIN_CONNECTION_LOST);
-				curl_easy_reset(download->get_handle());
+				log_string(mt_string("Download error for download ID: ") + int_to_string(download), LOG_WARNING);
+				global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_CONNECTION_LOST);
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+				curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
+				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				return;
 		}
 	} else {
 		if(success == PLUGIN_SERVER_OVERLOADED) {
-			log_string(mt_string("Server overloaded for download ID: ") + int_to_string(download->get_id()), LOG_WARNING);
-			download->set_status(DOWNLOAD_WAITING, true);
+			log_string(mt_string("Server overloaded for download ID: ") + int_to_string(download), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_WAITING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		} else if(success == PLUGIN_LIMIT_REACHED) {
-			log_string(mt_string("Download limit reached for download ID: ") + int_to_string(download->get_id()) + " (" + download->get_host() + ")", LOG_WARNING);
-			download->set_status(DOWNLOAD_WAITING, true);
+			log_string(mt_string("Download limit reached for download ID: ") + int_to_string(download) + " (" + global_download_list.get_host(download) + ")", LOG_WARNING);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_WAITING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		} else if(success == PLUGIN_CONNECTION_ERROR) {
-			log_string(mt_string("Plugin failed to connect for ID:") + int_to_string(download->get_id()), LOG_WARNING);
-			download->set_plugin_status(PLUGIN_CONNECTION_ERROR);
-			download->set_status(DOWNLOAD_INACTIVE, true);
+			log_string(mt_string("Plugin failed to connect for ID:") + int_to_string(download), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_CONNECTION_ERROR);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		} else if(success == PLUGIN_FILE_NOT_FOUND) {
-			log_string(mt_string("File could not be found on the server for ID: ") + int_to_string(download->get_id()), LOG_WARNING);
-			download->set_plugin_status(PLUGIN_FILE_NOT_FOUND);
-			download->set_status(DOWNLOAD_INACTIVE, true);
+			log_string(mt_string("File could not be found on the server for ID: ") + int_to_string(download), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_FILE_NOT_FOUND);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		}
 	}
 	// something weird happened...
-	download->set_status(DOWNLOAD_PENDING, true);
+	global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+	global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 	return;
 }
 

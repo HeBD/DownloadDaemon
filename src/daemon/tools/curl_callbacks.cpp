@@ -19,15 +19,22 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 
 int report_progress(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
 	// careful! this is a POINTER to an iterator!
-	download_container::iterator *itp = (download_container::iterator*)clientp;
-	download_container::iterator it = *itp;
-	it->set_size(dltotal);
-	struct stat st;
-	if(stat(it->get_output_file().c_str(), &st) == 0) {
-	    it->set_downloaded_bytes(st.st_size);
-	} else {
-	    it->set_downloaded_bytes(dlnow);
+	int id = *(int*)clientp;
+	global_download_list.set_int_property(id, DL_SIZE, dltotal);
+	mt_string output_file;
+	try {
+		output_file = global_download_list.get_string_property(id, DL_OUTPUT_FILE);
+	} catch(download_exception &e) {
+		log_string("Download ID " + int_to_string(id) + " has been deleted internally while actively downloading. Please report this bug!", LOG_SEVERE);
+		global_download_list.deactivate(id);
+		return 0;
 	}
-	global_download_list.dump_to_file();
+
+	struct stat st;
+	if(stat(output_file.c_str(), &st) == 0) {
+	    global_download_list.set_int_property(id, DL_DOWNLOADED_BYTES, st.st_size);
+	} else {
+		global_download_list.set_int_property(id, DL_DOWNLOADED_BYTES, dlnow);
+	}
 	return 0;
 }
