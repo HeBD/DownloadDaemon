@@ -425,7 +425,7 @@ void myframe::deselect_lines(){
 		if (item_index == -1) // no selected ones left => leave loop
 			break;
 		else // found a selected one
-			list->SetItemState(item_index, 0, wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+			list->SetItemState(item_index, 0, wxLIST_STATE_SELECTED);
 	  }
 }
 
