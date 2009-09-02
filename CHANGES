@@ -4,6 +4,7 @@
 	- simplified plugin API a bit
 	- for now, reconnect scripts are not supported any more, will re-implement the functionality again soon
 	- improved thread safety
+	- fixed DL DOWN and DL UP which were broken after the rewrite
 
 2009-09-01
    [susanne]

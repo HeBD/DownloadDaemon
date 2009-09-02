@@ -55,56 +55,69 @@ int download_container::add_download(const download &dl) {
 
 int download_container::move_up(int id) {
 	boost::mutex::scoped_lock lock(download_mutex);
-	download_container::iterator it = get_download_by_id(id);
-	if(it == download_list.begin() || it == download_list.end()) {
+	download_container::iterator it;
+	int location1 = 0, location2 = 0;
+	for(it = download_list.begin(); it != download_list.end(); ++it) {
+		if(it->id == id) {
+			break;
+		}
+		++location1;
+	}
+	if(it == download_list.end() || it == download_list.begin() || location1 == 0) {
 		return LIST_ID;
 	}
+	location2 = location1;
 
 	download_container::iterator it2 = it;
 	--it2;
+	--location2;
 	while(it2->get_status() == DOWNLOAD_DELETED) {
 		--it2;
-		if(it2 == download_list.begin()) {
+		--location2;
+		if(location2 == -1) {
 			return LIST_ID;
 		}
 	}
 
-	int iddown = it2->id;
-	it2->id = it->id;
-	it->id = iddown;
+	swap(download_list[location1], download_list[location2]);
 	if(!dump_to_file()) {
-		it->id = it2->id;
-		it2->id = iddown;
+		swap(download_list[location1], download_list[location2]);
 		return LIST_PERMISSION;
 	}
-	arrange_by_id();
 	return LIST_SUCCESS;
 }
 
 int download_container::move_down(int id) {
 	boost::mutex::scoped_lock lock(download_mutex);
-	download_container::iterator it = get_download_by_id(id);
-	if (it == download_list.end() || it == download_list.end() - 1) {
+	download_container::iterator it;
+	int location1 = 0, location2 = 0;
+	for(it = download_list.begin(); it != download_list.end(); ++it) {
+		if(it->id == id) {
+			break;
+		}
+		++location1;
+	}
+	if(it == download_list.end() || it == download_list.end() - 1) {
 		return LIST_ID;
 	}
+	location2 = location1;
 
 	download_container::iterator it2 = it;
 	++it2;
+	++location2;
 	while(it2->get_status() == DOWNLOAD_DELETED) {
 		++it2;
+		++location2;
 		if(it2 == download_list.end()) {
 			return LIST_ID;
 		}
 	}
-	int iddown = it2->id;
-	it2->id = it->id;
-	it->id = iddown;
+
+	swap(download_list[location1], download_list[location2]);
 	if(!dump_to_file()) {
-		it->id = it2->id;
-		it2->id = iddown;
+		swap(download_list[location1], download_list[location2]);
 		return LIST_PERMISSION;
 	}
-	arrange_by_id();
 	return LIST_SUCCESS;
 }
 
@@ -587,10 +600,6 @@ bool download_container::dump_to_file() {
 	return true;
 }
 
-void download_container::arrange_by_id() {
-	sort(download_list.begin(), download_list.end());
-}
-
 int download_container::running_downloads() {
 	int running_downloads = 0;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
@@ -611,7 +620,6 @@ int download_container::remove_download(int id) {
 	download_list.erase(it);
 	if(!dump_to_file()) {
 		download_list.push_back(tmpdl);
-		arrange_by_id();
 		return LIST_PERMISSION;
 	}
 	return LIST_SUCCESS;

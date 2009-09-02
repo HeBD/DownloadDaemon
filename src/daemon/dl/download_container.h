@@ -96,10 +96,6 @@ private:
 	*/
 	std::vector<download>::iterator get_download_by_id(int id);
 
-	/** Sorts the download list by ID
-	*/
-	void arrange_by_id();
-
 	/** Dumps the download list from RAM to the file
 	*	@returns true on success
 	*/

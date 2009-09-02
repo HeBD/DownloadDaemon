@@ -260,13 +260,13 @@ void target_dl_stop(mt_string &data, tkSock *sock) {
 
 void target_dl_up(mt_string &data, tkSock *sock) {
 	switch (global_download_list.move_up(atoi(data.c_str()))) {
-		case 0:
+		case LIST_SUCCESS:
 			log_string(mt_string("Moved download ID: ") + data + " upwards", LOG_DEBUG);
 			*sock << "100 SUCCESS"; break;
-		case -1:
+		case LIST_ID:
 			log_string(mt_string("Failed to move download ID: ") + data + " upwards", LOG_SEVERE);
 			*sock << "104 ID"; break;
-		case -2:
+		case LIST_PERMISSION:
 			log_string(mt_string("Failed to move download ID: ") + data + " upwards", LOG_SEVERE);
 			*sock << "110 PERMISSION"; break;
 	}
@@ -274,15 +274,18 @@ void target_dl_up(mt_string &data, tkSock *sock) {
 
 void target_dl_down(mt_string &data, tkSock *sock) {
 	switch (global_download_list.move_down(atoi(data.c_str()))) {
-		case 0:
+		case LIST_SUCCESS:
 			log_string(mt_string("Moved download ID: ") + data + " downwards", LOG_DEBUG);
-			*sock << "100 SUCCESS"; break;
-		case -1:
+			*sock << "100 SUCCESS";
+		break;
+		case LIST_ID:
 			log_string(mt_string("Failed to move download ID: ") + data + " downwards", LOG_SEVERE);
-			*sock << "104 ID"; break;
-		case -2:
+			*sock << "104 ID";
+		break;
+		case LIST_PERMISSION:
 			log_string(mt_string("Failed to move download ID: ") + data + " downwards", LOG_SEVERE);
-			*sock << "110 PERMISSION"; break;
+			*sock << "110 PERMISSION";
+		break;
 	}
 }
 
