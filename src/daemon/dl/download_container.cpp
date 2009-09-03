@@ -151,7 +151,6 @@ int download_container::deactivate(int id) {
 		}
 		if(it->get_status() == DOWNLOAD_RUNNING) {
 			it->set_status(DOWNLOAD_INACTIVE);
-			curl_easy_setopt(it->handle, CURLOPT_TIMEOUT, 1);
 		} else {
 			it->set_status(DOWNLOAD_INACTIVE);
 		}
@@ -227,7 +226,7 @@ int download_container::get_next_downloadable() {
 			mt_string current_host(it->get_host());
 			bool can_attach = true;
 			for(download_container::iterator it2 = download_list.begin(); it2 != download_list.end(); ++it2) {
-				if(it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING) && !it2->get_hostinfo().allows_multiple) {
+				if((it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING) && !it2->get_hostinfo().allows_multiple) || it->is_running) {
 					can_attach = false;
 				}
 			}
@@ -351,6 +350,15 @@ int download_container::set_int_property(int id, property prop, int value) {
 			}
 			#endif
 		break;
+		case DL_IS_RUNNING:
+			dl->is_running = value;
+			#ifndef IS_PLUGIN
+			if(!dump_to_file()) {
+				dl->error = plugin_status(old_val);
+				return LIST_PERMISSION;
+			}
+			#endif
+		break;
 		default:
 			return LIST_PROPERTY;
 		break;
@@ -401,6 +409,9 @@ int download_container::get_int_property(int id, property prop) {
 		case DL_IS_RUNNING:
 			return dl->is_running;
 		break;
+		case DL_NEED_STOP:
+			return dl->need_stop;
+		break;
 	}
 	return -1;
 }
@@ -443,7 +454,6 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	plugin_input pinp;
 	download_container::iterator dlit = get_download_by_id(dl);
-	curl_easy_reset(dlit->handle);
 
 	mt_string host(dlit->get_host());
 	mt_string plugindir = global_config.get_cfg_value("plugin_dir");
@@ -521,10 +531,10 @@ void download_container::decrease_waits() {
 
 void download_container::purge_deleted() {
 	boost::mutex::scoped_lock lock(download_mutex);
-	if(download_list.empty()) {
-		return;
-	}
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+		if(download_list.empty()) {
+			return;
+		}
 		if(it->get_status() == DOWNLOAD_DELETED && it->is_running == false) {
 			remove_download(it->id);
 			it = download_list.begin();
@@ -567,13 +577,14 @@ int download_container::stop_download(int id) {
 	if(it == download_list.end() || it->get_status() == DOWNLOAD_DELETED) {
 		return LIST_ID;
 	} else {
-		curl_easy_setopt(it->handle, CURLOPT_TIMEOUT, 1);
 		if(it->get_status() != DOWNLOAD_INACTIVE) it->set_status(DOWNLOAD_PENDING);
+		it->need_stop = true;
 		dump_to_file();
 		return LIST_SUCCESS;
 	}
 }
 #endif
+
 download_container::iterator download_container::get_download_by_id(int id) {
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->id == id) {

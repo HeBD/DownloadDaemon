@@ -20,6 +20,10 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 int report_progress(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
 	// careful! this is a POINTER to an iterator!
 	int id = *(int*)clientp;
+	if(global_download_list.get_int_property(id, DL_NEED_STOP)) {
+		curl_easy_setopt(global_download_list.get_pointer_property(id, DL_HANDLE), CURLOPT_TIMEOUT, 1);
+		global_download_list.set_int_property(id, DL_NEED_STOP, false);
+	}
 	global_download_list.set_int_property(id, DL_SIZE, dltotal);
 	mt_string output_file;
 	try {

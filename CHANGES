@@ -1,3 +1,8 @@
+2009-09-04
+   [adrian]
+	- fixed crash when rapidly deactivating/activating downloads
+	- fixed problems with deletion/deactivation of running downloads
+
 2009-09-03
    [susanne]
 	- made ddclient-wx show every change immediately instead after the next reload (which may take up to 2 seconds)
@@ -5,7 +10,7 @@
 
 2009-09-02
    [adrian]
-	- completely rewrote intern strctore of download-list modifications (very huge updates, might still be buggy)
+	- completely rewrote intern structure of download-list modifications (very huge updates, might still be buggy)
 	- simplified plugin API a bit
 	- for now, reconnect scripts are not supported any more, will re-implement the functionality again soon
 	- improved thread safety

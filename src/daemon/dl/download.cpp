@@ -21,7 +21,7 @@ extern mt_string program_root;
 extern download_container global_download_list;
 
 download::download(mt_string &url, int next_id)
-	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS), status(DOWNLOAD_PENDING) {
+	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS), is_running(false), need_stop(false), status(DOWNLOAD_PENDING) {
 	handle = curl_easy_init();
 	time_t rawtime;
 	time(&rawtime);
@@ -84,11 +84,14 @@ void download::from_serialized(mt_string &serializedDL) {
 	}
 	error = PLUGIN_SUCCESS;
 	wait_seconds = 0;
+	is_running = false;
+	need_stop = false;
 	handle = curl_easy_init();
 }
 
 download::download(const download& dl) : url(dl.url), comment(dl.comment), add_date(dl.add_date), id(dl.id), downloaded_bytes(dl.downloaded_bytes),
-										 size(dl.size), wait_seconds(dl.wait_seconds), error(dl.error), output_file(dl.output_file), status(dl.status) {
+										 size(dl.size), wait_seconds(dl.wait_seconds), error(dl.error), output_file(dl.output_file), is_running(false),
+										 need_stop(false), status(dl.status) {
 	handle = curl_easy_init();
 }
 
@@ -237,6 +240,11 @@ void download::set_status(download_status st) {
 	if(status == DOWNLOAD_DELETED) {
 		return;
 	} else {
+		if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) {
+			need_stop = true;
+		} else {
+			need_stop = false;
+		}
 		status = st;
 	}
 }

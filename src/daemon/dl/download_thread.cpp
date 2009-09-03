@@ -153,8 +153,9 @@ void download_thread(int download) {
 		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_LOW_SPEED_TIME, 20);
 
 		log_string(mt_string("Starting download ID: ") + int_to_string(download), LOG_DEBUG);
-
 		success = curl_easy_perform(global_download_list.get_pointer_property(download, DL_HANDLE));
+		curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
+		output_file.close();
 		switch(success) {
 			case 0:
 				log_string(mt_string("Finished download ID: ") + int_to_string(download), LOG_DEBUG);

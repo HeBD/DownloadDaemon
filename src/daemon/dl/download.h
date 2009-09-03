@@ -114,6 +114,7 @@ public:
 	mt_string output_file;
 
 	bool is_running;
+	bool need_stop;
 private:
 	download_status status;
 
