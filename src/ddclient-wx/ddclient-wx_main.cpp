@@ -19,8 +19,8 @@ const long myframe::id_menu_select_all_lines = wxNewId();
 const long myframe::id_toolbar_connect = wxNewId();
 const long myframe::id_toolbar_add = wxNewId();
 const long myframe::id_toolbar_delete = wxNewId();
-const long myframe::id_toolbar_deactivate = wxNewId();
 const long myframe::id_toolbar_activate = wxNewId();
+const long myframe::id_toolbar_deactivate = wxNewId();
 const long myframe::id_toolbar_priority_up = wxNewId();
 const long myframe::id_toolbar_priority_down = wxNewId();
 const long myframe::id_toolbar_configure = wxNewId();
@@ -44,8 +44,8 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_toolbar_connect, myframe::on_connect)
 	EVT_MENU(id_toolbar_add, myframe::on_add)
 	EVT_MENU(id_toolbar_delete, myframe::on_delete)
-	EVT_MENU(id_toolbar_deactivate, myframe::on_deactivate)
 	EVT_MENU(id_toolbar_activate, myframe::on_activate)
+	EVT_MENU(id_toolbar_deactivate, myframe::on_deactivate)
 	EVT_MENU(id_toolbar_priority_up, myframe::on_priority_up)
 	EVT_MENU(id_toolbar_priority_down, myframe::on_priority_down)
 	EVT_MENU(id_toolbar_configure, myframe::on_configure)
@@ -118,7 +118,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	Fit();
 
 	mysock = new tkSock();
-	boost::thread(boost::bind(&myframe::get_content, this));
+	boost::thread(boost::bind(&myframe::update_list, this));
 }
 
 
@@ -178,8 +178,8 @@ void myframe::add_bars(){
 	file_menu->Enable(id_toolbar_download_deactivate, false);
 	file_menu->AppendSeparator();
 
-	file_menu->Append(id_toolbar_deactivate, wxT("&Deactivate Download\tAlt-I"), wxT("Deactivate Download"));
 	file_menu->Append(id_toolbar_activate, wxT("&Activate Download\tAlt-R"), wxT("Activate Download"));
+	file_menu->Append(id_toolbar_deactivate, wxT("&Deactivate Download\tAlt-I"), wxT("Deactivate Download"));
 	file_menu->AppendSeparator();
 
 	file_menu->Append(id_toolbar_add, wxT("&Add Downloads..\tAlt-A"), wxT("Add Downloads"));
@@ -198,26 +198,26 @@ void myframe::add_bars(){
 	// toolbar with icons
 	toolbar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL|wxTB_FLAT);
 
-	toolbar->AddTool(id_toolbar_connect, wxT("Connect"), wxBitmap(working_dir + wxT("img/1_connect.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Connect to a DownloadDaemon Server"));
+	toolbar->AddTool(id_toolbar_connect, wxT("Connect"), wxBitmap(working_dir + wxT("img/1_connect.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Connect to a DownloadDaemon Server"), wxT("Connect to a DownloadDaemon Server"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_add, wxT("Add"), wxBitmap(working_dir + wxT("img/2_add.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Add a new Download"));
-	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxBitmap(working_dir + wxT("img/3_delete.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download(s)"));
+	toolbar->AddTool(id_toolbar_add, wxT("Add"), wxBitmap(working_dir + wxT("img/2_add.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Add a new Download"), wxT("Add a new Download"));
+	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxBitmap(working_dir + wxT("img/3_delete.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download(s)"), wxT("Delete the selected Download(s)"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_deactivate, wxT("Deactivate"), wxBitmap(working_dir + wxT("img/4_stop.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate the selected Download"));
-	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxBitmap(working_dir + wxT("img/5_start.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Activate the selected Download"));
+	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxBitmap(working_dir + wxT("img/5_start.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Activate the selected Download"), wxT("Activate the selected Download"));
+	toolbar->AddTool(id_toolbar_deactivate, wxT("Deactivate"), wxBitmap(working_dir + wxT("img/4_stop.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate the selected Download"), wxT("Deactivate the selected Download"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_priority_up, wxT("Increase Priority"), wxBitmap(working_dir + wxT("img/6_up.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Increase Priority of the selected Download"));
-	toolbar->AddTool(id_toolbar_priority_down, wxT("Decrease Priority"), wxBitmap(working_dir + wxT("img/7_down.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Decrease Priority of the selected Download"));
+	toolbar->AddTool(id_toolbar_priority_up, wxT("Increase Priority"), wxBitmap(working_dir + wxT("img/6_up.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Increase Priority of the selected Download"), wxT("Increase Priority of the selected Download"));
+	toolbar->AddTool(id_toolbar_priority_down, wxT("Decrease Priority"), wxBitmap(working_dir + wxT("img/7_down.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Decrease Priority of the selected Download"), wxT("Decrease Priority of the selected Download"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_configure, wxT("Configure"), wxBitmap(working_dir + wxT("img/8_configure.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Configure DownloadDaemon Server"));
+	toolbar->AddTool(id_toolbar_configure, wxT("Configure"), wxBitmap(working_dir + wxT("img/8_configure.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Configure DownloadDaemon Server"), wxT("Configure DownloadDaemon Server"));
 	toolbar->AddSeparator();
 
-	download_activate = toolbar->AddTool(id_toolbar_download_activate, wxT("Activate Downloading"), wxBitmap(working_dir + wxT("img/9_activate.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Downloading"));
-	download_deactivate = toolbar->AddTool(id_toolbar_download_deactivate, wxT("Deactivate Downloading"), wxBitmap(working_dir + wxT("img/9_deactivate.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Downloading"));
+	download_activate = toolbar->AddTool(id_toolbar_download_activate, wxT("Activate Downloading"), wxBitmap(working_dir + wxT("img/9_activate.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Downloading"), wxT("Activate Downloading"));
+	download_deactivate = toolbar->AddTool(id_toolbar_download_deactivate, wxT("Deactivate Downloading"), wxBitmap(working_dir + wxT("img/9_deactivate.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Downloading"), wxT("Deactivate Downloading"));
 
 	toolbar->Realize();
 
@@ -254,13 +254,25 @@ void myframe::add_components(){
 }
 
 
-void myframe::get_content(){
+void myframe::update_list(){
 	while(true){ // for boost::thread
 		if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){
 			SetStatusText(wxT("Not connected"),1);
 			sleep(2);
 			continue;
 		}
+
+		get_content();
+		sleep(2); // reload every two seconds
+	}
+}
+
+
+void myframe::get_content(){
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){
+		SetStatusText(wxT("Not connected"),1);
+	}else{
 
 		SetStatusText(wxT("Connected"),1);
 
@@ -313,7 +325,6 @@ void myframe::get_content(){
 		wxCommandEvent event(wxEVT_reload_list, GetId());
 		wxPostEvent(this, event);
 
-		sleep(2); // reload every two seconds
 	}
 }
 
@@ -394,7 +405,7 @@ void myframe::find_selected_lines(){
 	while(true){
 		item_index = list->GetNextItem(item_index, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED); // gets the next selected item
 
-		if (item_index == -1) // no selected ones left => leave loop
+		if(item_index == -1) // no selected ones left => leave loop
 			break;
 		else // found a selected one
 			selected_lines.push_back(item_index);
@@ -408,11 +419,21 @@ void myframe::select_lines(){
 	while(true){
 		item_index = list->GetNextItem(item_index, wxLIST_NEXT_ALL, wxLIST_STATE_DONTCARE); // gets the next item
 
-		if (item_index == -1) // no item left => leave loop
+		if(item_index == -1) // no item left => leave loop
 			break;
-		else // found a selected one
+		else
 			list->SetItemState(item_index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
 	  }
+}
+
+
+void myframe::select_line_by_id(string id){
+	long item_index = -1;
+
+	item_index = list->FindItem(-1, wxString(id.c_str(), wxConvUTF8));
+
+	if(item_index != -1)
+		list->SetItemState(item_index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
 }
 
 
@@ -422,7 +443,7 @@ void myframe::deselect_lines(){
 	while(true){
 		item_index = list->GetNextItem(item_index, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED); // gets the next selected item
 
-		if (item_index == -1) // no selected ones left => leave loop
+		if(item_index == -1) // no selected ones left => leave loop
 			break;
 		else // found a selected one
 			list->SetItemState(item_index, 0, wxLIST_STATE_SELECTED);
@@ -540,6 +561,7 @@ void myframe::on_select_all_lines(wxCommandEvent &event){
  void myframe::on_connect(wxCommandEvent &event){
 	connect_dialog dialog(this);
 	dialog.ShowModal();
+	get_content();
  }
 
 
@@ -551,6 +573,7 @@ void myframe::on_add(wxCommandEvent &event){
 	}else{
 		add_dialog dialog(this);
 		dialog.ShowModal();
+		get_content();
 	}
  }
 
@@ -619,34 +642,8 @@ void myframe::on_delete(wxCommandEvent &event){
 
 		if(error_occured)
 			wxMessageBox(wxT("Error occured at deleting Download(s)."), wxT("Error"));
-	}
- }
 
-
-void myframe::on_deactivate(wxCommandEvent &event){
-	vector<int>::iterator it;
-	string id, answer;
-
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before deactivating Downloads."), wxT("No Connection to Server"));
-
-	}else{ // we have a connection
-
-		mx.lock();
-
-		find_selected_lines(); // save selection into selected_lines
-		if(!selected_lines.empty()){
-
-			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-				id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
-
-				mysock->send("DDP DL DEACTIVATE " + id);
-				mysock->recv(answer); // might receive error 107 DEACTIVATE, but that doesn't matter
-			}
-
-		}
-
-		mx.unlock();
+		get_content();
 	}
  }
 
@@ -676,6 +673,36 @@ void myframe::on_activate(wxCommandEvent &event){
 		}
 
 		mx.unlock();
+		get_content();
+	}
+ }
+
+
+void myframe::on_deactivate(wxCommandEvent &event){
+	vector<int>::iterator it;
+	string id, answer;
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before deactivating Downloads."), wxT("No Connection to Server"));
+
+	}else{ // we have a connection
+
+		mx.lock();
+
+		find_selected_lines(); // save selection into selected_lines
+		if(!selected_lines.empty()){
+
+			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+				id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+
+				mysock->send("DDP DL DEACTIVATE " + id);
+				mysock->recv(answer); // might receive error 107 DEACTIVATE, but that doesn't matter
+			}
+
+		}
+
+		mx.unlock();
+		get_content();
 	}
  }
 
@@ -691,21 +718,29 @@ void myframe::on_activate(wxCommandEvent &event){
 	}else{ // we have a connection
 
 		mx.lock();
+		reselect_lines.clear();
 
 		find_selected_lines(); // save selection into selected_lines
 		if(!selected_lines.empty()){
 
 			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
 				id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+				reselect_lines.push_back(id);
 
 				mysock->send("DDP DL UP " + id);
-				mysock->recv(answer); // might receive error 104 ID, but that doesn't matter
+				mysock->recv(answer);
+
+				if(answer.find("104") == 0){ // 104 ID <-- tried to move the top download up
+					reselect_lines.clear();
+					break;
+				}
 			}
 
 		}
 
 		deselect_lines();
 		mx.unlock();
+		get_content();
 	}
 }
 
@@ -721,25 +756,29 @@ void myframe::on_priority_down(wxCommandEvent &event){
 	}else{ // we have a connection
 
 		mx.lock();
+		reselect_lines.clear();
 
 		find_selected_lines(); // save selection into selected_lines
 		if(!selected_lines.empty()){
 
 			for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); rit++){ // has to be done from the last to the first line
 				id = (content[*rit])[0]; // gets the id of the line, which index is stored in selected_lines
+				reselect_lines.push_back(id);
 
 				mysock->send("DDP DL DOWN " + id);
 				mysock->recv(answer);
 
-				if(answer.find("104") == 0) // 104 ID <-- tried to move the bottom download down
-						break;
-
+				if(answer.find("104") == 0){ // 104 ID <-- tried to move the bottom download down
+					reselect_lines.clear();
+					break;
+				}
 			}
 
 		}
 
 		deselect_lines();
 		mx.unlock();
+		get_content();
 	}
 }
 
@@ -752,6 +791,7 @@ void myframe::on_configure(wxCommandEvent &event){
 	}else{
 		configure_dialog dialog(this);
 		dialog.ShowModal();
+		get_content();
 	}
 }
 
@@ -770,6 +810,7 @@ void myframe::on_download_activate(wxCommandEvent &event){
 		mysock->recv(answer);
 
 		mx.unlock();
+		get_content();
 
 		// update toolbar
 		toolbar->RemoveTool(id_toolbar_download_activate);
@@ -797,6 +838,7 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 		mysock->recv(answer);
 
 		mx.unlock();
+		get_content();
 
 		// update toolbar
 		toolbar->RemoveTool(id_toolbar_download_activate);
@@ -838,6 +880,16 @@ void myframe::on_reload(wxEvent &event){
 	compare_vectorvector();
 	content.clear();
 	content = new_content;
+
+	if(!reselect_lines.empty()){ // update selection
+		vector<string>::iterator sit;
+
+		for(sit = reselect_lines.begin(); sit<reselect_lines.end(); sit++){
+			select_line_by_id(*sit);
+		}
+
+		reselect_lines.clear();
+	}
 
 	mx.unlock();
 }

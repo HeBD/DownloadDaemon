@@ -80,6 +80,7 @@ class myframe : public wxFrame{
 		vector<vector<string> > content;
 		vector<vector<string> > new_content;
 		vector<int> selected_lines;
+		vector<string> reselect_lines;
 		wxString working_dir;
 		boost::mutex mx;
 
@@ -107,8 +108,8 @@ class myframe : public wxFrame{
 		static const long id_toolbar_connect;
 		static const long id_toolbar_add;
 		static const long id_toolbar_delete;
-		static const long id_toolbar_deactivate;
 		static const long id_toolbar_activate;
+		static const long id_toolbar_deactivate;
 		static const long id_toolbar_priority_up;
 		static const long id_toolbar_priority_down;
 		static const long id_toolbar_configure;
@@ -118,11 +119,14 @@ class myframe : public wxFrame{
 
 		void add_bars();
 		void add_components();
+		void update_list();
 		void get_content();
 		string build_status(string &status_text, vector<string> &splitted_line);
 		void find_selected_lines();
 		void select_lines();
+		void select_line_by_id(string id);
 		void deselect_lines();
+
 
 		// methods for comparing and actualizing content if necessary
 		void compare_vectorvector();
@@ -135,8 +139,8 @@ class myframe : public wxFrame{
 		void on_connect(wxCommandEvent &event);
 		void on_add(wxCommandEvent &event);
 		void on_delete(wxCommandEvent &event);
-		void on_deactivate(wxCommandEvent &event);
 		void on_activate(wxCommandEvent &event);
+		void on_deactivate(wxCommandEvent &event);
 		void on_priority_up(wxCommandEvent &event);
 		void on_priority_down(wxCommandEvent &event);
 		void on_configure(wxCommandEvent &event);

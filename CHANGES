@@ -1,3 +1,8 @@
+2009-09-03
+   [susanne]
+	- made ddclient-wx show every change immediately instead after the next reload (which may take up to 2 seconds)
+	- moved downloads at ddclient-wx (via priority up/down) now stay selected for better usability
+
 2009-09-02
    [adrian]
 	- completely rewrote intern strctore of download-list modifications (very huge updates, might still be buggy)
