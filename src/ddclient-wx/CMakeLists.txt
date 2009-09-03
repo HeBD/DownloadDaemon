@@ -27,7 +27,7 @@ ENDIF(Boost_FOUND AND wxWidgets_FOUND)
 
 install(TARGETS ddclient-wx DESTINATION bin)
 install(FILES ../../share/ddclient-wx/img/teufelchen_about.png DESTINATION share/ddclient-wx/img/)
-install(FILES ../../share/ddclient-wx/img/logoDD.png DESTINATION share/ddclient-wx/img/)
+install(FILES ../../share/ddclient-wx/img/logoDD.xpm DESTINATION share/ddclient-wx/img/)
 install(FILES ../../share/ddclient-wx/img/1_connect.png DESTINATION share/ddclient-wx/img/)
 install(FILES ../../share/ddclient-wx/img/2_add.png DESTINATION share/ddclient-wx/img/)
 install(FILES ../../share/ddclient-wx/img/3_delete.png DESTINATION share/ddclient-wx/img/)
