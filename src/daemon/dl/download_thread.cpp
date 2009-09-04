@@ -82,17 +82,22 @@ void download_thread(int download) {
 				log_string(mt_string("Download ID: ") + int_to_string(download) + " has to wait " +
 					       int_to_string(global_download_list.get_int_property(download, DL_WAIT_SECONDS)) + " seconds before downloading can start", LOG_DEBUG);
 					       mt_string blah(global_download_list.get_string_property(download, DL_URL));
+			} else {
+				return;
 			}
 
 			while(global_download_list.get_int_property(download, DL_WAIT_SECONDS) > 0) {
 				if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE || global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
-					global_download_list.set_int_property(download, DL_WAIT_SECONDS, 0);
-					global_download_list.set_int_property(download, DL_IS_RUNNING, false);
-					return;
+					break;
 				}
 				sleep(1);
 				global_download_list.set_int_property(download, DL_WAIT_SECONDS, global_download_list.get_int_property(download, DL_WAIT_SECONDS) - 1);
 			}
+		}
+		if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED || global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE) {
+			global_download_list.set_int_property(download, DL_WAIT_SECONDS, 0);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+			return;
 		}
 
 		mt_string output_filename;
@@ -168,8 +173,7 @@ void download_thread(int download) {
 					log_string(mt_string("Stopped download ID: ") + int_to_string(download), LOG_WARNING);
 					curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
 				} else if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
-					curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
-					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_DELETED);
+					// nothing to do...
 				} else {
 					log_string(mt_string("Connection lost for download ID: ") + int_to_string(download), LOG_WARNING);
 					global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_CONNECTION_LOST);
