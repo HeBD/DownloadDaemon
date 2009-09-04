@@ -622,7 +622,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	// Load the plugin function needed
 	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
     if (!handle) {
-		log_string(mt_string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
+		log_string(mt_string("Unable to open library file: ") + dlerror(), LOG_SEVERE);
         return PLUGIN_ERROR;
     }
 
