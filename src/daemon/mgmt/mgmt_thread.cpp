@@ -315,19 +315,19 @@ void target_dl_deactivate(std::string &data, tkSock *sock) {
 	switch(global_download_list.deactivate(atoi(data.c_str()))) {
 		case LIST_ID:
 			*sock << "104 ID";
-			log_string(std::string("Failed to activate download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to deactivate download ID: ") + data, LOG_SEVERE);
 		break;
 		case LIST_PERMISSION:
-			log_string(std::string("Failed to activate download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to deactivate download ID: ") + data, LOG_SEVERE);
 			*sock << "110 PERMISSION";
 		break;
 		case LIST_SUCCESS:
-			log_string(std::string("Activated download ID: ") + data, LOG_DEBUG);
+			log_string(std::string("Deactivated download ID: ") + data, LOG_DEBUG);
 			*sock << "100 SUCCESS";
 		break;
 		default:
 			*sock << "107 DEACTIVATE";
-			log_string(std::string("Failed to activate download ID: ") + data, LOG_WARNING);
+			log_string(std::string("Failed to deactivate download ID: ") + data, LOG_WARNING);
 		break;
 
 	}
