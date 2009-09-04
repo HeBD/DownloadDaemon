@@ -2,7 +2,7 @@ Writing a reconnector-script is pretty simple. It can be written in c++ (support
 added some day, if there is interest in that, please contact me, Adrian Batzill).
 To write a plugin, you simply need to create a .cpp file which includes the following function:
 
-extern "C" void reconnect(mt_string host, mt_string user, mt_string password)
+extern "C" void reconnect(std::string host, std::string user, std::string password)
 
 extern "C" is neccessary for symbol loading.. just use it. the parameters will be the router-credentials for you to use.
 The filename of the reconnector should be lib<vendor>_<model>.so and nothing else. (spaces within names should be replaced by -
