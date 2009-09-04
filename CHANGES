@@ -2,6 +2,10 @@
    [adrian]
 	- fixed crash when rapidly deactivating/activating downloads
 	- fixed problems with deletion/deactivation of running downloads
+	- reimplemented automatic reconnection
+	- reconnect plugins are now, similar to host-plugins, shared libraries
+	- updated function and reconnect-tutorial documentation
+	- implemented reconnect script for Aquip a-wlan-3	
 
 2009-09-03
    [susanne]

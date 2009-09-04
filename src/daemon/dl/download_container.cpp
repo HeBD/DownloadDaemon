@@ -15,6 +15,7 @@ using namespace std;
 #ifndef IS_PLUGIN
 extern mt_string program_root;
 extern cfgfile global_config;
+extern cfgfile global_router_config;
 #endif // IS_PLUGIN
 
 #ifndef IS_PLUGIN
@@ -164,8 +165,14 @@ int download_container::deactivate(int id) {
 	}
 }
 
-int download_container::get_next_downloadable() {
-	boost::mutex::scoped_lock lock(download_mutex);
+int download_container::get_next_downloadable(bool lock) {
+	if(lock) {
+		boost::mutex::scoped_lock lock(download_mutex);
+	}
+	if(is_reconnecting) {
+		return LIST_ID;
+	}
+
 	download_container::iterator downloadable = download_list.end();
 	if(download_list.empty() || running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())
 	   || global_config.get_cfg_value("downloading_active") == "0") {
@@ -449,7 +456,139 @@ void* download_container::get_pointer_property(int id, pointer_property prop) {
 
 	return 0;
 }
+
 #ifndef IS_PLUGIN
+bool download_container::reconnect_needed() {
+	mt_string reconnect_policy;
+
+    if(global_config.get_cfg_value("enable_reconnect") == "0") {
+        return false;
+    }
+
+	reconnect_policy = global_router_config.get_cfg_value("reconnect_policy");
+	if(reconnect_policy.empty()) {
+		log_string("Reconnecting activated, but no reconnect policy specified", LOG_WARNING);
+		return false;
+	}
+
+
+
+	bool reconnect_needed = false;
+	//bool reconnect_allowed = false;
+	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+		if(it->get_status() == DOWNLOAD_WAITING) {
+			reconnect_needed = true;
+		}
+	}
+	if(!reconnect_needed) {
+		return false;
+	}
+
+	// Always reconnect if needed
+	if(reconnect_policy == "HARD") {
+		return true;
+
+	// Only reconnect if no non-continuable download is running
+	} else if(reconnect_policy == "CONTINUE") {
+		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+			if(it->get_status() == DOWNLOAD_RUNNING) {
+				if(!it->get_hostinfo().allows_resumption) {
+					return false;
+				}
+			}
+		}
+		return true;
+
+	// Only reconnect if no download is running
+	} else if(reconnect_policy == "SOFT") {
+		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+			if(it->get_status() == DOWNLOAD_RUNNING) {
+				return false;
+			}
+		}
+		return true;
+
+	// Only reconnect if no download is running and no download can be started
+	} else if(reconnect_policy == "PUSSY") {
+		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+			if(it->get_status() == DOWNLOAD_RUNNING) {
+				return false;
+			}
+		}
+
+		if(get_next_downloadable(false) != LIST_ID) {
+			return false;
+		}
+		return true;
+
+	} else {
+		log_string("Invalid reconnect policy", LOG_SEVERE);
+		return false;
+	}
+}
+
+void download_container::do_reconnect(download_container *dlist) {
+	dlist->is_reconnecting = true;
+	boost::mutex::scoped_lock lock(dlist->download_mutex);
+	mt_string router_ip, router_username, router_password, reconnect_plugin;
+
+	router_ip = global_router_config.get_cfg_value("router_ip");
+	if(router_ip.empty()) {
+	    log_string("Reconnecting activated, but no router ip specified", LOG_WARNING);
+	    dlist->is_reconnecting = false;
+	    return;
+	}
+
+	router_username = global_router_config.get_cfg_value("router_username");
+	router_password = global_router_config.get_cfg_value("router_password");
+	reconnect_plugin = global_router_config.get_cfg_value("router_model");
+	if(reconnect_plugin.empty()) {
+		log_string("Reconnecting activated, but no router model specified", LOG_WARNING);
+		dlist->is_reconnecting = false;
+		return;
+	}
+
+	mt_string reconnect_script = program_root + "/reconnect/lib" + reconnect_plugin + ".so";
+	struct stat st;
+	if(stat(reconnect_script.c_str(), &st) != 0) {
+		log_string("Reconnect plugin for selected router model not found!", LOG_SEVERE);
+		dlist->is_reconnecting = false;
+		return;
+	}
+
+	void* handle = dlopen(reconnect_script.c_str(), RTLD_LAZY);
+    if (!handle) {
+		log_string(mt_string("Unable to open library file: ") + dlerror() + '/' + reconnect_script, LOG_SEVERE);
+		dlist->is_reconnecting = false;
+        return;
+    }
+
+	dlerror();    // Clear any existing error
+
+	void (*reconnect)(mt_string, mt_string, mt_string);
+    reconnect = (void (*)(mt_string, mt_string, mt_string))dlsym(handle, "reconnect");
+
+    char *error;
+    if ((error = dlerror()) != NULL)  {
+    	log_string(mt_string("Unable to get reconnect information: ") + error, LOG_SEVERE);
+    	dlist->is_reconnecting = false;
+    	return;
+    }
+    log_string("Reconnecting now!", LOG_WARNING);
+	dlist->download_mutex.unlock();
+	reconnect(router_ip, router_username, router_password);
+    dlclose(handle);
+    dlist->download_mutex.lock();
+	for(download_container::iterator it = dlist->download_list.begin(); it != dlist->download_list.end(); ++it) {
+    	if(it->get_status() == DOWNLOAD_WAITING) {
+    		it->set_status(DOWNLOAD_PENDING);
+    	}
+    }
+    dlist->is_reconnecting = false;
+    dlist->download_mutex.unlock();
+    return;
+}
+
 int download_container::prepare_download(int dl, plugin_output &poutp) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	plugin_input pinp;

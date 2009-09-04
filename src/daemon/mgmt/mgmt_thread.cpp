@@ -543,7 +543,8 @@ void target_router(mt_string &data, tkSock *sock) {
 void target_router_list(mt_string &data, tkSock *sock) {
     DIR *dp;
     struct dirent *ep;
-    mt_string content;
+    vector<mt_string> content;
+    mt_string current;
     mt_string path = program_root + "reconnect/";
     dp = opendir (path.c_str());
     if (dp == NULL) {
@@ -551,18 +552,29 @@ void target_router_list(mt_string &data, tkSock *sock) {
         *sock << "";
         return;
     }
+
     while ((ep = readdir (dp))) {
         if(ep->d_name[0] == '.') {
             continue;
         }
-        content += ep->d_name;
-        content += "\n";
+        current = ep->d_name;
+        if(current.find("lib") == 0) {
+        	current = current.substr(3);
+        	if(current.find(".so") != mt_string::npos) {
+        		current = current.substr(0, current.find(".so"));
+        		content.push_back(current);
+        	}
+        }
 
     }
     (void) closedir (dp);
-
-    content.erase(content.end() - 1);
-    *sock << content;
+	mt_string to_send;
+	for(vector<mt_string>::iterator it = content.begin(); it != content.end(); ++it) {
+		to_send.append(*it);
+		to_send.append("\n");
+	}
+    to_send.erase(to_send.end() - 1);
+    *sock << to_send;
 }
 
 void target_router_setmodel(mt_string &data, tkSock *sock) {
@@ -570,26 +582,32 @@ void target_router_setmodel(mt_string &data, tkSock *sock) {
     DIR *d = NULL;
     mt_string dir = program_root + "reconnect/";
     d = opendir(dir.c_str());
-    mt_string content;
 
     if(d == NULL) {
         log_string("Could not open reconnect script directory", LOG_SEVERE);
         *sock << "109 FILE";
         return;
     }
+
+    mt_string searched_plugin(data);
+    searched_plugin.append(".so");
+    searched_plugin.insert(0, "lib");
+    bool plugin_found = false;
     while((de = readdir(d))) {
-        content += de->d_name + '\n';
+        if(searched_plugin == de->d_name) {
+        	plugin_found = true;
+        }
     }
     closedir(d);
-    size_t pos;
-    if((pos = content.find(data)) == mt_string::npos || content[pos - 1] != '\n' || content[pos + content.length()] != '\n') {
+
+    if(!plugin_found) {
         log_string("Selected plugin not found", LOG_WARNING);
         *sock << "109 FILE";
         return;
     }
 
     if(global_router_config.set_cfg_value("router_model", data)) {
-        log_string("Changed router model", LOG_DEBUG);
+        log_string("Changed router model to " + data, LOG_DEBUG);
         *sock << "100 SUCCESS";
     } else {
         log_string("Unable to set router model", LOG_SEVERE);
@@ -604,7 +622,7 @@ void target_router_set(mt_string &data, tkSock *sock) {
         return;
     }
     mt_string identifier = data.substr(0, eqpos);
-    mt_string variable = data.substr(eqpos);
+    mt_string variable = data.substr(eqpos + 1);
     trim_string(identifier);
     trim_string(variable);
 

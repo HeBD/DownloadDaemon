@@ -40,44 +40,88 @@ public:
 
 	/** Moves a download upwards
 	*	@param id download ID to move up
-	*	@returns -1 if it's already the top download, -2 if the function fails because the dlist can't be written, 0 on success
+	*	@returns LIST_ID if it's already the top download, LIST_PERMISSION if the function fails because the dlist can't be written, LIST_SUCCESS on success
 	*/
 	int move_up(int id);
 
+	/** Moves a download downwards
+	*	@param id download ID to move down
+	*	@returns LIST_ID if it's already the top download, LIST_PERMISSION if the function fails because the dlist can't be written, LIST_SUCCESS on success
+	*/
 	int move_down(int id);
 
+	/** Activates an inactive download
+	*	@param id download ID to activate
+	*	@returns LIST_ID if an invalid ID is given, LIST_PROPERTY if the download is already active, LIST_PERMISSION if the dlist file can't be written, LIST_SUCCESS
+	*/
 	int activate(int id);
+
+	/** Deactivates a download
+	*	@param id download ID to deactivate
+	*	@returns LIST_ID if an invalid ID is given, LIST_PROPERTY if the download is already inactive, LIST_PERMISSION if the dlist file can't be written, LIST_SUCCESS
+	*/
 	int deactivate(int id);
 
-
-
 	/** Gets the next downloadable item in the global download list (filters stuff like inactives, wrong time, etc)
- 	*	@returns ID of the next download that can be downloaded or LIST_ID if there is none
+ 	*	@returns ID of the next download that can be downloaded or LIST_ID if there is none, LIST_SUCCESS
  	*/
-	int get_next_downloadable();
+	int get_next_downloadable(bool lock = true);
 
+	/** Adds a new download to the list
+	*	@param dl Download object to add
+	*	@returns LIST_SUCCESS, LIST_PERMISSION
+	*/
 	int add_download(const download &dl);
 
 
-
+	/** Functions to set download element variables
+	*	@param id ID of the download to set a variable for
+	*	@param prop Property to set. depending on the function, this can be one of the above enums (property, pointer_property, string_property)
+	*	@param value Value to set the variable to
+	*	@returns LIST_SUCCESS, LIST_PERMISSION, LIST_ID, LIST_PROPERTY
+	*/
 	int set_string_property(int id, string_property prop, mt_string value);
 	int set_int_property(int id, property prop, int value);
 	int set_pointer_property(int id, pointer_property prop, void* value);
 
+	/** Functions to get download element variables. pointer_property will return a 0-pointer if it fails, int_property will return LIST_PROPERTY and string_property will throw a download_exception
+	*	@param id ID of the download to get a variable from
+	*	@param prop Property to get
+	*/
 	mt_string get_string_property(int id, string_property prop);
 	void* get_pointer_property(int id, pointer_property prop);
 	int get_int_property(int id, property prop);
 
+	/** Prepares a download (calls the plugin, etc)
+	*	@param dl Download id to prepare
+	*	@param poutp plugin_output structure, will be filled in by the plugin
+	*	@returns LIST_ID, LIST_SUCCESS
+	*/
 	int prepare_download(int dl, plugin_output &poutp);
 
+	/** Returns info about a plugin
+	*	@param dl Download toget info from
+	*	@returns the info
+	*/
 	plugin_output get_hostinfo(int dl);
 
+	/** strip the host from the URL
+	*	@param dl Download from which to get the host
+	*	@returns the hostname
+	*/
 	mt_string get_host(int dl);
 
+	/** Every download with status DOWNLOAD_WAITING and wait seconds > 0 will decrease wait seconds by one. If 0 is reached, the status will be set to DOWNLOAD_PENDING
+	*/
 	void decrease_waits();
 
+	/** Removes downloads with a DOWNLOAD_DELETED status from the list, if they can be deleted without danger
+	*/
 	void purge_deleted();
 
+	/** Creates the list for the DL LIST command
+	*	@returns the list
+	*/
 	mt_string create_client_list();
 
 	/** Gets the lowest unused ID that should be used for the next download
@@ -85,7 +129,18 @@ public:
 	*/
 	int get_next_id();
 
+	/** Stops a download and sets its status
+	*	@param id Download to stop
+	*	@returns LIST_SUCCESS, LIST_ID, LIST_PERMISSION
+	*/
 	int stop_download(int id);
+
+	/** Checks if a reconnect is currently needed
+	*	@returns true if yes
+	*/
+	bool reconnect_needed();
+
+	static void do_reconnect(download_container *dlist);
 
 	mt_string list_file;
 
@@ -119,6 +174,7 @@ private:
 
 	std::vector<download> download_list;
 	boost::mutex download_mutex;
+	bool is_reconnecting;
 };
 
 /** Exception class for the download container */

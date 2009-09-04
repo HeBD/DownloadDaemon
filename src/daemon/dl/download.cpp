@@ -247,6 +247,9 @@ void download::set_status(download_status st) {
 		}
 		status = st;
 	}
+	if(global_download_list.reconnect_needed()) {
+		boost::thread t(download_container::do_reconnect, &global_download_list);
+	}
 }
 
 download_status download::get_status() {

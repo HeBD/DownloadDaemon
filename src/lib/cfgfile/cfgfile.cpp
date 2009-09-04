@@ -92,7 +92,7 @@ bool cfgfile::set_cfg_value(const mt_string &cfg_identifier, const mt_string &cf
 		if(identstr == cfg_identifier) {
 			val = newbuff.substr(eqloc + 1);
 			trim(val);
-			it->replace(it->find(val, eqloc + 1), val.length(), cfg_value);
+			it->replace(it->find(val, eqloc + 1), val.length(), ' ' + cfg_value);
 			done = true;
 			break;
 		}
@@ -106,7 +106,10 @@ bool cfgfile::set_cfg_value(const mt_string &cfg_identifier, const mt_string &cf
 	file.close();
 	file.open(filepath.c_str(), fstream::in | fstream::out | fstream::trunc);
 	for(vector<mt_string>::iterator it = cfgvec.begin(); it != cfgvec.end(); ++it) {
-		file << *it << '\n';
+		file << *it;
+		if(it != cfgvec.end() - 1) {
+			file << '\n';
+		}
 	}
 
 	mx.unlock();
