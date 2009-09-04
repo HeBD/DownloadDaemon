@@ -20,7 +20,7 @@ using namespace std;
 extern cfgfile global_config;
 extern cfgfile global_router_config;
 extern download_container global_download_list;
-extern mt_string program_root;
+extern std::string program_root;
 
 
 
@@ -46,8 +46,8 @@ void mgmt_thread_main() {
  * @param sock the socket we get for communication with the other side
  */
 void connection_handler(tkSock *sock) {
-	mt_string data;
-	mt_string passwd(global_config.get_cfg_value("mgmt_password"));
+	std::string data;
+	std::string passwd(global_config.get_cfg_value("mgmt_password"));
 	if(*sock && passwd != "") {
 		*sock << "102 AUTHENTICATION";
 		*sock >> data;
@@ -115,7 +115,7 @@ void connection_handler(tkSock *sock) {
 }
 
 
-void target_dl(mt_string &data, tkSock *sock) {
+void target_dl(std::string &data, tkSock *sock) {
 	if(data.find("LIST") == 0) {
 		data = data.substr(4);
 		trim_string(data);
@@ -188,20 +188,20 @@ void target_dl(mt_string &data, tkSock *sock) {
 
 }
 
-void target_dl_list(mt_string &data, tkSock *sock) {
+void target_dl_list(std::string &data, tkSock *sock) {
 
 	//log_string("Dumping download list to client", LOG_DEBUG);
 	*sock << global_download_list.create_client_list();
 }
 
-void target_dl_add(mt_string &data, tkSock *sock) {
-	mt_string url;
-	mt_string comment;
-	if(data.find(' ') == mt_string::npos) {
+void target_dl_add(std::string &data, tkSock *sock) {
+	std::string url;
+	std::string comment;
+	if(data.find(' ') == std::string::npos) {
 		url = data;
 	} else {
 		url = data.substr(0, data.find(' '));
-		comment = data.substr(data.find(' '), mt_string::npos);
+		comment = data.substr(data.find(' '), std::string::npos);
 		replace_all(comment, "|", "\\|");
 		trim_string(url);
 		trim_string(comment);
@@ -209,7 +209,7 @@ void target_dl_add(mt_string &data, tkSock *sock) {
 	if(validate_url(url)) {
 		download dl(url, global_download_list.get_next_id());
 		dl.comment = comment;
-		mt_string logstr("Adding download: ");
+		std::string logstr("Adding download: ");
 		logstr += dl.serialize();
 		logstr.erase(logstr.length() - 1);
 		log_string(logstr, LOG_DEBUG);
@@ -224,7 +224,7 @@ void target_dl_add(mt_string &data, tkSock *sock) {
 	*sock << "103 URL";
 }
 
-void target_dl_del(mt_string &data, tkSock *sock) {
+void target_dl_del(std::string &data, tkSock *sock) {
 	switch(global_download_list.set_int_property(string_to_int(data), DL_STATUS, DOWNLOAD_DELETED)) {
 		case LIST_PERMISSION:
 			log_string("Failed to remove download ID: " + data, LOG_SEVERE);
@@ -241,14 +241,14 @@ void target_dl_del(mt_string &data, tkSock *sock) {
 	}
 }
 
-void target_dl_stop(mt_string &data, tkSock *sock) {
+void target_dl_stop(std::string &data, tkSock *sock) {
 	switch(global_download_list.stop_download(atoi(data.c_str()))) {
 		case LIST_PERMISSION:
-			log_string(mt_string("Failed to stop download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to stop download ID: ") + data, LOG_SEVERE);
 			*sock << "110 PERMISSION";
 		break;
 		case LIST_SUCCESS:
-			log_string(mt_string("Stopped download ID: ") + data, LOG_DEBUG);
+			log_string(std::string("Stopped download ID: ") + data, LOG_DEBUG);
 			*sock << "100 SUCCESS";
 		break;
 		default:
@@ -258,82 +258,82 @@ void target_dl_stop(mt_string &data, tkSock *sock) {
 	}
 }
 
-void target_dl_up(mt_string &data, tkSock *sock) {
+void target_dl_up(std::string &data, tkSock *sock) {
 	switch (global_download_list.move_up(atoi(data.c_str()))) {
 		case LIST_SUCCESS:
-			log_string(mt_string("Moved download ID: ") + data + " upwards", LOG_DEBUG);
+			log_string(std::string("Moved download ID: ") + data + " upwards", LOG_DEBUG);
 			*sock << "100 SUCCESS"; break;
 		case LIST_ID:
-			log_string(mt_string("Failed to move download ID: ") + data + " upwards", LOG_SEVERE);
+			log_string(std::string("Failed to move download ID: ") + data + " upwards", LOG_SEVERE);
 			*sock << "104 ID"; break;
 		case LIST_PERMISSION:
-			log_string(mt_string("Failed to move download ID: ") + data + " upwards", LOG_SEVERE);
+			log_string(std::string("Failed to move download ID: ") + data + " upwards", LOG_SEVERE);
 			*sock << "110 PERMISSION"; break;
 	}
 }
 
-void target_dl_down(mt_string &data, tkSock *sock) {
+void target_dl_down(std::string &data, tkSock *sock) {
 	switch (global_download_list.move_down(atoi(data.c_str()))) {
 		case LIST_SUCCESS:
-			log_string(mt_string("Moved download ID: ") + data + " downwards", LOG_DEBUG);
+			log_string(std::string("Moved download ID: ") + data + " downwards", LOG_DEBUG);
 			*sock << "100 SUCCESS";
 		break;
 		case LIST_ID:
-			log_string(mt_string("Failed to move download ID: ") + data + " downwards", LOG_SEVERE);
+			log_string(std::string("Failed to move download ID: ") + data + " downwards", LOG_SEVERE);
 			*sock << "104 ID";
 		break;
 		case LIST_PERMISSION:
-			log_string(mt_string("Failed to move download ID: ") + data + " downwards", LOG_SEVERE);
+			log_string(std::string("Failed to move download ID: ") + data + " downwards", LOG_SEVERE);
 			*sock << "110 PERMISSION";
 		break;
 	}
 }
 
-void target_dl_activate(mt_string &data, tkSock *sock) {
+void target_dl_activate(std::string &data, tkSock *sock) {
 	switch(global_download_list.activate(atoi(data.c_str()))) {
 		case LIST_ID:
 			*sock << "104 ID";
-			log_string(mt_string("Failed to activate download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to activate download ID: ") + data, LOG_SEVERE);
 		break;
 		case LIST_PERMISSION:
-			log_string(mt_string("Failed to activate download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to activate download ID: ") + data, LOG_SEVERE);
 			*sock << "110 PERMISSION";
 		break;
 		case LIST_SUCCESS:
-			log_string(mt_string("Activated download ID: ") + data, LOG_DEBUG);
+			log_string(std::string("Activated download ID: ") + data, LOG_DEBUG);
 			*sock << "100 SUCCESS";
 		break;
 		default:
 			*sock << "106 ACTIVATE";
-			log_string(mt_string("Failed to activate download ID: ") + data, LOG_WARNING);
+			log_string(std::string("Failed to activate download ID: ") + data, LOG_WARNING);
 		break;
 
 	}
 }
 
-void target_dl_deactivate(mt_string &data, tkSock *sock) {
+void target_dl_deactivate(std::string &data, tkSock *sock) {
 	switch(global_download_list.deactivate(atoi(data.c_str()))) {
 		case LIST_ID:
 			*sock << "104 ID";
-			log_string(mt_string("Failed to activate download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to activate download ID: ") + data, LOG_SEVERE);
 		break;
 		case LIST_PERMISSION:
-			log_string(mt_string("Failed to activate download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to activate download ID: ") + data, LOG_SEVERE);
 			*sock << "110 PERMISSION";
 		break;
 		case LIST_SUCCESS:
-			log_string(mt_string("Activated download ID: ") + data, LOG_DEBUG);
+			log_string(std::string("Activated download ID: ") + data, LOG_DEBUG);
 			*sock << "100 SUCCESS";
 		break;
 		default:
 			*sock << "107 DEACTIVATE";
-			log_string(mt_string("Failed to activate download ID: ") + data, LOG_WARNING);
+			log_string(std::string("Failed to activate download ID: ") + data, LOG_WARNING);
 		break;
 
 	}
 }
 
-void target_var(mt_string &data, tkSock *sock) {
+void target_var(std::string &data, tkSock *sock) {
 	if(data.find("GET") == 0) {
 		data = data.substr(3);
 		if(data.length() == 0 || !isspace(data[0])) {
@@ -356,7 +356,7 @@ void target_var(mt_string &data, tkSock *sock) {
 	}
 }
 
-void target_var_get(mt_string &data, tkSock *sock) {
+void target_var_get(std::string &data, tkSock *sock) {
 	if(data == "mgmt_password") {
 		*sock << "";
 	} else {
@@ -364,19 +364,19 @@ void target_var_get(mt_string &data, tkSock *sock) {
 	}
 }
 
-void target_var_set(mt_string &data, tkSock *sock) {
+void target_var_set(std::string &data, tkSock *sock) {
 	if(!data.find('=')) {
 		*sock << "101 PROTOCOL";
 		return;
 	}
 	if(data.find("mgmt_password") == 0) {
-		if(data.find(';') == mt_string::npos) {
+		if(data.find(';') == std::string::npos) {
 			*sock << "101 PROTOCOL";
 			return;
 		}
 		size_t pos1 = data.find('=') + 1;
 		size_t pos2 = data.find(';', pos1);
-		mt_string old_pw;
+		std::string old_pw;
 		if(pos1 == pos2) {
 			old_pw = "";
 		} else {
@@ -397,9 +397,9 @@ void target_var_set(mt_string &data, tkSock *sock) {
 			*sock << "102 AUTHENTICATION";
 		}
 	} else {
-		mt_string identifier(data.substr(0, data.find('=')));
+		std::string identifier(data.substr(0, data.find('=')));
 		trim_string(identifier);
-		mt_string value(data.substr(data.find('=') + 1));
+		std::string value(data.substr(data.find('=') + 1));
 		trim_string(value);
 		if(variable_is_valid(identifier)) {
 			if(global_config.set_cfg_value(identifier, value)) {
@@ -414,7 +414,7 @@ void target_var_set(mt_string &data, tkSock *sock) {
 
 }
 
-void target_file(mt_string &data, tkSock *sock) {
+void target_file(std::string &data, tkSock *sock) {
 	if(data.find("DEL") == 0) {
 		data = data.substr(3);
 		if(data.length() == 0 || !isspace(data[0])) {
@@ -444,24 +444,24 @@ void target_file(mt_string &data, tkSock *sock) {
 	}
 }
 
-void target_file_del(mt_string &data, tkSock *sock) {
-	mt_string output_file;
+void target_file_del(std::string &data, tkSock *sock) {
+	std::string output_file;
 	try {
 		output_file = global_download_list.get_string_property(atoi(data.c_str()), DL_OUTPUT_FILE);
 	} catch(download_exception &e) {
-		log_string(mt_string("Failed to delete file ID: ") + data, LOG_WARNING);
+		log_string(std::string("Failed to delete file ID: ") + data, LOG_WARNING);
 		*sock << "104 ID";
 		return;
 	}
 
 	if(output_file == "" || global_download_list.get_int_property(atoi(data.c_str()), DL_STATUS) == DOWNLOAD_RUNNING) {
-		log_string(mt_string("Failed to delete file ID: ") + data, LOG_WARNING);
+		log_string(std::string("Failed to delete file ID: ") + data, LOG_WARNING);
 		*sock << "109 FILE";
 		return;
 	}
 
 	if(remove(output_file.c_str()) == 0) {
-		log_string(mt_string("Deleted file ID: ") + data, LOG_DEBUG);
+		log_string(std::string("Deleted file ID: ") + data, LOG_DEBUG);
 		*sock << "100 SUCCESS";
 		global_download_list.set_string_property(atoi(data.c_str()), DL_OUTPUT_FILE, "");
 	} else {
@@ -469,12 +469,12 @@ void target_file_del(mt_string &data, tkSock *sock) {
 	}
 }
 
-void target_file_getpath(mt_string &data, tkSock *sock) {
-	mt_string output_file;
+void target_file_getpath(std::string &data, tkSock *sock) {
+	std::string output_file;
 	try {
 		output_file = global_download_list.get_string_property(atoi(data.c_str()), DL_OUTPUT_FILE);
 	} catch(download_exception &e) {
-		log_string(mt_string("Failed to get path of file ID: ") + data, LOG_WARNING);
+		log_string(std::string("Failed to get path of file ID: ") + data, LOG_WARNING);
 		*sock << "";
 		return;
 	}
@@ -487,26 +487,26 @@ void target_file_getpath(mt_string &data, tkSock *sock) {
 	*sock << output_file;
 }
 
-void target_file_getsize(mt_string &data, tkSock *sock) {
-	mt_string output_file;
+void target_file_getsize(std::string &data, tkSock *sock) {
+	std::string output_file;
 	try {
 		output_file = global_download_list.get_string_property(atoi(data.c_str()), DL_OUTPUT_FILE);
 	} catch(download_exception &e) {
-		log_string(mt_string("Failed to get size of file ID: ") + data, LOG_WARNING);
+		log_string(std::string("Failed to get size of file ID: ") + data, LOG_WARNING);
 		*sock << "-1";
 		return;
 	}
 
 	struct stat st;
 	if(stat(output_file.c_str(), &st) != 0) {
-		log_string(mt_string("Failed to get size of file ID: ") + data, LOG_WARNING);
+		log_string(std::string("Failed to get size of file ID: ") + data, LOG_WARNING);
 		*sock << "-1";
 		return;
 	}
 	*sock << int_to_string(st.st_size);
 }
 
-void target_router(mt_string &data, tkSock *sock) {
+void target_router(std::string &data, tkSock *sock) {
 	if(data.find("LIST") == 0) {
 		data = data.substr(4);
 		trim_string(data);
@@ -540,12 +540,12 @@ void target_router(mt_string &data, tkSock *sock) {
     }
 }
 
-void target_router_list(mt_string &data, tkSock *sock) {
+void target_router_list(std::string &data, tkSock *sock) {
     DIR *dp;
     struct dirent *ep;
-    vector<mt_string> content;
-    mt_string current;
-    mt_string path = program_root + "reconnect/";
+    vector<std::string> content;
+    std::string current;
+    std::string path = program_root + "reconnect/";
     dp = opendir (path.c_str());
     if (dp == NULL) {
         log_string("Could not open reconnect script directory", LOG_SEVERE);
@@ -560,7 +560,7 @@ void target_router_list(mt_string &data, tkSock *sock) {
         current = ep->d_name;
         if(current.find("lib") == 0) {
         	current = current.substr(3);
-        	if(current.find(".so") != mt_string::npos) {
+        	if(current.find(".so") != std::string::npos) {
         		current = current.substr(0, current.find(".so"));
         		content.push_back(current);
         	}
@@ -568,8 +568,8 @@ void target_router_list(mt_string &data, tkSock *sock) {
 
     }
     (void) closedir (dp);
-	mt_string to_send;
-	for(vector<mt_string>::iterator it = content.begin(); it != content.end(); ++it) {
+	std::string to_send;
+	for(vector<std::string>::iterator it = content.begin(); it != content.end(); ++it) {
 		to_send.append(*it);
 		to_send.append("\n");
 	}
@@ -577,10 +577,10 @@ void target_router_list(mt_string &data, tkSock *sock) {
     *sock << to_send;
 }
 
-void target_router_setmodel(mt_string &data, tkSock *sock) {
+void target_router_setmodel(std::string &data, tkSock *sock) {
     struct dirent *de = NULL;
     DIR *d = NULL;
-    mt_string dir = program_root + "reconnect/";
+    std::string dir = program_root + "reconnect/";
     d = opendir(dir.c_str());
 
     if(d == NULL) {
@@ -589,7 +589,7 @@ void target_router_setmodel(mt_string &data, tkSock *sock) {
         return;
     }
 
-    mt_string searched_plugin(data);
+    std::string searched_plugin(data);
     searched_plugin.append(".so");
     searched_plugin.insert(0, "lib");
     bool plugin_found = false;
@@ -615,14 +615,14 @@ void target_router_setmodel(mt_string &data, tkSock *sock) {
     }
 }
 
-void target_router_set(mt_string &data, tkSock *sock) {
+void target_router_set(std::string &data, tkSock *sock) {
     size_t eqpos = data.find('=');
-    if(eqpos == mt_string::npos) {
+    if(eqpos == std::string::npos) {
         *sock << "101 PROTOCOL";
         return;
     }
-    mt_string identifier = data.substr(0, eqpos);
-    mt_string variable = data.substr(eqpos + 1);
+    std::string identifier = data.substr(0, eqpos);
+    std::string variable = data.substr(eqpos + 1);
     trim_string(identifier);
     trim_string(variable);
 
@@ -641,7 +641,7 @@ void target_router_set(mt_string &data, tkSock *sock) {
     }
 }
 
-void target_router_get(mt_string &data, tkSock *sock) {
+void target_router_get(std::string &data, tkSock *sock) {
     if(data == "router_password") {
         *sock << "";
         return;

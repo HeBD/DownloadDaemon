@@ -25,7 +25,7 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 		global_download_list.set_int_property(id, DL_NEED_STOP, false);
 	}
 	global_download_list.set_int_property(id, DL_SIZE, dltotal);
-	mt_string output_file;
+	std::string output_file;
 	try {
 		output_file = global_download_list.get_string_property(id, DL_OUTPUT_FILE);
 	} catch(download_exception &e) {

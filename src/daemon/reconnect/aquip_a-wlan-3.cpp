@@ -1,20 +1,20 @@
-#include "../../lib/mt_string/mt_string.h"
+#include <string>
 #include <curl/curl.h>
 
 using namespace std;
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
-	mt_string *blubb = (mt_string*)userp;
+	std::string *blubb = (std::string*)userp;
 	blubb->append((char*)buffer, nmemb);
 	return nmemb;
 }
 
-extern "C" void reconnect(mt_string host, mt_string user, mt_string password) {
+extern "C" void reconnect(std::string host, std::string user, std::string password) {
 	CURL* handle = curl_easy_init();
-	mt_string url = "http://" + host + "/goform/SysStatusHandle";
-	mt_string final = url + "?action=4";
-	mt_string auth = user + ':' + password;
-	mt_string resultstr;
+	std::string url = "http://" + host + "/goform/SysStatusHandle";
+	std::string final = url + "?action=4";
+	std::string auth = user + ':' + password;
+	std::string resultstr;
 	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
 	curl_easy_setopt(handle, CURLOPT_URL, final.c_str());

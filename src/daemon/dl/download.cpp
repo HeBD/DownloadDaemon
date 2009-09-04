@@ -17,10 +17,9 @@
 using namespace std;
 
 extern cfgfile global_config;
-extern mt_string program_root;
 extern download_container global_download_list;
 
-download::download(mt_string &url, int next_id)
+download::download(std::string &url, int next_id)
 	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS), is_running(false), need_stop(false), status(DOWNLOAD_PENDING) {
 	handle = curl_easy_init();
 	time_t rawtime;
@@ -29,15 +28,15 @@ download::download(mt_string &url, int next_id)
 	add_date.erase(add_date.length() - 1);
 }
 
-download::download(mt_string &serializedDL) {
+download::download(std::string &serializedDL) {
 	from_serialized(serializedDL);
 }
 
-void download::from_serialized(mt_string &serializedDL) {
-	mt_string current_entry;
+void download::from_serialized(std::string &serializedDL) {
+	std::string current_entry;
 	size_t curr_pos = 0;
 	size_t entry_num = 0;
-	while(serializedDL.find('|', curr_pos) != mt_string::npos) {
+	while(serializedDL.find('|', curr_pos) != std::string::npos) {
 		current_entry = serializedDL.substr(curr_pos, serializedDL.find('|', curr_pos) - curr_pos);
 		curr_pos = serializedDL.find('|', curr_pos);
 		if(serializedDL[curr_pos - 1] == '\\') {
@@ -112,7 +111,7 @@ download::~download() {
 	curl_easy_cleanup(handle);
 }
 
-mt_string download::serialize() {
+std::string download::serialize() {
 	if(status == DOWNLOAD_DELETED) {
 		return "";
 	}
@@ -122,64 +121,12 @@ mt_string download::serialize() {
 	return ss.str();
 }
 
-/*plugin_status download::get_download(plugin_output &poutp) {
-	plugin_input pinp;
-	curl_easy_reset(handle);
-
-	mt_string host(get_host());
-	mt_string plugindir = global_config.get_cfg_value("plugin_dir");
-	correct_path(plugindir);
-	if(host == "") {
-		return PLUGIN_INVALID_HOST;
-	}
-
-	struct stat st;
-	if(stat(plugindir.c_str(), &st) != 0) {
-		return PLUGIN_INVALID_PATH;
-	}
-
-	mt_string pluginfile(plugindir + "lib" + host + ".so");
-	bool use_generic = false;
-	if(stat(pluginfile.c_str(), &st) != 0) {
-		use_generic = true;
-	}
-
-	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
-	if(use_generic) {
-	    log_string("No plugin found, using generic download", LOG_WARNING);
-	    poutp.download_url = url.c_str();
-		return PLUGIN_SUCCESS;
-	}
-
-	// Load the plugin function needed
-	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
-    if (!handle) {
-		log_string(mt_string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
-        return PLUGIN_ERROR;
-    }
-
-	dlerror();    // Clear any existing error
-
-	plugin_status (*plugin_exec_func)(download&, CURL*, plugin_input&, plugin_output&);
-    plugin_exec_func = (plugin_status (*)(download&, CURL*, plugin_input&, plugin_output&))dlsym(handle, "plugin_exec");
-
-    char *error;
-    if ((error = dlerror()) != NULL)  {
-    	log_string(mt_string("Unable to execute plugin: ") + error, LOG_SEVERE);
-    	return PLUGIN_ERROR;
-    }
-	plugin_status retval = plugin_exec_func(*this, handle, pinp, poutp);
-    dlclose(handle);
-    return retval;
-}
-*/
-
-mt_string download::get_host() {
+std::string download::get_host() {
 	size_t startpos = 0;
 
-	if(url.find("www.") != mt_string::npos) {
+	if(url.find("www.") != std::string::npos) {
 		startpos = url.find('.') + 1;
-	} else if(url.find("http://") != mt_string::npos || url.find("ftp://") != mt_string::npos) {
+	} else if(url.find("http://") != std::string::npos || url.find("ftp://") != std::string::npos) {
 		startpos = url.find('/') + 2;
 	} else {
 		return "";
@@ -262,8 +209,8 @@ plugin_output download::get_hostinfo() {
 	outp.allows_resumption = false;
 	outp.allows_multiple = false;
 
-	mt_string host(get_host());
-	mt_string plugindir = global_config.get_cfg_value("plugin_dir");
+	std::string host(get_host());
+	std::string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);
 	if(host == "") {
 		return outp;
@@ -274,7 +221,7 @@ plugin_output download::get_hostinfo() {
 		return outp;
 	}
 
-	mt_string pluginfile(plugindir + "lib" + host + ".so");
+	std::string pluginfile(plugindir + "lib" + host + ".so");
 	bool use_generic = false;
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;
@@ -291,7 +238,7 @@ plugin_output download::get_hostinfo() {
 	// Load the plugin function needed
 	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
     if (!handle) {
-		log_string(mt_string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
+		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
         return outp;
     }
 
@@ -302,7 +249,7 @@ plugin_output download::get_hostinfo() {
 
     char *error;
     if ((error = dlerror()) != NULL)  {
-    	log_string(mt_string("Unable to get plugin information: ") + error, LOG_SEVERE);
+    	log_string(std::string("Unable to get plugin information: ") + error, LOG_SEVERE);
     	return outp;
     }
 

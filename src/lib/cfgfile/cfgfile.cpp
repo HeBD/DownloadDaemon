@@ -9,13 +9,13 @@ cfgfile::cfgfile()
 	: comment_token("#"), is_writeable(false), eqtoken('=') {
 }
 
-cfgfile::cfgfile(mt_string &filepath, bool is_writeable)
+cfgfile::cfgfile(std::string &filepath, bool is_writeable)
 	: filepath(filepath), comment_token("#"), is_writeable(is_writeable), eqtoken('=') {
 	open_cfg_file(filepath, is_writeable);
 	comment_token = "#";
 }
 
-cfgfile::cfgfile(mt_string &filepath, mt_string &comment_token, char eqtoken, bool is_writeable)
+cfgfile::cfgfile(std::string &filepath, std::string &comment_token, char eqtoken, bool is_writeable)
 	: filepath(filepath), comment_token(comment_token), is_writeable(is_writeable), eqtoken(eqtoken) {
 	open_cfg_file(filepath, is_writeable);
 }
@@ -24,7 +24,7 @@ cfgfile::~cfgfile() {
 	file.close();
 }
 
-void cfgfile::open_cfg_file(const mt_string &filepath, bool writeable) {
+void cfgfile::open_cfg_file(const std::string &filepath, bool writeable) {
 	file.close();
 	if (writeable) {
 		file.open(filepath.c_str(), fstream::out | fstream::in | fstream::ate);
@@ -38,14 +38,14 @@ void cfgfile::open_cfg_file(const mt_string &filepath, bool writeable) {
 	}
 }
 
-mt_string cfgfile::get_cfg_value(const mt_string &cfg_identifier) {
+std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 	mx.lock();
 	if(!file.is_open()) {
 		mx.unlock();
 		return "";
 	}
 	fstream tmpfile(filepath.c_str(), fstream::in); // second fstream to make const possible
-	mt_string buff, identstr, val;
+	std::string buff, identstr, val;
 	size_t eqloc;
 	while(!tmpfile.eof() && tmpfile.good()) {
 		getline(tmpfile, buff);
@@ -66,7 +66,7 @@ mt_string cfgfile::get_cfg_value(const mt_string &cfg_identifier) {
 	return "";
 }
 
-bool cfgfile::set_cfg_value(const mt_string &cfg_identifier, const mt_string &cfg_value) {
+bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string &cfg_value) {
 	mx.lock();
 	if(!is_writeable || !file.is_open()) {
 		mx.unlock();
@@ -74,8 +74,8 @@ bool cfgfile::set_cfg_value(const mt_string &cfg_identifier, const mt_string &cf
 	}
 
 	file.seekg(0);
-	vector<mt_string> cfgvec;
-	mt_string buff, newbuff, identstr, val;
+	vector<std::string> cfgvec;
+	std::string buff, newbuff, identstr, val;
 	size_t eqloc;
 	bool done = false;
 
@@ -84,7 +84,7 @@ bool cfgfile::set_cfg_value(const mt_string &cfg_identifier, const mt_string &cf
 		cfgvec.push_back(buff);
 	}
 
-	for(vector<mt_string>::iterator it = cfgvec.begin(); it != cfgvec.end(); ++it) {
+	for(vector<std::string>::iterator it = cfgvec.begin(); it != cfgvec.end(); ++it) {
 		newbuff = it->substr(0, it->find(comment_token));
 		eqloc = newbuff.find(eqtoken);
 		identstr = newbuff.substr(0, eqloc);
@@ -105,7 +105,7 @@ bool cfgfile::set_cfg_value(const mt_string &cfg_identifier, const mt_string &cf
 	// write to file.. need to close/reopen it in order to delete the existing content
 	file.close();
 	file.open(filepath.c_str(), fstream::in | fstream::out | fstream::trunc);
-	for(vector<mt_string>::iterator it = cfgvec.begin(); it != cfgvec.end(); ++it) {
+	for(vector<std::string>::iterator it = cfgvec.begin(); it != cfgvec.end(); ++it) {
 		file << *it;
 		if(it != cfgvec.end() - 1) {
 			file << '\n';
@@ -118,11 +118,11 @@ bool cfgfile::set_cfg_value(const mt_string &cfg_identifier, const mt_string &cf
 	return true;
 }
 
-mt_string cfgfile::get_comment_token() const {
+std::string cfgfile::get_comment_token() const {
 	return comment_token;
 }
 
-void cfgfile::set_comment_token(const mt_string &comment_token) {
+void cfgfile::set_comment_token(const std::string &comment_token) {
 	this->comment_token = comment_token;
 }
 
@@ -148,17 +148,17 @@ inline bool cfgfile::writeable() const {
 	return is_writeable;
 }
 
-inline mt_string cfgfile::get_filepath() const {
+inline std::string cfgfile::get_filepath() const {
 	return filepath;
 }
 
-bool cfgfile::list_config(mt_string& resultstr) {
+bool cfgfile::list_config(std::string& resultstr) {
 	mx.lock();
 	if(!file.is_open()) {
 		mx.unlock();
 		return false;
 	}
-	mt_string buff;
+	std::string buff;
 	resultstr = "";
 	while(!file.eof() && file.good()) {
 		getline(file, buff);
@@ -166,7 +166,7 @@ bool cfgfile::list_config(mt_string& resultstr) {
 		if(buff.empty()) {
 			continue;
 		} else {
-			if(buff.find(comment_token, 0) != mt_string::npos) {
+			if(buff.find(comment_token, 0) != std::string::npos) {
 				buff = buff.substr(0, buff.find(comment_token, 0));
 			}
 			resultstr += buff;
@@ -178,7 +178,7 @@ bool cfgfile::list_config(mt_string& resultstr) {
 
 }
 
-void cfgfile::trim(mt_string &str) const {
+void cfgfile::trim(std::string &str) const {
 	while(str.length() > 0 && isspace(str[0])) {
 		str.erase(str.begin());
 	}

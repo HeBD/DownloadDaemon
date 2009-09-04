@@ -4,7 +4,7 @@
 using namespace std;
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
-	mt_string *blubb = (mt_string*)userp;
+	std::string *blubb = (std::string*)userp;
 	blubb->append((char*)buffer, nmemb);
 	return nmemb;
 }
@@ -12,7 +12,7 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	CURL* prepare_handle = curl_easy_init();
 
-	mt_string resultstr;
+	std::string resultstr;
 	curl_easy_setopt(prepare_handle, CURLOPT_URL, get_url());
 	curl_easy_setopt(prepare_handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(prepare_handle, CURLOPT_WRITEDATA, &resultstr);
@@ -22,16 +22,16 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_CONNECTION_ERROR;
 	}
 
-	if(resultstr.find("The file could not be found") != mt_string::npos || resultstr.find("404 Not Found") != mt_string::npos || resultstr.find("file has been removed") != mt_string::npos) {
+	if(resultstr.find("The file could not be found") != std::string::npos || resultstr.find("404 Not Found") != std::string::npos || resultstr.find("file has been removed") != std::string::npos) {
 		return PLUGIN_FILE_NOT_FOUND;
 	}
 
 	unsigned int pos;
-	if((pos = resultstr.find("<form id=\"ff\"")) == mt_string::npos) {
+	if((pos = resultstr.find("<form id=\"ff\"")) == std::string::npos) {
 		return PLUGIN_ERROR;
 	}
 
-	mt_string url;
+	std::string url;
 	pos = resultstr.find("http://", pos);
 	unsigned int end = resultstr.find('\"', pos);
 
@@ -45,20 +45,20 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	curl_easy_setopt(prepare_handle, CURLOPT_POSTFIELDS, "dl.start=\"Free\"");
 	curl_easy_perform(prepare_handle);
 
-	if(resultstr.find("Or try again in about") != mt_string::npos) {
+	if(resultstr.find("Or try again in about") != std::string::npos) {
 		pos = resultstr.find("Or try again in about");
 		pos = resultstr.find("about", pos);
 		pos = resultstr.find(' ', pos);
 		++pos;
 		end = resultstr.find(' ', pos);
-		mt_string have_to_wait(resultstr.substr(pos, end - pos));
+		std::string have_to_wait(resultstr.substr(pos, end - pos));
 		set_wait_time(atoi(have_to_wait.c_str()) * 60);
 		return PLUGIN_LIMIT_REACHED;
-	} else if(resultstr.find("Please try again in 2 minutes") != mt_string::npos) {
+	} else if(resultstr.find("Please try again in 2 minutes") != std::string::npos) {
 		set_wait_time(120);
 		return PLUGIN_SERVER_OVERLOADED;
 	} else {
-		if((pos = resultstr.find("var c")) == mt_string::npos) {
+		if((pos = resultstr.find("var c")) == std::string::npos) {
 			// Unable to get the wait time, will wait 135 seconds
 			set_wait_time(135);
 		} else {
@@ -67,7 +67,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			set_wait_time(atoi(resultstr.substr(pos, end).c_str()));
 		}
 
-		if((pos = resultstr.find("<form name=\"dlf\"")) == mt_string::npos) {
+		if((pos = resultstr.find("<form name=\"dlf\"")) == std::string::npos) {
 			return PLUGIN_ERROR;
 		}
 

@@ -80,7 +80,7 @@ public:
 	*	@param value Value to set the variable to
 	*	@returns LIST_SUCCESS, LIST_PERMISSION, LIST_ID, LIST_PROPERTY
 	*/
-	int set_string_property(int id, string_property prop, mt_string value);
+	int set_string_property(int id, string_property prop, std::string value);
 	int set_int_property(int id, property prop, int value);
 	int set_pointer_property(int id, pointer_property prop, void* value);
 
@@ -88,7 +88,7 @@ public:
 	*	@param id ID of the download to get a variable from
 	*	@param prop Property to get
 	*/
-	mt_string get_string_property(int id, string_property prop);
+	std::string get_string_property(int id, string_property prop);
 	void* get_pointer_property(int id, pointer_property prop);
 	int get_int_property(int id, property prop);
 
@@ -109,7 +109,7 @@ public:
 	*	@param dl Download from which to get the host
 	*	@returns the hostname
 	*/
-	mt_string get_host(int dl);
+	std::string get_host(int dl);
 
 	/** Every download with status DOWNLOAD_WAITING and wait seconds > 0 will decrease wait seconds by one. If 0 is reached, the status will be set to DOWNLOAD_PENDING
 	*/
@@ -122,7 +122,7 @@ public:
 	/** Creates the list for the DL LIST command
 	*	@returns the list
 	*/
-	mt_string create_client_list();
+	std::string create_client_list();
 
 	/** Gets the lowest unused ID that should be used for the next download
 	*	@returns ID
@@ -142,7 +142,7 @@ public:
 
 	static void do_reconnect(download_container *dlist);
 
-	mt_string list_file;
+	std::string list_file;
 
 private:
 	/** get an iterator to a download by giving an ID
@@ -184,7 +184,7 @@ public:
 	const char* what() { return w.c_str(); }
 
 private:
-	mt_string w;
+	std::string w;
 };
 
 #endif // DOWNLOAD_CONTAINER_H_INCLUDED

@@ -17,7 +17,7 @@ using namespace std;
 extern download_container global_download_list;
 extern cfgfile global_config;
 extern cfgfile global_router_config;
-extern mt_string program_root;
+extern std::string program_root;
 
 void tick_downloads() {
 	while(true) {

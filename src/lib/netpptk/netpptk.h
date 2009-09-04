@@ -1,7 +1,7 @@
 #ifndef NETPPTK_H_
 #define NETPPTK_H_
 
-#include "../mt_string/mt_string.h"
+#include <string>
 #include <boost/thread.hpp>
 
 #ifdef _WIN32
@@ -60,27 +60,21 @@ public:
 	*	@returns True on success
 	*/
 	bool send(const std::string &s);
-	bool send(const mt_string &s) { return send(s.c_str()); }
-	bool send(const char* s) { return send(std::string(s)); }
 
 	/** Receive data from a socket
 	*	@param s String to store the received data
 	*	@returns The number of received bytes, negative value on error
 	*/
 	int recv(std::string &s);
-	int recv(mt_string &s) { std::string a; int ret = recv(a); s = a; return ret; }
 
 	/** Convert the object to book to use easy if(..) constructs for validity-checks */
 	operator bool() const;
 
 	/** Read data from a string to the socket to send it */
 	const tkSock& operator<< (const std::string&);
-	const tkSock& operator<< (const mt_string& s) { operator<<(s.c_str()); return *this; }
-	const tkSock& operator<< (const char* s) { operator<<(std::string(s)); return *this;}
 
 	/** Read data from a socket and save it in a string */
 	const tkSock& operator>> (std::string&);
-	const tkSock& operator>> (mt_string &s) { std::string a; recv(a); s = a; return *this; }
 
 	/** Returns the socket descriptor for manual handling */
 	int get_sockdesc() const {return m_sock;}
@@ -138,14 +132,14 @@ public:
 
 	ERROR_CODE error;
 
-	mt_string what() {
+	std::string what() {
 		if(error == SOCKET_CREATION_FAILED)
-			return mt_string("Socket creation failed");;
+			return std::string("Socket creation failed");;
 		if(error == UNKNOWN_HOST)
-			return mt_string("Unknown Host");
+			return std::string("Unknown Host");
 		if(error == CONNECTION_PROBLEM)
-			return mt_string("A Problem occured while trying to handle a connection");
-		return mt_string("");
+			return std::string("A Problem occured while trying to handle a connection");
+		return std::string("");
 	}
 };
 

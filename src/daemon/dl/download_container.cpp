@@ -3,17 +3,18 @@
 #include <dlfcn.h>
 
 #include <sstream>
+#include <string>
+#include <cstdlib>
 
 #include "download_container.h"
 #include "download.h"
 #include "../../lib/cfgfile/cfgfile.h"
-#include "../../lib/mt_string/mt_string.h"
 #include "../tools/helperfunctions.h"
 
 using namespace std;
 
 #ifndef IS_PLUGIN
-extern mt_string program_root;
+extern std::string program_root;
 extern cfgfile global_config;
 extern cfgfile global_router_config;
 #endif // IS_PLUGIN
@@ -27,7 +28,7 @@ int download_container::from_file(const char* filename) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	list_file = filename;
 	ifstream dlist(filename);
-	mt_string line;
+	std::string line;
 	while(getline(dlist, line)) {
 		download_list.push_back(download(line));
 	}
@@ -180,8 +181,8 @@ int download_container::get_next_downloadable(bool lock) {
 	}
 
 	// Checking if we are in download-time...
-	mt_string dl_start(global_config.get_cfg_value("download_timing_start"));
-	if(global_config.get_cfg_value("download_timing_start").find(':') != mt_string::npos && !global_config.get_cfg_value("download_timing_end").find(':') != mt_string::npos ) {
+	std::string dl_start(global_config.get_cfg_value("download_timing_start"));
+	if(global_config.get_cfg_value("download_timing_start").find(':') != std::string::npos && !global_config.get_cfg_value("download_timing_end").find(':') != std::string::npos ) {
 		time_t rawtime;
 		struct tm * current_time;
 		time ( &rawtime );
@@ -230,7 +231,7 @@ int download_container::get_next_downloadable(bool lock) {
 
 	for(iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_PENDING) {
-			mt_string current_host(it->get_host());
+			std::string current_host(it->get_host());
 			bool can_attach = true;
 			for(download_container::iterator it2 = download_list.begin(); it2 != download_list.end(); ++it2) {
 				if((it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING) && !it2->get_hostinfo().allows_multiple) || it->is_running) {
@@ -245,13 +246,13 @@ int download_container::get_next_downloadable(bool lock) {
 	return LIST_ID;
 }
 #endif // IS_PLUGIN
-int download_container::set_string_property(int id, string_property prop, mt_string value) {
+int download_container::set_string_property(int id, string_property prop, std::string value) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
 		return LIST_ID;
 	}
-	mt_string old_val = value;
+	std::string old_val = value;
 	switch(prop) {
 		case DL_URL:
 			dl->url = value;
@@ -423,11 +424,11 @@ int download_container::get_int_property(int id, property prop) {
 	return -1;
 }
 
-mt_string download_container::get_string_property(int id, string_property prop) {
+std::string download_container::get_string_property(int id, string_property prop) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
-		throw download_exception((string("Invalid download ID: ") + id). c_str());
+		throw download_exception((string("Invalid download ID: ") + int_to_string(id)). c_str());
 	}
 	switch(prop) {
 		case DL_URL:
@@ -459,7 +460,7 @@ void* download_container::get_pointer_property(int id, pointer_property prop) {
 
 #ifndef IS_PLUGIN
 bool download_container::reconnect_needed() {
-	mt_string reconnect_policy;
+	std::string reconnect_policy;
 
     if(global_config.get_cfg_value("enable_reconnect") == "0") {
         return false;
@@ -530,7 +531,7 @@ bool download_container::reconnect_needed() {
 void download_container::do_reconnect(download_container *dlist) {
 	dlist->is_reconnecting = true;
 	boost::mutex::scoped_lock lock(dlist->download_mutex);
-	mt_string router_ip, router_username, router_password, reconnect_plugin;
+	std::string router_ip, router_username, router_password, reconnect_plugin;
 
 	router_ip = global_router_config.get_cfg_value("router_ip");
 	if(router_ip.empty()) {
@@ -548,7 +549,7 @@ void download_container::do_reconnect(download_container *dlist) {
 		return;
 	}
 
-	mt_string reconnect_script = program_root + "/reconnect/lib" + reconnect_plugin + ".so";
+	std::string reconnect_script = program_root + "/reconnect/lib" + reconnect_plugin + ".so";
 	struct stat st;
 	if(stat(reconnect_script.c_str(), &st) != 0) {
 		log_string("Reconnect plugin for selected router model not found!", LOG_SEVERE);
@@ -558,19 +559,19 @@ void download_container::do_reconnect(download_container *dlist) {
 
 	void* handle = dlopen(reconnect_script.c_str(), RTLD_LAZY);
     if (!handle) {
-		log_string(mt_string("Unable to open library file: ") + dlerror() + '/' + reconnect_script, LOG_SEVERE);
+		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + reconnect_script, LOG_SEVERE);
 		dlist->is_reconnecting = false;
         return;
     }
 
 	dlerror();    // Clear any existing error
 
-	void (*reconnect)(mt_string, mt_string, mt_string);
-    reconnect = (void (*)(mt_string, mt_string, mt_string))dlsym(handle, "reconnect");
+	void (*reconnect)(std::string, std::string, std::string);
+    reconnect = (void (*)(std::string, std::string, std::string))dlsym(handle, "reconnect");
 
     char *error;
     if ((error = dlerror()) != NULL)  {
-    	log_string(mt_string("Unable to get reconnect information: ") + error, LOG_SEVERE);
+    	log_string(std::string("Unable to get reconnect information: ") + error, LOG_SEVERE);
     	dlist->is_reconnecting = false;
     	return;
     }
@@ -594,8 +595,8 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	plugin_input pinp;
 	download_container::iterator dlit = get_download_by_id(dl);
 
-	mt_string host(dlit->get_host());
-	mt_string plugindir = global_config.get_cfg_value("plugin_dir");
+	std::string host(dlit->get_host());
+	std::string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);
 	if(host == "") {
 		return PLUGIN_INVALID_HOST;
@@ -606,7 +607,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 		return PLUGIN_INVALID_PATH;
 	}
 
-	mt_string pluginfile(plugindir + "lib" + host + ".so");
+	std::string pluginfile(plugindir + "lib" + host + ".so");
 	bool use_generic = false;
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;
@@ -622,7 +623,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	// Load the plugin function needed
 	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
     if (!handle) {
-		log_string(mt_string("Unable to open library file: ") + dlerror(), LOG_SEVERE);
+		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_SEVERE);
         return PLUGIN_ERROR;
     }
 
@@ -633,7 +634,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 
     char *error;
     if ((error = dlerror()) != NULL)  {
-    	log_string(mt_string("Unable to execute plugin: ") + error, LOG_SEVERE);
+    	log_string(std::string("Unable to execute plugin: ") + error, LOG_SEVERE);
     	return PLUGIN_ERROR;
     }
 
@@ -649,7 +650,7 @@ plugin_output download_container::get_hostinfo(int dl) {
 	return it->get_hostinfo();
 }
 
-mt_string download_container::get_host(int dl) {
+std::string download_container::get_host(int dl) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator it = get_download_by_id(dl);
 	return it->get_host();
@@ -681,7 +682,7 @@ void download_container::purge_deleted() {
 	}
 }
 
-mt_string download_container::create_client_list() {
+std::string download_container::create_client_list() {
 	boost::mutex::scoped_lock lock(download_mutex);
 
 	std::stringstream ss;
@@ -691,7 +692,7 @@ mt_string download_container::create_client_list() {
 			continue;
 		}
 		ss << it->id << '|' << it->add_date << '|';
-		mt_string comment = it->comment;
+		std::string comment = it->comment;
 		replace_all(comment, "|", "\\|");
 		ss << comment << '|' << it->url << '|' << it->get_status_str() << '|' << it->downloaded_bytes << '|' << it->size
 		   << '|' << it->wait_seconds << '|' << it->get_error_str() << '\n';
