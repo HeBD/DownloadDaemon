@@ -108,8 +108,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	SetClientSize(wxSize(750,500));
 	SetMinSize(wxSize(750,500));
 	CenterOnScreen();
-	SetIcon(wxIcon(working_dir + wxT("img/logoDD.xpm")));
-
+	SetIcon(wxIcon(working_dir + wxT("img/logoDD.png")));
 
 	add_bars();
 	add_components();
