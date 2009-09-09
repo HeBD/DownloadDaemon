@@ -37,9 +37,9 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString
 	port_input = new wxTextCtrl(this,-1,wxT("56789"), wxDefaultPosition, wxSize(50, 25));
 	pass_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(150, 25), wxTE_PASSWORD);
 
-	connect_button = new wxButton(this, wxID_OK, wxT("Connect"));
+	connect_button = new wxButton(this, wxID_OK);
 	connect_button->SetDefault();
-	cancel_button = new wxButton(this, wxID_CANCEL, wxT("Cancel"));
+	cancel_button = new wxButton(this, wxID_CANCEL);
 
 
 	// filling sizers
@@ -59,7 +59,7 @@ connect_dialog::connect_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString
 
 	dialog_sizer->Add(text_sizer, 0, wxGROW);
 	dialog_sizer->Add(outer_input_sizer, 0, wxGROW|wxLEFT|wxRIGHT, 20);
-	dialog_sizer->Add(button_sizer, 0, wxGROW);
+	dialog_sizer->Add(button_sizer, 0, wxLEFT|wxRIGHT, 0);
 
 	SetSizer(dialog_sizer);
 	Layout();

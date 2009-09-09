@@ -93,11 +93,6 @@ class configure_dialog : public wxDialog{
 		wxFlexGridSizer *log_output_sizer;
 		wxBoxSizer *log_button_sizer;
 
-		// element IDs
-		static const long id_download_change;
-		static const long id_pass_change;
-		static const long id_log_change;
-
 		void create_download_panel();
 		void create_pass_panel();
 		void create_log_panel();

@@ -10,17 +10,10 @@
 #include "ddclient-wx_configure_dialog.h"
 
 
-// IDs
-const long configure_dialog::id_download_change = wxNewId();
-const long configure_dialog::id_pass_change = wxNewId();
-const long configure_dialog::id_log_change = wxNewId();
-
-
 // event table
 BEGIN_EVENT_TABLE(configure_dialog, wxDialog)
-	EVT_BUTTON(id_download_change, configure_dialog::on_apply)
-	EVT_BUTTON(id_pass_change, configure_dialog::on_pass_change)
-	EVT_BUTTON(id_log_change, configure_dialog::on_apply)
+	EVT_BUTTON(wxID_APPLY, configure_dialog::on_apply)
+	EVT_BUTTON(wxID_SAVE, configure_dialog::on_pass_change)
 	EVT_BUTTON(wxID_CANCEL, configure_dialog::on_cancel)
 END_EVENT_TABLE()
 
@@ -71,8 +64,9 @@ void configure_dialog::create_download_panel(){
 	save_dir_input = new wxTextCtrl(download_panel, -1, get_var("download_folder"), wxDefaultPosition, wxSize(400, 25));
 	count_input = new wxTextCtrl(download_panel, -1, get_var("simultaneous_downloads"), wxDefaultPosition, wxSize(100, 25));
 
-	download_button = new wxButton(download_panel, id_download_change, wxT("Apply"));
-	download_cancel_button = new wxButton(download_panel, wxID_CANCEL, wxT("Cancel"));
+//	download_button = new wxButton(download_panel, id_download_change, wxT("Apply"));
+	download_button = new wxButton(download_panel, wxID_APPLY);
+	download_cancel_button = new wxButton(download_panel, wxID_CANCEL);
 
 	// filling sizers
 	time_sizer->Add(start_time_text, 0, wxALIGN_LEFT);
@@ -120,8 +114,8 @@ void configure_dialog::create_pass_panel(){
 	old_pass_input = new wxTextCtrl(pass_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
 	new_pass_input = new wxTextCtrl(pass_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
 
-	pass_button = new wxButton(pass_panel, id_pass_change, wxT("Change Password"));
-	pass_cancel_button = new wxButton(pass_panel, wxID_CANCEL, wxT("Cancel"));
+	pass_button = new wxButton(pass_panel, wxID_SAVE);
+	pass_cancel_button = new wxButton(pass_panel, wxID_CANCEL);
 
 	// filling sizers
 	pass_sizer->Add(old_pass_text, 0, wxALIGN_LEFT);
@@ -177,8 +171,8 @@ void configure_dialog::create_log_panel(){
 	log_activity_choice = new wxChoice(log_panel, -1, wxDefaultPosition, wxSize(100, 30), activity);
 	log_activity_choice->SetSelection(selection);
 
-	log_button = new wxButton(log_panel, id_log_change, wxT("Apply"));
-	log_cancel_button = new wxButton(log_panel, wxID_CANCEL, wxT("Cancel"));
+	log_button = new wxButton(log_panel, wxID_APPLY);
+	log_cancel_button = new wxButton(log_panel, wxID_CANCEL);
 
 	// filling sizers
 	log_output_sizer->Add(log_output_text, 0, wxALIGN_LEFT);

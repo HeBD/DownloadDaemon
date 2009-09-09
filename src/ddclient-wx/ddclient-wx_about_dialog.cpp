@@ -53,7 +53,7 @@ about_dialog::about_dialog(wxString working_dir, wxWindow *parent) : wxDialog(pa
 	website_text->SetNormalColour(wxT("NAVY"));
 	website_text->SetHoverColour(wxT("MEDIUM SLATE BLUE"));
 
-	ok_button = new wxButton(this, wxID_OK, wxT("Ok"));
+	ok_button = new wxButton(this, wxID_OK);
 	ok_button->SetDefault();
 
 	wxString url = working_dir + wxT("img/teufelchen_about.png");

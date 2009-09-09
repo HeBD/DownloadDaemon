@@ -1,3 +1,11 @@
+2009-09-09
+   [susanne]
+	- changed add downloads dialog at ddclient-wx 
+
+2009-09-08
+   [susanne]
+	- replaced some buttons at ddclient-wx
+
 2009-09-04
    [adrian]
 	- fixed crash when rapidly deactivating/activating downloads

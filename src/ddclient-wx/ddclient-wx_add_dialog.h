@@ -42,22 +42,17 @@ class add_dialog : public wxDialog{
 		wxTextCtrl *url_input;
 		wxTextCtrl *many_input;
 
-		wxButton *add_one_button;
-		wxButton *add_many_button;
+		wxButton *add_button;
 		wxButton *cancel_button;
 
 		wxBoxSizer *dialog_sizer;
 		wxStaticBoxSizer* outer_add_one_sizer;
 		wxStaticBoxSizer* outer_add_many_sizer;
 		wxFlexGridSizer *inner_add_one_sizer;
-
-		// element IDs
-		static const long id_add_one;
-		static const long id_add_many;
+		wxBoxSizer *button_sizer;
 
 		// event handle methods
-		void on_add_one(wxCommandEvent &event);
-		void on_add_many(wxCommandEvent &event);
+		void on_add(wxCommandEvent &event);
 		void on_cancel(wxCommandEvent &event);
 
 		DECLARE_EVENT_TABLE()

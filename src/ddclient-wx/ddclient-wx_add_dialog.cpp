@@ -10,15 +10,9 @@
 #include "ddclient-wx_add_dialog.h"
 
 
-// IDs
-const long add_dialog::id_add_one = wxNewId();
-const long add_dialog::id_add_many = wxNewId();
-
-
 // event table
 BEGIN_EVENT_TABLE(add_dialog, wxDialog)
-	EVT_BUTTON(id_add_one, add_dialog::on_add_one)
-	EVT_BUTTON(id_add_many, add_dialog::on_add_many)
+	EVT_BUTTON(wxID_ADD, add_dialog::on_add)
 	EVT_BUTTON(wxID_CANCEL, add_dialog::on_cancel)
 END_EVENT_TABLE()
 
@@ -30,6 +24,7 @@ add_dialog::add_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Ad
 	outer_add_one_sizer = new wxStaticBoxSizer(wxVERTICAL,this,wxT("single Download"));
 	outer_add_many_sizer = new wxStaticBoxSizer(wxVERTICAL,this,wxT("many Downloads"));
 	inner_add_one_sizer = new wxFlexGridSizer(2, 2, 10, 10);
+	button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
 	add_one_text = new wxStaticText(this, -1, wxT("Add single Download (no Title necessary)"));
 	add_many_text = new wxStaticText(this, -1, wxT("\nAdd many Downloads (one per Line, no Title necessary)"));
@@ -42,10 +37,9 @@ add_dialog::add_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Ad
 	url_input->SetFocus();
 	many_input = new wxTextCtrl(this,-1,wxT(""), wxDefaultPosition, wxSize(410, 100), wxTE_MULTILINE);
 
-	add_one_button = new wxButton(this, id_add_one, wxT("Add one"));
-	add_one_button->SetDefault();
-	add_many_button = new wxButton(this, id_add_many, wxT("Add many"));
-	cancel_button = new wxButton(this, wxID_CANCEL, wxT("Cancel"));
+	add_button = new wxButton(this, wxID_ADD);
+	add_button->SetDefault();
+	cancel_button = new wxButton(this, wxID_CANCEL);
 
 
 	// filling sizers
@@ -55,18 +49,18 @@ add_dialog::add_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Ad
 	inner_add_one_sizer->Add(url_input, 0, wxALIGN_LEFT);
 
 	outer_add_one_sizer->Add(inner_add_one_sizer, 0,wxALL|wxEXPAND,10);
-	outer_add_one_sizer->Add(add_one_button, 0,wxALL,10);
 
 	outer_add_many_sizer->Add(add_many_inner_text, 0,wxALL|wxEXPAND,10);
 	outer_add_many_sizer->Add(many_input, 0,wxALL|wxEXPAND,10);
-	outer_add_many_sizer->Add(add_many_button, 0,wxALL,10);
+
+	button_sizer->Add(add_button, 1, wxALL, 20);
+	button_sizer->Add(cancel_button, 1, wxALL, 20);
 
 	dialog_sizer->Add(add_one_text, 0, wxALL|wxGROW, 10);
 	dialog_sizer->Add(outer_add_one_sizer, 0, wxALL|wxGROW, 10);
 	dialog_sizer->Add(add_many_text, 0, wxALL|wxGROW, 10);
 	dialog_sizer->Add(outer_add_many_sizer, 0, wxALL|wxGROW, 10);
-	dialog_sizer->Add(cancel_button, 0, wxALL, 10);
-
+	dialog_sizer->Add(button_sizer, 0, wxLEFT|wxRIGHT, 0);
 
 	SetSizer(dialog_sizer);
 	Layout();
@@ -75,7 +69,7 @@ add_dialog::add_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Ad
 
 
 // event handle methods
-void add_dialog::on_add_one(wxCommandEvent &event){
+void add_dialog::on_add(wxCommandEvent &event){
 
 	// extracting the data
 	string title = string((title_input->GetValue()).mb_str());
@@ -102,41 +96,22 @@ void add_dialog::on_add_one(wxCommandEvent &event){
 		boost::mutex *mx = myparent->get_mutex();
 		mx->lock();
 
-		string answer;
-
-		mysock->send("DDP DL ADD " + url + " " + title);
-		mysock->recv(answer);
-
-		if(answer.find("103") == 0) // 103 URL <-- Invalid URL
-			wxMessageBox(wxT("The inserted URL was invalid."), wxT("Invalid URL"));
-
-		mx->unlock();
-	}
-
-	Destroy();
-}
-
-
-void add_dialog::on_add_many(wxCommandEvent &event){
-
-	// check connection
-	myframe *myparent = (myframe *) GetParent();
-	tkSock *mysock = myparent->get_connection_attributes();
-
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
-
-	}else{ // we have a connection
-
-		boost::mutex *mx = myparent->get_mutex();
-		mx->lock();
-
-		string many = string((many_input->GetValue()).mb_str());
-
 		vector<string> splitted_line;
-		string line, snd, answer;
+		string line, snd, answer, many;
 		size_t lineend = 1, urlend;
 		bool error_occured = false;
+
+		if(!url.empty()){ // add single download
+
+			mysock->send("DDP DL ADD " + url + " " + title);
+			mysock->recv(answer);
+
+			if(answer.find("103") == 0) // 103 URL <-- Invalid URL
+				error_occured = true;
+		}
+
+		// add many downloads
+		many = string((many_input->GetValue()).mb_str());
 
 		// parse lines
 		while(many.length() > 0 && lineend != string::npos){
