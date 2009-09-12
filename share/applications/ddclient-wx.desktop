@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=DownloadDaemon Client
+GenericName=Download Manager
+Comment=GUI-Client to manage DownloadDaemon servers
+Exec=ddclient-wx
+Terminal=false
+Type=Application
+StartupNotify=false
+Categories=Network;FileTransfer;

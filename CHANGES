@@ -1,3 +1,9 @@
+2009-09-12
+   [adrian]
+	- Made ddclient-wx a bit more debian-package ready
+	- added script to automate version/source-package generation (currently only ddclient-wx)
+	- update CMakeLists
+
 2009-09-09
    [susanne]
 	- changed add downloads dialog at ddclient-wx 
