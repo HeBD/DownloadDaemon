@@ -234,7 +234,7 @@ int download_container::get_next_downloadable(bool lock) {
 			std::string current_host(it->get_host());
 			bool can_attach = true;
 			for(download_container::iterator it2 = download_list.begin(); it2 != download_list.end(); ++it2) {
-				if((it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING) && !it2->get_hostinfo().allows_multiple) || it->is_running) {
+				if(it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING) && !it2->get_hostinfo().allows_multiple || it->is_running) {
 					can_attach = false;
 				}
 			}

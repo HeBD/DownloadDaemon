@@ -27,10 +27,10 @@ IF(Boost_FOUND AND CURL_FOUND)
 ENDIF(Boost_FOUND AND CURL_FOUND)
 
 install(TARGETS DownloadDaemon DESTINATION /opt/downloaddaemon/)
-install(FILES ../../program_data/LICENCE DESTINATION /opt/downloaddaemon) 
-install(FILES ../../program_data/conf/downloaddaemon.conf DESTINATION /opt/downloaddaemon/conf)
-install(FILES ../../program_data/downloaddaemon DESTINATION bin PERMISSIONS WORLD_EXECUTE WORLD_READ GROUP_EXECUTE GROUP_READ OWNER_EXECUTE OWNER_READ OWNER_WRITE)
-install(FILES ../../program_data/conf/routerinfo.conf DESTINATION /opt/downloaddaemon/conf)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/LICENCE DESTINATION /opt/downloaddaemon) 
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/conf/downloaddaemon.conf DESTINATION /opt/downloaddaemon/conf)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/downloaddaemon DESTINATION bin PERMISSIONS WORLD_EXECUTE WORLD_READ GROUP_EXECUTE GROUP_READ OWNER_EXECUTE OWNER_READ OWNER_WRITE)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/conf/routerinfo.conf DESTINATION /opt/downloaddaemon/conf)
 install(CODE "FILE(MAKE_DIRECTORY /opt/downloaddaemon/downloads)")
 
 
