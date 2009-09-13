@@ -1,9 +1,0 @@
-<area shape="rect" href="$download_8cpp.html" title="daemon/dl/download.cpp" alt="" coords="5,80,168,107">
-<area shape="rect" href="$download__thread_8cpp.html" title="daemon/dl/download_thread.cpp" alt="" coords="192,80,400,107">
-<area shape="rect" href="$downloaddaemon_8cpp.html" title="daemon/downloaddaemon.cpp" alt="" coords="435,155,629,181">
-<area shape="rect" href="$mgmt__thread_8h.html" title="daemon/mgmt/mgmt_thread.h" alt="" coords="613,80,808,107">
-<area shape="rect" href="$mgmt__thread_8cpp.html" title="daemon/mgmt/mgmt_thread.cpp" alt="" coords="697,155,905,181">
-<area shape="rect" href="$global_8h.html" title="daemon/global.h" alt="" coords="475,80,589,107">
-<area shape="rect" href="$global__management_8cpp.html" title="daemon/mgmt/global_management.cpp" alt="" coords="883,80,1131,107">
-<area shape="rect" href="$helperfunctions_8cpp.html" title="daemon/tools/helperfunctions.cpp" alt="" coords="1155,80,1371,107">
-<area shape="rect" href="$cfgfile_8cpp.html" title="lib/cfgfile/cfgfile.cpp" alt="" coords="1395,80,1531,107">
