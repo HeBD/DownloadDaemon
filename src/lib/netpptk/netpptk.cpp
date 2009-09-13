@@ -13,8 +13,12 @@
 #include <sstream>
 #include <cstring>
 #include <vector>
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
+
+#ifndef NO_BOOST_THREAD
+	#include <boost/bind.hpp>
+	#include <boost/thread.hpp>
+#endif
+
 #ifdef _WIN32
 	#include <windows.h>
     #include <winsock2.h>
@@ -123,9 +127,11 @@ tkSock::~tkSock() {
 	#else
 		close(m_sock);
 	#endif
+	#ifndef NO_BOOST_THREAD
 	if(auto_accept_thread != 0) {
 		delete auto_accept_thread;
 	}
+	#endif
 	--m_instanceCount;
 }
 
@@ -180,6 +186,7 @@ bool tkSock::accept (tkSock& new_socket) {
 	return true;
 }
 
+#ifndef NO_BOOST_THREAD
 void tkSock::auto_accept (void (*handle) (tkSock*)) {
 	auto_accept_thread = new boost::thread(boost::bind(&tkSock::auto_accept_threadfunc, this, handle));
 }
@@ -228,7 +235,7 @@ void tkSock::auto_accept_stop() {
 	stop_threads = true;
 	auto_accept_thread = 0;
 }
-
+#endif
 bool tkSock::connect(const std::string host, const int port) {
 	struct hostent *host_info;
 	unsigned long addr;

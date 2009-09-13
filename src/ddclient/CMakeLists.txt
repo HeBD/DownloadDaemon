@@ -3,13 +3,7 @@ project(ddclient)
 
 SET(ddclient_SRCS ddclient.cpp ../lib/netpptk/netpptk.cpp)
 
-
-find_package(Boost REQUIRED COMPONENTS thread)
-
-IF(Boost_FOUND)
-	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
-	ADD_EXECUTABLE(ddclient ${ddclient_SRCS})
-	TARGET_LINK_LIBRARIES(ddclient ${Boost_LIBRARIES})
-ENDIF(Boost_FOUND)
+SET_SOURCE_FILES_PROPERTIES(${ddclient_SRCS} PROPERTIES COMPILE_FLAGS -DNO_BOOST_THREAD)
+ADD_EXECUTABLE(ddclient ${ddclient_SRCS})
 
 install(TARGETS ddclient DESTINATION bin)
