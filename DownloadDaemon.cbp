@@ -31,10 +31,8 @@
 					<Add option="-pedantic" />
 					<Add option="-Wall" />
 					<Add option="-g" />
+					<Add option="-DNO_BOOST_THREAD" />
 				</Compiler>
-				<Linker>
-					<Add library="boost_thread-mt" />
-				</Linker>
 			</Target>
 			<Target title="DDClient-wx">
 				<Option output="build/ddclient-wx" prefix_auto="1" extension_auto="1" />
