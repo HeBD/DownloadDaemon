@@ -105,6 +105,7 @@ void download::operator=(const download& dl) {
 	error = dl.error;
 	output_file = dl.output_file;
 	status = dl.status;
+	is_running = dl.is_running;
 }
 
 download::~download() {

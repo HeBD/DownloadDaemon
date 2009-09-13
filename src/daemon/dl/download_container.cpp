@@ -234,8 +234,13 @@ int download_container::get_next_downloadable(bool lock) {
 			std::string current_host(it->get_host());
 			bool can_attach = true;
 			for(download_container::iterator it2 = download_list.begin(); it2 != download_list.end(); ++it2) {
-				if(it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING || it->is_running)
+				if(it == it2) {
+					continue;
+				}
+				if(it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING || it2->is_running)
 				   && !it2->get_hostinfo().allows_multiple) {
+				   	download blah(*it);
+				   	download blub(*it2);
 					can_attach = false;
 					break;
 				}
@@ -462,6 +467,8 @@ void* download_container::get_pointer_property(int id, pointer_property prop) {
 
 #ifndef IS_PLUGIN
 bool download_container::reconnect_needed() {
+	// only called in download::set_status which is only called by set_*_property, which locks.
+	// therefore no lock needed
 	std::string reconnect_policy;
 
     if(global_config.get_cfg_value("enable_reconnect") == "0") {
