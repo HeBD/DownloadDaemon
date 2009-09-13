@@ -164,21 +164,18 @@ void download_thread(int download) {
 		switch(success) {
 			case 0:
 				log_string(std::string("Finished download ID: ") + int_to_string(download), LOG_DEBUG);
-				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_FINISHED);
-				curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
 				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_FINISHED);
 				return;
 			case 28:
 				if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE) {
 					log_string(std::string("Stopped download ID: ") + int_to_string(download), LOG_WARNING);
-					curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
 				} else if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
-					// nothing to do...
+					// nothing to do
 				} else {
 					log_string(std::string("Connection lost for download ID: ") + int_to_string(download), LOG_WARNING);
 					global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_CONNECTION_LOST);
 					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
-					curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
 				}
 				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				return;
@@ -186,7 +183,6 @@ void download_thread(int download) {
 				log_string(std::string("Download error for download ID: ") + int_to_string(download), LOG_WARNING);
 				global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_CONNECTION_LOST);
 				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
-				curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
 				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				return;
 		}

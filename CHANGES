@@ -1,3 +1,10 @@
+2009-09-13
+   [adrian]
+	- Made downloaddaemon debian-package ready
+	- hopefully fixed bug that get_next_downloadable() sometimes tells crap
+	- added downloaddaemon package-versioning to script
+	- updated CMakeLists
+
 2009-09-12
    [adrian]
 	- Made ddclient-wx a bit more debian-package ready
