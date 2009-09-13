@@ -1,0 +1,42 @@
+This guide is seperated in 3 parts:
+1: Things that you always have to do
+2: Things you have to do if you got this guide in a .tar.gz or .tar.bz2 source package
+3: Things you have to do if you are building from SVN
+
+1:	To build DownloadDaemon, you need to have libcurl (libcurl-dev) and boost_thread (at least version 1.36) installed.
+	To build ddclient, you need to have boost_thread installed (older versions will also do the job)
+	To build ddclient-wx, you need to have boost_thread (older versions are enough) and wxWidgets development packages installed
+
+2:	Building a package from a source package is pretty simple. Extract the archive (if you read this, this should be done by now)
+	and cd to the new folder. now simply run 
+	cmake . && make
+	sudo make install
+	for an in-source-tree build, which should be enough in most cases.
+	If you want to build in another place, simply execute cmake <path to extracted package> instead of cmake .
+	The easyest way to build all programs (server and client) is by changing to the build directory and running
+	"cmake ..", then "make" and "make install"(as root). This will install the daemon with all plugins and 
+	all available clients (except for the web-based php client, you need to do that manually).
+
+3:	Building one of the programs from SVN is a bit harder and depends on what you want to build.
+	First, create a directory in your svn root where you want to build:
+	mkdir build
+	cd build
+	If you want to build all programs (downloaddaemon, ddclient, ddclient-wx), you simply run
+	cmake .. && make
+	If you only want to build a single program, you have to run cmake on their source folders, eg:
+	cmake ../src/daemon
+	or
+	cmake ../src/ddclient
+	or
+	cmake ../src/ddclient-wx
+	
+	in any case, to install the program, run
+	sudo make install
+
+
+ddclient-wx and ddclient will be installed to /usr/local/bin and /usr/local/share. downloaddaemon behaves a bit different.
+It will be installed completely to /opt/downloaddaemon and place a starter-shell-script in /usr/local/bin. To run it, type
+downloaddaemon (or downloaddaemon -d for deamon mode) in a terminal.
+If you don't like /opt/downloaddaemon, you can always move it somewhere else, this is no problem (you just need to change the starter-script
+/usr/local/bin/downloaddaemon)
+

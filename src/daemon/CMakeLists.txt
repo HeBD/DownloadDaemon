@@ -3,8 +3,6 @@ cmake_minimum_required (VERSION 2.6)
 add_subdirectory(plugins)
 add_subdirectory(reconnect)
 
-set(CMAKE_BUILD_TYPE Debug)
-
 SET(daemon_SRCS downloaddaemon.cpp 
 		tools/helperfunctions.cpp 
 		tools/curl_callbacks.cpp 
