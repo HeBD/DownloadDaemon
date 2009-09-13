@@ -213,10 +213,6 @@
 		<Unit filename="src/ddclient/ddclient.cpp">
 			<Option target="DDClient" />
 		</Unit>
-		<Unit filename="src/lib/bind/bind.h">
-			<Option target="Daemon" />
-			<Option target="DDClient" />
-		</Unit>
 		<Unit filename="src/lib/cfgfile/cfgfile.cpp">
 			<Option target="Daemon" />
 		</Unit>
