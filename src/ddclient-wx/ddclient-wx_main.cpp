@@ -179,12 +179,12 @@ void myframe::add_bars(){
 	file_menu->Enable(id_toolbar_download_deactivate, false);
 	file_menu->AppendSeparator();
 
-	file_menu->Append(id_toolbar_activate, wxT("&Activate Download\tAlt-R"), wxT("Activate Download"));
-	file_menu->Append(id_toolbar_deactivate, wxT("&Deactivate Download\tAlt-I"), wxT("Deactivate Download"));
+	file_menu->Append(id_toolbar_activate, wxT("&Activate Download\tAlt-A"), wxT("Activate Download"));
+	file_menu->Append(id_toolbar_deactivate, wxT("&Deactivate Download\tAlt-D"), wxT("Deactivate Download"));
 	file_menu->AppendSeparator();
 
-	file_menu->Append(id_toolbar_add, wxT("&Add Downloads..\tAlt-A"), wxT("Add Downloads"));
-	file_menu->Append(id_toolbar_delete, wxT("&Delete Downloads\tAlt-D"), wxT("Delete Downloads"));
+	file_menu->Append(id_toolbar_add, wxT("&Add Downloads..\tAlt-I"), wxT("Add Downloads"));
+	file_menu->Append(id_toolbar_delete, wxT("&Delete Downloads\tDEL"), wxT("Delete Downloads"));
 	file_menu->Append(id_menu_select_all_lines, wxT("&Select all\tCtrl-A"), wxT("Select all"));
 	file_menu->AppendSeparator();
 

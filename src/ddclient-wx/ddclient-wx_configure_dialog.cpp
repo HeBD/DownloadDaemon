@@ -22,7 +22,7 @@ END_EVENT_TABLE()
 
 configure_dialog::configure_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Configure DownloadDaemon Server"))){
 
-	notebook = new wxNotebook(this, -1, wxDefaultPosition, wxSize(300, 200));
+	notebook = new wxNotebook(this, -1);
 
 	create_download_panel();
 	create_pass_panel();
@@ -32,8 +32,8 @@ configure_dialog::configure_dialog(wxWindow *parent) : wxDialog(parent, -1, wxSt
 	notebook->AddPage(pass_panel, wxT("Password"), false);
 	notebook->AddPage(log_panel, wxT("Logging"), false);
 
-	notebook->Fit();
 	Layout();
+	notebook->Fit();
 	Fit();
 	CenterOnScreen();
 }
@@ -44,9 +44,9 @@ void configure_dialog::create_download_panel(){
 	download_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_download_sizer = new wxBoxSizer(wxVERTICAL);
-	outer_time_sizer = new wxStaticBoxSizer(wxHORIZONTAL,download_panel,wxT("Download Time"));
-	outer_save_dir_sizer = new wxStaticBoxSizer(wxHORIZONTAL,download_panel,wxT("Download Folder"));
-	outer_count_sizer = new wxStaticBoxSizer(wxHORIZONTAL,download_panel,wxT("Download Count"));
+	outer_time_sizer = new wxStaticBoxSizer(wxHORIZONTAL, download_panel, wxT("Download Time"));
+	outer_save_dir_sizer = new wxStaticBoxSizer(wxHORIZONTAL, download_panel, wxT("Download Folder"));
+	outer_count_sizer = new wxStaticBoxSizer(wxHORIZONTAL, download_panel, wxT("Download Count"));
 	time_sizer = new wxFlexGridSizer(2, 2, 10, 10);
 	save_dir_sizer = new wxFlexGridSizer(1, 2, 10, 10);
 	count_sizer = new wxFlexGridSizer(1, 2, 10, 10);
@@ -106,7 +106,7 @@ void configure_dialog::create_pass_panel(){
 	pass_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_pass_sizer = new wxBoxSizer(wxVERTICAL);
-	outer_pass_sizer = new wxStaticBoxSizer(wxHORIZONTAL,pass_panel,wxT("Change Password"));
+	outer_pass_sizer = new wxStaticBoxSizer(wxHORIZONTAL, pass_panel, wxT("Change Password"));
 	pass_sizer = new wxFlexGridSizer(3, 2, 10, 10);
 	pass_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -141,8 +141,8 @@ void configure_dialog::create_log_panel(){
 	log_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_log_sizer = new wxBoxSizer(wxVERTICAL);
-	outer_log_activity_sizer = new wxStaticBoxSizer(wxVERTICAL,log_panel,wxT("Logging Activity"));
-	outer_log_output_sizer = new wxStaticBoxSizer(wxHORIZONTAL,log_panel,wxT("Log Output"));
+	outer_log_activity_sizer = new wxStaticBoxSizer(wxVERTICAL, log_panel, wxT("Logging Activity"));
+	outer_log_output_sizer = new wxStaticBoxSizer(wxHORIZONTAL, log_panel, wxT("Log Output"));
 	log_output_sizer = new wxFlexGridSizer(1, 2, 10, 10);
 	log_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
