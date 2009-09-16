@@ -79,6 +79,7 @@ std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 
 bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string &cfg_value) {
 	mx.lock();
+	trim(cfg_value);
 	if(!is_writeable || !file.is_open()) {
 		mx.unlock();
 		return false;
