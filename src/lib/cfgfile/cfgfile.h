@@ -62,7 +62,7 @@ public:
  	*	@param cfg_value the value that should be set
  	*  @returns true on success, else false
  	*/
-	bool set_cfg_value(const std::string &cfg_identifier, const std::string &cfg_value);
+	bool set_cfg_value(const std::string &cfg_identifier, const std::string &value);
 
 	/** Get comment token
  	*	@returns current comment token
