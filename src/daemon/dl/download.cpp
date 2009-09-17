@@ -99,9 +99,9 @@ void download::from_serialized(std::string &serializedDL) {
 	handle = curl_easy_init();
 }
 
-download::download(const download& dl) : url(dl.url), comment(dl.comment), add_date(dl.add_date), id(dl.id), downloaded_bytes(dl.downloaded_bytes),
-										 size(dl.size), wait_seconds(dl.wait_seconds), error(dl.error), output_file(dl.output_file), is_running(false),
-										 need_stop(false), status(dl.status) {
+download::download(const download& dl) {
+	operator=(dl);
+	need_stop = false;
 	handle = curl_easy_init();
 }
 
