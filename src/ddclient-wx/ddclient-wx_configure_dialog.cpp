@@ -17,6 +17,7 @@ BEGIN_EVENT_TABLE(configure_dialog, wxDialog)
 	EVT_BUTTON(wxID_APPLY, configure_dialog::on_apply)
 	EVT_BUTTON(wxID_SAVE, configure_dialog::on_pass_change)
 	EVT_BUTTON(wxID_CANCEL, configure_dialog::on_cancel)
+	EVT_CHECKBOX(wxID_ANY, configure_dialog::on_checkbox_change)
 END_EVENT_TABLE()
 
 
@@ -27,10 +28,12 @@ configure_dialog::configure_dialog(wxWindow *parent) : wxDialog(parent, -1, wxSt
 	create_download_panel();
 	create_pass_panel();
 	create_log_panel();
+	create_reconnect_panel();
 
 	notebook->AddPage(download_panel, wxT("Download"), true);
 	notebook->AddPage(pass_panel, wxT("Password"), false);
 	notebook->AddPage(log_panel, wxT("Logging"), false);
+	notebook->AddPage(reconnect_panel, wxT("Reconnect"), false);
 
 	Layout();
 	notebook->Fit();
@@ -196,7 +199,187 @@ void configure_dialog::create_log_panel(){
 }
 
 
-wxString configure_dialog::get_var(const string &var){
+void configure_dialog::create_reconnect_panel(){
+	// creating elements
+	reconnect_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+
+	overall_reconnect_sizer = new wxBoxSizer(wxVERTICAL);
+	outer_policy_sizer = new wxStaticBoxSizer(wxVERTICAL, reconnect_panel, wxT("Policy"));
+	outer_router_sizer = new wxStaticBoxSizer(wxHORIZONTAL, reconnect_panel, wxT("Router Data"));
+	router_sizer = new wxFlexGridSizer(4, 2, 10, 10);
+	policy_sizer = new wxFlexGridSizer(1, 2, 10, 10);
+	reconnect_button_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+	// is reconnecting enabled?
+	bool enable = false;
+	if(get_var("enable_reconnect") == wxT("1"))
+		enable = true;
+
+	enable_reconnecting_check = new wxCheckBox(reconnect_panel, -1, wxT("enable reconnecting"));
+	enable_reconnecting_check->SetValue(enable);
+
+	policy_text = new wxStaticText(reconnect_panel, -1, wxT("Reconnect Policy"));
+	router_model_text = new wxStaticText(reconnect_panel, -1, wxT("Model"));
+	router_ip_text = new wxStaticText(reconnect_panel, -1, wxT("IP"));
+	router_user_text = new wxStaticText(reconnect_panel, -1, wxT("Username"));
+	router_pass_text = new wxStaticText(reconnect_panel, -1, wxT("Password"));
+
+	router_ip_input = new wxTextCtrl(reconnect_panel, -1,  wxT(""), wxDefaultPosition, wxSize(200, 25));
+	router_user_input = new wxTextCtrl(reconnect_panel, -1,  wxT(""), wxDefaultPosition, wxSize(200, 25));
+	router_pass_input = new wxTextCtrl(reconnect_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
+
+	// wxChoice policy
+	wxArrayString policy;
+	policy_choice = new wxChoice(reconnect_panel, -1, wxDefaultPosition, wxSize(100, 30), policy);
+	policy_choice->SetSelection(-1);
+
+	// wxChoice router_model
+	wxArrayString model;
+	router_model_choice = new wxChoice(reconnect_panel, -1, wxDefaultPosition, wxSize(200, 30), model);
+
+	reconnect_button = new wxButton(reconnect_panel, wxID_APPLY);
+	reconnect_cancel_button = new wxButton(reconnect_panel, wxID_CANCEL);
+
+	// filling sizers
+	policy_sizer->Add(policy_text, 0, wxALIGN_LEFT);
+	policy_sizer->Add(policy_choice, 0, wxALIGN_LEFT);
+
+	router_sizer->Add(router_model_text, 0, wxALIGN_LEFT);
+	router_sizer->Add(router_model_choice, 0, wxALIGN_LEFT);
+	router_sizer->Add(router_ip_text, 0, wxALIGN_LEFT);
+	router_sizer->Add(router_ip_input, 0, wxALIGN_LEFT);
+	router_sizer->Add(router_user_text, 0, wxALIGN_LEFT);
+	router_sizer->Add(router_user_input, 0, wxALIGN_LEFT);
+	router_sizer->Add(router_pass_text, 0, wxALIGN_LEFT);
+	router_sizer->Add(router_pass_input, 0, wxALIGN_LEFT);
+
+	outer_policy_sizer->Add(policy_sizer, 0,wxALL|wxEXPAND,10);
+	outer_router_sizer->Add(router_sizer, 0,wxALL|wxEXPAND,10);
+
+	reconnect_button_sizer->Add(reconnect_button, 1, wxLEFT|wxRIGHT, 20);
+	reconnect_button_sizer->Add(reconnect_cancel_button, 1, wxLEFT|wxRIGHT, 10);
+
+	overall_reconnect_sizer->Add(enable_reconnecting_check, 0, wxLEFT|wxRIGHT|wxTOP, 20);
+	overall_reconnect_sizer->Add(outer_policy_sizer, 0, wxGROW|wxALL, 20);
+	overall_reconnect_sizer->Add(outer_router_sizer, 0, wxGROW|wxALL, 20);
+	overall_reconnect_sizer->Add(reconnect_button_sizer, 0, wxALL);
+
+	log_panel->SetSizerAndFit(overall_reconnect_sizer);
+
+	if(enable) // reconnecting enabled
+		enable_reconnect_panel();
+	else
+		disable_reconnect_panel();
+}
+
+
+void configure_dialog::enable_reconnect_panel(){
+
+	// fill router_model_choice
+	router_model_choice->Clear();
+	wxArrayString model;
+	size_t lineend = 1;
+	string line = "", model_list, old_model;
+	int selection = 0, i = 0;
+
+	old_model = (get_var("router_model", true)).mb_str();
+	model.Add(wxT(""));
+
+	// check connection
+	myframe *myparent = (myframe *) GetParent();
+	tkSock *mysock = myparent->get_connection_attributes();
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+
+	}else{ // we have a connection
+		boost::mutex *mx = myparent->get_mutex();
+		mx->lock();
+
+		mysock->send("DDP ROUTER LIST");
+		mysock->recv(model_list);
+
+		mx->unlock();
+	}
+
+	// parse lines
+	while(model_list.length() > 0 && lineend != string::npos){
+		lineend = model_list.find("\n"); // termination character for line
+
+		if(lineend == string::npos){ // this is the last line (which ends without \n)
+			line = model_list.substr(0, model_list.length());
+			model_list = "";
+
+		}else{ // there is still another line after this one
+			line = model_list.substr(0, lineend);
+			model_list = model_list.substr(lineend+1);
+		}
+
+		model.Add(wxString(line.c_str(), wxConvUTF8));
+		if(line == old_model) // is this the selected value?
+			selection = i;
+		i++;
+
+	}
+	router_model_choice->Append(model);
+	router_model_choice->SetSelection(selection);
+
+
+	// fill policy_choice
+	policy_choice->Clear();
+	wxArrayString policy;
+
+	policy.Add(wxT("Hard"));
+	policy.Add(wxT("Continue"));
+	policy.Add(wxT("Soft"));
+	policy.Add(wxT("Pussy"));
+
+	policy_choice->Append(policy);
+
+	wxString old_policy = get_var("reconnect_policy", true);
+	string bla = string(old_policy.mb_str());
+
+	selection = -1;
+
+	if(old_policy == wxT("HARD"))
+		selection = 0;
+	else if(old_policy == wxT("CONTINUE"))
+		selection = 1;
+	else if(old_policy == wxT("SOFT"))
+		selection = 2;
+	else if(old_policy == wxT("PUSSY"))
+		selection = 3;
+
+	policy_choice->SetSelection(selection);
+
+
+	// fill router_ip_input and router_user_input
+	router_ip_input->Clear();
+	router_ip_input->AppendText(get_var("router_ip"));
+	router_user_input->Clear();
+	router_user_input->AppendText(get_var("router_username"));
+
+
+	// enabling all
+	router_ip_input->Enable(true);
+	router_pass_input->Enable(true);
+	router_user_input->Enable(true);
+	policy_choice->Enable(true);
+	router_model_choice->Enable(true);
+}
+
+
+void configure_dialog::disable_reconnect_panel(){
+	// disabling all
+	router_ip_input->Enable(false);
+	router_pass_input->Enable(false);
+	router_user_input->Enable(false);
+	policy_choice->Enable(false);
+	router_model_choice->Enable(false);
+}
+
+
+wxString configure_dialog::get_var(const string &var, bool router){
 	string answer;
 
 	// check connection
@@ -210,7 +393,10 @@ wxString configure_dialog::get_var(const string &var){
 		boost::mutex *mx = myparent->get_mutex();
 		mx->lock();
 
-		mysock->send("DDP VAR GET " + var);
+		if(router) // get router var
+			mysock->send("DDP ROUTER GET " + var);
+		else // get normal var
+			mysock->send("DDP VAR GET " + var);
 		mysock->recv(answer);
 
 		mx->unlock();
@@ -326,4 +512,12 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 
 void configure_dialog::on_cancel(wxCommandEvent &event){
 	Destroy();
+}
+
+
+void configure_dialog::on_checkbox_change(wxCommandEvent &event){
+	if(enable_reconnecting_check->GetValue())
+		enable_reconnect_panel();
+	else
+		disable_reconnect_panel();
 }

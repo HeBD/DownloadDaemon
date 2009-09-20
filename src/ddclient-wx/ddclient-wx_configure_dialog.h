@@ -20,6 +20,7 @@
 #include <wx/textctrl.h>
 #include <wx/notebook.h>
 #include <wx/choice.h>
+#include <wx/checkbox.h>
 
 #include "../lib/netpptk/netpptk.h"
 #if defined(__WXMSW__)
@@ -42,6 +43,7 @@ class configure_dialog : public wxDialog{
 		wxPanel *download_panel;
 		wxPanel *pass_panel;
 		wxPanel *log_panel;
+		wxPanel *reconnect_panel;
 
 		// for download_panel
 		wxStaticText *exp_time_text;
@@ -95,15 +97,41 @@ class configure_dialog : public wxDialog{
 		wxFlexGridSizer *log_output_sizer;
 		wxBoxSizer *log_button_sizer;
 
+		// for reconnect_panel
+		wxCheckBox *enable_reconnecting_check;
+		wxStaticText *policy_text;
+		wxStaticText *router_model_text;
+		wxStaticText *router_ip_text;
+		wxStaticText *router_user_text;
+		wxStaticText *router_pass_text;
+		wxChoice *policy_choice;
+		wxChoice *router_model_choice;
+		wxTextCtrl *router_ip_input;
+		wxTextCtrl *router_user_input;
+		wxTextCtrl *router_pass_input;
+		wxButton *reconnect_button;
+		wxButton *reconnect_cancel_button;
+
+		wxBoxSizer *overall_reconnect_sizer;
+		wxStaticBoxSizer *outer_policy_sizer;
+		wxStaticBoxSizer *outer_router_sizer;
+		wxFlexGridSizer *policy_sizer;
+		wxFlexGridSizer *router_sizer;
+		wxBoxSizer *reconnect_button_sizer;
+
 		void create_download_panel();
 		void create_pass_panel();
 		void create_log_panel();
-		wxString get_var(const std::string &var);
+		void create_reconnect_panel();
+		void enable_reconnect_panel();
+		void disable_reconnect_panel();
+		wxString get_var(const std::string &var, bool router = false);
 
 		// event handle methods
 		void on_apply(wxCommandEvent &event);
 		void on_pass_change(wxCommandEvent &event);
 		void on_cancel(wxCommandEvent &event);
+		void on_checkbox_change(wxCommandEvent &event);
 
 		DECLARE_EVENT_TABLE()
 };

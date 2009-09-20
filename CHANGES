@@ -1,7 +1,8 @@
 2009-09-20
    [susanne]
 	- fixed ios flag at ddclient-wx
-
+	- added reconnect panel at ddclient-wx (gui) 
+	
 2009-09-16
    [susanne]
 	- changed hotkeys for ddclient-wx
