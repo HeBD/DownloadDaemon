@@ -349,15 +349,15 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 				if(splitted_line[5] == "0" || splitted_line[5] == "1") // nothing downloaded yet
 					stream_buffer << "0.00 MB/ 0.00 MB";
 				else // something downloaded
-					stream_buffer << setprecision(3) << (float)atoi(splitted_line[5].c_str()) / 1048576 << " MB/ 0.00 MB";
+					stream_buffer << setprecision(3) << fixed << (float)atoi(splitted_line[5].c_str()) / 1048576 << " MB/ 0.00 MB";
 
 			}else{ // download size known
 				if(splitted_line[5] == "0" || splitted_line[5] == "1") // nothing downloaded yet
-					stream_buffer << "0.00% - 0.00 MB/ " << (float)atoi(splitted_line[6].c_str()) / 1048576 << " MB";
+					stream_buffer << "0.00% - 0.00 MB/ " << fixed << (float)atoi(splitted_line[6].c_str()) / 1048576 << " MB";
 				else{ // download size known and something downloaded
-					stream_buffer << setprecision(3) << (float)atoi(splitted_line[5].c_str()) / (float)atoi(splitted_line[6].c_str()) * 100 << "% - ";
-					stream_buffer << setprecision(3) << (float)atoi(splitted_line[5].c_str()) / 1048576 << " MB/ ";
-					stream_buffer << setprecision(3) << (float)atoi(splitted_line[6].c_str()) / 1048576 << " MB";
+					stream_buffer << setprecision(3) << fixed << (float)atoi(splitted_line[5].c_str()) / (float)atoi(splitted_line[6].c_str()) * 100 << "% - ";
+					stream_buffer << setprecision(3) << fixed << (float)atoi(splitted_line[5].c_str()) / 1048576 << " MB/ ";
+					stream_buffer << setprecision(3) << fixed << (float)atoi(splitted_line[6].c_str()) / 1048576 << " MB";
 				}
 			}
 			status_text = stream_buffer.str();
