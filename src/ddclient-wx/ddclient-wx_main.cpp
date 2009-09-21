@@ -63,9 +63,15 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 	// getting working dir
 	working_dir = parameter;
+	#ifndef _WIN32
+		char* real_path = realpath(working_dir.mb_str(), 0);
+		wxString tmpstr(real_path, wxConvUTF8);
+		working_dir = tmpstr;
+		free(real_path);
+	#else
 
 	if(working_dir.find_first_of(wxT("/\\")) == wxString::npos) {
-		// no / in argv[0]? this means that it's in the path.. let's find out where.
+		// no / in argv[0]? this means that it's in the path or in ./ (windows) let's find out where.
 
 		wxString env_path;
 		wxGetEnv(wxT("PATH"), &env_path);
@@ -73,7 +79,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 		size_t curr_pos = 0, last_pos = 0;
 		bool found = false;
 
-		while((curr_pos = env_path.find_first_of(wxT(";:"), curr_pos)) != wxString::npos) {
+		while((curr_pos = env_path.find_first_of(wxT(";"), curr_pos)) != wxString::npos) {
 			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
 			curr_path += wxT("/ddclient-wx");
 
@@ -98,7 +104,9 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 			// successfully located the file..
 			working_dir = curr_path;
 		}
+
 	}
+	#endif
 
 
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));

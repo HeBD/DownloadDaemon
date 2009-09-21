@@ -15,6 +15,8 @@
 
 #include <vector>
 #include <iomanip>
+#include <cstdlib>
+#include <climits>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 

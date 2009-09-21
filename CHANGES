@@ -6,6 +6,7 @@
 	  the config files to /etc/downloaddaemon. The binaries are always used from the svn root (plugins, main program
 	  when you run it in the IDE)
 	- replaced some spaces with tabs - damn CodeBlocks default settings
+	- improved locating of program data at ddclient-wx with realpath()
 
 2009-09-20
    [susanne]
