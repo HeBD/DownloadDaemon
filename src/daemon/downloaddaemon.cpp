@@ -49,6 +49,7 @@ int main(int argc, char* argv[], char* env[]) {
 		}
 	}
 
+	struct stat st;
 	// getting working dir
 	char* real_path = realpath(argv[0], 0);
 	program_root = real_path;
@@ -56,14 +57,18 @@ int main(int argc, char* argv[], char* env[]) {
 	program_root = program_root.substr(0, program_root.find_last_of('/'));
 	program_root = program_root.substr(0, program_root.find_last_of('/'));
 	program_root.append("/share/downloaddaemon/");
+	if(stat(program_root.c_str(), &st) != 0) {
+		cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
+		exit(-1);
+	}
 	chdir(program_root.c_str());
 
-	struct stat st;
-	if(stat(std::string("/etc/downloaddaemon/downloaddaemon.conf").c_str(), &st) != 0) {
+
+	if(stat("/etc/downloaddaemon/downloaddaemon.conf", &st) != 0) {
 		cerr << "Could not locate configuration file!" << endl;
 		exit(-1);
 	}
-	if(stat(std::string("/etc/downloaddaemon/routerinfo.conf").c_str(), &st) != 0) {
+	if(stat("/etc/downloaddaemon/routerinfo.conf", &st) != 0) {
 		cerr << "Could not locate router configuration file!" << endl;
 		exit(-1);
 	}

@@ -25,9 +25,9 @@ IF(Boost_FOUND AND CURL_FOUND)
 ENDIF(Boost_FOUND AND CURL_FOUND)
 
 install(TARGETS DownloadDaemon DESTINATION bin/)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/share/downloaddaemon/LICENCE DESTINATION share/downloaddaemon) 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/etc/downloaddaemon/downloaddaemon.conf DESTINATION /etc/downloaddaemon)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/etc/downloaddaemon/routerinfo.conf DESTINATION /etc/downloaddaemon)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/downloaddaemon/LICENCE DESTINATION share/downloaddaemon) 
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/downloaddaemon.conf DESTINATION /etc/downloaddaemon)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/routerinfo.conf DESTINATION /etc/downloaddaemon)
 install(CODE "FILE(MAKE_DIRECTORY /var/downloads)")
 
 
