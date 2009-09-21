@@ -11,7 +11,7 @@
 
 #include "ddclient-wx_main.h"
 #ifdef _WIN32
-    #define sleep(x) Sleep(x * 1000)
+	#define sleep(x) Sleep(x * 1000)
 #endif
 
 // IDs
@@ -854,8 +854,8 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 
 
  void myframe::on_resize(wxSizeEvent &event){
-    myframe::OnSize(event); // call default evt_size handler
-    Refresh();
+	myframe::OnSize(event); // call default evt_size handler
+	Refresh();
 
  	if(list != NULL){
 

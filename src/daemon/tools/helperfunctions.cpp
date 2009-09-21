@@ -139,8 +139,8 @@ long string_to_long(std::string str) {
 bool variable_is_valid(std::string &variable) {
 	trim_string(variable);
 	std::string possible_vars = ",enable_resume,enable_reconnect,downloading_active,download_timing_start,download_timing_end,download_folder,"
-                           "simultaneous_downloads,log_level,log_file,mgmt_max_connections,mgmt_port,mgmt_password,plugin_dir,"
-                           "dlist_file,";
+						   "simultaneous_downloads,log_level,log_file,mgmt_max_connections,mgmt_port,mgmt_password,plugin_dir,"
+						   "dlist_file,";
 	size_t pos;
 	if((pos = possible_vars.find(variable)) != std::string::npos) {
 		if(possible_vars[pos - 1] == ',' && possible_vars[pos + variable.length()] == ',') {
@@ -151,9 +151,9 @@ bool variable_is_valid(std::string &variable) {
 }
 
 bool router_variable_is_valid(std::string &variable) {
-    trim_string(variable);
-    std::string possible_vars = ",reconnect_policy,router_ip,router_username,router_password,";
-    size_t pos;
+	trim_string(variable);
+	std::string possible_vars = ",reconnect_policy,router_ip,router_username,router_password,";
+	size_t pos;
 	if((pos = possible_vars.find(variable)) != std::string::npos) {
 		if(possible_vars[pos - 1] == ',' && possible_vars[pos + variable.length()] == ',') {
 			return true;
@@ -163,8 +163,8 @@ bool router_variable_is_valid(std::string &variable) {
 }
 
 void correct_path(std::string &path) {
-    trim_string(path);
-    if(path[0] != '/') {
-        path.insert(0, program_root);
-    }
+	trim_string(path);
+	if(path[0] != '/') {
+		path.insert(0, program_root);
+	}
 }

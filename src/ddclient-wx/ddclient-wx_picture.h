@@ -20,20 +20,20 @@
 
 /** Picture Class. Paints a PNG Image. */
 class picture: public wxPanel{
-    public:
+	public:
 
 		/** Constructor with nearly standard wxDialog Parameters
 		*	@param image Image Path
 		*/
-        picture(wxString image, wxWindow *parent, const wxSize &size, const wxWindowID &id=wxID_ANY, const wxPoint &pos=wxDefaultPosition, const long &style=0, const wxString &name=wxPanelNameStr);
+		picture(wxString image, wxWindow *parent, const wxSize &size, const wxWindowID &id=wxID_ANY, const wxPoint &pos=wxDefaultPosition, const long &style=0, const wxString &name=wxPanelNameStr);
 
 
-        void OnPaint(wxPaintEvent &evt);
+		void OnPaint(wxPaintEvent &evt);
 
-    private:
+	private:
 
-        wxBitmap t_bmp;
-        DECLARE_EVENT_TABLE()
+		wxBitmap t_bmp;
+		DECLARE_EVENT_TABLE()
 };
 
 #endif // DDCLIENT_WX_PICTURE_H

@@ -15,5 +15,5 @@ IF(CURL_FOUND)
 	TARGET_LINK_LIBRARIES(uploaded.to ${CURL_LIBRARIES})
 ENDIF(CURL_FOUND)
 
-install(TARGETS rapidshare.com DESTINATION /opt/downloaddaemon/plugins)
-install(TARGETS uploaded.to DESTINATION /opt/downloaddaemon/plugins)
+install(TARGETS rapidshare.com DESTINATION share/downloaddaemon/plugins)
+install(TARGETS uploaded.to DESTINATION share/downloaddaemon/plugins)

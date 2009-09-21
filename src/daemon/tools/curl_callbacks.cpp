@@ -47,7 +47,7 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 
 	struct stat st;
 	if(stat(output_file.c_str(), &st) == 0) {
-	    global_download_list.set_int_property(id, DL_DOWNLOADED_BYTES, st.st_size);
+		global_download_list.set_int_property(id, DL_DOWNLOADED_BYTES, st.st_size);
 	} else {
 		global_download_list.set_int_property(id, DL_DOWNLOADED_BYTES, dlnow);
 	}

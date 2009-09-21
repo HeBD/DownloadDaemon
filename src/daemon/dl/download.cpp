@@ -241,33 +241,33 @@ plugin_output download::get_hostinfo() {
 
 	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
 	if(use_generic) {
-	    log_string("No plugin found, using generic download", LOG_WARNING);
-	    outp.allows_multiple = true;
-	    outp.allows_resumption = true;
+		log_string("No plugin found, using generic download", LOG_WARNING);
+		outp.allows_multiple = true;
+		outp.allows_resumption = true;
 		return outp;
 	}
 
 	// Load the plugin function needed
 	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
-    if (!handle) {
+	if (!handle) {
 		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
-        return outp;
-    }
+		return outp;
+	}
 
-	dlerror();    // Clear any existing error
+	dlerror();	// Clear any existing error
 
 	void (*plugin_getinfo)(plugin_input&, plugin_output&);
-    plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(handle, "plugin_getinfo");
+	plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(handle, "plugin_getinfo");
 
-    char *error;
-    if ((error = dlerror()) != NULL)  {
-    	log_string(std::string("Unable to get plugin information: ") + error, LOG_SEVERE);
-    	return outp;
-    }
+	char *error;
+	if ((error = dlerror()) != NULL)  {
+		log_string(std::string("Unable to get plugin information: ") + error, LOG_SEVERE);
+		return outp;
+	}
 
 	plugin_getinfo(inp, outp);
-    dlclose(handle);
-    return outp;
+	dlclose(handle);
+	return outp;
 }
 
 

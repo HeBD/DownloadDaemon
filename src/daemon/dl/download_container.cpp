@@ -482,9 +482,9 @@ bool download_container::reconnect_needed() {
 	// therefore no lock needed
 	std::string reconnect_policy;
 
-    if(global_config.get_cfg_value("enable_reconnect") == "0") {
-        return false;
-    }
+	if(global_config.get_cfg_value("enable_reconnect") == "0") {
+		return false;
+	}
 
 	reconnect_policy = global_router_config.get_cfg_value("reconnect_policy");
 	if(reconnect_policy.empty()) {
@@ -555,9 +555,9 @@ void download_container::do_reconnect(download_container *dlist) {
 
 	router_ip = global_router_config.get_cfg_value("router_ip");
 	if(router_ip.empty()) {
-	    log_string("Reconnecting activated, but no router ip specified", LOG_WARNING);
-	    dlist->is_reconnecting = false;
-	    return;
+		log_string("Reconnecting activated, but no router ip specified", LOG_WARNING);
+		dlist->is_reconnecting = false;
+		return;
 	}
 
 	router_username = global_router_config.get_cfg_value("router_username");
@@ -578,36 +578,36 @@ void download_container::do_reconnect(download_container *dlist) {
 	}
 
 	void* handle = dlopen(reconnect_script.c_str(), RTLD_LAZY);
-    if (!handle) {
+	if (!handle) {
 		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + reconnect_script, LOG_SEVERE);
 		dlist->is_reconnecting = false;
-        return;
-    }
+		return;
+	}
 
-	dlerror();    // Clear any existing error
+	dlerror();	// Clear any existing error
 
 	void (*reconnect)(std::string, std::string, std::string);
-    reconnect = (void (*)(std::string, std::string, std::string))dlsym(handle, "reconnect");
+	reconnect = (void (*)(std::string, std::string, std::string))dlsym(handle, "reconnect");
 
-    char *error;
-    if ((error = dlerror()) != NULL)  {
-    	log_string(std::string("Unable to get reconnect information: ") + error, LOG_SEVERE);
-    	dlist->is_reconnecting = false;
-    	return;
-    }
-    log_string("Reconnecting now!", LOG_WARNING);
+	char *error;
+	if ((error = dlerror()) != NULL)  {
+		log_string(std::string("Unable to get reconnect information: ") + error, LOG_SEVERE);
+		dlist->is_reconnecting = false;
+		return;
+	}
+	log_string("Reconnecting now!", LOG_WARNING);
 	dlist->download_mutex.unlock();
 	reconnect(router_ip, router_username, router_password);
-    dlclose(handle);
-    dlist->download_mutex.lock();
+	dlclose(handle);
+	dlist->download_mutex.lock();
 	for(download_container::iterator it = dlist->download_list.begin(); it != dlist->download_list.end(); ++it) {
-    	if(it->get_status() == DOWNLOAD_WAITING) {
-    		it->set_status(DOWNLOAD_PENDING);
-    	}
-    }
-    dlist->is_reconnecting = false;
-    dlist->download_mutex.unlock();
-    return;
+		if(it->get_status() == DOWNLOAD_WAITING) {
+			it->set_status(DOWNLOAD_PENDING);
+		}
+	}
+	dlist->is_reconnecting = false;
+	dlist->download_mutex.unlock();
+	return;
 }
 
 int download_container::prepare_download(int dl, plugin_output &poutp) {
@@ -635,33 +635,33 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 
 	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
 	if(use_generic) {
-	    log_string("No plugin found, using generic download", LOG_WARNING);
-	    poutp.download_url = dlit->url.c_str();
+		log_string("No plugin found, using generic download", LOG_WARNING);
+		poutp.download_url = dlit->url.c_str();
 		return PLUGIN_SUCCESS;
 	}
 
 	// Load the plugin function needed
 	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
-    if (!handle) {
+	if (!handle) {
 		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_SEVERE);
-        return PLUGIN_ERROR;
-    }
+		return PLUGIN_ERROR;
+	}
 
-	dlerror();    // Clear any existing error
+	dlerror();	// Clear any existing error
 
 	plugin_status (*plugin_exec_func)(download_container&, int, plugin_input&, plugin_output&);
-    plugin_exec_func = (plugin_status (*)(download_container&, int, plugin_input&, plugin_output&))dlsym(handle, "plugin_exec_wrapper");
+	plugin_exec_func = (plugin_status (*)(download_container&, int, plugin_input&, plugin_output&))dlsym(handle, "plugin_exec_wrapper");
 
-    char *error;
-    if ((error = dlerror()) != NULL)  {
-    	log_string(std::string("Unable to execute plugin: ") + error, LOG_SEVERE);
-    	return PLUGIN_ERROR;
-    }
+	char *error;
+	if ((error = dlerror()) != NULL)  {
+		log_string(std::string("Unable to execute plugin: ") + error, LOG_SEVERE);
+		return PLUGIN_ERROR;
+	}
 
 	download_mutex.unlock();
 	plugin_status retval = plugin_exec_func(*this, dl, pinp, poutp);
-    dlclose(handle);
-    return retval;
+	dlclose(handle);
+	return retval;
 }
 
 plugin_output download_container::get_hostinfo(int dl) {

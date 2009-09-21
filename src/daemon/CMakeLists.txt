@@ -24,12 +24,11 @@ IF(Boost_FOUND AND CURL_FOUND)
 	TARGET_LINK_LIBRARIES(DownloadDaemon ${Boost_LIBRARIES} ${CURL_LIBRARIES})
 ENDIF(Boost_FOUND AND CURL_FOUND)
 
-install(TARGETS DownloadDaemon DESTINATION /opt/downloaddaemon/)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/LICENCE DESTINATION /opt/downloaddaemon) 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/conf/downloaddaemon.conf DESTINATION /opt/downloaddaemon/conf)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/downloaddaemon DESTINATION bin PERMISSIONS WORLD_EXECUTE WORLD_READ GROUP_EXECUTE GROUP_READ OWNER_EXECUTE OWNER_READ OWNER_WRITE)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/conf/routerinfo.conf DESTINATION /opt/downloaddaemon/conf)
-install(CODE "FILE(MAKE_DIRECTORY /opt/downloaddaemon/downloads)")
+install(TARGETS DownloadDaemon DESTINATION bin/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/share/downloaddaemon/LICENCE DESTINATION share/downloaddaemon) 
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/etc/downloaddaemon/downloaddaemon.conf DESTINATION /etc/downloaddaemon)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../program_data/etc/downloaddaemon/routerinfo.conf DESTINATION /etc/downloaddaemon)
+install(CODE "FILE(MAKE_DIRECTORY /var/downloads)")
 
 
 #install(FILES ../../program_data/downloads DESTINATION /opt/downloaddaemon/)

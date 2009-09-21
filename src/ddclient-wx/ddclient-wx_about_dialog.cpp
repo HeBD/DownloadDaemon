@@ -36,7 +36,7 @@ wxString wxbuildinfo(){
 		wxbuild << wxT("-ANSI)");
 	#endif // wxUSE_UNICODE
 
-    return wxbuild;
+	return wxbuild;
 }
 
 

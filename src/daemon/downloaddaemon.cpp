@@ -23,16 +23,19 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <climits>
+#include <cstdlib>
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dlfcn.h>
 
 using namespace std;
 
 
 extern cfgfile global_config;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[], char* env[]) {
 	if(argc == 2) {
 		std::string argv1 = argv[1];
 		if(argv1 == "-d" || argv1 == "--daemon") {
@@ -46,22 +49,26 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	std::string root_dir(argv[0]);
-	root_dir = root_dir.substr(0, root_dir.find_last_of("/\\"));
-	program_root = root_dir;
-	program_root += '/';
+	// getting working dir
+	char* real_path = realpath(argv[0], 0);
+	program_root = real_path;
+	free(real_path);
+	program_root = program_root.substr(0, program_root.find_last_of('/'));
+	program_root = program_root.substr(0, program_root.find_last_of('/'));
+	program_root.append("/share/downloaddaemon/");
+	chdir(program_root.c_str());
 
 	struct stat st;
-	if(stat(std::string(root_dir + "/conf/downloaddaemon.conf").c_str(), &st) != 0) {
-		cout << "Could not locate configuration file!" << endl;
+	if(stat(std::string("/etc/downloaddaemon/downloaddaemon.conf").c_str(), &st) != 0) {
+		cerr << "Could not locate configuration file!" << endl;
 		exit(-1);
 	}
-	if(stat(std::string(root_dir + "/conf/routerinfo.conf").c_str(), &st) != 0) {
-	    cout << "Could not locate router configuration file!" << endl;
-	    exit(-1);
+	if(stat(std::string("/etc/downloaddaemon/routerinfo.conf").c_str(), &st) != 0) {
+		cerr << "Could not locate router configuration file!" << endl;
+		exit(-1);
 	}
-	global_config.open_cfg_file(root_dir + "/conf/downloaddaemon.conf", true);
-	global_router_config.open_cfg_file(root_dir + "/conf/routerinfo.conf", true);
+	global_config.open_cfg_file("/etc/downloaddaemon/downloaddaemon.conf", true);
+	global_router_config.open_cfg_file("/etc/downloaddaemon/routerinfo.conf", true);
 
 	std::string dlist_fn = global_config.get_cfg_value("dlist_file");
 	correct_path(dlist_fn);

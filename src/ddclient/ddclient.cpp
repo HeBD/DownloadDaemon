@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
 
 		cout << answer << endl;
 		if(!command.empty()) {
-		    break;
+			break;
 		}
 	}
 	cout << endl;

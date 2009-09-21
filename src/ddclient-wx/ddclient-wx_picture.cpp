@@ -12,7 +12,7 @@
 #include "ddclient-wx_picture.h"
 
 BEGIN_EVENT_TABLE (picture, wxPanel)
-    EVT_PAINT(picture::OnPaint)
+	EVT_PAINT(picture::OnPaint)
 END_EVENT_TABLE()
 
 
@@ -22,8 +22,8 @@ picture::picture(wxString image, wxWindow *parent, const wxSize &size, const wxW
 }
 
 void picture::OnPaint(wxPaintEvent &event){
-    wxPaintDC dc(this);
-    dc.DrawBitmap(t_bmp, 0, 0, true);
+	wxPaintDC dc(this);
+	dc.DrawBitmap(t_bmp, 0, 0, true);
 }
 
 

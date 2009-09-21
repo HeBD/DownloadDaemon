@@ -21,10 +21,10 @@
 
 #ifdef _WIN32
 	#include <windows.h>
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #include <io.h>
-    #define sleep(x) Sleep(x * 1000)
+	#include <winsock2.h>
+	#include <ws2tcpip.h>
+	#include <io.h>
+	#define sleep(x) Sleep(x * 1000)
 #else
 	#include <sys/types.h>
 	#include <sys/socket.h>
@@ -44,23 +44,23 @@ int tkSock::m_instanceCount = 0;
 // Windows XP and before does not definet inet_ntop...
 #ifdef _WIN32
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t cnt) {
-        if (af == AF_INET) {
-                struct sockaddr_in in;
-                memset(&in, 0, sizeof(in));
-                in.sin_family = AF_INET;
-                memcpy(&in.sin_addr, src, sizeof(struct in_addr));
-                getnameinfo((struct sockaddr *)&in, sizeof(struct sockaddr_in), dst, cnt, NULL, 0, NI_NUMERICHOST);
-                return dst;
-        }
-        else if (af == AF_INET6) {
-                struct sockaddr_in6 in;
-                memset(&in, 0, sizeof(in));
-                in.sin6_family = AF_INET6;
-                memcpy(&in.sin6_addr, src, sizeof(struct in_addr6));
-                getnameinfo((struct sockaddr *)&in, sizeof(struct sockaddr_in6), dst, cnt, NULL, 0, NI_NUMERICHOST);
-                return dst;
-        }
-        return NULL;
+		if (af == AF_INET) {
+				struct sockaddr_in in;
+				memset(&in, 0, sizeof(in));
+				in.sin_family = AF_INET;
+				memcpy(&in.sin_addr, src, sizeof(struct in_addr));
+				getnameinfo((struct sockaddr *)&in, sizeof(struct sockaddr_in), dst, cnt, NULL, 0, NI_NUMERICHOST);
+				return dst;
+		}
+		else if (af == AF_INET6) {
+				struct sockaddr_in6 in;
+				memset(&in, 0, sizeof(in));
+				in.sin6_family = AF_INET6;
+				memcpy(&in.sin6_addr, src, sizeof(struct in_addr6));
+				getnameinfo((struct sockaddr *)&in, sizeof(struct sockaddr_in6), dst, cnt, NULL, 0, NI_NUMERICHOST);
+				return dst;
+		}
+		return NULL;
 }
 #endif
 
@@ -163,7 +163,7 @@ bool tkSock::bind(const int port) {
 bool tkSock::listen() {
 	int listen_return = ::listen(m_sock, m_maxconnections);
 	if(listen_return == -1) {
-	    valid = false;
+		valid = false;
 		return false;
 	}
 	valid = true;
@@ -171,12 +171,12 @@ bool tkSock::listen() {
 }
 
 bool tkSock::accept (tkSock& new_socket) {
-    #ifdef _WIN32
-        int addr_length = sizeof(m_addr);
-    #else
-        socklen_t addr_length = sizeof(m_addr);
-    #endif
-    close(new_socket.m_sock);
+	#ifdef _WIN32
+		int addr_length = sizeof(m_addr);
+	#else
+		socklen_t addr_length = sizeof(m_addr);
+	#endif
+	close(new_socket.m_sock);
 	new_socket.m_sock = ::accept(this->m_sock, reinterpret_cast<sockaddr*>(&m_addr), &addr_length);
 	if(new_socket.m_sock <= 0) {
 		new_socket.valid = false;

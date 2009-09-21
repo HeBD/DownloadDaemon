@@ -7,5 +7,5 @@ IF(CURL_FOUND)
 	TARGET_LINK_LIBRARIES(aquip_a-wlan-3 ${CURL_LIBRARIES})
 ENDIF(CURL_FOUND)
 
-install(TARGETS aquip_a-wlan-3 DESTINATION /opt/downloaddaemon/reconnect)
+install(TARGETS aquip_a-wlan-3 DESTINATION share/downloaddaemon/reconnect)
 

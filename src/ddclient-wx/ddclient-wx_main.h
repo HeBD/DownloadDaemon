@@ -41,7 +41,7 @@
 
 #include "../lib/netpptk/netpptk.h"
 #if defined(__WXMSW__)
-    #include <wx/msw/winundef.h> // Because of conflicting wxWidgets and windows.h
+	#include <wx/msw/winundef.h> // Because of conflicting wxWidgets and windows.h
 #endif
 
 using namespace std;

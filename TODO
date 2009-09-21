@@ -1,4 +1,3 @@
-- find a way to cross-compile it to ARMs (scratchbox) - succeeded in building a statically linked binary, but curl_easy_perform crashes (seg fault)
 - put DownloadDaemon in proper unix-specific paths instead of just /opt/...
 - make it possible to download files through the mgmt interface
 - implement premium account support

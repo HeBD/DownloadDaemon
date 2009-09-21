@@ -91,8 +91,8 @@ void download_thread(int download) {
 
 			if(global_download_list.get_int_property(download, DL_STATUS) != DOWNLOAD_DELETED) {
 				log_string(std::string("Download ID: ") + int_to_string(download) + " has to wait " +
-					       int_to_string(global_download_list.get_int_property(download, DL_WAIT_SECONDS)) + " seconds before downloading can start", LOG_DEBUG);
-					       std::string blah(global_download_list.get_string_property(download, DL_URL));
+						   int_to_string(global_download_list.get_int_property(download, DL_WAIT_SECONDS)) + " seconds before downloading can start", LOG_DEBUG);
+						   std::string blah(global_download_list.get_string_property(download, DL_URL));
 			} else {
 				return;
 			}
@@ -125,16 +125,16 @@ void download_thread(int download) {
 		}
 
 		// Check if we can do a download resume or if we have to start from the beginning
-        struct stat st;
-        fstream output_file;
-        if(global_download_list.get_hostinfo(download).allows_multiple && global_config.get_cfg_value("enable_resume") != "0" &&
-           stat(output_filename.c_str(), &st) == 0 && st.st_size == global_download_list.get_int_property(download, DL_DOWNLOADED_BYTES)) {
-            curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_RESUME_FROM, st.st_size);
-            output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
-            log_string(std::string("Download already started. Will continue to download ID: ") + int_to_string(download), LOG_DEBUG);
-        } else {
-            output_file.open(output_filename.c_str(), ios::out | ios::binary);
-        }
+		struct stat st;
+		fstream output_file;
+		if(global_download_list.get_hostinfo(download).allows_multiple && global_config.get_cfg_value("enable_resume") != "0" &&
+		   stat(output_filename.c_str(), &st) == 0 && st.st_size == global_download_list.get_int_property(download, DL_DOWNLOADED_BYTES)) {
+			curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_RESUME_FROM, st.st_size);
+			output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
+			log_string(std::string("Download already started. Will continue to download ID: ") + int_to_string(download), LOG_DEBUG);
+		} else {
+			output_file.open(output_filename.c_str(), ios::out | ios::binary);
+		}
 
 		if(!output_file.good()) {
 			log_string(std::string("Could not write to file: ") + output_filename, LOG_SEVERE);

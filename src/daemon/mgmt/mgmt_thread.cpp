@@ -112,14 +112,14 @@ void connection_handler(tkSock *sock) {
 			trim_string(data);
 			target_file(data, sock);
 		} else if(data.find("ROUTER") == 0) {
-		    data = data.substr(6);
-		    if(data.length() == 0 || !isspace(data[0])) {
-		        *sock << "101 PROTOCOL";
-		        continue;
-            }
-            trim_string(data);
-            target_router(data, sock);
-        } else {
+			data = data.substr(6);
+			if(data.length() == 0 || !isspace(data[0])) {
+				*sock << "101 PROTOCOL";
+				continue;
+			}
+			trim_string(data);
+			target_router(data, sock);
+		} else {
 			*sock << "101 PROTOCOL";
 		}
 	}
@@ -546,117 +546,117 @@ void target_router(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_router_get(data, sock);
-    } else {
+	} else {
 		*sock << "101 PROTOCOL";
-    }
+	}
 }
 
 void target_router_list(std::string &data, tkSock *sock) {
-    DIR *dp;
-    struct dirent *ep;
-    vector<std::string> content;
-    std::string current;
-    std::string path = program_root + "reconnect/";
-    dp = opendir (path.c_str());
-    if (dp == NULL) {
-        log_string("Could not open reconnect script directory", LOG_SEVERE);
-        *sock << "";
-        return;
-    }
+	DIR *dp;
+	struct dirent *ep;
+	vector<std::string> content;
+	std::string current;
+	std::string path = program_root + "reconnect/";
+	dp = opendir (path.c_str());
+	if (dp == NULL) {
+		log_string("Could not open reconnect script directory", LOG_SEVERE);
+		*sock << "";
+		return;
+	}
 
-    while ((ep = readdir (dp))) {
-        if(ep->d_name[0] == '.') {
-            continue;
-        }
-        current = ep->d_name;
-        if(current.find("lib") == 0) {
-        	current = current.substr(3);
-        	if(current.find(".so") != std::string::npos) {
-        		current = current.substr(0, current.find(".so"));
-        		content.push_back(current);
-        	}
-        }
+	while ((ep = readdir (dp))) {
+		if(ep->d_name[0] == '.') {
+			continue;
+		}
+		current = ep->d_name;
+		if(current.find("lib") == 0) {
+			current = current.substr(3);
+			if(current.find(".so") != std::string::npos) {
+				current = current.substr(0, current.find(".so"));
+				content.push_back(current);
+			}
+		}
 
-    }
-    (void) closedir (dp);
+	}
+	(void) closedir (dp);
 	std::string to_send;
 	for(vector<std::string>::iterator it = content.begin(); it != content.end(); ++it) {
 		to_send.append(*it);
 		to_send.append("\n");
 	}
-    to_send.erase(to_send.end() - 1);
-    *sock << to_send;
+	to_send.erase(to_send.end() - 1);
+	*sock << to_send;
 }
 
 void target_router_setmodel(std::string &data, tkSock *sock) {
-    struct dirent *de = NULL;
-    DIR *d = NULL;
-    std::string dir = program_root + "reconnect/";
-    d = opendir(dir.c_str());
+	struct dirent *de = NULL;
+	DIR *d = NULL;
+	std::string dir = program_root + "reconnect/";
+	d = opendir(dir.c_str());
 
-    if(d == NULL) {
-        log_string("Could not open reconnect script directory", LOG_SEVERE);
-        *sock << "109 FILE";
-        return;
-    }
+	if(d == NULL) {
+		log_string("Could not open reconnect script directory", LOG_SEVERE);
+		*sock << "109 FILE";
+		return;
+	}
 
-    std::string searched_plugin(data);
-    searched_plugin.append(".so");
-    searched_plugin.insert(0, "lib");
-    bool plugin_found = false;
-    while((de = readdir(d))) {
-        if(searched_plugin == de->d_name) {
-        	plugin_found = true;
-        }
-    }
-    closedir(d);
+	std::string searched_plugin(data);
+	searched_plugin.append(".so");
+	searched_plugin.insert(0, "lib");
+	bool plugin_found = false;
+	while((de = readdir(d))) {
+		if(searched_plugin == de->d_name) {
+			plugin_found = true;
+		}
+	}
+	closedir(d);
 
-    if(!plugin_found) {
-        log_string("Selected plugin not found", LOG_WARNING);
-        *sock << "109 FILE";
-        return;
-    }
+	if(!plugin_found) {
+		log_string("Selected plugin not found", LOG_WARNING);
+		*sock << "109 FILE";
+		return;
+	}
 
-    if(global_router_config.set_cfg_value("router_model", data)) {
-        log_string("Changed router model to " + data, LOG_DEBUG);
-        *sock << "100 SUCCESS";
-    } else {
-        log_string("Unable to set router model", LOG_SEVERE);
-        *sock << "110 PERMISSION";
-    }
+	if(global_router_config.set_cfg_value("router_model", data)) {
+		log_string("Changed router model to " + data, LOG_DEBUG);
+		*sock << "100 SUCCESS";
+	} else {
+		log_string("Unable to set router model", LOG_SEVERE);
+		*sock << "110 PERMISSION";
+	}
 }
 
 void target_router_set(std::string &data, tkSock *sock) {
-    size_t eqpos = data.find('=');
-    if(eqpos == std::string::npos) {
-        *sock << "101 PROTOCOL";
-        return;
-    }
-    std::string identifier = data.substr(0, eqpos);
-    std::string variable = data.substr(eqpos + 1);
-    trim_string(identifier);
-    trim_string(variable);
+	size_t eqpos = data.find('=');
+	if(eqpos == std::string::npos) {
+		*sock << "101 PROTOCOL";
+		return;
+	}
+	std::string identifier = data.substr(0, eqpos);
+	std::string variable = data.substr(eqpos + 1);
+	trim_string(identifier);
+	trim_string(variable);
 
-    if(!router_variable_is_valid(identifier)) {
-        log_string("Tried to change an invalid router variable", LOG_WARNING);
-        *sock << "108 VARIABLE";
-        return;
-    }
+	if(!router_variable_is_valid(identifier)) {
+		log_string("Tried to change an invalid router variable", LOG_WARNING);
+		*sock << "108 VARIABLE";
+		return;
+	}
 
-    if(global_router_config.set_cfg_value(identifier, variable)) {
-        log_string("Changed router variable", LOG_DEBUG);
-        *sock << "100 SUCCESS";
-    } else {
-        log_string("Unable to set router variable!", LOG_SEVERE);
-        *sock << "110 PERMISSION";
-    }
+	if(global_router_config.set_cfg_value(identifier, variable)) {
+		log_string("Changed router variable", LOG_DEBUG);
+		*sock << "100 SUCCESS";
+	} else {
+		log_string("Unable to set router variable!", LOG_SEVERE);
+		*sock << "110 PERMISSION";
+	}
 }
 
 void target_router_get(std::string &data, tkSock *sock) {
-    if(data == "router_password") {
-        *sock << "";
-        return;
-    } else {
-        *sock << global_router_config.get_cfg_value(data);
-    }
+	if(data == "router_password") {
+		*sock << "";
+		return;
+	} else {
+		*sock << global_router_config.get_cfg_value(data);
+	}
 }
