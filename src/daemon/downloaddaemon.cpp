@@ -128,6 +128,7 @@ int main(int argc, char* argv[], char* env[]) {
 	program_root.append("/share/downloaddaemon/");
 	if(stat(program_root.c_str(), &st) != 0) {
 		cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
+		cerr << "We were looking in: " << program_root << endl;
 		exit(-1);
 	}
 	chdir(program_root.c_str());

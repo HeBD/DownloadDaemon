@@ -47,5 +47,5 @@ extern "C" void reconnect(std::string host, std::string user, std::string passwo
 		curl_easy_perform(handle);
 		curl_slist_free_all(header);
 	}
-	sleep(40);
+	sleep(30);
 }
