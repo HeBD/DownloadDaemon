@@ -53,6 +53,7 @@ int main(int argc, char* argv[], char* env[]) {
 
 	// getting working dir
 	std::string argv0 = argv[0];
+	program_root = argv[0];
 	if(argv0[0] != '/' && argv0.find('/') != string::npos) {
 		// Relative path.. sux, but is okay.
 		char* c_old_wd = get_current_dir_name();
@@ -127,7 +128,7 @@ int main(int argc, char* argv[], char* env[]) {
 	// else: it's an absolute path.. nothing to do - perfect!
 	program_root = program_root.substr(0, program_root.find_last_of('/'));
 	program_root = program_root.substr(0, program_root.find_last_of('/'));
-	program_root.append("share/downloaddaemon/");
+	program_root.append("/share/downloaddaemon/");
 	if(stat(program_root.c_str(), &st) != 0) {
 		cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
 		cerr << "We were looking in: " << program_root << endl;
