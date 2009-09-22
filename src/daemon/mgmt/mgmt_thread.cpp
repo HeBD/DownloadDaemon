@@ -602,19 +602,22 @@ void target_router_setmodel(std::string &data, tkSock *sock) {
 		return;
 	}
 
-	std::string searched_plugin(data);
-	searched_plugin.append(".so");
-	searched_plugin.insert(0, "lib");
-	bool plugin_found = false;
-	while((de = readdir(d))) {
-		if(searched_plugin == de->d_name) {
-			plugin_found = true;
+	bool plugin_found = true;
+	if(!data.empty()) {
+		std::string searched_plugin(data);
+		searched_plugin.append(".so");
+		searched_plugin.insert(0, "lib");
+		plugin_found = false;
+		while((de = readdir(d))) {
+			if(searched_plugin == de->d_name) {
+				plugin_found = true;
+			}
 		}
-	}
 	closedir(d);
+	}
 
 	if(!plugin_found) {
-		log_string("Selected plugin not found", LOG_WARNING);
+		log_string("Selected reconnect plugin not found", LOG_WARNING);
 		*sock << "109 FILE";
 		return;
 	}
