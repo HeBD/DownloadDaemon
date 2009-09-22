@@ -1,6 +1,10 @@
 2009-09-22
    [adrian]
 	- small crashfix when receiving an empty download list
+	- reconnect support for some belkin routers (for now only routers without a password.. (belkin routers are completely insecure anyway)
+	- improved program data finding again, for server and client
+	- Added a program to convert JDownloaders Curl/LiveHeader reconnect scripts in DownloadDaemon C++ reconnect plugins.. partly working
+
 2009-09-21
    [adrian]
 	- DownloadDaemon now uses proper unix-direcotries (/usr/[local/]bin and /usr/[local/]share/downloaddaemon,

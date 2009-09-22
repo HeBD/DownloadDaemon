@@ -63,12 +63,6 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 	// getting working dir
 	working_dir = parameter;
-	#ifndef _WIN32
-		char* real_path = realpath(working_dir.mb_str(), 0);
-		wxString tmpstr(real_path, wxConvUTF8);
-		working_dir = tmpstr;
-		free(real_path);
-	#else
 
 	if(working_dir.find_first_of(wxT("/\\")) == wxString::npos) {
 		// no / in argv[0]? this means that it's in the path or in ./ (windows) let's find out where.
@@ -106,8 +100,6 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 		}
 
 	}
-	#endif
-
 
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));

@@ -50,10 +50,79 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 
 	struct stat st;
+
 	// getting working dir
-	char* real_path = realpath(argv[0], 0);
-	program_root = real_path;
-	free(real_path);
+	std::string argv0 = argv[0];
+	if(argv0[0] != '/' && argv0.find('/') != string::npos) {
+		// Relative path.. sux, but is okay.
+		char* c_old_wd = get_current_dir_name();
+		std::string wd = c_old_wd;
+		free(c_old_wd);
+		wd += '/';
+		wd += argv0;
+		//
+		char* real_path = realpath(wd.c_str(), 0);
+		if(real_path == 0) {
+			cerr << "Unable to locate executable!" << endl;
+			exit(-1);
+		}
+		program_root = real_path;
+		free(real_path);
+	} else if(argv0.find('/') == string::npos) {
+		// It's in $PATH... let's go!
+		std::string env_path, curr_env;
+		for(char** curr_c = env; curr_c != 0 && *curr_c != 0; ++curr_c) {
+			curr_env = *curr_c;
+			if(curr_env.find("PATH") == 0) {
+				env_path = curr_env.substr(curr_env.find('=') + 1);
+				break;
+			}
+		}
+
+		std::string curr_path;
+		size_t curr_pos = 0, last_pos = 0;
+		bool found = false;
+
+		while((curr_pos = env_path.find_first_of(":", curr_pos)) != string::npos) {
+			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
+			curr_path += '/';
+			curr_path += argv[0];
+			if(stat(curr_path.c_str(), &st) == 0) {
+				found = true;
+				break;
+			}
+
+			last_pos = ++curr_pos;
+		}
+
+		if(!found) {
+			// search the last folder of $PATH which is not included in the while loop
+			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
+			curr_path += '/';
+			curr_path += argv[0];
+			if(stat(curr_path.c_str(), &st) == 0) {
+				found = true;
+			}
+		}
+
+		if(found) {
+			// successfully located the file..
+			// resolve symlinks, etc
+			char* real_path = realpath(curr_path.c_str(), 0);
+			if(real_path == NULL) {
+				cerr << "Unable to locate executable!" << endl;
+				exit(-1);
+			} else {
+				program_root = real_path;
+				free(real_path);
+			}
+		} else {
+			cerr << "Unable to locate executable!" << endl;
+			exit(-1);
+		}
+	}
+
+	// else: it's an absolute path.. nothing to do - perfect!
 	program_root = program_root.substr(0, program_root.find_last_of('/'));
 	program_root = program_root.substr(0, program_root.find_last_of('/'));
 	program_root.append("/share/downloaddaemon/");
@@ -61,6 +130,7 @@ int main(int argc, char* argv[], char* env[]) {
 		cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
 		exit(-1);
 	}
+	cout << "Changing to: " << program_root << endl;
 	chdir(program_root.c_str());
 
 
