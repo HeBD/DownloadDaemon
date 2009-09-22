@@ -92,7 +92,7 @@ public:
 	*	@returns LIST_SUCCESS, LIST_PERMISSION, LIST_ID, LIST_PROPERTY
 	*/
 	int set_string_property(int id, string_property prop, std::string value);
-	int set_int_property(int id, property prop, int value);
+	int set_int_property(int id, property prop, double value);
 	int set_pointer_property(int id, pointer_property prop, void* value);
 
 	/** Functions to get download element variables. pointer_property will return a 0-pointer if it fails, int_property will return LIST_PROPERTY and string_property will throw a download_exception
@@ -101,7 +101,7 @@ public:
 	*/
 	std::string get_string_property(int id, string_property prop);
 	void* get_pointer_property(int id, pointer_property prop);
-	int get_int_property(int id, property prop);
+	double get_int_property(int id, property prop);
 
 	/** Prepares a download (calls the plugin, etc)
 	*	@param dl Download id to prepare

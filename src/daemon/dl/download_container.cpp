@@ -312,7 +312,7 @@ int download_container::set_string_property(int id, string_property prop, std::s
 	return LIST_SUCCESS;
 }
 
-int download_container::set_int_property(int id, property prop, int value) {
+int download_container::set_int_property(int id, property prop, double value) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
@@ -407,7 +407,7 @@ int download_container::set_pointer_property(int id, pointer_property prop, void
 	return LIST_SUCCESS;
 }
 
-int download_container::get_int_property(int id, property prop) {
+double download_container::get_int_property(int id, property prop) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
