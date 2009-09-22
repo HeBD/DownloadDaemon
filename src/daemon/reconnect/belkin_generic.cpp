@@ -25,6 +25,8 @@ extern "C" void reconnect(std::string host, std::string user, std::string passwo
 
 	{
 		curl_easy_reset(handle);
+		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
 		struct curl_slist *header = NULL;
 		curl_easy_setopt_s(handle, CURLOPT_URL, "http://" + host + "/cgi-bin/login.exe");
 		curl_easy_setopt(handle, CURLOPT_POST, 1);
@@ -35,6 +37,8 @@ extern "C" void reconnect(std::string host, std::string user, std::string passwo
 	}
 	{
 		curl_easy_reset(handle);
+		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
 		struct curl_slist *header = NULL;
 		curl_easy_setopt_s(handle, CURLOPT_URL, "http://" + host + "/cgi-bin/restart.exe");
 		curl_easy_setopt(handle, CURLOPT_POST, 1);

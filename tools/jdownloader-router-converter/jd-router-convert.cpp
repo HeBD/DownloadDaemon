@@ -52,6 +52,8 @@ void request(std::istream &str, std::string& result) {
 	string to_exec;
 	result += "\t{\n";
 	result += "\t\tcurl_easy_reset(handle);\n";
+	result += "\t\tcurl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);\n";
+	result += "\t\tcurl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);\n";
 	result += "\t\tstruct curl_slist *header = NULL;\n";
 	while(getline(str, to_exec)) {
 		trim_string(to_exec);
