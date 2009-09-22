@@ -148,7 +148,10 @@ int main(int argc, char* argv[]) {
 				"}\n"
 				"\n"
 				"extern \"C\" void reconnect(std::string host, std::string user, std::string password) {\n"
-				"\tCURL* handle = curl_easy_init();\n";
+				"\tCURL* handle = curl_easy_init();\n"
+				"\tstd::string resultstr;\n"
+				"\tcurl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);\n"
+				"\tcurl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);\n";
 
 	while(getline(file, line)) {
 		exec_next(file, line, cppresult);

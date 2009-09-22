@@ -19,6 +19,9 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 
 extern "C" void reconnect(std::string host, std::string user, std::string password) {
 	CURL* handle = curl_easy_init();
+	std::string resultstr;
+	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
 
 	{
 		curl_easy_reset(handle);
