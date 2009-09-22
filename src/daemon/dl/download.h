@@ -116,8 +116,8 @@ public:
 
 	std::string add_date;
 	int id;
-	double downloaded_bytes;
-	double size;
+	long downloaded_bytes;
+	long size;
 	int wait_seconds;
 	plugin_status error;
 	CURL* handle;
