@@ -12,6 +12,8 @@
 #ifndef DDCLIENT_WX_CONFIGURE_DIALOG_H
 #define DDCLIENT_WX_CONFIGURE_DIALOG_H
 
+#include <vector>
+
 #include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/dialog.h>
 #include <wx/stattext.h>
@@ -98,6 +100,7 @@ class configure_dialog : public wxDialog{
 		wxBoxSizer *log_button_sizer;
 
 		// for reconnect_panel
+		std::vector<std::string> router_model_list;
 		wxCheckBox *enable_reconnecting_check;
 		wxStaticText *policy_text;
 		wxStaticText *router_model_text;

@@ -4,6 +4,10 @@
 	- reconnect support for some belkin routers (for now only routers without a password.. (belkin routers are completely insecure anyway)
 	- improved program data finding again, for server and client
 	- Added a program to convert JDownloaders Curl/LiveHeader reconnect scripts in DownloadDaemon C++ reconnect plugins.. partly working
+ [susanne]
+	- fixed integer range problem at ddclient-wx
+	- reconnect panel at ddclient-wx is now fully working
+	- adjusted column size at ddclient-wx
 
 2009-09-21
    [adrian]

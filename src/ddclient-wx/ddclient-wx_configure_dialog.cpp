@@ -280,10 +280,12 @@ void configure_dialog::enable_reconnect_panel(){
 	wxArrayString model;
 	size_t lineend = 1;
 	string line = "", model_list, old_model;
-	int selection = 0, i = 0;
+	int selection = 0, i = 1;
 
 	old_model = (get_var("router_model", true)).mb_str();
 	model.Add(wxT(""));
+	router_model_list.clear();
+	router_model_list.push_back("");
 
 	// check connection
 	myframe *myparent = (myframe *) GetParent();
@@ -316,6 +318,8 @@ void configure_dialog::enable_reconnect_panel(){
 		}
 
 		model.Add(wxString(line.c_str(), wxConvUTF8));
+		router_model_list.push_back(line); // save router model for later use
+
 		if(line == old_model) // is this the selected value?
 			selection = i;
 		i++;
@@ -337,7 +341,6 @@ void configure_dialog::enable_reconnect_panel(){
 	policy_choice->Append(policy);
 
 	wxString old_policy = get_var("reconnect_policy", true);
-	string bla = string(old_policy.mb_str());
 
 	selection = -1;
 
@@ -355,9 +358,9 @@ void configure_dialog::enable_reconnect_panel(){
 
 	// fill router_ip_input and router_user_input
 	router_ip_input->Clear();
-	router_ip_input->AppendText(get_var("router_ip"));
+	router_ip_input->AppendText(get_var("router_ip", true));
 	router_user_input->Clear();
-	router_user_input->AppendText(get_var("router_username"));
+	router_user_input->AppendText(get_var("router_username", true));
 
 
 	// enabling all
@@ -430,6 +433,32 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 					break;
 	}
 
+	bool reconnect_enable = enable_reconnecting_check->GetValue();
+	string policy, router_model, router_ip, router_user, router_pass;
+
+	if(reconnect_enable){ // other contents of reconnect panel are only saved if reconnecting is enabled
+		selection = policy_choice->GetCurrentSelection();
+
+		switch (selection){
+			case 0: 	policy = "HARD";
+						break;
+			case 1: 	policy = "CONTINUE";
+						break;
+			case 2: 	policy = "SOFT";
+						break;
+			case 3: 	policy = "PUSSY";
+						break;
+		}
+
+		selection = router_model_choice->GetCurrentSelection();
+		router_model =  router_model_list.at(selection);
+
+		router_ip = string(router_ip_input->GetValue().mb_str());
+		router_user = string(router_user_input->GetValue().mb_str());
+		router_pass = string(router_pass_input->GetValue().mb_str());
+	}
+
+
 
 	// check connection
 	myframe *myparent = (myframe *) GetParent();
@@ -469,6 +498,37 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 		// log activity
 		mysock->send("DDP VAR SET log_level = " + activity_level);
 		mysock->recv(answer);
+
+		// reconnect enable
+		if(reconnect_enable){
+			mysock->send("DDP VAR SET enable_reconnect = 1");
+			mysock->recv(answer);
+
+			// policy
+			mysock->send("DDP ROUTER SET reconnect_policy = " + policy);
+			mysock->recv(answer);
+
+			// router model
+			mysock->send("DDP ROUTER SETMODEL " + router_model);
+			mysock->recv(answer);
+
+			// router ip
+			mysock->send("DDP ROUTER SET router_ip = " + router_ip);
+			mysock->recv(answer);
+
+			// router user
+			mysock->send("DDP ROUTER SET router_username = " + router_user);
+			mysock->recv(answer);
+
+			// user pass
+			mysock->send("DDP ROUTER SET router_password = " + router_pass);
+			mysock->recv(answer);
+
+		}else{
+			mysock->send("DDP VAR SET enable_reconnect = 0");
+			mysock->recv(answer);
+
+		}
 
 		mx->unlock();
 	}

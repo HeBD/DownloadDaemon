@@ -249,9 +249,9 @@ void myframe::add_components(){
 	// columns
 	list->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
 	list->InsertColumn(1, wxT("Added"), wxLIST_AUTOSIZE_USEHEADER, 190);
-	list->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 100);
-	list->InsertColumn(3, wxT("URL"), wxLIST_AUTOSIZE_USEHEADER, 200);
-	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 80);
+	list->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 76);
+	list->InsertColumn(3, wxT("URL"), wxLIST_AUTOSIZE_USEHEADER, 178);
+	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 126);
 }
 
 
@@ -336,7 +336,7 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 	if(splitted_line[4] == "DOWNLOAD_RUNNING"){
 		color = "LIME GREEN";
 
-		if(atoi(splitted_line[7].c_str()) > 0){ // waiting time > 0
+		if(atol(splitted_line[7].c_str()) > 0){ // waiting time > 0
 			status_text = "Download running. Waiting " + splitted_line[7] + " seconds.";
 
 		}else{ // no waiting time
@@ -349,15 +349,15 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 				if(splitted_line[5] == "0" || splitted_line[5] == "1") // nothing downloaded yet
 					stream_buffer << "0.00 MB/ 0.00 MB";
 				else // something downloaded
-					stream_buffer << setprecision(3) << fixed << (float)atoi(splitted_line[5].c_str()) / 1048576 << " MB/ 0.00 MB";
+					stream_buffer << setprecision(3) << fixed << (float)atol(splitted_line[5].c_str()) / 1048576 << " MB/ 0.00 MB";
 
 			}else{ // download size known
 				if(splitted_line[5] == "0" || splitted_line[5] == "1") // nothing downloaded yet
-					stream_buffer << "0.00% - 0.00 MB/ " << fixed << (float)atoi(splitted_line[6].c_str()) / 1048576 << " MB";
+					stream_buffer << "0.00% - 0.00 MB/ " << fixed << (float)atol(splitted_line[6].c_str()) / 1048576 << " MB";
 				else{ // download size known and something downloaded
-					stream_buffer << setprecision(3) << fixed << (float)atoi(splitted_line[5].c_str()) / (float)atoi(splitted_line[6].c_str()) * 100 << "% - ";
-					stream_buffer << setprecision(3) << fixed << (float)atoi(splitted_line[5].c_str()) / 1048576 << " MB/ ";
-					stream_buffer << setprecision(3) << fixed << (float)atoi(splitted_line[6].c_str()) / 1048576 << " MB";
+					stream_buffer << setprecision(3) << fixed << (float)atol(splitted_line[5].c_str()) / (float)atol(splitted_line[6].c_str()) * 100 << "% - ";
+					stream_buffer << setprecision(3) << fixed << (float)atol(splitted_line[5].c_str()) / 1048576 << " MB/ ";
+					stream_buffer << setprecision(3) << fixed << (float)atol(splitted_line[6].c_str()) / 1048576 << " MB";
 				}
 			}
 			status_text = stream_buffer.str();
@@ -867,9 +867,9 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 			width -= 10;
 		#endif // defined(__WXMSW__)
 
-		list->SetColumnWidth(2, width/4); // only column 2 to 4, because 0 and 1 have fix sizes
-		list->SetColumnWidth(3, width/2);
-		list->SetColumnWidth(4, width/4);
+		list->SetColumnWidth(2, width*0.2); // only column 2 to 4, because 0 and 1 have fix sizes
+		list->SetColumnWidth(3, width*0.45);
+		list->SetColumnWidth(4, width*0.35);
  	}
  }
 
