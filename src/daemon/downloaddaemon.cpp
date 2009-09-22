@@ -68,7 +68,7 @@ int main(int argc, char* argv[], char* env[]) {
 		}
 		program_root = real_path;
 		free(real_path);
-	} else if(argv0.find('/') == string::npos) {
+	} else if(argv0.find('/') == string::npos && !argv0.empty()) {
 		// It's in $PATH... let's go!
 		std::string env_path, curr_env;
 		for(char** curr_c = env; curr_c != 0 && *curr_c != 0; ++curr_c) {
@@ -120,12 +120,14 @@ int main(int argc, char* argv[], char* env[]) {
 			cerr << "Unable to locate executable!" << endl;
 			exit(-1);
 		}
+	} else if(argv0.empty()) {
+
 	}
 
 	// else: it's an absolute path.. nothing to do - perfect!
 	program_root = program_root.substr(0, program_root.find_last_of('/'));
 	program_root = program_root.substr(0, program_root.find_last_of('/'));
-	program_root.append("/share/downloaddaemon/");
+	program_root.append("share/downloaddaemon/");
 	if(stat(program_root.c_str(), &st) != 0) {
 		cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
 		cerr << "We were looking in: " << program_root << endl;
