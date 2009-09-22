@@ -130,7 +130,6 @@ int main(int argc, char* argv[], char* env[]) {
 		cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
 		exit(-1);
 	}
-	cout << "Changing to: " << program_root << endl;
 	chdir(program_root.c_str());
 
 
