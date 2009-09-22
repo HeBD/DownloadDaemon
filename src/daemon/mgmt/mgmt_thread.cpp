@@ -584,7 +584,9 @@ void target_router_list(std::string &data, tkSock *sock) {
 		to_send.append(*it);
 		to_send.append("\n");
 	}
-	to_send.erase(to_send.end() - 1);
+	if(!to_send.empty()) {
+        to_send.erase(to_send.end() - 1);
+	}
 	*sock << to_send;
 }
 

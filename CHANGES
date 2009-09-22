@@ -1,10 +1,14 @@
+2009-09-22
+   [adrian]
+	- small crashfix when receiving an empty download list
 2009-09-21
    [adrian]
 	- DownloadDaemon now uses proper unix-direcotries (/usr/[local/]bin and /usr/[local/]share/downloaddaemon,
 	  as well as /etc/downloaddaemon for configuration files. To keep developing DownloadDaemon, you need
 	  to have called "make install" once, to create the download target default folder /var/downloads and copy
 	  the config files to /etc/downloaddaemon. The binaries are always used from the svn root (plugins, main program
-	  when you run it in the IDE)
+	  when you run it in the IDE (to do so, you might have to change permissions/owner for /var/downloads and /etc
+	  /downloaddaemon))
 	- replaced some spaces with tabs - damn CodeBlocks default settings
 	- improved locating of program data at ddclient-wx with realpath()
 
