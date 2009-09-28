@@ -1,3 +1,7 @@
+2009-09-28
+   [susanne]
+	- fixed sizer bug at ddclient-wx
+
 2009-09-22
    [adrian]
 	- small crashfix when receiving an empty download list

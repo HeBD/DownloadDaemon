@@ -264,7 +264,7 @@ void configure_dialog::create_reconnect_panel(){
 	overall_reconnect_sizer->Add(outer_router_sizer, 0, wxGROW|wxALL, 20);
 	overall_reconnect_sizer->Add(reconnect_button_sizer, 0, wxALL);
 
-	log_panel->SetSizerAndFit(overall_reconnect_sizer);
+	reconnect_panel->SetSizerAndFit(overall_reconnect_sizer);
 
 	if(enable) // reconnecting enabled
 		enable_reconnect_panel();
