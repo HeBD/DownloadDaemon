@@ -139,7 +139,7 @@ void download_thread(int download) {
 		if(!output_file.good()) {
 			log_string(std::string("Could not write to file: ") + output_filename, LOG_SEVERE);
 			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_WRITE_FILE_ERROR);
-			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
 			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		}

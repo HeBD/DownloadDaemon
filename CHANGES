@@ -1,3 +1,7 @@
+2009-10-01
+   [adrian]
+	- deactivate downloads if we don't have write permissions
+
 2009-09-28
    [susanne]
 	- fixed sizer bug at ddclient-wx
@@ -8,7 +12,7 @@
 	- reconnect support for some belkin routers (for now only routers without a password.. (belkin routers are completely insecure anyway)
 	- improved program data finding again, for server and client
 	- Added a program to convert JDownloaders Curl/LiveHeader reconnect scripts in DownloadDaemon C++ reconnect plugins.. partly working
- [susanne]
+   [susanne]
 	- fixed integer range problem at ddclient-wx
 	- reconnect panel at ddclient-wx is now fully working
 	- adjusted column size at ddclient-wx
