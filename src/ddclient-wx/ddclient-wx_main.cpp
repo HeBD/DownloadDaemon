@@ -66,14 +66,13 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 	if(working_dir.find_first_of(wxT("/\\")) == wxString::npos) {
 		// no / in argv[0]? this means that it's in the path or in ./ (windows) let's find out where.
-
 		wxString env_path;
 		wxGetEnv(wxT("PATH"), &env_path);
 		wxString curr_path;
 		size_t curr_pos = 0, last_pos = 0;
 		bool found = false;
 
-		while((curr_pos = env_path.find_first_of(wxT(";"), curr_pos)) != wxString::npos) {
+		while((curr_pos = env_path.find_first_of(wxT(";:"), curr_pos)) != wxString::npos) {
 			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
 			curr_path += wxT("/ddclient-wx");
 
@@ -102,15 +101,28 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	}
 
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
-	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
+    if(working_dir.find_last_of(wxT("/\\")) != wxString::npos) {
+        working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
+    } else {
+        // needed if it's started with ./ddclient-wx, so we become ./../share/
+        working_dir += wxT("/..");
+    }
 	working_dir += wxT("/share/ddclient-wx/");
+	#ifndef _WIN32
+        char* abs_path = realpath(working_dir.mb_str(), NULL);
+        wxString tmp(abs_path, wxConvUTF8);
+        working_dir = tmp;
+        working_dir += wxT("/");
+        free(abs_path);
+	#endif
+
 	wxFileName fn(working_dir);
 	fn.SetCwd();
 
 	SetClientSize(wxSize(750,500));
 	SetMinSize(wxSize(750,500));
 	CenterOnScreen();
-	SetIcon(wxIcon(working_dir + wxT("img/logoDD.png")));
+	SetIcon(wxIcon(wxT("img/logoDD.png")));
 
 	add_bars();
 	add_components();

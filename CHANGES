@@ -1,3 +1,8 @@
+2009-10-02
+   [adrian]
+	- fixed PATH-finding in ddclient-wx (windows-testing still needed)
+	- fixed building everything at once (basically "cmake .." or "cmake ../src")
+
 2009-10-01
    [adrian]
 	- deactivate downloads if we don't have write permissions

@@ -4,15 +4,15 @@ set(CMAKE_BUILD_TYPE Debug)
 
 project (DownloadDaemon)
 add_subdirectory (src/daemon)
-add_subdirectory (src/lib)
+#add_subdirectory (src/lib)
 
 project (ddclient)
 add_subdirectory (src/ddclient)
-add_subdirectory (src/lib)
+#add_subdirectory (src/lib)
 
 project (ddclient-wx)
 add_subdirectory (src/ddclient-wx)
-add_subdirectory (src/lib)
+#add_subdirectory (src/lib)
 
 
 
