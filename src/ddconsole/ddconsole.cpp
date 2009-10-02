@@ -16,6 +16,9 @@
 using namespace std;
 
 void trim_string(std::string &str);
+// If password is unknown or should be asked, pass an empty string. The password will be written in it.
+void connect_request(tkSock &sock, std::string &host, const std::string &port, std::string &password);
+void send_command(tkSock &sock, const std::string &command);
 
 int main(int argc, char* argv[]) {
 	vector<string> args;
@@ -23,7 +26,7 @@ int main(int argc, char* argv[]) {
 		args.push_back(argv[i]);
 	}
 
-	string host("127.0.0.1");
+	string host;
 	string port("56789");
 	string password;
 	string command;
@@ -31,10 +34,11 @@ int main(int argc, char* argv[]) {
 		if(*it == "--help") {
 			cout << "Usage: " << argv[0] << " [options]" << endl;
 			cout << "Possible options:" << endl;
-			cout << "\t--host <host>\t Specifies the host to connect to [localhost]" << endl;
-			cout << "\t--port <port>\t Specifies the port to use [56789]" << endl;
+			cout << "\t--host <host>\t\t Specifies the host to connect to [localhost]" << endl;
+			cout << "\t--port <port>\t\t Specifies the port to use [56789]" << endl;
 			cout << "\t--password <password>\t Specifies the password to connect" << endl;
-			cout << "\t--command <commant>\t Specifies a command to send after connectiong. The client will close then" << endl;
+			cout << "\t--command <command(s)>\t Specifies a command to send after connectiong. The client will close after execution." << endl;
+			cout << "\t\t\t\t To find out about possible commands, type \"help\" in the console." << endl;
 			return 0;
 		}
 		if(*it == "--host") {
@@ -53,39 +57,34 @@ int main(int argc, char* argv[]) {
 	}
 
 	tkSock sock;
-	if(!sock.connect(host, atoi(port.c_str()))) {
-		cout << "Unable to connect to DownloadDaemon";
-		return -1;
+	if(!host.empty()) {
+		connect_request(sock, host, port, password);
+		if(!sock) {
+			cout << "Unable to connect." << endl;
+		}
+	}
+
+	trim_string(command);
+	if(!command.empty()) {
+		std::string answer;
+		while(command.find('\n') != string::npos) {
+			std::string to_send = command.substr(0, command.find('\n'));
+			trim_string(to_send);
+			send_command(sock, to_send);
+			sock >> answer;
+			cout << answer << endl;
+			command = command.substr(command.find('\n') + 1);
+		}
+		trim_string(command);
+		send_command(sock, command);
+		sock >> answer;
+		cout << answer << endl;
+		return 0;
 	}
 
 	std::string snd;
-
-	sock >> snd;
-	if(snd.find("100") == 0) {
-		cout << "No Password" << endl;
-	} else if (snd.find("102") == 0) {
-		if(password.empty()) {
-			cout << "Password: ";
-			getline(cin, password);
-		}
-		sock << password;
-		sock >> snd;
-		if(snd.find("100") == 0) {
-			cout << "Authentication success" << endl;
-		} else if(snd.find("102") == 0) {
-			cout << "Unable to authenticate" << endl;
-			return -1;
-		} else {
-			cout << "Unknown error while authentication" << endl;
-			return -1;
-		}
-	} else {
-		cout << "Unknown error while authentication" << endl;
-		return -1;
-	}
-
-	while(sock) {
-		cout << "> ";
+	while(true) {
+		cout << host << "> ";
 		if(command.empty()) {
 			getline(cin, snd);
 		} else {
@@ -97,9 +96,31 @@ int main(int argc, char* argv[]) {
 		trim_string(snd);
 		if(snd == "quit" || snd == "q" || snd == "exit") {
 			return 0;
+		} else if(snd.find("connect") == 0) {
+			snd = snd.substr(7);
+			trim_string(snd);
+			host = snd.substr(0, snd.find_first_of("\n\t "));
+			snd = snd.substr(host.length());
+			trim_string(snd);
+
+			port = "56789";
+			if(!snd.empty()) {
+				port = snd;
+			}
+			connect_request(sock, host, port, password);
+			if(!sock) {
+				cout << "Unable to connect." << endl;
+				host = "";
+			}
+			continue;
 		}
 
 		if(snd == "help" || snd == "?") {
+			cout << "There are commands for ddconsole and there are commands for a connected DownloadDaemon." << endl;
+			cout << "Commands for ddconsole:" << endl;
+			cout << "\texit/quit\t\tdisconnect and exit ddconsole" << endl;
+			cout << "\tconnect <host> [port]\tConnect to DownloadDaemon (port is optional)" << endl << endl;
+			cout << "Commands to be sent to DownloadDaemon:" << endl;
 			cout << "General command structure: <target> <command> <parameters> " << endl;
 			cout << "Targets are DL for downloads, VAR for configuration variables, FILE for downloaded files and ROUTER for router configuration" << endl;
 			cout << "Possible commands:" << endl;
@@ -120,13 +141,16 @@ int main(int argc, char* argv[]) {
 			cout << "ROUTER SETMODEL <model>\t sets the router model" << endl;
 			cout << "ROUTER SET <var>=<value>\t sets a router configuration varialbe" << endl;
 			cout << "ROUTER GET <var>\t\t returns the value of a router configuration variable" << endl;
-			cout << "\nTo quit ddclient, type exit or quit" << endl;
 			continue;
 		}
 		string answer;
-		snd.insert(0, "DDP ");
-		sock << snd;
+		send_command(sock, snd);
 		sock >> answer;
+
+		if(!sock) {
+			host = "";
+			cout << "Disconnected from DownloadDaemon" << endl;
+		}
 
 		cout << answer << endl;
 		if(!command.empty()) {
@@ -144,4 +168,44 @@ void trim_string(std::string &str) {
 	while(str.length() > 0 && isspace(*(str.end() - 1))) {
 		str.erase(str.end() -1);
 	}
+}
+
+void connect_request(tkSock &sock, std::string &host, const std::string &port, std::string &password) {
+	if(host.empty() || !sock.connect(host, atoi(port.c_str()))) {
+		host = "";
+		return;
+	}
+
+	std::string snd;
+
+	sock >> snd;
+	if(snd.find("100") == 0) {
+		cout << "No Password." << endl;
+	} else if (snd.find("102") == 0) {
+		if(password.empty()) {
+			cout << "Password: ";
+			getline(cin, password);
+		}
+		sock << password;
+		sock >> snd;
+		if(snd.find("100") == 0) {
+			cout << "Authentication success" << endl;
+		} else if(snd.find("102") == 0) {
+			cout << "Unable to authenticate" << endl;
+			exit(-2);
+		} else {
+			cout << "Unknown error while authentication" << endl;
+			exit(-3);
+		}
+	} else {
+		cout << "Unknown error while authentication. Either the connection was closed while authenticating or you connected"
+				"to an unsupported service." << endl;
+		exit(-3);
+	}
+}
+
+void send_command(tkSock &sock, const std::string &command) {
+	std::string snd = command;
+	snd.insert(0, "DDP ");
+	sock << snd;
 }

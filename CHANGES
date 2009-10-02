@@ -1,5 +1,7 @@
 2009-10-02
    [adrian]
+	- ddconsole is now a bit more "console like" with possibility to do everything with start-arguments or alternatively in console mode
+	- renamed ddclient to ddconsole, because ddclient is already used by another program (dynDNS client)
 	- some minor code-improvements to prevent mistakes in the future
 	- fixed PATH-finding in ddclient-wx (windows-testing still needed)
 	- fixed building everything at once (basically "cmake .." or "cmake ../src")

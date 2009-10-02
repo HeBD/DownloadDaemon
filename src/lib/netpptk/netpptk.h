@@ -64,7 +64,11 @@ public:
 	*	@param port Port to use
 	*	@returns True on success
 	*/
-	bool connect(const std::string host, const int port);
+	bool connect(const std::string &host, const int port);
+
+	/** Disconnect from a connected socket
+	*/
+	void disconnect();
 
 	/** Send data over the socket
 	*	@param s Data to send

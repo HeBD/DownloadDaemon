@@ -6,8 +6,8 @@ project (DownloadDaemon)
 add_subdirectory (src/daemon)
 #add_subdirectory (src/lib)
 
-project (ddclient)
-add_subdirectory (src/ddclient)
+project (ddconsole)
+add_subdirectory (src/ddconsole)
 #add_subdirectory (src/lib)
 
 project (ddclient-wx)

@@ -236,7 +236,7 @@ void tkSock::auto_accept_stop() {
 	auto_accept_thread = 0;
 }
 #endif
-bool tkSock::connect(const std::string host, const int port) {
+bool tkSock::connect(const std::string &host, const int port) {
 	struct hostent *host_info;
 	unsigned long addr;
 	if((addr = inet_addr(host.c_str())) != INADDR_NONE) {
@@ -253,7 +253,9 @@ bool tkSock::connect(const std::string host, const int port) {
 	}
 	m_addr.sin_family = AF_INET;
 	m_addr.sin_port = htons(port);
-
+	if(this) {
+		disconnect();
+	}
 	int status = ::connect(m_sock, reinterpret_cast<sockaddr*>(&m_addr), sizeof(m_addr));
 	if(status == 0) {
 		valid = true;
@@ -261,6 +263,25 @@ bool tkSock::connect(const std::string host, const int port) {
 	}
 	valid = false;
 	return false;
+}
+
+void tkSock::disconnect() {
+	#ifdef _WIN32
+		closesocket(m_sock);
+	#else
+		close(m_sock);
+	#endif
+	m_sock = ::socket(AF_INET, SOCK_STREAM, 0);
+
+	if(m_sock <= 0) {
+		throw SocketError(SOCKET_CREATION_FAILED);
+	}
+
+	#ifndef _WIN32
+		int y = 1;
+		setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(y));
+	#endif
+	valid = false;
 }
 
 bool tkSock::send(const std::string &s) {

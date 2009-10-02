@@ -5,8 +5,8 @@ add_subdirectory (daemon)
 #add_subdirectory (lib)
 add_subdirectory (daemon/plugins)
 
-project (ddclient)
-add_subdirectory (ddclient)
+project (ddconsole)
+add_subdirectory (ddconsole)
 #add_subdirectory (lib)
 
 project (ddclient-wx)

@@ -4,7 +4,7 @@ This guide is seperated in 3 parts:
 3: Things you have to do if you are building from SVN
 
 1:	To build DownloadDaemon, you need to have libcurl (libcurl-dev) and boost_thread (at least version 1.36) installed.
-	To build ddclient, you need to have boost_thread installed (older versions will also do the job)
+	To build ddconsole, you need to have boost_thread installed (older versions will also do the job)
 	To build ddclient-wx, you need to have boost_thread (older versions are enough) and wxWidgets development packages installed
 
 2:	Building a package from a source package is pretty simple. Extract the archive (if you read this, this should be done by now)
@@ -26,7 +26,7 @@ This guide is seperated in 3 parts:
 	If you only want to build a single program, you have to run cmake on their source folders, eg:
 	cmake ../src/daemon
 	or
-	cmake ../src/ddclient
+	cmake ../src/ddconsole
 	or
 	cmake ../src/ddclient-wx
 	

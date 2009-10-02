@@ -13,7 +13,11 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-Wshadow" />
+					<Add option="-Winit-self" />
+					<Add option="-Wredundant-decls" />
 					<Add option="-Wall" />
+					<Add option="-ansi" />
 					<Add option="-g" />
 				</Compiler>
 				<Linker>
@@ -21,9 +25,9 @@
 					<Add library="boost_thread-mt" />
 				</Linker>
 			</Target>
-			<Target title="DDClient">
+			<Target title="DDConsole">
 				<Option platforms="Windows;Unix;" />
-				<Option output="build/ddclient" prefix_auto="1" extension_auto="1" />
+				<Option output="build/ddconsole" prefix_auto="1" extension_auto="1" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option use_console_runner="0" />
@@ -223,8 +227,8 @@
 		<Unit filename="src/ddclient-wx/ddclient-wx_picture.h">
 			<Option target="DDClient-wx" />
 		</Unit>
-		<Unit filename="src/ddclient/ddclient.cpp">
-			<Option target="DDClient" />
+		<Unit filename="src/ddconsole/ddconsole.cpp">
+			<Option target="DDConsole" />
 		</Unit>
 		<Unit filename="src/lib/cfgfile/cfgfile.cpp">
 			<Option target="Daemon" />
@@ -234,12 +238,12 @@
 		</Unit>
 		<Unit filename="src/lib/netpptk/netpptk.cpp">
 			<Option target="Daemon" />
-			<Option target="DDClient" />
+			<Option target="DDConsole" />
 			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="src/lib/netpptk/netpptk.h">
 			<Option target="Daemon" />
-			<Option target="DDClient" />
+			<Option target="DDConsole" />
 			<Option target="DDClient-wx" />
 		</Unit>
 		<Unit filename="tools/jdownloader-router-converter/jd-router-convert.cpp">
