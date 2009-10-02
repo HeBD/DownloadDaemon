@@ -39,7 +39,7 @@ public:
 	* @param url Download URL
 	* @param next_id The ID this download should get
 	*/
-	download(std::string &url, int next_id);
+	download(std::string &dl_url, int next_id);
 
 	/** Constructor from a serialized download from file
 	* @param serializedDL Serialized Download string

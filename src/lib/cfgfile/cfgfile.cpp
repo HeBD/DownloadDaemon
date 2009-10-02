@@ -20,14 +20,14 @@ cfgfile::cfgfile()
 	: comment_token("#"), is_writeable(false), eqtoken('=') {
 }
 
-cfgfile::cfgfile(std::string &filepath, bool is_writeable)
-	: filepath(filepath), comment_token("#"), is_writeable(is_writeable), eqtoken('=') {
+cfgfile::cfgfile(std::string &fp, bool open_writeable)
+	: filepath(fp), comment_token("#"), is_writeable(open_writeable), eqtoken('=') {
 	open_cfg_file(filepath, is_writeable);
 	comment_token = "#";
 }
 
-cfgfile::cfgfile(std::string &filepath, std::string &comment_token, char eqtoken, bool is_writeable)
-	: filepath(filepath), comment_token(comment_token), is_writeable(is_writeable), eqtoken(eqtoken) {
+cfgfile::cfgfile(std::string &fp, std::string &comm_token, char eq_token, bool open_writeable)
+	: filepath(fp), comment_token(comm_token), is_writeable(open_writeable), eqtoken(eq_token) {
 	open_cfg_file(filepath, is_writeable);
 }
 
@@ -35,17 +35,16 @@ cfgfile::~cfgfile() {
 	file.close();
 }
 
-void cfgfile::open_cfg_file(const std::string &filepath, bool writeable) {
+void cfgfile::open_cfg_file(const std::string &fp, bool open_writeable) {
 	file.close();
-	if (writeable) {
+	filepath = fp;
+	if (open_writeable) {
 		file.open(filepath.c_str(), fstream::out | fstream::in | fstream::ate);
 		is_writeable = true;
-		this->filepath = filepath;
 	}
 	else {
 		file.open(filepath.c_str(), fstream::in);
 		is_writeable = false;
-		this->filepath = filepath;
 	}
 }
 
@@ -135,8 +134,8 @@ std::string cfgfile::get_comment_token() const {
 	return comment_token;
 }
 
-void cfgfile::set_comment_token(const std::string &comment_token) {
-	this->comment_token = comment_token;
+void cfgfile::set_comment_token(const std::string &token) {
+	comment_token = token;
 }
 
 void cfgfile::reload_file() {

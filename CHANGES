@@ -1,5 +1,6 @@
 2009-10-02
    [adrian]
+	- some minor code-improvements to prevent mistakes in the future
 	- fixed PATH-finding in ddclient-wx (windows-testing still needed)
 	- fixed building everything at once (basically "cmake .." or "cmake ../src")
 

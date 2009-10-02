@@ -177,8 +177,8 @@ int download_container::deactivate(int id) {
 	}
 }
 
-int download_container::get_next_downloadable(bool lock) {
-	if(lock) {
+int download_container::get_next_downloadable(bool do_lock) {
+	if(do_lock) {
 		boost::mutex::scoped_lock lock(download_mutex);
 	}
 	if(is_reconnecting) {
@@ -494,14 +494,14 @@ bool download_container::reconnect_needed() {
 
 
 
-	bool reconnect_needed = false;
+	bool need_reconnect = false;
 	//bool reconnect_allowed = false;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_WAITING) {
-			reconnect_needed = true;
+			need_reconnect = true;
 		}
 	}
-	if(!reconnect_needed) {
+	if(!need_reconnect) {
 		return false;
 	}
 
@@ -771,13 +771,13 @@ bool download_container::dump_to_file() {
 }
 
 int download_container::running_downloads() {
-	int running_downloads = 0;
+	int running_dls = 0;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_RUNNING) {
-			++running_downloads;
+			++running_dls;
 		}
 	}
-	return running_downloads;
+	return running_dls;
 }
 
 int download_container::remove_download(int id) {

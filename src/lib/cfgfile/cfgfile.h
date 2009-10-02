@@ -27,28 +27,28 @@ public:
 
 	/** Constructs the object and opens a config file. The User can specify if the file should be
 	*  opened with write-access. Comment token is #
-	*	@param filepath Path to the config-file
-	*	@param is_writeable specifies rw/ro
+	*	@param fp Path to the config-file
+	*	@param open_writeable specifies rw/ro
 	*/
-	cfgfile(std::string &filepath, bool is_writeable);
+	cfgfile(std::string &fp, bool open_writeable);
 
 	/** The full constructor with every initializable element.
- 	*	@param filepath Path to the config-file
- 	*	@param comment_token Token used for comments
- 	*	@param eqtoken Token used for assignemnts
- 	*	@param is_writeable specifies rw/ro
+ 	*	@param fp Path to the config-file
+ 	*	@param comm_token Token used for comments
+ 	*	@param eq_token Token used for assignemnts
+ 	*	@param open_writeable specifies rw/ro
  	*/
-	cfgfile(std::string &filepath, std::string &comment_token, char eqtoken, bool is_writeable);
+	cfgfile(std::string &fp, std::string &comm_token, char eq_token, bool open_writeable);
 
 	/** Destructor - closes the file */
 	~cfgfile();
 
 	/** Opens the cfgfile, if the object was constructed without specifying one.
  	*  Also, the file can be changed, if there is already one opened.
- 	*	@param filepath Path to the config-file
- 	*	@param writeable specifies rw/ro
+ 	*	@param fp Path to the config-file
+ 	*	@param open_writeable specifies rw/ro
  	*/
-	void open_cfg_file(const std::string &filepath, bool writeable);
+	void open_cfg_file(const std::string &fp, bool open_writeable);
 
 
 	/** Returns a configuration options found in a file.
@@ -101,6 +101,7 @@ private:
 	*  @param str String to change
 	*/
 	void trim(std::string &str) const;
+
 	std::fstream file;
 	std::string filepath;
 	std::string comment_token;

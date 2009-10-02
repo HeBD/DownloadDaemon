@@ -76,7 +76,7 @@ public:
 	/** Gets the next downloadable item in the global download list (filters stuff like inactives, wrong time, etc)
  	*	@returns ID of the next download that can be downloaded or LIST_ID if there is none, LIST_SUCCESS
  	*/
-	int get_next_downloadable(bool lock = true);
+	int get_next_downloadable(bool do_lock = true);
 
 	/** Adds a new download to the list
 	*	@param dl Download object to add

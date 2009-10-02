@@ -30,7 +30,7 @@ using namespace std;
 extern cfgfile global_config;
 extern download_container global_download_list;
 
-download::download(std::string &url, int next_id)
+download::download(std::string &dl_url, int next_id)
 	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS), is_running(false), need_stop(false), status(DOWNLOAD_PENDING) {
 	handle = curl_easy_init();
 	time_t rawtime;
@@ -192,7 +192,6 @@ const char* download::get_status_str() {
 		default:
 			return "DOWNLOAD_DELETING";
 	}
-	return "UNKNOWN_STATUS";
 }
 
 void download::set_status(download_status st) {
@@ -248,8 +247,8 @@ plugin_output download::get_hostinfo() {
 	}
 
 	// Load the plugin function needed
-	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
-	if (!handle) {
+	void* l_handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
+	if (!l_handle) {
 		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
 		return outp;
 	}
@@ -257,16 +256,16 @@ plugin_output download::get_hostinfo() {
 	dlerror();	// Clear any existing error
 
 	void (*plugin_getinfo)(plugin_input&, plugin_output&);
-	plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(handle, "plugin_getinfo");
+	plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(l_handle, "plugin_getinfo");
 
-	char *error;
-	if ((error = dlerror()) != NULL)  {
-		log_string(std::string("Unable to get plugin information: ") + error, LOG_SEVERE);
+	char *l_error;
+	if ((l_error = dlerror()) != NULL)  {
+		log_string(std::string("Unable to get plugin information: ") + l_error, LOG_SEVERE);
 		return outp;
 	}
 
 	plugin_getinfo(inp, outp);
-	dlclose(handle);
+	dlclose(l_handle);
 	return outp;
 }
 
