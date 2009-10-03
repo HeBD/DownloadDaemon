@@ -1,3 +1,7 @@
+2009-10-03
+   [adrian]
+	- Made everything ready for version 0.2
+
 2009-10-02
    [adrian]
 	- ddconsole is now a bit more "console like" with possibility to do everything with start-arguments or alternatively in console mode

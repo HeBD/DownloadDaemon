@@ -2,6 +2,7 @@ This guide is seperated in 3 parts:
 1: Things that you always have to do
 2: Things you have to do if you got this guide in a .tar.gz or .tar.bz2 source package
 3: Things you have to do if you are building from SVN
+4: Installing the ARM/NAS package (a bit more complicated)
 
 1:	To build DownloadDaemon, you need to have libcurl (libcurl-dev) and boost_thread (at least version 1.36) installed.
 	To build ddconsole, you need to have boost_thread installed (older versions will also do the job)
@@ -33,10 +34,21 @@ This guide is seperated in 3 parts:
 	in any case, to install the program, run
 	sudo make install
 
-
-ddclient-wx and ddclient will be installed to /usr/local/bin and /usr/local/share. downloaddaemon behaves a bit different.
-It will be installed completely to /opt/downloaddaemon and place a starter-shell-script in /usr/local/bin. To run it, type
-downloaddaemon (or downloaddaemon -d for deamon mode) in a terminal.
-If you don't like /opt/downloaddaemon, you can always move it somewhere else, this is no problem (you just need to change the starter-script
-/usr/local/bin/downloaddaemon)
-
+4:	Since there is no general way to install programs on NAS', the ARM package only contains a packed structure
+	which needs to be rebuild on the filesystem. Usually the embedded Linux distribution is installed on a ROM.
+	Therefore any changes you make to it will be lost after a reboot. The only good solution I found is not copying
+	the data from the archive into the filesystem, but instead just copy it to the hard disk which was put in the NAS.
+	Then you write a small shell script that links all the files into the filesystem. This script must then be executed
+	after each reboot (If you need some help on installing the Package on your NAS, you can always contact me to get support
+	(On the sourceforge site, there is a support ticket system).
+	Another problem is, that many NAS do not have the required libraries (libcurl, libstdc++, libboost_thread-mt) installed.
+	To solve this problem, you can Download the downloaddaemon_arm_libs package, which includes the files. They should work for
+	most NAS', since many of them run similar glibc versions. However, it does not neccessarily have to work for all of them.
+	Be VERY!!! careful when linking the libraries into the filesystem. Only link libraries in that your NAS doesn't have by default.
+	If you overwrite existing libraries, this may cause undefined system behaviour (but can be fixed with a reboot).
+	If it doesn't work, you are probably out of luck. The only way would then be cross-compiling them yourself. good luck!
+	The shell script will basically look like this:
+	#include /bin/bash
+	ln -s /mnt/<path to files>/usr/bin/* /usr/bin/*
+	ln -s /mnt/<path to files>/etc/downloaddaemon /etc/downloaddaemon
+	ln -s /mnt/<path to files>/usr/share/downloaddaemon /usr/share/downloaddaemon
