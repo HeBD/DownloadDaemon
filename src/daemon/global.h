@@ -19,6 +19,7 @@
 download_container global_download_list;
 cfgfile global_config;
 cfgfile global_router_config;
+cfgfile global_premium_config;
 std::string program_root;
 
 #endif /*GLOBAL_H_*/

@@ -57,4 +57,8 @@ const char* get_url() {
 	return list->get_string_property(dlid, DL_URL).c_str();
 }
 
+CURL* get_handle() {
+	return list->get_pointer_property(dlid, DL_HANDLE);
+}
+
 #endif // PLUGIN_HELPERS_H_INCLUDED

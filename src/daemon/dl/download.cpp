@@ -31,7 +31,7 @@ extern cfgfile global_config;
 extern download_container global_download_list;
 
 download::download(std::string &dl_url, int next_id)
-	: url(url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS), is_running(false), need_stop(false), status(DOWNLOAD_PENDING) {
+	: url(dl_url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS), is_running(false), need_stop(false), status(DOWNLOAD_PENDING) {
 	handle = curl_easy_init();
 	time_t rawtime;
 	time(&rawtime);
@@ -128,8 +128,8 @@ std::string download::serialize() {
 		return "";
 	}
 	stringstream ss;
-	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << status << '|' << downloaded_bytes
-	   << '|' << size << '|' << output_file << "|\n";
+	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << status << '|'
+	   << downloaded_bytes << '|' << size << '|' << output_file << "|\n";
 	return ss.str();
 }
 
@@ -171,6 +171,8 @@ const char* download::get_error_str() {
 			return "PLUGIN_CONNECTION_ERROR";
 		case PLUGIN_SERVER_OVERLOADED:
 			return "PLUGIN_SERVER_OVERLOADED";
+		case PLUGIN_AUTH_FAIL:
+			return "PLUGIN_AUTH_FAIL";
 	}
 	return "PLUGIN_UNKNOWN_ERROR";
 }

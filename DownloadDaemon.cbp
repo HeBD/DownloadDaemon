@@ -8,7 +8,7 @@
 		<Build>
 			<Target title="Daemon">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/DownloadDaemon" prefix_auto="1" extension_auto="1" />
+				<Option output="build/bin/DownloadDaemon" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -27,7 +27,7 @@
 			</Target>
 			<Target title="DDConsole">
 				<Option platforms="Windows;Unix;" />
-				<Option output="build/ddconsole" prefix_auto="1" extension_auto="1" />
+				<Option output="build/bin/ddconsole" prefix_auto="1" extension_auto="1" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option use_console_runner="0" />
@@ -39,7 +39,7 @@
 				</Compiler>
 			</Target>
 			<Target title="DDClient-wx">
-				<Option output="build/ddclient-wx" prefix_auto="1" extension_auto="1" />
+				<Option output="build/bin/ddclient-wx" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="built/" />
 				<Option type="0" />
 				<Option compiler="gcc" />
@@ -55,7 +55,7 @@
 			</Target>
 			<Target title="rapidshare_com">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/plugins/librapidshare.com.so" prefix_auto="0" extension_auto="0" />
+				<Option output="build/share/downloaddaemon/plugins/librapidshare.com.so" prefix_auto="0" extension_auto="0" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -71,7 +71,7 @@
 			</Target>
 			<Target title="uploaded_to">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/plugins/libuploaded.to.so" prefix_auto="0" extension_auto="0" />
+				<Option output="build/share/downloaddaemon/plugins/libuploaded.to.so" prefix_auto="0" extension_auto="0" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -87,7 +87,7 @@
 			</Target>
 			<Target title="aquip_a-wlan-3">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/reconnect/libaquip_a-wlan-3" prefix_auto="0" extension_auto="1" />
+				<Option output="build/share/downloaddaemon/reconnect/libaquip_a-wlan-3" prefix_auto="0" extension_auto="1" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -99,7 +99,7 @@
 			</Target>
 			<Target title="belkin_generic">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/reconnect/libbelkin_generic" prefix_auto="0" extension_auto="1" />
+				<Option output="build/share/downloaddaemon/reconnect/libbelkin_generic" prefix_auto="0" extension_auto="1" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Compiler>

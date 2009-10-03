@@ -141,12 +141,10 @@ int main(int argc, char* argv[], char* env[]) {
 		cerr << "Could not locate configuration file!" << endl;
 		exit(-1);
 	}
-	if(stat("/etc/downloaddaemon/routerinfo.conf", &st) != 0) {
-		cerr << "Could not locate router configuration file!" << endl;
-		exit(-1);
-	}
+
 	global_config.open_cfg_file("/etc/downloaddaemon/downloaddaemon.conf", true);
 	global_router_config.open_cfg_file("/etc/downloaddaemon/routerinfo.conf", true);
+	global_premium_config.open_cfg_file("/etc/downloaddaemon/premium_accounts.conf", true);
 
 	std::string dlist_fn = global_config.get_cfg_value("dlist_file");
 	correct_path(dlist_fn);

@@ -34,10 +34,15 @@ plugin_output &outp:
 	bool allows_multiple		= This specifies if the hoster currently supports multiple downloads at the same time. (If this depends on if you are
 					= a premium user or not, make your answer dependent.
 
-Currently, premium accounts are not supported, but will be quite soon. Therefore you should consider making your plugin compatible.
 When your plugin finished, you may return one of the following values: 
 PLUGIN_SUCCESS, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,
-PLUGIN_MISSING, PLUGIN_INVALID_HOST, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR
+PLUGIN_MISSING, PLUGIN_INVALID_HOST, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR, PLUGIN_AUTH_FAIL
+
+You should consider making your plugin premium account compatible. You will receive the credentials from the plugin_input structure, if present.
+DownloadDaemon supports basic http authentication for premium accounts. Your plugin only needs to set the authentication options into the
+curl handle returned by get_handle(). If the authentication method is just a simple http auth, DownloadDaemon will check if they are wrong automatically.
+If the server does not return a 401 answer if the credentials are wrong, you need to do manual validity checks and return PLUGIN_AUTH_FAIL if the
+credentials are wrong.
 
 When compiling the plugin, you have to define IS_PLUGIN (compiler option for g++: -DIS_PLUGIN) and also compile the src/daemon/dl/download_container.cpp file
 which is required by the functions below.
@@ -52,6 +57,7 @@ void set_wait_time(int seconds) -- Sets the wait time that will be displayed to 
 				   DownloadDaemon will then count down for you.
 int get_wait_time()		   returns the currently set wait time
 const char* get_url()		   returns the URL your plugin has to handle
+CURL* get_handle() 		   returns the curl handle that will be used for downloading later. You can set auth-credentials or cookies here.
 
 If you need more functionality to support your specific hoster, please write me, Adrian Batzill (see AUTHORS file) an email. I will then implement it.
 

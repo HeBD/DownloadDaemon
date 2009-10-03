@@ -28,6 +28,7 @@ using namespace std;
 extern std::string program_root;
 extern cfgfile global_config;
 extern cfgfile global_router_config;
+extern cfgfile global_premium_config;
 #endif // IS_PLUGIN
 
 #ifndef IS_PLUGIN
@@ -657,6 +658,9 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 		log_string(std::string("Unable to execute plugin: ") + error, LOG_SEVERE);
 		return PLUGIN_ERROR;
 	}
+
+	pinp.premium_user = global_premium_config.get_cfg_value(dlit->get_host() + "_user");
+	pinp.premium_password = global_premium_config.get_cfg_value(dlit->get_host() + "_password");
 
 	download_mutex.unlock();
 	plugin_status retval = plugin_exec_func(*this, dl, pinp, poutp);

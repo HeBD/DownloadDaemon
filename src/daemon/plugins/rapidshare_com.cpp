@@ -21,6 +21,30 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
+	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+		curl_easy_setopt(get_handle(), CURLOPT_USERPWD, string(inp.premium_user + ":" + inp.premium_password).c_str());
+		outp.allows_multiple = true;
+		outp.allows_resumption = true;
+
+		string post_data("uselandingpage=1&login= " + inp.premium_user + "&password=" + inp.premium_password);
+		string result;
+		CURL *handle = curl_easy_init();
+		curl_easy_setopt(handle, CURLOPT_URL, "https://ssl.rapidshare.com/cgi-bin/premiumzone.cgi");
+		curl_easy_setopt(handle, CURLOPT_POST, 1);
+		curl_easy_setopt(handle, CURLOPT_POSTFIELDS, post_data.c_str());
+		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
+		if(curl_easy_perform(handle) == 0) {
+			if(result.find("Forgotten your password?") != string::npos) {
+				curl_easy_cleanup(handle);
+				return PLUGIN_AUTH_FAIL;
+			}
+			curl_easy_cleanup(handle);
+			outp.download_url = get_url();
+			return PLUGIN_SUCCESS;
+		}
+		curl_easy_cleanup(handle);
+	}
 	CURL* prepare_handle = curl_easy_init();
 
 	std::string resultstr;

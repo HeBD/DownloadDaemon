@@ -82,6 +82,12 @@ void download_thread(int download) {
 			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		break;
+		case PLUGIN_AUTH_FAIL:
+			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_AUTH_FAIL);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+			log_string(std::string("Premium authentication failed for download ") + int_to_string(download), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+			return;
 	}
 
 	if(success == PLUGIN_SUCCESS) {
@@ -170,8 +176,31 @@ void download_thread(int download) {
 
 		log_string(std::string("Starting download ID: ") + int_to_string(download), LOG_DEBUG);
 		success = curl_easy_perform(global_download_list.get_pointer_property(download, DL_HANDLE));
+		long http_code;
+		curl_easy_getinfo(global_download_list.get_pointer_property(download, DL_HANDLE), CURLINFO_RESPONSE_CODE, &http_code);
 		curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
 		output_file.close();
+
+		switch(http_code) {
+			case 401:
+				log_string(std::string("Invalid premium account credentials, ID: ") + int_to_string(download), LOG_WARNING);
+				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+				global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_AUTH_FAIL);
+				return;
+			case 404:
+				log_string(std::string("File not found, ID: ") + int_to_string(download), LOG_WARNING);
+				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+				global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_FILE_NOT_FOUND);
+				string file(global_download_list.get_string_property(download, DL_OUTPUT_FILE));
+				if(!file.empty()) {
+					remove(file.c_str());
+					global_download_list.set_string_property(download, DL_OUTPUT_FILE, "");
+				}
+				return;
+		}
+
 		switch(success) {
 			case 0:
 				log_string(std::string("Finished download ID: ") + int_to_string(download), LOG_DEBUG);
