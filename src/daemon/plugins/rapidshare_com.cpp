@@ -45,6 +45,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		}
 		curl_easy_cleanup(handle);
 	}
+
 	CURL* prepare_handle = curl_easy_init();
 
 	std::string resultstr;

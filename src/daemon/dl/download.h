@@ -125,10 +125,7 @@ public:
 
 	bool is_running;
 	bool need_stop;
-private:
 	download_status status;
-
-
 };
 
 bool operator<(const download& x, const download& y);

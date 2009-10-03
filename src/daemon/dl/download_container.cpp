@@ -369,13 +369,17 @@ int download_container::set_int_property(int id, property prop, double value) {
 			#endif
 		break;
 		case DL_STATUS:
-			dl->set_status(download_status(value));
 			#ifndef IS_PLUGIN
+			dl->set_status(download_status(value));
 			if(!dump_to_file()) {
 				dl->set_status(download_status(old_val));
 				return LIST_PERMISSION;
 			}
+			#else
+			cout << "You are not allowed to set the status from a plugin. exiting." << endl;
+			exit(-1);
 			#endif
+
 		break;
 		case DL_IS_RUNNING:
 			dl->is_running = value;
@@ -431,7 +435,11 @@ double download_container::get_int_property(int id, property prop) {
 			return dl->error;
 		break;
 		case DL_STATUS:
-			return dl->get_status();
+			#ifndef IS_PLGUIN
+				return dl->get_status();
+			#else
+				return dl->status;
+			#endif
 		break;
 		case DL_IS_RUNNING:
 			return dl->is_running;
@@ -447,7 +455,9 @@ std::string download_container::get_string_property(int id, string_property prop
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
-		throw download_exception((string("Invalid download ID: ") + int_to_string(id)). c_str());
+		stringstream ss;
+		ss << "Invalid download ID: " << id;
+		throw download_exception(ss.str().c_str());
 	}
 	switch(prop) {
 		case DL_URL:
