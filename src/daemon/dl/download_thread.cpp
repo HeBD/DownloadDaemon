@@ -124,6 +124,9 @@ void download_thread(int download) {
 			if(plug_outp.download_url != "" && plug_outp.download_url.find('/') != std::string::npos) {
 				output_filename += download_folder;
 				output_filename += '/' + plug_outp.download_url.substr(plug_outp.download_url.find_last_of("/\\"));
+				if(output_filename.find('?') != string::npos) {
+					output_filename = output_filename.substr(0, output_filename.find('?'));
+				}
 			}
 		} else {
 			output_filename += download_folder;
