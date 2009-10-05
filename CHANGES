@@ -1,3 +1,10 @@
+2009-10-05
+   [adrian]
+	- additional customizability when errors occur (time to wait before retry)
+	- Added that retry-timers and made them configurable in downloaddaemon.conf
+	- Added support for those retry-timeouts in ddclient-wx and PHP client (PHP stuff not tested yet, have no apache here)
+	- added new management target PREMIUM to control premium account setup
+
 2009-10-03
    [adrian]
 	- Fixed an ugly bug causing crashes when adding a Download

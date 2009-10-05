@@ -30,6 +30,7 @@ using namespace std;
 
 extern cfgfile global_config;
 extern cfgfile global_router_config;
+extern cfgfile global_premium_config;
 extern download_container global_download_list;
 extern std::string program_root;
 
@@ -119,6 +120,14 @@ void connection_handler(tkSock *sock) {
 			}
 			trim_string(data);
 			target_router(data, sock);
+		} else if(data.find("PREMIUM") == 0) {
+			data = data.substr(7);
+			if(data.length() == 0 || !isspace(data[0])) {
+				*sock << "101 PROTOCOL";
+				continue;
+			}
+			trim_string(data);
+			target_premium(data, sock);
 		} else {
 			*sock << "101 PROTOCOL";
 		}
@@ -585,7 +594,7 @@ void target_router_list(std::string &data, tkSock *sock) {
 		to_send.append("\n");
 	}
 	if(!to_send.empty()) {
-        to_send.erase(to_send.end() - 1);
+		to_send.erase(to_send.end() - 1);
 	}
 	*sock << to_send;
 }
@@ -664,4 +673,58 @@ void target_router_get(std::string &data, tkSock *sock) {
 	} else {
 		*sock << global_router_config.get_cfg_value(data);
 	}
+}
+
+
+void target_premium(std::string &data, tkSock *sock) {
+	if(data.find("GET") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_premium_get(data, sock);
+	} else if(data.find("SET") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_premium_set(data, sock);
+	}
+}
+
+void target_premium_get(std::string &data, tkSock *sock) {
+	// that's really all. if an error occurs, get_cfg_value's return value is an empty string - perfect
+	*sock << global_premium_config.get_cfg_value(data + "_user");
+}
+
+void target_premium_set(std::string &data, tkSock *sock) {
+	std::string user;
+	std::string password;
+	std::string host;
+	if(data.find_first_of(" \n\t\r") == string::npos) {
+		*sock << "101 PROTOCOL";
+		return;
+	}
+	host = data.substr(0, data.find_first_of(" \n\t\r"));
+	data = data.substr(host.length());
+	trim_string(data);
+	if(data.find(';') == string::npos) {
+		*sock << "101 PROTOCOL";
+		return;
+	}
+	user = data.substr(0, data.find(';'));
+	data = data.substr(data.find(';'));
+	if(data.length() > 1) {
+		password = data.substr(data.find(';') + 1);
+	}
+	if(global_premium_config.set_cfg_value(host + "_user", user) && global_premium_config.set_cfg_value(host + "_passowrd", password)) {
+		*sock << "100 SUCCESS";
+	} else {
+		*sock << "110 PERMISSION";
+	}
+
 }

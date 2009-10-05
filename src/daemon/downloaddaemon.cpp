@@ -145,6 +145,16 @@ int main(int argc, char* argv[], char* env[]) {
 	global_config.open_cfg_file("/etc/downloaddaemon/downloaddaemon.conf", true);
 	global_router_config.open_cfg_file("/etc/downloaddaemon/routerinfo.conf", true);
 	global_premium_config.open_cfg_file("/etc/downloaddaemon/premium_accounts.conf", true);
+	if(!global_config) {
+		cerr << "Unable to open config file... exiting" << endl;
+		exit(-1);
+	}
+	if(!global_router_config) {
+		cerr << "Unable to open router config file" << endl;
+	}
+	if(!global_premium_config) {
+		cerr << "Unable to open premium account config file" << endl;
+	}
 
 	std::string dlist_fn = global_config.get_cfg_value("dlist_file");
 	correct_path(dlist_fn);

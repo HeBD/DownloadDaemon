@@ -101,19 +101,19 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	}
 
 	working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
-    if(working_dir.find_last_of(wxT("/\\")) != wxString::npos) {
-        working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
-    } else {
-        // needed if it's started with ./ddclient-wx, so we become ./../share/
-        working_dir += wxT("/..");
-    }
+	if(working_dir.find_last_of(wxT("/\\")) != wxString::npos) {
+		working_dir = working_dir.substr(0, working_dir.find_last_of(wxT("/\\")));
+	} else {
+		// needed if it's started with ./ddclient-wx, so we become ./../share/
+		working_dir += wxT("/..");
+	}
 	working_dir += wxT("/share/ddclient-wx/");
 	#ifndef _WIN32
-        char* abs_path = realpath(working_dir.mb_str(), NULL);
-        wxString tmp(abs_path, wxConvUTF8);
-        working_dir = tmp;
-        working_dir += wxT("/");
-        free(abs_path);
+		char* abs_path = realpath(working_dir.mb_str(), NULL);
+		wxString tmp(abs_path, wxConvUTF8);
+		working_dir = tmp;
+		working_dir += wxT("/");
+		free(abs_path);
 	#endif
 
 	wxFileName fn(working_dir);
@@ -348,9 +348,12 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 	if(splitted_line[4] == "DOWNLOAD_RUNNING"){
 		color = "LIME GREEN";
 
-		if(atol(splitted_line[7].c_str()) > 0){ // waiting time > 0
+		if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] == "NO_ERROR"){ // waiting time > 0
 			status_text = "Download running. Waiting " + splitted_line[7] + " seconds.";
 
+		}else if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] != "NO_ERROR") {
+			color = "RED";
+			status_text = "Error: " + splitted_line[8] + " Retrying in " + splitted_line[7] + " seconds.";
 		}else{ // no waiting time
 			stringstream stream_buffer;
 			stream_buffer << "Download Running: ";

@@ -58,10 +58,15 @@ include("functional.php");
 			case 3: echo "<td>" . $exp_dls[$i][$j] . "</td>"; break;
 			case 4: 
 				if($exp_dls[$i][4] == "DOWNLOAD_RUNNING") {
-					echo "<td bgcolor=\"lime\">";
-					if($exp_dls[$i][7] > 0) {
+					
+					if($exp_dls[$i][7] > 0 && $exp_dls[$i][8] == "NO_ERROR") {
+						echo "<td bgcolor=\"lime\">";
 						echo "Download running. Waiting " . $exp_dls[$i][7] . " seconds.";
+					} else if($exp_dls[$i][7] > 0 && $exp_dls[$i][8] != "NO_ERROR") {
+						echo "<td bgcolor=\"red\">";
+						echo "Error: " . $exp_dls[$i][8] . " Retrying in " . $exp_dls[$i][7] . "s";
 					} else {
+						echo "<td bgcolor=\"lime\">";
 						if($exp_dls[$i][6] == 0) {
 							echo "Starting download...";
 						} else {

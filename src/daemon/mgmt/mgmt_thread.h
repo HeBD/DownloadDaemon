@@ -25,6 +25,7 @@ void target_dl(std::string &data, tkSock *sock);
 void target_var(std::string &data, tkSock *sock);
 void target_file(std::string &data, tkSock *sock);
 void target_router(std::string &data, tkSock *sock);
+void target_premium(std::string &data, tkSock *sock);
 
 void target_dl_list(std::string &data, tkSock *sock);
 void target_dl_add(std::string &data, tkSock *sock);
@@ -47,4 +48,6 @@ void target_router_setmodel(std::string &data, tkSock *sock);
 void target_router_set(std::string &data, tkSock *sock);
 void target_router_get(std::string &data, tkSock *sock);
 
+void target_premium_set(std::string &data, tkSock *sock);
+void target_premium_get(std::string &data, tkSock *sock);
 #endif /*MGMT_THREAD_H_*/

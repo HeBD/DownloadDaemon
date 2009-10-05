@@ -28,10 +28,12 @@ Authentication:
 Every command sent to DownloadDaemon has to start with "DDP", followed by at least one whitespace.
 Also every command can address one of three targets. these targets can be "DL", "VAR", "FILE" and "ROUTER".
 DL stands for downloads and should be used if you want to change something about a download list entry, like changing a title, adding or removing a download, etc..
-VAR stands for configuration variables and can be used to configure DownloadDaemon.
+VAR stands for configuration variables and can be used to configure DownloadDaemon (only the stuff in downloaddaemon.conf).
 FILE stands for doing something with a file that has been downloaded by downloaddaemon (like downloading the file to the local machine or deleting the file on the remote side)
 ROUTER stands for router hardware. DownloadDaemon supports reconnect scripts through router resetting/curl/whatever. 
-       With this target you can specifie router options (username/password/ip to connect, etc)
+       With this target you can specify router options (username/password/ip to connect, etc) (basically: this changes routerinfo.conf)
+PREMIUM with this target you can do Premium account setup for hosters. Basically you can try to put anything in there,
+	however, it will only work if there is a plugin for the desired host and if it supports Premium account handling.
 
 After specifing the target, at least one whitespace needs to follow, so now we got someting like "DDP DL ", "DDP VAR ", ...
 
@@ -76,6 +78,13 @@ For the target ROUTER, the following commands exist (a few more parameters this 
 	    possible values can be found in conf/routerinfo.conf
 	GET <var> will get a configuration variable for the currently selected router. You will not be able to receive the router's
 	          password with this command for security reason.
+
+For the target PREMIUM, you can use the following commands:
+	SET <host> <user>;<password> will set the premium info for host (which has to be something like "rapidshare.com", "uploaded.to" (without the quotes)
+	    The username and password need to be seperated by ';'. If the host does not need a Username, just send ";<password>".
+	    possible answers are: 100 SUCCESS, 101 PROTOCOL (if you did something wrong) and 110 PERMISSION.
+	GET <host> Will return the specified username for the desired host. You can not receive the premium password
+	    with this command for security reason.
 
 All error codes may vary between 100 and 999, to make parsing simple.
 For now, this list represents all codes:

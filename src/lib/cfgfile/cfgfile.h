@@ -96,6 +96,8 @@ public:
  	*/
 	bool list_config(std::string& resultstr);
 
+	operator bool() { return file.good(); }
+
 private:
 	/** Internal use: removes whitespaces from the beginning and end of a string.
 	*  @param str String to change
