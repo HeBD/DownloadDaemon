@@ -533,10 +533,6 @@ void target_router(std::string &data, tkSock *sock) {
 		target_router_list(data, sock);
 	} else if(data.find("SETMODEL") == 0) {
 		data = data.substr(8);
-		if(data.length() == 0 || !isspace(data[0])) {
-			*sock << "101 PROTOCOL";
-			return;
-		}
 		trim_string(data);
 		target_router_setmodel(data, sock);
 	} else if(data.find("SET") == 0) {
@@ -606,7 +602,7 @@ void target_router_setmodel(std::string &data, tkSock *sock) {
 	d = opendir(dir.c_str());
 
 	if(d == NULL) {
-		log_string("Could not open reconnect script directory", LOG_SEVERE);
+		log_string("Could not open reconnect plugin directory", LOG_SEVERE);
 		*sock << "109 FILE";
 		return;
 	}
