@@ -6,13 +6,15 @@ include("functional.php");
 
 <html>
 	<head>
-		<title>DownloadDaemon Manager</title>
+		<title>DownloadDaemon Manager - General Configuration</title>
 	</head>
 <body>
 	
 	<?php include("header.php"); ?>
 
 	<div align="center">
+	<br>
+	<a href="conf_mgmt.php">General Configuration</a> | <a href="conf_reconnect.php">Reconnect Setup</a>
 <?php
 	$socket = socket_create(AF_INET, SOCK_STREAM, 0);
 	$ret = connect_to_daemon($socket);

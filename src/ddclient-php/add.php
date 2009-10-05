@@ -3,7 +3,7 @@
 
 <html>
 	<head>
-		<title>DownloadDaemon Manager</title>
+		<title>DownloadDaemon Manager - Add Downloads</title>
 	</head>
 <body>
 	

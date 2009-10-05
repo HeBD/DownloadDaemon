@@ -4,6 +4,7 @@
 	- Added that retry-timers and made them configurable in downloaddaemon.conf
 	- Added support for those retry-timeouts in ddclient-wx and PHP client (PHP stuff not tested yet, have no apache here)
 	- added new management target PREMIUM to control premium account setup
+	- extended PHP client configuration. You can now also set up reconnect stuff
 
 2009-10-03
    [adrian]

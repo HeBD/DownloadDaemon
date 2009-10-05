@@ -6,7 +6,7 @@ include("functional.php");
 
 <html>
 	<head>
-		<title>DownloadDaemon Manager</title>
+		<title>DownloadDaemon Manager - Download List</title>
 		<meta HTTP-EQUIV="REFRESH" content="5; url=list.php">
 	</head>
 <body>
