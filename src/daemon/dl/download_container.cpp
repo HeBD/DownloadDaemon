@@ -242,11 +242,11 @@ int download_container::get_next_downloadable(bool do_lock) {
 
 
 	for(iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(it->get_status() == DOWNLOAD_PENDING) {
+		if(it->get_status() == DOWNLOAD_PENDING && it->wait_seconds == 0) {
 			std::string current_host(it->get_host());
 			bool can_attach = true;
 			for(download_container::iterator it2 = download_list.begin(); it2 != download_list.end(); ++it2) {
-				if(it == it2) {
+				if(it->wait_seconds > 0 || it == it2) {
 					continue;
 				}
 				if(it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING || it2->is_running)
@@ -693,7 +693,7 @@ std::string download_container::get_host(int dl) {
 void download_container::decrease_waits() {
 	boost::mutex::scoped_lock lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(it->wait_seconds > 0 && it->get_status() == DOWNLOAD_WAITING) {
+		if(it->wait_seconds > 0 && it->get_status() != DOWNLOAD_RUNNING) {
 			--(it->wait_seconds);
 		} else if(it->wait_seconds == 0 && it->get_status() == DOWNLOAD_WAITING) {
 			it->set_status(DOWNLOAD_PENDING);

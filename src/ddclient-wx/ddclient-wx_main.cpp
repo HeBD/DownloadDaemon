@@ -348,10 +348,10 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 	if(splitted_line[4] == "DOWNLOAD_RUNNING"){
 		color = "LIME GREEN";
 
-		if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] == "NO_ERROR"){ // waiting time > 0
+		if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] == "PLUGIN_SUCCESS"){ // waiting time > 0
 			status_text = "Download running. Waiting " + splitted_line[7] + " seconds.";
 
-		}else if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] != "NO_ERROR") {
+		}else if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] != "PLUGIN_SUCCESS") {
 			color = "RED";
 			status_text = "Error: " + splitted_line[8] + " Retrying in " + splitted_line[7] + " seconds.";
 		}else{ // no waiting time
