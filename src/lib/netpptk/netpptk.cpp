@@ -201,6 +201,7 @@ void tkSock::auto_accept_threadfunc(void (*handle) (tkSock*)) {
 				tmpsock = new tkSock(1, m_maxrecv);
 			} catch (...) {
 				--m_open_connections;
+				delete tmpsock;
 				continue;
 			}
 
@@ -338,13 +339,15 @@ int tkSock::recv(std::string& s) {
 			valid = false;
 			tv.tv_sec = 0;
 			setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(tv));
+			delete [] buf;
 			return 0;
 		}
 		s.append(buf, status - old_status);
 	}
+	delete [] buf;
 	tv.tv_sec = 0;
 	setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(tv));
-	delete [] buf;
+
 	if(s.size() > static_cast<unsigned>(msgLen)) {
 		return 0;
 	}
