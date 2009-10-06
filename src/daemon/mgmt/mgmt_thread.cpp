@@ -741,7 +741,7 @@ void target_premium_list(std::string &data, tkSock *sock) {
 			char *l_error;
 			if ((l_error = dlerror()) != NULL)  {
 				log_string(std::string("Unable to get plugin information: ") + l_error, LOG_SEVERE);
-				return;
+				continue;;
 			}
 			outp.offers_premium = false;
 			plugin_getinfo(inp, outp);
