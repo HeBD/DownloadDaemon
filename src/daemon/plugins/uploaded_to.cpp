@@ -92,4 +92,5 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 		outp.allows_resumption = false;
 		outp.allows_multiple = false;
 	}
+	inp.offers_premium = false;
 }

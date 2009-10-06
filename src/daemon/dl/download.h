@@ -26,6 +26,7 @@ struct plugin_output {
 	std::string download_filename;
 	bool allows_resumption;
 	bool allows_multiple;
+	bool offers_premium;
 };
 
 struct plugin_input {

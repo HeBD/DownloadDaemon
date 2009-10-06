@@ -265,7 +265,8 @@ plugin_output download::get_hostinfo() {
 		log_string(std::string("Unable to get plugin information: ") + l_error, LOG_SEVERE);
 		return outp;
 	}
-
+	inp.premium_user = global_premium_config.get_cfg_value(get_host() + "_user");
+	inp.premium_password = global_premium_config.get_cfg_value(get_host() + "_password");
 	plugin_getinfo(inp, outp);
 	dlclose(l_handle);
 	return outp;
