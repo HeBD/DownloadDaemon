@@ -34,24 +34,21 @@ extern cfgfile global_config;
 extern download_container global_download_list;
 extern std::string program_root;
 
-/** Main thread for managing downloads */
-void download_thread_main() {
-	int downloadable = 0;
-	while(1) {
-		downloadable = global_download_list.get_next_downloadable();
-		if(downloadable == LIST_ID) {
-			sleep(1);
-			continue;
-		} else {
-			global_download_list.set_int_property(downloadable, DL_IS_RUNNING, true);
-			global_download_list.set_int_property(downloadable, DL_STATUS, DOWNLOAD_RUNNING);
-			boost::thread t(boost::bind(download_thread, downloadable));
-		}
+/** start the next possible download in a new thread */
+void start_next_download() {
+	int downloadable = global_download_list.get_next_downloadable();
+	if(downloadable == LIST_ID) {
+		return;
+	} else {
+		global_download_list.set_int_property(downloadable, DL_IS_RUNNING, true);
+		global_download_list.set_int_property(downloadable, DL_STATUS, DOWNLOAD_RUNNING);
+		boost::thread t(boost::bind(download_thread, downloadable));
+		start_next_download();
 	}
 }
 
 /** This function does the magic of downloading a file, calling the right plugin, etc.
- *	@param download iterator to a download in the global download list, that we should load
+ *	@param download ID of a download in the global download list, that we should load
  */
 void download_thread(int download) {
 	plugin_output plug_outp;

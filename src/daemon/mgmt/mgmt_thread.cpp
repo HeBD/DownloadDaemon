@@ -25,6 +25,7 @@
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../tools/helperfunctions.h"
 #include "../dl/download_container.h"
+#include "../dl/download_thread.h"
 
 using namespace std;
 
@@ -40,8 +41,13 @@ extern std::string program_root;
  */
 void mgmt_thread_main() {
 	tkSock main_sock(string_to_int(global_config.get_cfg_value("mgmt_max_connections")), 1024);
+	if(global_config.get_cfg_value("mgmt_port") == "") {
+		log_string("Unable to get management-socket-port from configuration file.");
+		exit(-1);
+	}
 	if(!main_sock.bind(string_to_int(global_config.get_cfg_value("mgmt_port")))) {
-		log_string("Could not bind management socket", LOG_SEVERE);
+		log_string("bind failed for remote-management-socket. Maybe you specified a port wich is "
+				   "already in use or you don't have read-permissions to the config-file.", LOG_SEVERE);
 		exit(-1);
 	}
 	if(!main_sock.listen()) {

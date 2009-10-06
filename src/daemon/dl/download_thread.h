@@ -16,7 +16,7 @@
 #include "download_container.h"
 #include <vector>
 
-void download_thread_main();
+void start_next_download();
 int get_running_count();
 void download_thread(int id);
 

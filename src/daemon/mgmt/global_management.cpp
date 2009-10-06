@@ -34,6 +34,7 @@ void tick_downloads() {
 	while(true) {
 		global_download_list.decrease_waits();
 		global_download_list.purge_deleted();
+		start_next_download();
 		sleep(1);
 	}
 }
