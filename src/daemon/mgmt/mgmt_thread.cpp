@@ -350,6 +350,8 @@ void target_dl_deactivate(std::string &data, tkSock *sock) {
 		break;
 		case LIST_SUCCESS:
 			log_string(std::string("Deactivated download ID: ") + data, LOG_DEBUG);
+			// Reset error messages
+			global_download_list.set_int_property(atoi(data.c_str()), DL_PLUGIN_STATUS, PLUGIN_SUCCESS);
 			*sock << "100 SUCCESS";
 		break;
 		default:
