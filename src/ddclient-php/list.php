@@ -73,7 +73,7 @@ include("functional.php");
 					if($exp_dls[$i][7] > 0 && $exp_dls[$i][8] == "NO_ERROR") {
 						echo "<td bgcolor=\"lime\">";
 						echo "Download running. Waiting " . $exp_dls[$i][7] . " seconds.";
-					} else if($exp_dls[$i][7] > 0 && $exp_dls[$i][8] != "NO_ERROR") {
+					} else if($exp_dls[$i][7] > 0 && $exp_dls[$i][8] != "PLUGIN_SUCCESS") {
 						echo "<td bgcolor=\"red\">";
 						echo "Error: " . $exp_dls[$i][8] . " Retrying in " . $exp_dls[$i][7] . "s";
 					} else {
