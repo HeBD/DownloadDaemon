@@ -80,6 +80,7 @@ For the target ROUTER, the following commands exist (a few more parameters this 
 	          password with this command for security reason.
 
 For the target PREMIUM, you can use the following commands:
+	LIST will list all hosters which offer a premium service which is supported by DownloadDaemon, seperated by \n
 	SET <host> <user>;<password> will set the premium info for host (which has to be something like "rapidshare.com", "uploaded.to" (without the quotes)
 	    The username and password need to be seperated by ';'. If the host does not need a Username, just send ";<password>".
 	    possible answers are: 100 SUCCESS, 101 PROTOCOL (if you did something wrong) and 110 PERMISSION.

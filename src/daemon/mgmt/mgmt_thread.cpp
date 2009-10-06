@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <dlfcn.h>
 
 #include "mgmt_thread.h"
 #include "../dl/download.h"
@@ -42,7 +43,7 @@ extern std::string program_root;
 void mgmt_thread_main() {
 	tkSock main_sock(string_to_int(global_config.get_cfg_value("mgmt_max_connections")), 1024);
 	if(global_config.get_cfg_value("mgmt_port") == "") {
-		log_string("Unable to get management-socket-port from configuration file.");
+		log_string("Unable to get management-socket-port from configuration file.", LOG_SEVERE);
 		exit(-1);
 	}
 	if(!main_sock.bind(string_to_int(global_config.get_cfg_value("mgmt_port")))) {
@@ -679,7 +680,15 @@ void target_router_get(std::string &data, tkSock *sock) {
 
 
 void target_premium(std::string &data, tkSock *sock) {
-	if(data.find("GET") == 0) {
+	if(data.find("LIST") == 0) {
+		data = data.substr(4);
+		trim_string(data);
+		if(!data.empty()) {
+			*sock << "";
+			return;
+		}
+		target_premium_list(data, sock);
+	} else if(data.find("GET") == 0) {
 		data = data.substr(3);
 		if(data.length() == 0 || !isspace(data[0])) {
 			*sock << "101 PROTOCOL";
@@ -696,6 +705,64 @@ void target_premium(std::string &data, tkSock *sock) {
 		trim_string(data);
 		target_premium_set(data, sock);
 	}
+}
+
+void target_premium_list(std::string &data, tkSock *sock) {
+	DIR *dp;
+	struct dirent *ep;
+	vector<std::string> content;
+	std::string current;
+	std::string path = global_config.get_cfg_value("plugin_dir");
+	correct_path(path);
+	dp = opendir (path.c_str());
+	if (dp == NULL) {
+		log_string("Could not open Plugin directory", LOG_SEVERE);
+		*sock << "";
+		return;
+	}
+	plugin_input inp;
+	plugin_output outp;
+
+	while ((ep = readdir (dp))) {
+		if(ep->d_name[0] == '.') {
+			continue;
+		}
+		current = ep->d_name;
+		if(current.find("lib") == 0 && current.find(".so") != string::npos) {
+			// open each plugin and check if it supports premium stuff
+			void* handle = dlopen((path + current).c_str(), RTLD_LAZY);
+			if (!handle) {
+				log_string(std::string("Unable to open library file: ") + dlerror() + '/' + current, LOG_SEVERE);
+				continue;
+			}
+			dlerror();	// Clear any existing error
+			void (*plugin_getinfo)(plugin_input&, plugin_output&);
+			plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(handle, "plugin_getinfo");
+			char *l_error;
+			if ((l_error = dlerror()) != NULL)  {
+				log_string(std::string("Unable to get plugin information: ") + l_error, LOG_SEVERE);
+				return;
+			}
+			outp.offers_premium = false;
+			plugin_getinfo(inp, outp);
+			dlclose(handle);
+			if(outp.offers_premium) {
+				current = current.substr(3, current.length() - 6);
+				content.push_back(current);
+			}
+
+		}
+	}
+	(void) closedir (dp);
+	std::string to_send;
+	for(vector<std::string>::iterator it = content.begin(); it != content.end(); ++it) {
+		to_send.append(*it);
+		to_send.append("\n");
+	}
+	if(!to_send.empty()) {
+		to_send.erase(to_send.end() - 1);
+	}
+	*sock << to_send;
 }
 
 void target_premium_get(std::string &data, tkSock *sock) {

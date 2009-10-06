@@ -28,6 +28,7 @@
 using namespace std;
 
 extern cfgfile global_config;
+extern cfgfile global_premium_config;
 extern download_container global_download_list;
 
 download::download(std::string &dl_url, int next_id)
@@ -221,6 +222,7 @@ plugin_output download::get_hostinfo() {
 	plugin_output outp;
 	outp.allows_resumption = false;
 	outp.allows_multiple = false;
+	outp.offers_premium = false;
 
 	std::string host(get_host());
 	std::string plugindir = global_config.get_cfg_value("plugin_dir");

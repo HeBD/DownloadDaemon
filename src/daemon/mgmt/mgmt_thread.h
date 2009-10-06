@@ -48,6 +48,7 @@ void target_router_setmodel(std::string &data, tkSock *sock);
 void target_router_set(std::string &data, tkSock *sock);
 void target_router_get(std::string &data, tkSock *sock);
 
+void target_premium_list(std::string &data, tkSock *sock);
 void target_premium_set(std::string &data, tkSock *sock);
 void target_premium_get(std::string &data, tkSock *sock);
 #endif /*MGMT_THREAD_H_*/

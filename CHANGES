@@ -1,6 +1,7 @@
 2009-10-06
    [adrian]
 	- Got rid of download_thread checking for new downloads each second, it's now done by the wait-time-ticker thread
+	- implemented PREMIUM LIST command which returns all hosts for which premium support is provided
 
 2009-10-05
    [adrian]
