@@ -26,6 +26,7 @@ include("functional.php");
 	<div align="center">
 	<br>
 	<a href="conf_mgmt.php">General Configuration</a> | <a href="conf_reconnect.php">Reconnect Setup</a> | <a href="conf_premium.php">Premium account setup</a>
+	<br>
 <?php
 	$socket = socket_create(AF_INET, SOCK_STREAM, 0);
 	$ret = connect_to_daemon($socket);

@@ -11,6 +11,8 @@
 	- versioning-script now also builds the source .tar.bz2 packages (will be extenden to also build debian pkgs some day..)
 	- fixed PREMIUM SET using a wrong password config variable
 	- fixed ddclient-php not correctly showing wait-times before a download starts
+	- fixed wait_seconds not getting reset after a reconnect
+	- only reconnect if there is a PLUGIN_LIMIT_REACHED, not if there is a PLUGIN_SERVER_OVERLOADED
 
 2009-10-06
    [adrian]

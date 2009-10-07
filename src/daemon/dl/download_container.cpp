@@ -514,7 +514,7 @@ bool download_container::reconnect_needed() {
 	bool need_reconnect = false;
 	//bool reconnect_allowed = false;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(it->get_status() == DOWNLOAD_WAITING) {
+		if(it->get_status() == DOWNLOAD_WAITING && it->error == PLUGIN_LIMIT_REACHED) {
 			need_reconnect = true;
 		}
 	}
@@ -566,6 +566,9 @@ bool download_container::reconnect_needed() {
 }
 
 void download_container::do_reconnect(download_container *dlist) {
+	if(dlist->is_reconnecting) {
+		return;
+	}
 	dlist->is_reconnecting = true;
 	boost::mutex::scoped_lock lock(dlist->download_mutex);
 	std::string router_ip, router_username, router_password, reconnect_plugin;
@@ -620,6 +623,7 @@ void download_container::do_reconnect(download_container *dlist) {
 	for(download_container::iterator it = dlist->download_list.begin(); it != dlist->download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_WAITING) {
 			it->set_status(DOWNLOAD_PENDING);
+			it->wait_seconds = 0;
 		}
 	}
 	dlist->is_reconnecting = false;
