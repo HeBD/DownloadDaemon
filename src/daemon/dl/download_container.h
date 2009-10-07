@@ -17,7 +17,8 @@
 #include <vector>
 #include <boost/thread.hpp>
 
-enum property { DL_ID = 0, DL_DOWNLOADED_BYTES, DL_SIZE, DL_WAIT_SECONDS, DL_PLUGIN_STATUS, DL_STATUS, DL_IS_RUNNING, DL_NEED_STOP };
+enum property { DL_ID = 0, DL_DOWNLOADED_BYTES, DL_SIZE, DL_WAIT_SECONDS, DL_PLUGIN_STATUS, DL_STATUS,
+				DL_IS_RUNNING, DL_NEED_STOP, DL_SPEED };
 enum string_property { DL_URL = 20, DL_COMMENT, DL_ADD_DATE, DL_OUTPUT_FILE };
 enum pointer_property { DL_HANDLE = 40 };
 enum { LIST_SUCCESS = -20, LIST_PERMISSION, LIST_ID, LIST_PROPERTY };

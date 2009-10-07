@@ -51,10 +51,11 @@ void trim_string(std::string &str) {
 
 bool validate_url(std::string &url) {
 	bool valid = true;
+	// needed for security reason - so the dlist file can't be corrupted
 	if(url.find('|') != std::string::npos) {
 		valid = false;
 	}
-	if(url.find("http://") != 0 && url.find("ftp://") != 0) {
+	if(url.find("http://") != 0 && url.find("ftp://") != 0 && url.find("https://") != 0) {
 		valid = false;
 	}
 	size_t pos = url.find('/') + 2;

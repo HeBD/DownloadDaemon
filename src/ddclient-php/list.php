@@ -81,7 +81,7 @@ include("functional.php");
 						if($exp_dls[$i][6] == 0) {
 							echo "Starting download...";
 						} else {
-							echo "Download running: " . number_format($exp_dls[$i][5] / $exp_dls[$i][6] * 100, 1) . "% - " 
+							echo "Running@" . number_format($exp_dls[$i][9] / 1024) . "kb/s - " . number_format($exp_dls[$i][5] / $exp_dls[$i][6] * 100, 1) . "% - " 
 							      . number_format($exp_dls[$i][5] / 1048576, 1) . "MB/" . number_format($exp_dls[$i][6] / 1048576, 1) . "MB";
 						}
 					}

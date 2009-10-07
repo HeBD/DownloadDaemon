@@ -127,6 +127,7 @@ public:
 	bool is_running;
 	bool need_stop;
 	download_status status;
+	int speed;
 };
 
 bool operator<(const download& x, const download& y);

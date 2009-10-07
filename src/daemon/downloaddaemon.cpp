@@ -162,9 +162,15 @@ int main(int argc, char* argv[], char* env[]) {
 
 	log_string("DownloadDaemon started successfully", LOG_DEBUG);
 
-	boost::thread mgmt_thread(mgmt_thread_main);
-	boost::thread download_ticker(tick_downloads);
+	{
+		// putting it in it's own scope will detach the thread right after creation
+		// older boost::thread versions don't have the detach() method but they detach() in the destructor
+		boost::thread mgmt_thread(mgmt_thread_main);
+	}
 
-	download_ticker.join();
-	mgmt_thread.join();
+	// tick download counters, start new downloads, etc each second
+	while(true) {
+		boost::thread secondly(do_once_per_second);
+		sleep(1);
+	}
 }

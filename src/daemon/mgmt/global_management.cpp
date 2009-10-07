@@ -26,15 +26,10 @@
 using namespace std;
 
 extern download_container global_download_list;
-extern cfgfile global_config;
-extern cfgfile global_router_config;
 extern std::string program_root;
 
-void tick_downloads() {
-	while(true) {
-		global_download_list.decrease_waits();
-		global_download_list.purge_deleted();
-		start_next_download();
-		sleep(1);
-	}
+void do_once_per_second() {
+	global_download_list.decrease_waits();
+	global_download_list.purge_deleted();
+	start_next_download();
 }

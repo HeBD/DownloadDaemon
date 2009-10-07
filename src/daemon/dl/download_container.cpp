@@ -390,6 +390,9 @@ int download_container::set_int_property(int id, property prop, double value) {
 			}
 			#endif
 		break;
+		case DL_SPEED:
+			dl->speed = value;
+			// No need to dump, nothing will change because it's not saved to the dlist file
 		default:
 			return LIST_PROPERTY;
 		break;
@@ -446,6 +449,9 @@ double download_container::get_int_property(int id, property prop) {
 		break;
 		case DL_NEED_STOP:
 			return dl->need_stop;
+		break;
+		case DL_SPEED:
+			return dl->speed;
 		break;
 	}
 	return -1;
@@ -729,7 +735,7 @@ std::string download_container::create_client_list() {
 		std::string comment = it->comment;
 		replace_all(comment, "|", "\\|");
 		ss << comment << '|' << it->url << '|' << it->get_status_str() << '|' << it->downloaded_bytes << '|' << it->size
-		   << '|' << it->wait_seconds << '|' << it->get_error_str() << '\n';
+		   << '|' << it->wait_seconds << '|' << it->get_error_str() << '|' << it->speed << '\n';
 	}
 	//log_string("Dumping download list to client", LOG_DEBUG);
 	return ss.str();

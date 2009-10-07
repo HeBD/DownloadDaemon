@@ -1,3 +1,15 @@
+2009-10-07
+   [adrian]
+	- ticking download-waiting times, starting new downloads each second, etc timers are now started in a separate
+	  thread to make them more accurate
+	- detach mgmt_thread after creation and delete the object
+	- support for https:// downloads (if libcurl is compiled with support)
+	- added new column to DDP DL LIST: current download speed (untestet)
+	- implemented display of current download speed in ddclient-php
+	- implemented premium account setup in ddclient-php (untestet, no http server and no internet right now)
+	- fixed download_resumption checking if a plugin allows parallel downloading istead of checking if it allows resumption
+	- versioning-script now also builds the source .tar.bz2 packages (will be extenden to also build debian pkgs some day..)
+
 2009-10-06
    [adrian]
 	- Got rid of download_thread checking for new downloads each second, it's now done by the wait-time-ticker thread
@@ -14,7 +26,7 @@
 	- added new management target PREMIUM to control premium account setup
 	- extended PHP client configuration. You can now also set up reconnect stuff
 
-2009-10-03
+2009-10-04
    [adrian]
 	- Fixed an ugly bug causing crashes when adding a Download
 	- correctly handle download urls containing GET data in the URL

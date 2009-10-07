@@ -12,12 +12,8 @@
 #ifndef GLOBAL_MANAGEMENT_H_
 #define GLOBAL_MANAGEMENT_H_
 
-/** This function ticks the download wait-times down
+/** Put things that need to be done once per second here
 */
-void tick_downloads();
-
-/** Handles reconnecting configuration and policies
-*/
-void reconnect();
+void do_once_per_second();
 
 #endif /*GLOBAL_MANAGEMENT_H_*/

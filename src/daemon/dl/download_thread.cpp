@@ -145,7 +145,7 @@ void download_thread(int download) {
 		// Check if we can do a download resume or if we have to start from the beginning
 		struct stat st;
 		fstream output_file;
-		if(global_download_list.get_hostinfo(download).allows_multiple && global_config.get_cfg_value("enable_resume") != "0" &&
+		if(global_download_list.get_hostinfo(download).allows_resumption && global_config.get_cfg_value("enable_resume") != "0" &&
 		   stat(output_filename.c_str(), &st) == 0 && st.st_size == global_download_list.get_int_property(download, DL_DOWNLOADED_BYTES)) {
 			curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_RESUME_FROM, st.st_size);
 			output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);

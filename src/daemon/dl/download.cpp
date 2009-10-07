@@ -32,7 +32,8 @@ extern cfgfile global_premium_config;
 extern download_container global_download_list;
 
 download::download(std::string &dl_url, int next_id)
-	: url(dl_url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS), is_running(false), need_stop(false), status(DOWNLOAD_PENDING) {
+	: url(dl_url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
+	  is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0) {
 	handle = curl_easy_init();
 	time_t rawtime;
 	time(&rawtime);
@@ -97,6 +98,7 @@ void download::from_serialized(std::string &serializedDL) {
 	wait_seconds = 0;
 	is_running = false;
 	need_stop = false;
+	speed = 0;
 	handle = curl_easy_init();
 }
 
@@ -118,6 +120,7 @@ void download::operator=(const download& dl) {
 	output_file = dl.output_file;
 	status = dl.status;
 	is_running = dl.is_running;
+	speed = 0;
 }
 
 download::~download() {

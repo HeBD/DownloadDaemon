@@ -6,9 +6,10 @@ then
 	exit
 fi
 
-rm -rf ../version
+rm -rf ../version/*-${1}*
 
 # ddclient-wx...
+echo "copying ddclient-wx..."
 mkdir -p ../version/ddclient-wx-${1}/src/
 mkdir -p ../version/ddclient-wx-${1}/src/lib
 mkdir -p ../version/ddclient-wx-${1}/share
@@ -30,6 +31,7 @@ add_subdirectory(lib)" > ../version/ddclient-wx-${1}/src/CMakeLists.txt
 
 
 # DownloadDaemon
+echo "copying DownloadDaemon"
 mkdir -p ../version/downloaddaemon-${1}/src/ ../version/downloaddaemon-${1}/share/ ../version/downloaddaemon-${1}/etc
 cp -rf ../src/daemon ../version/downloaddaemon-${1}/src/
 cp -rf ../src/lib ../version/downloaddaemon-${1}/src/
@@ -48,6 +50,7 @@ add_subdirectory(daemon)" > ../version/downloaddaemon-${1}/src/CMakeLists.txt
 
 
 # ddconsole
+echo "copying ddconsole"
 mkdir -p ../version/ddconsole-${1}/src/
 mkdir -p ../version/ddconsole-${1}/src/lib
 cp -rf ../src/ddconsole ../version/ddconsole-${1}/src
@@ -65,16 +68,28 @@ add_subdirectory(ddconsole)" > ../version/ddconsole-${1}/src/CMakeLists.txt
 
 
 # ddclient-php
+echo "copying ddclient-php"
 mkdir -p ../version/ddclient-php-${1}
 cp -rf ../src/ddclient-php/* ../version/ddclient-php-${1}
 cp -f ../AUTHORS ../CHANGES ../TODO ../LICENCE ../INSTALLING ../version/ddclient-php-${1}/
 
 
 
-
+echo "removing unneeded files..."
 cd ../version
 find -name .svn | xargs rm -rf
 find -name "*~" | xargs rm -f
+
+echo "building source archives"
+tar -c downloaddaemon-${1} > downloaddaemon-${1}.tar
+tar -c ddclient-wx-${1} > ddclient-wx-${1}.tar
+tar -c ddconsole-${1} > ddconsole-${1}.tar
+tar -c ddclient-php-${1} > ddclient-php-${1}.tar
+echo "bzip2 source archives"
+bzip2 downloaddaemon-${1}.tar
+bzip2 ddclient-wx-${1}.tar
+bzip2 ddconsole-${1}.tar
+bzip2 ddclient-php-${1}.tar
 
 
 
