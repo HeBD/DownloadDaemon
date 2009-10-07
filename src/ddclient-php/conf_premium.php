@@ -49,7 +49,11 @@ include("functional.php");
 		$buf = "";
 		send_all($socket, "DDP PREMIUM SET " . $_POST['host'] . " " . $_POST['user'] . ";" . $_POST['pass']);
 		recv_all($socket, $buf);
-		echo "Successfully set premium credentials for " . $_POST['host'];
+		if($buf == "100 SUCCESS") {
+			echo "Successfully set premium credentials for " . $_POST['host'];
+		} else {
+			echo "failed to set premium credentials for " . $_POST['host'];
+		}
 	}
 
 	$buf = "";
@@ -57,7 +61,7 @@ include("functional.php");
 	send_all($socket, "DDP PREMIUM LIST");
 	recv_all($socket, $buf);
 	$host_list = explode("\n", $buf);
-	array $user_list = "";
+	$user_list = "";
 
 	echo "Host: ";
 	echo "<select name=\"host\">";
@@ -69,7 +73,7 @@ include("functional.php");
 	echo "</select>";
 	echo "<br><br>";
 	echo "Username: <input type=\"text\" name=\"user\"><br>";
-	echo "Password: <input type=\"text\" name=\"pass\"><br>";
+	echo "Password: <input type=\"password\" name=\"pass\"><br>";
 	echo "<input type=\"submit\" name=\"apply\" value=\"Apply\"><br>";	
 	echo "</form>";
 

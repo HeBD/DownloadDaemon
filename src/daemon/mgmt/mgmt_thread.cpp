@@ -792,7 +792,7 @@ void target_premium_set(std::string &data, tkSock *sock) {
 	if(data.length() > 1) {
 		password = data.substr(data.find(';') + 1);
 	}
-	if(global_premium_config.set_cfg_value(host + "_user", user) && global_premium_config.set_cfg_value(host + "_passowrd", password)) {
+	if(global_premium_config.set_cfg_value(host + "_user", user) && global_premium_config.set_cfg_value(host + "_password", password)) {
 		*sock << "100 SUCCESS";
 	} else {
 		*sock << "110 PERMISSION";

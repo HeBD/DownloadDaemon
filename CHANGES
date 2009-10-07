@@ -4,11 +4,12 @@
 	  thread to make them more accurate
 	- detach mgmt_thread after creation and delete the object
 	- support for https:// downloads (if libcurl is compiled with support)
-	- added new column to DDP DL LIST: current download speed (untestet)
+	- added new column to DDP DL LIST: current download speed
 	- implemented display of current download speed in ddclient-php
-	- implemented premium account setup in ddclient-php (untestet, no http server and no internet right now)
+	- implemented premium account setup in ddclient-php
 	- fixed download_resumption checking if a plugin allows parallel downloading istead of checking if it allows resumption
 	- versioning-script now also builds the source .tar.bz2 packages (will be extenden to also build debian pkgs some day..)
+	- fixed PREMIUM SET using a wrong password config variable
 
 2009-10-06
    [adrian]
