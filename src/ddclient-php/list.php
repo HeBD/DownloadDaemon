@@ -70,7 +70,7 @@ include("functional.php");
 			case 4: 
 				if($exp_dls[$i][4] == "DOWNLOAD_RUNNING") {
 					
-					if($exp_dls[$i][7] > 0 && $exp_dls[$i][8] == "NO_ERROR") {
+					if($exp_dls[$i][7] > 0 && $exp_dls[$i][8] == "PLUGIN_SUCCESS") {
 						echo "<td bgcolor=\"lime\">";
 						echo "Download running. Waiting " . $exp_dls[$i][7] . " seconds.";
 					} else if($exp_dls[$i][7] > 0 && $exp_dls[$i][8] != "PLUGIN_SUCCESS") {

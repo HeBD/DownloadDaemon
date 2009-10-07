@@ -10,6 +10,7 @@
 	- fixed download_resumption checking if a plugin allows parallel downloading istead of checking if it allows resumption
 	- versioning-script now also builds the source .tar.bz2 packages (will be extenden to also build debian pkgs some day..)
 	- fixed PREMIUM SET using a wrong password config variable
+	- fixed ddclient-php not correctly showing wait-times before a download starts
 
 2009-10-06
    [adrian]
