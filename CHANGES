@@ -4,6 +4,8 @@
 	- added configuration variable overwrite_files to decide if files should be overwritten if a new download
 	  starts and another file with the same name already exists
 	- fixed some errors in plugin-system and possible segfault in rapidshare plugin
+   [susanne]
+        - added delete dialog to ddclient-wx, which lets user choose between several answers about file delete
 
 2009-10-07
    [adrian]

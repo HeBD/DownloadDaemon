@@ -40,6 +40,8 @@
 #include "ddclient-wx_about_dialog.h"
 #include "ddclient-wx_add_dialog.h"
 #include "ddclient-wx_configure_dialog.h"
+#include "ddclient-wx_delete_dialog.h"
+
 
 #include "../lib/netpptk/netpptk.h"
 #if defined(__WXMSW__)

@@ -17,8 +17,8 @@ END_EVENT_TABLE()
 
 
 picture::picture(wxString image, wxWindow *parent, const wxSize &size, const wxWindowID &id, const wxPoint &pos, const long &style, const wxString &name)
-: wxPanel(parent, id, pos, size, style, name){
-   t_bmp = wxBitmap(wxImage(image, wxBITMAP_TYPE_PNG));
+	:wxPanel(parent, id, pos, size, style, name){
+	t_bmp = wxBitmap(wxImage(image, wxBITMAP_TYPE_PNG));
 }
 
 void picture::OnPaint(wxPaintEvent &event){

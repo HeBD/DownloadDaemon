@@ -19,7 +19,8 @@ BEGIN_EVENT_TABLE(add_dialog, wxDialog)
 END_EVENT_TABLE()
 
 
-add_dialog::add_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Add Downloads"))){
+add_dialog::add_dialog(wxWindow *parent):
+	wxDialog(parent, -1, wxString(wxT("Add Downloads"))){
 
 	// create elements
 	dialog_sizer = new wxBoxSizer(wxVERTICAL);

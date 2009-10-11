@@ -21,7 +21,8 @@ BEGIN_EVENT_TABLE(configure_dialog, wxDialog)
 END_EVENT_TABLE()
 
 
-configure_dialog::configure_dialog(wxWindow *parent) : wxDialog(parent, -1, wxString(wxT("Configure DownloadDaemon Server"))){
+configure_dialog::configure_dialog(wxWindow *parent):
+	wxDialog(parent, -1, wxString(wxT("Configure DownloadDaemon Server"))){
 
 	notebook = new wxNotebook(this, -1);
 

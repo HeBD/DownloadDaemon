@@ -27,7 +27,7 @@ class picture: public wxPanel{
 		*/
 		picture(wxString image, wxWindow *parent, const wxSize &size, const wxWindowID &id=wxID_ANY, const wxPoint &pos=wxDefaultPosition, const long &style=0, const wxString &name=wxPanelNameStr);
 
-
+		/** Paints the Panel.*/
 		void OnPaint(wxPaintEvent &evt);
 
 	private:

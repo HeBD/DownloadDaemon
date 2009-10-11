@@ -615,6 +615,7 @@ void myframe::on_delete(wxCommandEvent &event){
 			int del = dialog.ShowModal();
 
 			if(del == wxID_YES){ // user clicked yes to delete
+				int dialog_answer = 2; // possible answers are 0 = yes all, 1 = yes, 2 = no, 3 = no all
 
 				for(it = selected_lines.begin(); it<selected_lines.end(); it++){
 					id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
@@ -625,11 +626,14 @@ void myframe::on_delete(wxCommandEvent &event){
 
 					if(!answer.empty()){ // file exists
 
-						string question = "Do you want to delete the downloaded File for Download ID " + id + "?";
-						wxMessageDialog file_dialog(this, wxString(question.c_str(), wxConvUTF8), wxT("Delete File"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
-						int del_file = file_dialog.ShowModal();
+						// only show dialog if user didn't choose yes_all (0) or no_all (3) before
+						if((dialog_answer != 0) && (dialog_answer != 3)){
+							delete_dialog dialog(&dialog_answer, id, this);
+							dialog.ShowModal();
+						}
 
-						if(del_file == wxID_YES){ // user clicked yes to delete
+
+						if((dialog_answer == 0) || (dialog_answer == 1)){ // user clicked yes all (0) or yes (1) to delete
 							mysock->send("DDP DL DEACTIVATE " + id);
 							mysock->recv(answer);
 
@@ -911,7 +915,7 @@ void myframe::on_reload(wxEvent &event){
 }
 
 
-// getter and setter methods
+// getter and setter methodsget_content
 void myframe::set_connection_attributes(tkSock *mysock, string password){
 	this->mysock = mysock;
 }

@@ -215,6 +215,12 @@
 		<Unit filename="src/ddclient-wx/ddclient-wx_connect_dialog.h">
 			<Option target="DDClient-wx" />
 		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_delete_dialog.cpp">
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/ddclient-wx_delete_dialog.h">
+			<Option target="DDClient-wx" />
+		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_main.cpp">
 			<Option target="DDClient-wx" />
 		</Unit>
