@@ -44,7 +44,8 @@ For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "
 	     file size|wait seconds|error message|download speed
 	     followed by a newline. If there is a | in the title, it will be escaped as \|.
 	ADD <url> <comment> will add a download. the ADD command needs to be followed by at least one whitespace, followed by the download url.
-	    if a title for the download should be set, it should be added after another whitespace.
+	    if a title for the download should be set, it should be added after another whitespace. If the same link is already in the list
+	    and the config file forbids adding the same links twice, you will receive a 108 VARIABLE
 	DEL <id> will delete a download and needs to be followed by the download ID as it can be viewed from the LIST command
 	STOP <id> will stop a running download immediately and needs to be followed by the download ID
 	UP <id> will move a download one position upwards and therfore increase its priority. The command needs to be followed by a download ID

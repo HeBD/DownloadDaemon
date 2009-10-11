@@ -12,6 +12,7 @@
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
+#include <iostream>
 using namespace std;
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
@@ -90,7 +91,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		std::string have_to_wait(resultstr.substr(pos, end - pos));
 		set_wait_time(atoi(have_to_wait.c_str()) * 60);
 		return PLUGIN_LIMIT_REACHED;
-	} else if(resultstr.find("Please try again in 2 minutes") != std::string::npos) {
+	} else if(resultstr.find("Please try again in 2 minutes") != std::string::npos || resultstr.find("wait 2 minutes") != std::string::npos) {
 		set_wait_time(120);
 		return PLUGIN_SERVER_OVERLOADED;
 	} else {
@@ -108,7 +109,10 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		}
 
 		pos = resultstr.find("http://", pos);
-		end = resultstr.find('\"', pos);
+		end = resultstr.find('\"', pos);cout << resultstr << endl;
+		if(pos == string::npos || end == string::npos || pos == end) {
+			return PLUGIN_ERROR;
+		}
 
 		outp.download_url = resultstr.substr(pos, end - pos);
 		return PLUGIN_SUCCESS;

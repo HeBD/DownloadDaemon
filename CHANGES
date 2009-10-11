@@ -1,3 +1,10 @@
+2009-10-11
+   [adrian]
+	- added configuration variable refuse_existing to refuse existing links when they are added
+	- added configuration variable overwrite_files to decide if files should be overwritten if a new download
+	  starts and another file with the same name already exists
+	- fixed some errors in plugin-system and possible segfault in rapidshare plugin
+
 2009-10-07
    [adrian]
 	- ticking download-waiting times, starting new downloads each second, etc timers are now started in a separate

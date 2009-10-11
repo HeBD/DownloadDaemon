@@ -21,7 +21,9 @@
 #include "download.h"
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../tools/helperfunctions.h"
-
+#ifdef IS_PLUGIN
+	#include <iostream>
+#endif
 using namespace std;
 
 #ifndef IS_PLUGIN
@@ -817,5 +819,15 @@ int download_container::remove_download(int id) {
 		return LIST_PERMISSION;
 	}
 	return LIST_SUCCESS;
+}
+
+bool download_container::url_is_in_list(std::string url) {
+	boost::mutex::scoped_lock lock(download_mutex);
+	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+		if(url == it->url) {
+			return true;
+		}
+	}
+	return false;
 }
 #endif

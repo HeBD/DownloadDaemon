@@ -152,7 +152,16 @@ public:
 	*/
 	bool reconnect_needed();
 
+	/** Does the real work when reconnecting
+	*	@param dlist basically a this-pointer, needed because it's static
+	*/
 	static void do_reconnect(download_container *dlist);
+
+	/** Checks if the given link already exists in the list
+	*	@param url The url to check for
+	*	@returns true if the link already exists in the list
+	*/
+	bool url_is_in_list(std::string url);
 
 	std::string list_file;
 

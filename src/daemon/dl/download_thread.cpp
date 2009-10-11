@@ -142,8 +142,10 @@ void download_thread(int download) {
 			output_filename += '/' + plug_outp.download_filename;
 		}
 
-		// Check if we can do a download resume or if we have to start from the beginning
+
 		struct stat st;
+
+		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file;
 		if(global_download_list.get_hostinfo(download).allows_resumption && global_config.get_cfg_value("enable_resume") != "0" &&
 		   stat(output_filename.c_str(), &st) == 0 && st.st_size == global_download_list.get_int_property(download, DL_DOWNLOADED_BYTES)) {
@@ -151,7 +153,18 @@ void download_thread(int download) {
 			output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
 			log_string(std::string("Download already started. Will continue to download ID: ") + int_to_string(download), LOG_DEBUG);
 		} else {
-			output_file.open(output_filename.c_str(), ios::out | ios::binary);
+			// Check if the file should be overwritten if it exists
+			string overwrite(global_config.get_cfg_value("overwrite_files"));
+			if(overwrite == "0" || overwrite == "false" || overwrite == "no") {
+				if(stat(output_filename.c_str(), &st) == 0) {
+					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+					global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_WRITE_FILE_ERROR);
+					global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+					return;
+
+				}
+			}
+			output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::trunc);
 		}
 
 		if(!output_file.good()) {

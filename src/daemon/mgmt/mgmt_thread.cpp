@@ -234,6 +234,14 @@ void target_dl_add(std::string &data, tkSock *sock) {
 		trim_string(comment);
 	}
 	if(validate_url(url)) {
+		if(global_download_list.url_is_in_list(url)) {
+			std::string refuse(global_config.get_cfg_value("refuse_existing_links"));
+			if(refuse == "1" || refuse == "true") {
+				*sock << "108 VARIABLE";
+				return;
+			}
+
+		}
 		download dl(url, global_download_list.get_next_id());
 		dl.comment = comment;
 		std::string logstr("Adding download: ");
