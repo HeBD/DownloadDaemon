@@ -109,7 +109,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		}
 
 		pos = resultstr.find("http://", pos);
-		end = resultstr.find('\"', pos);cout << resultstr << endl;
+		end = resultstr.find('\"', pos);
 		if(pos == string::npos || end == string::npos || pos == end) {
 			return PLUGIN_ERROR;
 		}
