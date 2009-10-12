@@ -156,29 +156,30 @@ const char* download::get_error_str() {
 		case PLUGIN_SUCCESS:
 			return "PLUGIN_SUCCESS";
 		case PLUGIN_MISSING:
-			return "PLUGIN_MISSING";
+			// Deprecated -> generic download will be used if no plugin found
+			return "Plugin missing";
 		case PLUGIN_INVALID_HOST:
-			return "PLUGIN_INVALID_HOST";
+			return "Invalid hostname";
 		case PLUGIN_INVALID_PATH:
-			return "PLUGIN_INVALID_PATH";
+			return "Invalid plugin path";
 		case PLUGIN_CONNECTION_LOST:
-			return "PLUGIN_CONNECTION_LOST";
+			return "Connection lost";
 		case PLUGIN_FILE_NOT_FOUND:
-			return "PLUGIN_FILE_NOT_FOUND";
+			return "File not found on server";
 		case PLUGIN_WRITE_FILE_ERROR:
-			return "PLUGIN_WRITE_FILE_ERROR";
+			return "Unable to write file";
 		case PLUGIN_ERROR:
-			return "PLUGIN_ERROR";
+			return "Plugin error";
 		case PLUGIN_LIMIT_REACHED:
-			return "PLUGIN_LIMIT_REACHED";
+			return "Download limit reached";
 		case PLUGIN_CONNECTION_ERROR:
-			return "PLUGIN_CONNECTION_ERROR";
+			return "Connection failed";
 		case PLUGIN_SERVER_OVERLOADED:
-			return "PLUGIN_SERVER_OVERLOADED";
+			return "Server overloaded";
 		case PLUGIN_AUTH_FAIL:
-			return "PLUGIN_AUTH_FAIL";
+			return "Authentication failed";
 	}
-	return "PLUGIN_UNKNOWN_ERROR";
+	return "Unknown plugin error - please report";
 }
 
 const char* download::get_status_str() {

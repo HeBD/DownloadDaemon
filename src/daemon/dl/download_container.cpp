@@ -514,7 +514,7 @@ bool download_container::reconnect_needed() {
 
 
 	bool need_reconnect = false;
-	//bool reconnect_allowed = false;
+
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_WAITING && it->error == PLUGIN_LIMIT_REACHED) {
 			need_reconnect = true;
@@ -618,12 +618,18 @@ void download_container::do_reconnect(download_container *dlist) {
 		return;
 	}
 	log_string("Reconnecting now!", LOG_WARNING);
+	for(download_container::iterator it = dlist->download_list.begin(); it != dlist->download_list.end(); ++it) {
+		if(it->get_status() == DOWNLOAD_WAITING) {
+			it->set_status(DOWNLOAD_RECONNECTING);
+			it->wait_seconds = 0;
+		}
+	}
 	dlist->download_mutex.unlock();
 	reconnect(router_ip, router_username, router_password);
 	dlclose(handle);
 	dlist->download_mutex.lock();
 	for(download_container::iterator it = dlist->download_list.begin(); it != dlist->download_list.end(); ++it) {
-		if(it->get_status() == DOWNLOAD_WAITING) {
+		if(it->get_status() == DOWNLOAD_WAITING || it->get_status() == DOWNLOAD_RECONNECTING) {
 			it->set_status(DOWNLOAD_PENDING);
 			it->wait_seconds = 0;
 		}
@@ -743,7 +749,6 @@ std::string download_container::create_client_list() {
 		ss << comment << '|' << it->url << '|' << it->get_status_str() << '|' << it->downloaded_bytes << '|' << it->size
 		   << '|' << it->wait_seconds << '|' << it->get_error_str() << '|' << it->speed << '\n';
 	}
-	//log_string("Dumping download list to client", LOG_DEBUG);
 	return ss.str();
 }
 

@@ -1,4 +1,8 @@
 2009-10-12
+   [adrian]
+	- Replaced PLUGIN_* error messages with human readable messages (used for DL_LIST)
+	- DOWNLOAD_RECONNECTING stats for all waiting downloads when doing a reconnect
+	- proper logging for LIST_PERMISSION errors in download_container::dump_to_file()
    [susanne]
 	- ddclient-wx now shows download speed if it's known
 

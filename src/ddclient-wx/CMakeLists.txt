@@ -8,6 +8,7 @@ SET(ddclient_wx_SRCS	ddclient-wx_about_dialog.cpp
 			ddclient-wx_add_dialog.cpp
 			ddclient-wx_connect_dialog.cpp
 			ddclient-wx_main.cpp
+			ddclient-wx_delete_dialog.cpp
 			../lib/netpptk/netpptk.cpp)
 
 find_package(Boost REQUIRED COMPONENTS thread)

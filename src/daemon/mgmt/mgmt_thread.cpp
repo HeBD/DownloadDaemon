@@ -249,6 +249,7 @@ void target_dl_add(std::string &data, tkSock *sock) {
 		logstr.erase(logstr.length() - 1);
 		log_string(logstr, LOG_DEBUG);
 		if(global_download_list.add_download(dl) != LIST_SUCCESS) {
+			log_string("No permission to write download list file", LOG_SEVERE);
 			*sock << "110 PERMISSION";
 		} else {
 			*sock << "100 SUCCESS";
