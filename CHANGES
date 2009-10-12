@@ -1,3 +1,7 @@
+2009-10-12
+   [susanne]
+	- ddclient-wx now shows download speed if it's known
+
 2009-10-11
    [adrian]
 	- added configuration variable refuse_existing to refuse existing links when they are added

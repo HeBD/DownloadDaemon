@@ -356,7 +356,12 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 			status_text = "Error: " + splitted_line[8] + " Retrying in " + splitted_line[7] + " seconds.";
 		}else{ // no waiting time
 			stringstream stream_buffer;
-			stream_buffer << "Download Running: ";
+			stream_buffer << "Download Running";
+
+			if(splitted_line[9] != "0" || splitted_line[9] != "-1") // download speed known
+				stream_buffer << "@" << setprecision(2) << fixed << (float)atol(splitted_line[9].c_str()) / 1024 << " kb/s";
+
+			stream_buffer << ": ";
 
 			if(splitted_line[6] == "0" || splitted_line[6] == "1"){ // download size unknown
 				stream_buffer << "0.00% - ";
