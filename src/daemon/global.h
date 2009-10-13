@@ -17,17 +17,17 @@
 #include "dl/download_container.h"
 
 // The downloadcontainer is just needed everywhere in the program, so let's make it global
-download_container global_download_list;
+extern download_container global_download_list;
 
 // configuration variables are also used a lot, so global too
-cfgfile global_config;
-cfgfile global_router_config;
-cfgfile global_premium_config;
+extern cfgfile global_config;
+extern cfgfile global_router_config;
+extern cfgfile global_premium_config;
 
 // same goes for the program root, which is needed for a lot of path-calculation
-std::string program_root;
+extern std::string program_root;
 
 // the environment variables are also needed a lot for path calculations
-char** env_vars;
+extern char** env_vars;
 
 #endif /*GLOBAL_H_*/

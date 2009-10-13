@@ -97,8 +97,6 @@ public:
 
 	/** Sets the status of a download
 	* @param st desired status
-	* @param force If this is set to true, no checking will happen before setting the status. this should usually NOT be done, because in some cases setting a status
-	*			   needs special actions to take place before. Only use if you are 100% sure that you have to
 	*/
 	void set_status(download_status st);
 
@@ -107,6 +105,9 @@ public:
 	*/
 	download_status get_status();
 
+	/** gives info about the host of this download (continue downloads, parallel downloads, premium, ...)
+	*	@returns the info
+	*/
 	plugin_output get_hostinfo();
 
 	friend bool operator<(const download& x, const download& y);

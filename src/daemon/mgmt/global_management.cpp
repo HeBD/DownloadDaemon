@@ -20,13 +20,11 @@
 #include "../tools/helperfunctions.h"
 #include "../../lib/cfgfile/cfgfile.h"
 #include "global_management.h"
+#include "../global.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 using namespace std;
-
-extern download_container global_download_list;
-extern std::string program_root;
 
 void do_once_per_second() {
 	global_download_list.decrease_waits();

@@ -26,13 +26,9 @@
 #include "download_container.h"
 #include "../tools/helperfunctions.h"
 #include "../tools/curl_callbacks.h"
-
+#include "../global.h"
 
 using namespace std;
-
-extern cfgfile global_config;
-extern download_container global_download_list;
-extern std::string program_root;
 
 /** start the next possible download in a new thread */
 void start_next_download() {

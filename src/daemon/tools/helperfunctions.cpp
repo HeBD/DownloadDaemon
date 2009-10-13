@@ -20,13 +20,8 @@
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../dl/download.h"
 #include "../dl/download_container.h"
+#include "../global.h"
 using namespace std;
-
-extern cfgfile global_config;
-extern std::string program_root;
-extern download_container global_download_list;
-extern std::string program_root;
-extern char** env_vars;
 
 namespace {
 	// anonymous namespace to make it file-global
@@ -68,8 +63,7 @@ bool validate_url(std::string &url) {
 
 void log_string(const std::string logstr, LOG_LEVEL level) {
 	std::string desiredLogLevel = global_config.get_cfg_value("log_level");
-	LOG_LEVEL desiredLogLevelInt = LOG_WARNING;
-	std::string desiredLogFile = global_config.get_cfg_value("log_file");
+	LOG_LEVEL desiredLogLevelInt = LOG_DEBUG;
 
 	time_t rawtime;
 	time(&rawtime);
@@ -77,7 +71,7 @@ void log_string(const std::string logstr, LOG_LEVEL level) {
 	log_date.erase(log_date.length() - 1);
 
 	if(desiredLogLevel == "OFF") {
-		desiredLogLevelInt = LOG_OFF;
+		return;
 	} else if (desiredLogLevel == "SEVERE") {
 		desiredLogLevelInt = LOG_SEVERE;
 	} else if (desiredLogLevel == "WARNING") {
@@ -89,6 +83,8 @@ void log_string(const std::string logstr, LOG_LEVEL level) {
 	if(desiredLogLevelInt < level) {
 		return;
 	}
+
+	std::string desiredLogFile = global_config.get_cfg_value("log_file");
 
 	boost::mutex::scoped_lock(logfile_mutex);
 	if(desiredLogFile == "stdout" || desiredLogFile == "") {

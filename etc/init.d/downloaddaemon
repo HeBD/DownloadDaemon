@@ -1,0 +1,47 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          DownloadDaemon
+# Should-Start:      $network
+# Should-Stop:       $network
+# Default-Start:     3 4 5
+# Default-Stop:      1
+# Short-Description: DownloadDaemon download manager service
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=DownloadDaemon
+NAME=DownloadDaemon
+DESC="DownloadDaemon download manager service"
+
+case "$1" in
+  start)
+	DownloadDaemon -d
+	;;
+  stop)
+	killall DownloadDaemon
+	;;
+  reload|force-reload)
+       echo "Unsupported option"
+       ;;
+  restart)
+	killall DownloadDaemon
+	DownloadDaemon -d
+	;;
+  status)
+	echo "Status of DownloadDaemon:"
+	if [ `pidof DownloadDaemon`=="" ]; then
+		echo "$NAME is not running."
+		exit 3
+	else
+		echo "$NAME is running."
+		exit 0
+	fi
+	;;
+  *)
+	N=/etc/init.d/${0##*/}
+	echo "Usage: $N {start|stop|restart|status}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

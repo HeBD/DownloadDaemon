@@ -23,15 +23,10 @@
 #include "../tools/helperfunctions.h"
 #ifdef IS_PLUGIN
 	#include <iostream>
+#else
+	#include "../global.h"
 #endif
 using namespace std;
-
-#ifndef IS_PLUGIN
-extern std::string program_root;
-extern cfgfile global_config;
-extern cfgfile global_router_config;
-extern cfgfile global_premium_config;
-#endif // IS_PLUGIN
 
 #ifndef IS_PLUGIN
 download_container::download_container(const char* filename) {

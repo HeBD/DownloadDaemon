@@ -6,6 +6,9 @@
 	  install is nothing more than prefix=~ and conf-files in ~/.downloaddaemon
 	- modified config file template
 	- wrote guide on how to start developing DownloadDaemon
+	- cleaner handling for global variables (just #include "global.h" to get all of them)
+	- small performance improvement in logger (in some cases)
+	- added init script to start downloaddaemon automatically (not being installed yet)
 
 2009-10-12
    [adrian]

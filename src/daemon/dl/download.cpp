@@ -24,16 +24,12 @@
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
-
+#include "../global.h"
 using namespace std;
 
-extern cfgfile global_config;
-extern cfgfile global_premium_config;
-extern download_container global_download_list;
-
-download::download(std::string &dl_url, int next_id)
+download::download(std::string& dl_url, int next_id)
 	: url(dl_url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
-	  is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0) {
+	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0) {
 	handle = curl_easy_init();
 	time_t rawtime;
 	time(&rawtime);
@@ -41,11 +37,11 @@ download::download(std::string &dl_url, int next_id)
 	add_date.erase(add_date.length() - 1);
 }
 
-download::download(std::string &serializedDL) {
+download::download(std::string& serializedDL) {
 	from_serialized(serializedDL);
 }
 
-void download::from_serialized(std::string &serializedDL) {
+void download::from_serialized(std::string& serializedDL) {
 	std::string current_entry;
 	size_t curr_pos = 0;
 	size_t entry_num = 0;
@@ -133,7 +129,7 @@ std::string download::serialize() {
 	}
 	stringstream ss;
 	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << status << '|'
-	   << downloaded_bytes << '|' << size << '|' << output_file << "|\n";
+	<< downloaded_bytes << '|' << size << '|' << output_file << "|\n";
 	return ss.str();
 }
 
@@ -266,7 +262,7 @@ plugin_output download::get_hostinfo() {
 	void (*plugin_getinfo)(plugin_input&, plugin_output&);
 	plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(l_handle, "plugin_getinfo");
 
-	char *l_error;
+	char* l_error;
 	if ((l_error = dlerror()) != NULL)  {
 		log_string(std::string("Unable to get plugin information: ") + l_error, LOG_SEVERE);
 		return outp;

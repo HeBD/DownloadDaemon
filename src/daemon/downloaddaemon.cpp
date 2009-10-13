@@ -13,7 +13,6 @@
 #include "mgmt/mgmt_thread.h"
 #include "dl/download.h"
 #include "dl/download_thread.h"
-#include "global.h"
 #include "mgmt/global_management.h"
 #include "tools/helperfunctions.h"
 
@@ -32,8 +31,17 @@
 
 using namespace std;
 
-
-extern cfgfile global_config;
+// GLOBAL VARIABLE DECLARATION:
+// The downloadcontainer is just needed everywhere in the program, so let's make it global
+download_container global_download_list;
+// configuration variables are also used a lot, so global too
+cfgfile global_config;
+cfgfile global_router_config;
+cfgfile global_premium_config;
+// same goes for the program root, which is needed for a lot of path-calculation
+std::string program_root;
+// the environment variables are also needed a lot for path calculations
+char** env_vars;
 
 int main(int argc, char* argv[], char* env[]) {
 	env_vars = env;

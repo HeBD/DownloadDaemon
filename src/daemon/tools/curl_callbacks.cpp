@@ -15,12 +15,11 @@
 #include "../dl/download.h"
 #include "../dl/download_container.h"
 #include "helperfunctions.h"
+#include "../global.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 using namespace std;
-
-extern download_container global_download_list;
 
 size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 	fstream* output_file = (fstream*)userp;

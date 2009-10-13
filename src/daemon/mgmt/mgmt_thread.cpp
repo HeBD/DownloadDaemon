@@ -27,15 +27,8 @@
 #include "../tools/helperfunctions.h"
 #include "../dl/download_container.h"
 #include "../dl/download_thread.h"
-
+#include "../global.h"
 using namespace std;
-
-extern cfgfile global_config;
-extern cfgfile global_router_config;
-extern cfgfile global_premium_config;
-extern download_container global_download_list;
-extern std::string program_root;
-
 
 
 /** the main thread for the management-interface over tcp
@@ -216,7 +209,6 @@ void target_dl(std::string &data, tkSock *sock) {
 }
 
 void target_dl_list(std::string &data, tkSock *sock) {
-
 	//log_string("Dumping download list to client", LOG_DEBUG);
 	*sock << global_download_list.create_client_list();
 }
