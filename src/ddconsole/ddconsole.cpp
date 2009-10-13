@@ -119,10 +119,11 @@ int main(int argc, char* argv[]) {
 			cout << "There are commands for ddconsole and there are commands for a connected DownloadDaemon." << endl;
 			cout << "Commands for ddconsole:" << endl;
 			cout << "\texit/quit\t\tdisconnect and exit ddconsole" << endl;
-			cout << "\tconnect <host> [port]\tConnect to DownloadDaemon (port is optional)" << endl << endl;
+			cout << "\tconnect <host> [port]\tConnect to DownloadDaemon (port is optional)\n" << endl;
 			cout << "Commands to be sent to DownloadDaemon:" << endl;
 			cout << "General command structure: <target> <command> <parameters> " << endl;
-			cout << "Targets are DL for downloads, VAR for configuration variables, FILE for downloaded files and ROUTER for router configuration" << endl;
+			cout << "Targets are DL for downloads, VAR for configuration variables, FILE for downloaded files, ROUTER for router configuration" << endl;
+			cout << "and PREMIUM for premium account setup" << endl;
 			cout << "Possible commands:" << endl;
 			cout << "DL LIST\t\t\t\t Dumps the current download list" << endl;
 			cout << "DL ADD <url> <comment>\t\t Add a download" << endl;
@@ -141,8 +142,12 @@ int main(int argc, char* argv[]) {
 			cout << "ROUTER SETMODEL <model>\t sets the router model" << endl;
 			cout << "ROUTER SET <var>=<value>\t sets a router configuration varialbe" << endl;
 			cout << "ROUTER GET <var>\t\t returns the value of a router configuration variable" << endl;
+			cout << "PREMIUM LIST\t\t\t returns a list of hosts that support premium setup (only if the plugin supports it)" << endl;
+			cout << "PREMIUM SET <host> <user>;<password>\t sets up premium account information for <host>" << endl;
+			cout << "PREMIUM GET <host>\t\t returns the username specified for <host>. Passwords can not be retrieved" << endl;
 			continue;
 		}
+
 		string answer;
 		send_command(sock, snd);
 		sock >> answer;

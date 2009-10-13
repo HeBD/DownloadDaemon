@@ -36,6 +36,7 @@ using namespace std;
 extern cfgfile global_config;
 
 int main(int argc, char* argv[], char* env[]) {
+	env_vars = env;
 	if(argc == 2) {
 		std::string argv1 = argv[1];
 		if(argv1 == "-d" || argv1 == "--daemon") {
@@ -71,14 +72,7 @@ int main(int argc, char* argv[], char* env[]) {
 		free(real_path);
 	} else if(argv0.find('/') == string::npos && !argv0.empty()) {
 		// It's in $PATH... let's go!
-		std::string env_path, curr_env;
-		for(char** curr_c = env; curr_c != 0 && *curr_c != 0; ++curr_c) {
-			curr_env = *curr_c;
-			if(curr_env.find("PATH") == 0) {
-				env_path = curr_env.substr(curr_env.find('=') + 1);
-				break;
-			}
-		}
+		std::string env_path(get_env_var("PATH"));
 
 		std::string curr_path;
 		size_t curr_pos = 0, last_pos = 0;
@@ -136,15 +130,30 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 	chdir(program_root.c_str());
 
+	string home_dd_dir(get_env_var("HOME"));
+	home_dd_dir += "/.downloaddaemon/";
+	string dd_conf_path("/etc/downloaddaemon/downloaddaemon.conf");
+	string premium_conf_path("/etc/downloaddaemon/premium_accounts.conf");
+	string router_conf_path("/etc/downloaddaemon/routerinfo.conf");
+	if(stat(string(home_dd_dir + "downloaddaemon.conf").c_str(), &st) == 0) {
+		dd_conf_path = home_dd_dir + "downloaddaemon.conf";
+	}
+	if(stat(string(home_dd_dir + "premium_accounts.conf").c_str(), &st) == 0) {
+		premium_conf_path = home_dd_dir + "premium_accounts.conf";
+	}
+	if(stat(string(home_dd_dir + "routerinfo.conf").c_str(), &st) == 0) {
+		router_conf_path = home_dd_dir + "routerinfo.conf";
+	}
 
-	if(stat("/etc/downloaddaemon/downloaddaemon.conf", &st) != 0) {
+	// check again - will fail if the conf file does not exist at all
+	if(stat(dd_conf_path.c_str(), &st) != 0) {
 		cerr << "Could not locate configuration file!" << endl;
 		exit(-1);
 	}
 
-	global_config.open_cfg_file("/etc/downloaddaemon/downloaddaemon.conf", true);
-	global_router_config.open_cfg_file("/etc/downloaddaemon/routerinfo.conf", true);
-	global_premium_config.open_cfg_file("/etc/downloaddaemon/premium_accounts.conf", true);
+	global_config.open_cfg_file(dd_conf_path.c_str(), true);
+	global_router_config.open_cfg_file(router_conf_path.c_str(), true);
+	global_premium_config.open_cfg_file(premium_conf_path.c_str(), true);
 	if(!global_config) {
 		cerr << "Unable to open config file... exiting" << endl;
 		exit(-1);

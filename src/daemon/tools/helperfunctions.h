@@ -73,4 +73,19 @@ bool router_variable_is_valid(std::string &variable);
 */
 void correct_path(std::string &path);
 
+/** Parses the value of an environment variable out of the char* env[] passed as the third argument to main()
+*	@param env environment variable array from the third main() argument
+*	@param var variable to search for
+*	@returns the value of the variable
+*/
+std::string get_env_var(const std::string &var);
+
+/** substitutes environment variables in string with the value of the variable. eg "$HOME/foo" will result in
+*	"/home/uname/foo" or something like that. if the variable is not found, an empty string will be put in.
+*	@param env environment variable array from the third main() argument
+*	@param str string in which variables should be substituted
+*/
+void substitute_env_vars(std::string &str);
+
+
 #endif /*HELPERFUNCTIONS_H_*/

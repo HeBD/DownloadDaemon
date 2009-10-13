@@ -26,6 +26,7 @@ extern cfgfile global_config;
 extern std::string program_root;
 extern download_container global_download_list;
 extern std::string program_root;
+extern char** env_vars;
 
 namespace {
 	// anonymous namespace to make it file-global
@@ -165,7 +166,35 @@ bool router_variable_is_valid(std::string &variable) {
 
 void correct_path(std::string &path) {
 	trim_string(path);
+	substitute_env_vars(path);
 	if(path[0] != '/') {
 		path.insert(0, program_root);
+	}
+
+}
+
+std::string get_env_var(const std::string &var) {
+	std::string result;
+	std::string curr_env;
+	for(char** curr_c = env_vars; curr_c != 0 && *curr_c != 0; ++curr_c) {
+		curr_env = *curr_c;
+		if(curr_env.find(var) == 0) {
+			result = curr_env.substr(curr_env.find('=') + 1);
+			break;
+		}
+	}
+	return result;
+}
+
+void substitute_env_vars(std::string &str) {
+	size_t pos = 0, old_pos = 0;
+	string var_to_replace;
+	string result;
+	while((pos = str.find('$', old_pos)) != string::npos) {
+		var_to_replace = str.substr(pos + 1, str.find_first_of("$/\\ \n\r\t\0", pos + 1) - pos - 1);
+		result = get_env_var(var_to_replace);
+		str.replace(pos, var_to_replace.length() + 1, result);
+		old_pos = pos + 1;
+
 	}
 }

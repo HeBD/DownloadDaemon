@@ -1,3 +1,12 @@
+2009-10-13
+   [adrian]
+	- updated "help" command in ddconsole
+	- added easy way to make a user-only installation. config files are now also read
+	  form ~/.downloaddaemon/*.conf for the executing user. therefore local
+	  install is nothing more than prefix=~ and conf-files in ~/.downloaddaemon
+	- modified config file template
+	- wrote guide on how to start developing DownloadDaemon
+
 2009-10-12
    [adrian]
 	- Replaced PLUGIN_* error messages with human readable messages (used for DL_LIST)
