@@ -42,10 +42,32 @@ class configure_dialog : public wxDialog{
 
 	private:
 		wxNotebook *notebook;
+		wxPanel *general_panel;
 		wxPanel *download_panel;
 		wxPanel *pass_panel;
 		wxPanel *log_panel;
 		wxPanel *reconnect_panel;
+		enum var_type {NORMAL_T, ROUTER_T, PREMIUM_T};
+
+		// for general_panel
+		std::vector<std::string> premium_host_list;
+		wxStaticText *premium_host_text;
+		wxStaticText *premium_user_text;
+		wxStaticText *premium_pass_text;
+		wxChoice *premium_host_choice;
+		wxTextCtrl *premium_user_input;
+		wxTextCtrl *premium_pass_input;
+		wxCheckBox *overwrite_check;
+		wxCheckBox *refuse_existing_check;
+		wxButton *premium_button;
+		wxButton *general_button;
+		wxButton *general_cancel_button;
+
+		wxBoxSizer *overall_general_sizer;
+		wxStaticBoxSizer *outer_premium_sizer;
+		wxStaticBoxSizer *outer_general_sizer;
+		wxFlexGridSizer *premium_sizer;
+		wxBoxSizer *general_button_sizer;
 
 		// for download_panel
 		wxStaticText *exp_time_text;
@@ -122,18 +144,25 @@ class configure_dialog : public wxDialog{
 		wxFlexGridSizer *router_sizer;
 		wxBoxSizer *reconnect_button_sizer;
 
+		void create_general_panel();
 		void create_download_panel();
 		void create_pass_panel();
 		void create_log_panel();
 		void create_reconnect_panel();
 		void enable_reconnect_panel();
 		void disable_reconnect_panel();
-		wxString get_var(const std::string &var, bool router = false);
+		wxString get_var(const std::string &var, var_type typ = NORMAL_T);
+
+		// element IDs
+		static const long id_premium_host_choice;
+		static const long id_enable_reconnect_check;
 
 		// event handle methods
 		void on_apply(wxCommandEvent &event);
 		void on_pass_change(wxCommandEvent &event);
+		void on_premium_change(wxCommandEvent &event);
 		void on_cancel(wxCommandEvent &event);
+		void on_select_premium_host(wxCommandEvent &event);
 		void on_checkbox_change(wxCommandEvent &event);
 
 		DECLARE_EVENT_TABLE()

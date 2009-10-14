@@ -1,3 +1,8 @@
+2009-10-14
+   [susanne]
+	- added configuration of premium accounts at ddclient-wx
+	- added variables overwrite_files and refuse_existing_links to config dialog at ddclient-wx
+
 2009-10-13
    [adrian]
 	- updated "help" command in ddconsole

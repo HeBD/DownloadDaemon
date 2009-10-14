@@ -12,12 +12,19 @@
 #include "ddclient-wx_configure_dialog.h"
 
 
+// IDs
+const long configure_dialog::id_premium_host_choice = wxNewId();
+const long configure_dialog::id_enable_reconnect_check = wxNewId();
+
+
 // event table
 BEGIN_EVENT_TABLE(configure_dialog, wxDialog)
 	EVT_BUTTON(wxID_APPLY, configure_dialog::on_apply)
 	EVT_BUTTON(wxID_SAVE, configure_dialog::on_pass_change)
+	EVT_BUTTON(wxID_OK, configure_dialog::on_premium_change)
 	EVT_BUTTON(wxID_CANCEL, configure_dialog::on_cancel)
-	EVT_CHECKBOX(wxID_ANY, configure_dialog::on_checkbox_change)
+	EVT_CHOICE(configure_dialog::id_premium_host_choice, configure_dialog::on_select_premium_host)
+	EVT_CHECKBOX(configure_dialog::id_enable_reconnect_check, configure_dialog::on_checkbox_change)
 END_EVENT_TABLE()
 
 
@@ -26,12 +33,14 @@ configure_dialog::configure_dialog(wxWindow *parent):
 
 	notebook = new wxNotebook(this, -1);
 
+	create_general_panel();
 	create_download_panel();
 	create_pass_panel();
 	create_log_panel();
 	create_reconnect_panel();
 
-	notebook->AddPage(download_panel, wxT("Download"), true);
+	notebook->AddPage(general_panel, wxT("General"), true);
+	notebook->AddPage(download_panel, wxT("Download"), false);
 	notebook->AddPage(pass_panel, wxT("Password"), false);
 	notebook->AddPage(log_panel, wxT("Logging"), false);
 	notebook->AddPage(reconnect_panel, wxT("Reconnect"), false);
@@ -40,6 +49,115 @@ configure_dialog::configure_dialog(wxWindow *parent):
 	notebook->Fit();
 	Fit();
 	CenterOnScreen();
+}
+
+
+void configure_dialog::create_general_panel(){
+	// creating elements
+	general_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+
+	overall_general_sizer = new wxBoxSizer(wxVERTICAL);
+	outer_premium_sizer = new wxStaticBoxSizer(wxVERTICAL, general_panel, wxT("Premium Account"));
+	outer_general_sizer = new wxStaticBoxSizer(wxVERTICAL, general_panel, wxT("General Options"));
+	premium_sizer = new wxFlexGridSizer(4, 2, 10, 10);
+	general_button_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+	premium_host_text = new wxStaticText(general_panel, -1, wxT("Host"));
+	premium_user_text = new wxStaticText(general_panel, -1, wxT("Username"));
+	premium_pass_text = new wxStaticText(general_panel, -1, wxT("Password"));
+
+	premium_user_input = new wxTextCtrl(general_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25));
+	premium_pass_input = new wxTextCtrl(general_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
+
+
+	// fill premium_host_choice
+	wxArrayString host;
+	size_t lineend = 1;
+	string line = "", host_list;
+
+	host.Add(wxT(""));
+	premium_host_list.clear();
+	premium_host_list.push_back("");
+
+	// check connection
+	myframe *myparent = (myframe *) GetParent();
+	tkSock *mysock = myparent->get_connection_attributes();
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+
+	}else{ // we have a connection
+		boost::mutex *mx = myparent->get_mutex();
+		mx->lock();
+
+		mysock->send("DDP PREMIUM LIST");
+		mysock->recv(host_list);
+
+		mx->unlock();
+	}
+
+	// parse lines
+	while(host_list.length() > 0 && lineend != string::npos){
+		lineend = host_list.find("\n"); // termination character for line
+
+		if(lineend == string::npos){ // this is the last line (which ends without \n)
+			line = host_list.substr(0, host_list.length());
+			host_list = "";
+
+		}else{ // there is still another line after this one
+			line = host_list.substr(0, lineend);
+			host_list = host_list.substr(lineend+1);
+		}
+
+		host.Add(wxString(line.c_str(), wxConvUTF8));
+		premium_host_list.push_back(line); // save premium host for later use
+
+
+	}
+	premium_host_choice = new wxChoice(general_panel, id_premium_host_choice, wxDefaultPosition, wxSize(200, 30), host);
+
+
+	bool enable = false;
+	if(get_var("overwrite_files") == wxT("1"))
+		enable = true;
+
+	overwrite_check = new wxCheckBox(general_panel, -1, wxT("overwrite existing Files"));
+	overwrite_check->SetValue(enable);
+
+	enable = false;
+	if(get_var("refuse_existing_links") == wxT("1"))
+		enable = true;
+
+	refuse_existing_check = new wxCheckBox(general_panel, -1, wxT("refuse existing Links"));
+	refuse_existing_check->SetValue(enable);
+
+	premium_button = new wxButton(general_panel, wxID_OK);
+	general_button = new wxButton(general_panel, wxID_APPLY);
+	general_cancel_button = new wxButton(general_panel, wxID_CANCEL);
+
+
+	// filling sizers
+	premium_sizer->Add(premium_host_text, 0, wxALIGN_LEFT);
+	premium_sizer->Add(premium_host_choice, 0, wxALIGN_LEFT);
+	premium_sizer->Add(premium_user_text, 0, wxALIGN_LEFT);
+	premium_sizer->Add(premium_user_input, 0, wxALIGN_LEFT);
+	premium_sizer->Add(premium_pass_text, 0, wxALIGN_LEFT);
+	premium_sizer->Add(premium_pass_input, 0, wxALIGN_LEFT);
+	premium_sizer->Add(premium_button, 0, wxALIGN_LEFT);
+
+	outer_premium_sizer->Add(premium_sizer, 0,wxALL|wxEXPAND,10);
+
+	outer_general_sizer->Add(overwrite_check, 0,wxALL|wxEXPAND,10);
+	outer_general_sizer->Add(refuse_existing_check, 0,wxALL|wxEXPAND,10);
+
+	general_button_sizer->Add(general_button, 1, wxLEFT|wxRIGHT, 20);
+	general_button_sizer->Add(general_cancel_button, 1, wxLEFT|wxRIGHT, 10);
+
+	overall_general_sizer->Add(outer_premium_sizer, 0, wxGROW|wxALL, 20);
+	overall_general_sizer->Add(outer_general_sizer, 0, wxGROW|wxALL, 20);
+	overall_general_sizer->Add(general_button_sizer, 0, wxALL);
+
+	general_panel->SetSizerAndFit(overall_general_sizer);
 }
 
 
@@ -70,7 +188,6 @@ void configure_dialog::create_download_panel(){
 	save_dir_input = new wxTextCtrl(download_panel, -1, get_var("download_folder"), wxDefaultPosition, wxSize(400, 25));
 	count_input = new wxTextCtrl(download_panel, -1, get_var("simultaneous_downloads"), wxDefaultPosition, wxSize(100, 25));
 
-//	download_button = new wxButton(download_panel, id_download_change, wxT("Apply"));
 	download_button = new wxButton(download_panel, wxID_APPLY);
 	download_cancel_button = new wxButton(download_panel, wxID_CANCEL);
 
@@ -216,7 +333,7 @@ void configure_dialog::create_reconnect_panel(){
 	if(get_var("enable_reconnect") == wxT("1"))
 		enable = true;
 
-	enable_reconnecting_check = new wxCheckBox(reconnect_panel, -1, wxT("enable reconnecting"));
+	enable_reconnecting_check = new wxCheckBox(reconnect_panel, id_enable_reconnect_check, wxT("enable reconnecting"));
 	enable_reconnecting_check->SetValue(enable);
 
 	policy_text = new wxStaticText(reconnect_panel, -1, wxT("Reconnect Policy"));
@@ -283,7 +400,7 @@ void configure_dialog::enable_reconnect_panel(){
 	string line = "", model_list, old_model;
 	int selection = 0, i = 1;
 
-	old_model = (get_var("router_model", true)).mb_str();
+	old_model = (get_var("router_model", ROUTER_T)).mb_str();
 	model.Add(wxT(""));
 	router_model_list.clear();
 	router_model_list.push_back("");
@@ -341,7 +458,7 @@ void configure_dialog::enable_reconnect_panel(){
 
 	policy_choice->Append(policy);
 
-	wxString old_policy = get_var("reconnect_policy", true);
+	wxString old_policy = get_var("reconnect_policy", ROUTER_T);
 
 	selection = -1;
 
@@ -359,9 +476,9 @@ void configure_dialog::enable_reconnect_panel(){
 
 	// fill router_ip_input and router_user_input
 	router_ip_input->Clear();
-	router_ip_input->AppendText(get_var("router_ip", true));
+	router_ip_input->AppendText(get_var("router_ip", ROUTER_T));
 	router_user_input->Clear();
-	router_user_input->AppendText(get_var("router_username", true));
+	router_user_input->AppendText(get_var("router_username", ROUTER_T));
 
 
 	// enabling all
@@ -383,7 +500,7 @@ void configure_dialog::disable_reconnect_panel(){
 }
 
 
-wxString configure_dialog::get_var(const string &var, bool router){
+wxString configure_dialog::get_var(const string &var, var_type typ){
 	string answer;
 
 	// check connection
@@ -397,10 +514,12 @@ wxString configure_dialog::get_var(const string &var, bool router){
 		boost::mutex *mx = myparent->get_mutex();
 		mx->lock();
 
-		if(router) // get router var
-			mysock->send("DDP ROUTER GET " + var);
-		else // get normal var
+		if(typ == NORMAL_T) // get normal var
 			mysock->send("DDP VAR GET " + var);
+		else if(typ == ROUTER_T)  // get router var
+			mysock->send("DDP ROUTER GET " + var);
+		else // get premium var
+			mysock->send("DDP PREMIUM GET " + var);
 		mysock->recv(answer);
 
 		mx->unlock();
@@ -414,6 +533,9 @@ wxString configure_dialog::get_var(const string &var, bool router){
 void configure_dialog::on_apply(wxCommandEvent &event){
 
 	// getting user input
+	bool overwrite = overwrite_check->GetValue();
+	bool refuse_existing = refuse_existing_check->GetValue();
+
 	string start_time = string(start_time_input->GetValue().mb_str());
 	string end_time = string(end_time_input->GetValue().mb_str());
 	string save_dir = string(save_dir_input->GetValue().mb_str());
@@ -460,7 +582,6 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 	}
 
 
-
 	// check connection
 	myframe *myparent = (myframe *) GetParent();
 	tkSock *mysock = myparent->get_connection_attributes();
@@ -473,6 +594,20 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 
 		boost::mutex *mx = myparent->get_mutex();
 		mx->lock();
+
+		// overwrite files
+		if(overwrite)
+			mysock->send("DDP VAR SET overwrite_files = 1");
+		else
+			mysock->send("DDP VAR SET overwrite_files = 0");
+		mysock->recv(answer);
+
+		// refuse existing links
+		if(refuse_existing)
+			mysock->send("DDP VAR SET refuse_existing_links = 1");
+		else
+			mysock->send("DDP VAR SET refuse_existing_links = 0");
+		mysock->recv(answer);
 
 		// download times
 		mysock->send("DDP VAR SET download_timing_start = " + start_time);
@@ -571,8 +706,55 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 }
 
 
+void configure_dialog::on_premium_change(wxCommandEvent &event){
+	int selection = premium_host_choice->GetCurrentSelection();
+
+	if(selection != 0){ // selected a valid host
+		string premium_host =  premium_host_list.at(selection);
+		string premium_user = string(premium_user_input->GetValue().mb_str());
+		string premium_pass = string(premium_pass_input->GetValue().mb_str());
+
+		// check connection
+		myframe *myparent = (myframe *) GetParent();
+		tkSock *mysock = myparent->get_connection_attributes();
+
+		if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+			wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+
+		}else{ // we have a connection
+			string answer;
+
+			boost::mutex *mx = myparent->get_mutex();
+			mx->lock();
+
+			// host, user and password together
+			mysock->send("DDP PREMIUM SET " + premium_host + " " + premium_user + " ; " + premium_pass);
+			mysock->recv(answer);
+
+			mx->unlock();
+		}
+
+	}
+}
+
+
 void configure_dialog::on_cancel(wxCommandEvent &event){
 	Destroy();
+}
+
+
+void configure_dialog::on_select_premium_host(wxCommandEvent &event){
+	int selection = premium_host_choice->GetCurrentSelection();
+
+	premium_user_input->Clear();
+	premium_pass_input->Clear();
+
+	if(selection != 0){ // selected a host
+		string premium_host =  premium_host_list.at(selection);
+		premium_user_input->AppendText(get_var(premium_host, PREMIUM_T));
+
+	}
+
 }
 
 
