@@ -34,7 +34,7 @@ COPYRIGHT_HOLDERS="Copyright (C) 2009 by Adrian Batzill <adrian # batzill ! com>
 # build dependencies
 BUILDDEP_DD="debhelper (>= 7), cmake, libboost-thread-dev (>=1.37.0) | libboost-thread1.37-dev, libcurl-gnutls-dev"
 BUILDDEP_DDCLIENTWX="debhelper (>= 7), cmake, libboost-thread-dev, libwxbase2.8-dev, libwxgtk2.8-dev"
-BUILDDEP_DDCONSOLE=""
+BUILDDEP_DDCONSOLE="debhelper (>= 7), cmake"
 
 # dependencies (leave empty for auto-detection)
 DEP_DD=""
@@ -307,20 +307,23 @@ rm docs cron.d.ex ddconsole.default.ex ddconsole.doc-base.EX emacsen-install.ex 
 cd ../..
 
 ####################################################################
+echo "
 
+
+"
 read -p "Basic debian package preparation done. Please move to <svn root>/version/debs_${1}/*/debian and modify the files as you need them. Then press [enter] to continue package building
 expecially the changelog file should be changed."
 
 
 echo "building downloaddaemon package..."
 cd downloaddaemon-${1}
-debuild -d -S
+debuild -d -S -sa
 cd ..
 echo "building ddclient-wx package..."
 cd ddclient-wx-${1}
-debuild -d -S
+debuild -d -S -sa
 cd ..
 echo "building ddconsole package..."
 cd ddconsole-${1}
-debuild -d -S
+debuild -d -S -sa
 cd ..

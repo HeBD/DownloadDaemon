@@ -107,7 +107,7 @@ bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string
 		if(identstr == cfg_identifier) {
 			// to protect from substr-segfaults
 			*it += " ";
-			*it = it->substr(eqloc);
+			*it = it->substr(0, eqloc);
 			*it += " ";
 			*it += cfg_value;
 			done = true;
