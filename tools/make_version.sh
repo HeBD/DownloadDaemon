@@ -3,10 +3,18 @@
 if [ "$1" == "" ]
 then
 	echo "No version number specified"
+	echo "usage: $0 [version] [email]"
 	exit
 fi
 
-rm -rf ../version/*-${1}*
+if [ "$2" == "" ]
+then
+	echo "No email address specified"
+	echo "usage: $0 [version] [email]"	
+	exit
+fi
+
+rm -rf ../version/*-${1}* ../version/debs_${1}
 
 # ddclient-wx...
 echo "copying ddclient-wx..."
@@ -80,16 +88,37 @@ cd ../version
 find -name .svn | xargs rm -rf
 find -name "*~" | xargs rm -f
 
-echo "building source archives"
-tar -c downloaddaemon-${1} > downloaddaemon-${1}.tar
-tar -c ddclient-wx-${1} > ddclient-wx-${1}.tar
-tar -c ddconsole-${1} > ddconsole-${1}.tar
-tar -c ddclient-php-${1} > ddclient-php-${1}.tar
-echo "bzip2 source archives"
-bzip2 downloaddaemon-${1}.tar
-bzip2 ddclient-wx-${1}.tar
-bzip2 ddconsole-${1}.tar
-bzip2 ddclient-php-${1}.tar
+echo "building source archives..."
+tar -cz downloaddaemon-${1} > downloaddaemon-${1}.tar.gz
+tar -cz ddclient-wx-${1} > ddclient-wx-${1}.tar.gz
+tar -cz ddconsole-${1} > ddconsole-${1}.tar.gz
+tar -cz ddclient-php-${1} > ddclient-php-${1}.tar.gz
 
+
+echo "creating debian packages..."
+mkdir debs_${1}
+cp downloaddaemon-${1}.tar.gz debs_${1}/downloaddaemon_${1}.orig.tar.gz
+cp ddclient-wx-${1}.tar.gz debs_${1}/ddclient-wx_${1}.orig.tar.gz
+cp ddconsole-${1}.tar.gz debs_${1}/ddconsole_${1}.orig.tar.gz
+cd debs_${1}
+tar xfz downloaddaemon_${1}.orig.tar.gz
+tar xfz ddclient-wx_${1}.orig.tar.gz
+tar xfz ddconsole_${1}.orig.tar.gz
+cd downloaddaemon-${1}
+echo "Settings for DownloadDaemon:"
+dh_make -e $2
+cd debian
+#rm *.ex *.EX
+cd ../../ddclient-wx-${1}
+echo "Settings for ddclient-wx:"
+dh_make -e $2
+cd debian
+#rm *.ex *.EX
+cd ../../ddconsole-${1}
+echo "Settings for ddconsole:"
+dh_make -e $2
+cd debian
+#rm *.ex *.EX
+cd ../..
 
 
