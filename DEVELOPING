@@ -1,0 +1,11 @@
+This (for now very short guide) explains how to install and configure DownloadDaemon as a developer.
+To develop DownloadDaemon (or one of the clients), some special things need to be done, because you probably want
+to execute DD as a normal user (for more comfortable debugging and IDE usage).
+The best way to develop is by using Code::Blocks, since project files exist for that IDE
+1: Copy the configuration files to ~/.downloaddaemon or make /etc/downloaddaemon writable for your user
+2: modify the configuration files to make them non-root firiendly (ie: set log_file to "stdout" and the download folder to
+   ~/Downloads or something)
+3: the Code::Blocks project file compiles the programs to <svn root>/build/bin. to make it possible for the programs to
+   locate their static files (images, plugins, etc), you need to copy <svn root>/share to <svn root>/build. so you get
+   build/bin/* and build/share/*
+
