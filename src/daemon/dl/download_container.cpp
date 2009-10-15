@@ -684,6 +684,8 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 
 	pinp.premium_user = global_premium_config.get_cfg_value(dlit->get_host() + "_user");
 	pinp.premium_password = global_premium_config.get_cfg_value(dlit->get_host() + "_password");
+	trim_string(pinp.premium_user);
+	trim_string(pinp.premium_password);
 
 	download_mutex.unlock();
 	plugin_status retval = plugin_exec_func(*this, dl, pinp, poutp);

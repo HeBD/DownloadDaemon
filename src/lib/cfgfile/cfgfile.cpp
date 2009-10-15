@@ -110,7 +110,6 @@ bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string
 			*it = it->substr(0, eqloc + 1);
 			*it += " ";
 			*it += cfg_value;
-			string result = *it;
 			done = true;
 			break;
 		}

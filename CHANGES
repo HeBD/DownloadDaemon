@@ -3,7 +3,7 @@
 	- make_version script now creates complete debian packages
 	- fixed insertion of spaces when modifying conf variables
 	- fixed possible segfault in cfgfile parser
-	- hopefully fixed rapidshare premium stuff
+	- fixed rapidshare premium stuff
 
 2009-10-14
    [susanne]
