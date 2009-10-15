@@ -23,7 +23,8 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
-		curl_easy_setopt(get_handle(), CURLOPT_USERPWD, string(inp.premium_user + ":" + inp.premium_password).c_str());
+		CURL* orig_handle = get_handle();
+		curl_easy_setopt(orig_handle, CURLOPT_USERPWD, string(inp.premium_user + ":" + inp.premium_password).c_str());
 		outp.allows_multiple = true;
 		outp.allows_resumption = true;
 
@@ -42,6 +43,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			}
 			curl_easy_cleanup(handle);
 			outp.download_url = get_url();
+			// get the handle ready (get cookies)
+			curl_easy_setopt(orig_handle, CURLOPT_URL, "https://ssl.rapidshare.com/cgi-bin/premiumzone.cgi");
+			curl_easy_setopt(handle, CURLOPT_POST, 1);
+			curl_easy_setopt(handle, CURLOPT_POSTFIELDS, post_data.c_str());
+			curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+			curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
+			curl_easy_perform(handle);
 			return PLUGIN_SUCCESS;
 		}
 		curl_easy_cleanup(handle);

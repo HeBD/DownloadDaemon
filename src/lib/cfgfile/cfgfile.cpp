@@ -99,12 +99,17 @@ bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string
 	for(vector<std::string>::iterator it = cfgvec.begin(); it != cfgvec.end(); ++it) {
 		newbuff = it->substr(0, it->find(comment_token));
 		eqloc = newbuff.find(eqtoken);
+		if(eqloc == string::npos) {
+			continue;
+		}
 		identstr = newbuff.substr(0, eqloc);
 		trim(identstr);
 		if(identstr == cfg_identifier) {
-			val = newbuff.substr(eqloc + 1);
-			trim(val);
-			it->replace(it->find(val, eqloc + 1), val.length(), ' ' + cfg_value);
+			// to protect from substr-segfaults
+			*it += " ";
+			*it = it->substr(eqloc);
+			*it += " ";
+			*it += cfg_value;
 			done = true;
 			break;
 		}
