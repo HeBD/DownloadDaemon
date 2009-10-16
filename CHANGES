@@ -4,6 +4,7 @@
 	- added support for '~' in the beginning of a path in a configuration file, which will be replaced with $HOME
 	- removed max packet size of 9999 bytes in netpptk
 	- usage of AF_INET6 instead of AF_INET to get ipv6 compatible (netpptk)
+	- automatically create missing folders on startup (for dlist file, logs and downloads)
 
 2009-10-15
    [adrian]

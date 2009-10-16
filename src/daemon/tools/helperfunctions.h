@@ -87,5 +87,10 @@ std::string get_env_var(const std::string &var);
 */
 void substitute_env_vars(std::string &str);
 
+/** Recursively creates a directory path specified in dir
+*	@param path to create
+*/
+void mkdir_recursive(std::string dir);
+
 
 #endif /*HELPERFUNCTIONS_H_*/

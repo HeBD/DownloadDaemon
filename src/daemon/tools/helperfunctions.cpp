@@ -17,6 +17,7 @@
 #include <ctime>
 #include <vector>
 #include <boost/thread.hpp>
+#include <sys/stat.h>
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../dl/download.h"
 #include "../dl/download_container.h"
@@ -200,5 +201,25 @@ void substitute_env_vars(std::string &str) {
 		str.replace(pos, var_to_replace.length() + 1, result);
 		old_pos = pos + 1;
 
+	}
+}
+
+void mkdir_recursive(std::string dir) {
+	size_t len = dir.length();
+	if(dir[len -1] == '/') {
+		dir[len - 1] = 0;
+	}
+
+	if(dir[len - 1] != '/'){
+		dir.push_back('/');
+	}
+
+	string tmp;
+
+	for(size_t index = 0; index < len; ++index) {
+		if(dir[index] == '/') {
+			tmp = dir.substr(0, dir.find('/', index + 1));
+			mkdir(tmp.c_str(), S_IRWXU);
+		}
 	}
 }

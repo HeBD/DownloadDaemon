@@ -29,7 +29,3 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/downloaddaemon/LICENCE DES
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/downloaddaemon.conf DESTINATION /etc/downloaddaemon)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/routerinfo.conf DESTINATION /etc/downloaddaemon)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/premium_accounts.conf DESTINATION /etc/downloaddaemon)
-install(CODE "FILE(MAKE_DIRECTORY /var/downloads)")
-
-
-#install(FILES ../../program_data/downloads DESTINATION /opt/downloaddaemon/)

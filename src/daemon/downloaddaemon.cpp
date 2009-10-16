@@ -177,6 +177,23 @@ int main(int argc, char* argv[], char* env[]) {
 	correct_path(dlist_fn);
 	global_download_list.from_file(dlist_fn.c_str());
 
+	// Create the needed folders
+	{
+		string dl_folder = global_config.get_cfg_value("download_folder");
+		string log_file = global_config.get_cfg_value("log_file");
+		string dlist = global_config.get_cfg_value("dlist_file");
+		correct_path(dl_folder);
+		mkdir_recursive(dl_folder);
+		if(log_file != "stdout" && log_file != "stderr") {
+			correct_path(log_file);
+			log_file = log_file.substr(0, log_file.find_last_of('/'));
+			mkdir_recursive(log_file);
+		}
+		correct_path(dlist);
+		dlist = dlist.substr(0, dlist.find_last_of('/'));
+		mkdir_recursive(dlist);
+	}
+
 	log_string("DownloadDaemon started successfully", LOG_DEBUG);
 
 	{
