@@ -92,6 +92,7 @@ void log_string(const std::string logstr, LOG_LEVEL level) {
 	} else if(desiredLogFile == "stderr") {
 		cerr << '[' << log_date << "] " << logstr << '\n' << flush;
 	} else {
+		correct_path(desiredLogFile);
 		ofstream ofs(desiredLogFile.c_str(), ios::app);
 		ofs << '[' << log_date << "] " << logstr << '\n' << flush;
 		ofs.close();
@@ -162,6 +163,13 @@ bool router_variable_is_valid(std::string &variable) {
 
 void correct_path(std::string &path) {
 	trim_string(path);
+	if(path.length() == 0) {
+		path = program_root;
+		return;
+	}
+	if(path[0] == '~') {
+		path.replace(0, 1, "$HOME");
+	}
 	substitute_env_vars(path);
 	if(path[0] != '/') {
 		path.insert(0, program_root);
