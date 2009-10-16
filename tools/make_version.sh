@@ -58,7 +58,10 @@ DESC_DDCLIENTWX="With ddclient-wx you can manage your DownloadDaemon
 DESC_DDCONSOLE="with ddclient you can easily manage your
  DownloadDaemon server - even without X"
 
-rm -rf ../version/*-${1}* ../version/debs_${1}
+rm -rf ../version/*-${1}*
+if [ "$UBUNTU_REV" == "1" ]; then
+	rm -rf ../version/debs_${1}
+fi
 
 # ddclient-wx...
 echo "copying ddclient-wx..."
@@ -141,13 +144,15 @@ tar -cz ddclient-php-${1} > ddclient-php-${1}.tar.gz
 
 echo "creating debian packages..."
 mkdir debs_${1}
-cp downloaddaemon-${1}.tar.gz debs_${1}/downloaddaemon_${1}.orig.tar.gz
-cp ddclient-wx-${1}.tar.gz debs_${1}/ddclient-wx_${1}.orig.tar.gz
-cp ddconsole-${1}.tar.gz debs_${1}/ddconsole_${1}.orig.tar.gz
+if [ "$UBUNTU_REV" == "1" ]; then
+	cp downloaddaemon-${1}.tar.gz debs_${1}/downloaddaemon_${1}.orig.tar.gz
+	cp ddclient-wx-${1}.tar.gz debs_${1}/ddclient-wx_${1}.orig.tar.gz
+	cp ddconsole-${1}.tar.gz debs_${1}/ddconsole_${1}.orig.tar.gz
+fi
 cd debs_${1}
-tar xfz downloaddaemon_${1}.orig.tar.gz
-tar xfz ddclient-wx_${1}.orig.tar.gz
-tar xfz ddconsole_${1}.orig.tar.gz
+rm -rf downloaddaemon-${1} ddclient-wx-${1} ddconsole-${1}
+cp -rf ../downloaddaemon-${1} ../ddclient-wx-${1} ../ddconsole-${1} .
+
 cd downloaddaemon-${1}
 echo "Settings for DownloadDaemon:"
 dh_make -s -c gpl -e $2
