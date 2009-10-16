@@ -32,8 +32,8 @@ COPYRIGHT_HOLDERS="Copyright (C) 2009 by Adrian Batzill <adrian # batzill ! com>
     Copyright (C) 2009 by Susanne Eichel <susanne.eichel # web ! de>"
 
 # build dependencies
-BUILDDEP_DD="debhelper (>= 7), cmake, libboost-thread-dev (>=1.37.0) | libboost-thread1.37-dev, libcurl-gnutls-dev"
-BUILDDEP_DDCLIENTWX="debhelper (>= 7), cmake, libboost-thread-dev, libwxbase2.8-dev, libwxgtk2.8-dev"
+BUILDDEP_DD="debhelper (>= 7), cmake, libboost-thread-dev (>=1.37.0) | libboost-thread1.37-dev | libboost-thread1.35-dev, libcurl4-gnutls-dev"
+BUILDDEP_DDCLIENTWX="debhelper (>= 7), cmake, libboost-thread-dev (>=1.37.0) | libboost-thread1.37-dev | libboost-thread1.35-dev, libwxbase2.8-dev, libwxgtk2.8-dev"
 BUILDDEP_DDCONSOLE="debhelper (>= 7), cmake"
 
 # dependencies (leave empty for auto-detection)

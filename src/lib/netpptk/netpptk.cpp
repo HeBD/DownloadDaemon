@@ -65,7 +65,10 @@ const char *inet_ntop(int af, const void *src, char *dst, socklen_t cnt) {
 #endif
 
 
-tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0), auto_accept_thread(0) {
+tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0) {
+	#ifndef NO_BOOST_THREAD
+		auto_accept_thread = 0;
+	#endif
 	valid = false;
 	#ifdef _WIN32
 		if(m_instanceCount == 0) {
@@ -91,7 +94,10 @@ tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0),
 }
 
 tkSock::tkSock(const unsigned int MaxConnections, const unsigned int MaxReceive)
-	: m_maxconnections(MaxConnections), m_maxrecv(MaxReceive), m_open_connections(0), auto_accept_thread(0) {
+	: m_maxconnections(MaxConnections), m_maxrecv(MaxReceive), m_open_connections(0) {
+	#ifndef NO_BOOST_THREAD
+		auto_accept_thread = 0;
+	#endif
 	valid = false;
 	#ifdef _WIN32
 		WORD Version;

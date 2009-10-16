@@ -12,6 +12,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cstdlib>
 #include "../lib/netpptk/netpptk.h"
 using namespace std;
 

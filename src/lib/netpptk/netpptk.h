@@ -13,7 +13,10 @@
 #define NETPPTK_H_
 
 #include <string>
-#include <boost/thread.hpp>
+
+#ifndef NO_BOOST_THREAD
+	#include <boost/thread.hpp>
+#endif
 
 #ifdef _WIN32
 	#include <winsock2.h>
@@ -126,7 +129,9 @@ private:
 	unsigned int m_maxrecv;
 	static int m_instanceCount;
 	unsigned int m_open_connections;
+	#ifndef NO_BOOST_THREAD
 	boost::thread* auto_accept_thread;
+	#endif
 	bool stop_threads;
 	std::string append_header(std::string data);
 	int remove_header(std::string &data);

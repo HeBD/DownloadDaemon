@@ -1,3 +1,7 @@
+2009-10-16
+   [adrian]
+	- fixed libboost-thread dependency bug in ddconsole
+
 2009-10-15
    [adrian]
 	- make_version script now creates complete debian packages
