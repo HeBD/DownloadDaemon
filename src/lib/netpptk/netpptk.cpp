@@ -242,21 +242,27 @@ void tkSock::auto_accept_stop() {
 #endif
 bool tkSock::connect(const std::string &host, const int port) {
 	struct hostent *host_info;
-	unsigned long addr;
-	if((addr = inet_addr(host.c_str())) != INADDR_NONE) {
-		memcpy(reinterpret_cast<char*>(&m_addr.sin_addr), &addr, sizeof(addr));
-	}
-	else {
-		host_info = gethostbyname(host.c_str());
-		if(host_info == NULL) {
-			valid = false;
-			throw SocketError(UNKNOWN_HOST);
-		}
+//	int ret;
+	struct in_addr addr;
+	//int ret;
+	// IPv6 address?
+	if(inet_pton(AF_INET6, host.c_str(), &m_addr.sin6_addr) <= 0) {
+		// IPv4 address?
+		if(inet_pton(AF_INET, host.c_str(), &addr) <= 0) {
+			host_info = gethostbyname2(host.c_str(), AF_INET6);
+			if(host_info == NULL) {
+				valid = false;
+				throw SocketError(UNKNOWN_HOST);
+			}
 
-		memcpy(reinterpret_cast<char*>(&m_addr.sin_addr), host_info->h_addr, host_info->h_length);
+			memcpy(reinterpret_cast<char*>(&m_addr.sin6_addr), host_info->h_addr, host_info->h_length);
+		} else {
+			std::string tmp_host("::FFFF:" + host);
+			inet_pton(AF_INET6, tmp_host.c_str(), &m_addr.sin6_addr);
+		}
 	}
-	m_addr.sin_family = AF_INET6;
-	m_addr.sin_port = htons(port);
+	m_addr.sin6_family = AF_INET6;
+	m_addr.sin6_port = htons(port);
 	if(this) {
 		disconnect();
 	}

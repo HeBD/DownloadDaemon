@@ -1,3 +1,7 @@
+2009-10-17
+   [adrian]
+	- fixed connect() for AF_INET6 in netpptk
+
 2009-10-16
    [adrian]
 	- fixed libboost-thread dependency bug in ddconsole
