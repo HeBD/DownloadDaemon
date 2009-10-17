@@ -1,6 +1,6 @@
 2009-10-17
    [adrian]
-	- fixed connect() for AF_INET6 in netpptk
+	- reverted IPv6 compatibility because of problems on Windows
 
 2009-10-16
    [adrian]
