@@ -80,7 +80,7 @@ tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0) 
 			}
 		}
 	#endif
-	m_sock = ::socket(AF_INET6, SOCK_STREAM, 0);
+	m_sock = ::socket(AF_INET, SOCK_STREAM, 0);
 
 	if(m_sock <= 0) {
 		throw SocketError(SOCKET_CREATION_FAILED);
@@ -109,7 +109,10 @@ tkSock::tkSock(const unsigned int MaxConnections, const unsigned int MaxReceive)
 		}
 	#endif
 
-	m_sock = ::socket(AF_INET6, SOCK_STREAM, 0);
+	if(m_maxrecv > 9999) {
+		m_maxrecv = 9999;
+	}
+	m_sock = ::socket(AF_INET, SOCK_STREAM, 0);
 
 	if(m_sock < 0) {
 		throw SocketError(SOCKET_CREATION_FAILED);
@@ -142,7 +145,7 @@ bool tkSock::bind(const int port) {
 	addrinfo hints;
 	memset(&hints, 0, sizeof(hints));
 	addrinfo *res;
-	hints.ai_family = AF_INET6;
+	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 	std::stringstream ss;
@@ -242,27 +245,21 @@ void tkSock::auto_accept_stop() {
 #endif
 bool tkSock::connect(const std::string &host, const int port) {
 	struct hostent *host_info;
-//	int ret;
-	struct in_addr addr;
-	//int ret;
-	// IPv6 address?
-	if(inet_pton(AF_INET6, host.c_str(), &m_addr.sin6_addr) <= 0) {
-		// IPv4 address?
-		if(inet_pton(AF_INET, host.c_str(), &addr) <= 0) {
-			host_info = gethostbyname2(host.c_str(), AF_INET6);
-			if(host_info == NULL) {
-				valid = false;
-				throw SocketError(UNKNOWN_HOST);
-			}
-
-			memcpy(reinterpret_cast<char*>(&m_addr.sin6_addr), host_info->h_addr, host_info->h_length);
-		} else {
-			std::string tmp_host("::FFFF:" + host);
-			inet_pton(AF_INET6, tmp_host.c_str(), &m_addr.sin6_addr);
-		}
+	unsigned long addr;
+	if((addr = inet_addr(host.c_str())) != INADDR_NONE) {
+		memcpy(reinterpret_cast<char*>(&m_addr.sin_addr), &addr, sizeof(addr));
 	}
-	m_addr.sin6_family = AF_INET6;
-	m_addr.sin6_port = htons(port);
+	else {
+		host_info = gethostbyname(host.c_str());
+		if(host_info == NULL) {
+			valid = false;
+			throw SocketError(UNKNOWN_HOST);
+		}
+
+		memcpy(reinterpret_cast<char*>(&m_addr.sin_addr), host_info->h_addr, host_info->h_length);
+	}
+	m_addr.sin_family = AF_INET;
+	m_addr.sin_port = htons(port);
 	if(this) {
 		disconnect();
 	}
@@ -281,7 +278,7 @@ void tkSock::disconnect() {
 	#else
 		close(m_sock);
 	#endif
-	m_sock = ::socket(AF_INET6, SOCK_STREAM, 0);
+	m_sock = ::socket(AF_INET, SOCK_STREAM, 0);
 
 	if(m_sock <= 0) {
 		throw SocketError(SOCKET_CREATION_FAILED);

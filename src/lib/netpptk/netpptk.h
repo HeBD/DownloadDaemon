@@ -124,7 +124,7 @@ private:
 	void handle_wrapper(tkSock *sock, void(*handle) (tkSock*));
 	int m_sock; // Socket descriptor
 	bool valid;
-	sockaddr_in6 m_addr;
+	sockaddr_in m_addr;
 	unsigned int m_maxconnections;
 	unsigned int m_maxrecv;
 	static int m_instanceCount;
