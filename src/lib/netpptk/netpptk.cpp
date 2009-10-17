@@ -9,7 +9,7 @@
  * GNU General Public License for more details.
  */
 
-#include "netpptk.h"
+
 #include <sstream>
 #include <cstring>
 #include <vector>
@@ -20,6 +20,7 @@
 #endif
 
 #ifdef _WIN32
+    #define WINVER 0x0501
 	#include <windows.h>
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
@@ -36,6 +37,8 @@
 #ifndef MSG_NOSIGNAL
 	#define MSG_NOSIGNAL 0
 #endif
+
+#include "netpptk.h"
 
 // Static socket-instance counter (needed for the Windows-init, and cleanup code)
 int tkSock::m_instanceCount = 0;
