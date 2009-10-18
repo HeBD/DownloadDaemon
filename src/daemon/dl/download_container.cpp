@@ -191,7 +191,7 @@ int download_container::get_next_downloadable(bool do_lock) {
 
 	// Checking if we are in download-time...
 	std::string dl_start(global_config.get_cfg_value("download_timing_start"));
-	if(global_config.get_cfg_value("download_timing_start").find(':') != std::string::npos && !global_config.get_cfg_value("download_timing_end").find(':') != std::string::npos ) {
+	if(global_config.get_cfg_value("download_timing_start").find(':') != std::string::npos && global_config.get_cfg_value("download_timing_end").find(':') != std::string::npos ) {
 		time_t rawtime;
 		struct tm * current_time;
 		time ( &rawtime );
