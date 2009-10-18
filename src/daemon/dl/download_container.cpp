@@ -248,8 +248,6 @@ int download_container::get_next_downloadable(bool do_lock) {
 				}
 				if(it2->get_host() == current_host && (it2->get_status() == DOWNLOAD_RUNNING || it2->get_status() == DOWNLOAD_WAITING || it2->is_running)
 				   && !it2->get_hostinfo().allows_multiple) {
-				   	download blah(*it);
-				   	download blub(*it2);
 					can_attach = false;
 					break;
 				}
