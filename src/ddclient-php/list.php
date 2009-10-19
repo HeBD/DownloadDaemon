@@ -79,7 +79,7 @@ include("functional.php");
 					} else {
 						echo "<td bgcolor=\"lime\">";
 						if($exp_dls[$i][6] == 0) {
-							echo "Starting download...";
+							echo "Running, fetched " . number_format($exp_dls[$i][5] / 1048576, 1) . "MB";
 						} else {
 							echo "Running@" . number_format($exp_dls[$i][9] / 1024) . "kb/s - " . number_format($exp_dls[$i][5] / $exp_dls[$i][6] * 100, 1) . "% - " 
 							      . number_format($exp_dls[$i][5] / 1048576, 1) . "MB/" . number_format($exp_dls[$i][6] / 1048576, 1) . "MB";

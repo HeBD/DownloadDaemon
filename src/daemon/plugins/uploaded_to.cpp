@@ -59,6 +59,11 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_LIMIT_REACHED;
 	}
 
+	if(resultstr.find("Just <b>1</b> download is possible at the same time for free user") != string::npos) {
+		set_wait_time(20);
+		return PLUGIN_ERROR;
+	}
+
 	if((pos = resultstr.find("name=\"download_form\"")) == std::string::npos || resultstr.find("Filename:") == std::string::npos) {
 		return PLUGIN_ERROR;
 	}
