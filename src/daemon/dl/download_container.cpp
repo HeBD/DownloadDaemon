@@ -177,15 +177,17 @@ int download_container::deactivate(int id) {
 
 int download_container::get_next_downloadable(bool do_lock) {
 	if(do_lock) {
-		boost::mutex::scoped_lock lock(download_mutex);
+		download_mutex.lock();
 	}
 	if(is_reconnecting) {
+		download_mutex.unlock();
 		return LIST_ID;
 	}
 
 	download_container::iterator downloadable = download_list.end();
 	if(download_list.empty() || running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())
 	   || global_config.get_cfg_value("downloading_active") == "0") {
+	   	download_mutex.unlock();
 		return LIST_ID;
 	}
 
@@ -204,33 +206,40 @@ int download_container::get_next_downloadable(bool do_lock) {
 		// we have a 0:00 shift
 		if(starthours > endhours) {
 			if(current_time->tm_hour < starthours && current_time->tm_hour > endhours) {
+				download_mutex.unlock();
 				return LIST_ID;
 			}
 			if(current_time->tm_hour == starthours) {
 				if(current_time->tm_min < startminutes) {
+					download_mutex.unlock();
 					return LIST_ID;
 				}
 			} else if(current_time->tm_hour == endhours) {
 				if(current_time->tm_min > endminutes) {
+					download_mutex.unlock();
 					return LIST_ID;
 				}
 			}
 		// download window are just a few minutes
 		} else if(starthours == endhours) {
 			if(current_time->tm_min < startminutes || current_time->tm_min > endminutes) {
+				download_mutex.unlock();
 				return LIST_ID;
 			}
 		// no 0:00 shift
 		} else if(starthours < endhours) {
 			if(current_time->tm_hour < starthours || current_time->tm_hour > endhours) {
+				download_mutex.unlock();
 				return LIST_ID;
 			}
 			if(current_time->tm_hour == starthours) {
 				if(current_time->tm_min < startminutes) {
+					download_mutex.unlock();
 					return LIST_ID;
 				}
 			} else if(current_time->tm_hour == endhours) {
 				if(current_time->tm_min > endminutes) {
+					download_mutex.unlock();
 					return LIST_ID;
 				}
 			}
@@ -253,10 +262,12 @@ int download_container::get_next_downloadable(bool do_lock) {
 				}
 			}
 			if(can_attach) {
+				download_mutex.unlock();
 				return it->id;
 			}
 		}
 	}
+	download_mutex.unlock();
 	return LIST_ID;
 }
 #endif // IS_PLUGIN
@@ -799,7 +810,7 @@ bool download_container::dump_to_file() {
 int download_container::running_downloads() {
 	int running_dls = 0;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(it->get_status() == DOWNLOAD_RUNNING) {
+		if(it->is_running) {
 			++running_dls;
 		}
 	}

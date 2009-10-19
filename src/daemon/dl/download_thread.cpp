@@ -48,7 +48,7 @@ void start_next_download() {
  */
 void download_thread(int download) {
 	plugin_output plug_outp;
-	plugin_status success = global_download_list.prepare_download(download, plug_outp);
+	int success = global_download_list.prepare_download(download, plug_outp);
 	if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
 		return;
 	}
@@ -65,8 +65,8 @@ void download_thread(int download) {
 		break;
 		case PLUGIN_INVALID_PATH:
 			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
-			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			log_string("Could not locate plugin folder!", LOG_SEVERE);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			exit(-1);
 		break;
 		case PLUGIN_MISSING:
@@ -213,7 +213,6 @@ void download_thread(int download) {
 		switch(http_code) {
 			case 401:
 				log_string(std::string("Invalid premium account credentials, ID: ") + int_to_string(download), LOG_WARNING);
-				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				wait = atol(global_config.get_cfg_value("auth_fail_wait").c_str());
 				if(wait == 0) {
 					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
@@ -221,10 +220,10 @@ void download_thread(int download) {
 					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
 					global_download_list.set_int_property(download, DL_WAIT_SECONDS, wait);
 				}
+				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				return;
 			case 404:
 				log_string(std::string("File not found, ID: ") + int_to_string(download), LOG_WARNING);
-				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
 				global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_FILE_NOT_FOUND);
 				string file(global_download_list.get_string_property(download, DL_OUTPUT_FILE));
@@ -232,14 +231,15 @@ void download_thread(int download) {
 					remove(file.c_str());
 					global_download_list.set_string_property(download, DL_OUTPUT_FILE, "");
 				}
+				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				return;
 		}
 
 		switch(success) {
 			case 0:
 				log_string(std::string("Finished download ID: ") + int_to_string(download), LOG_DEBUG);
-				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_FINISHED);
+				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				return;
 			case 28:
 				if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE) {
