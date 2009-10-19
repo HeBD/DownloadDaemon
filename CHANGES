@@ -1,3 +1,7 @@
+2009-10-19
+   [adrian]
+	- fixed incorrect DL_PLUGIN_STATUS settings in some cases (preventing from correct reconnect_needed detection)
+
 2009-10-17
    [adrian]
 	- reverted IPv6 compatibility because of problems on Windows

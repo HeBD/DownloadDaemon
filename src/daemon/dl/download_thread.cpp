@@ -48,23 +48,22 @@ void start_next_download() {
  */
 void download_thread(int download) {
 	plugin_output plug_outp;
-	int success = global_download_list.prepare_download(download, plug_outp);
+	plugin_status success = global_download_list.prepare_download(download, plug_outp);
 	if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
 		return;
 	}
 	// Used later as temporary variable for all the <error>_wait config variables to save I/O
 	long wait;
+	global_download_list.set_int_property(download, DL_PLUGIN_STATUS, success);
 
 	switch(success) {
 		case PLUGIN_INVALID_HOST:
-			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_INVALID_HOST);
 			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
 			log_string(std::string("Invalid host for download ID: ") + int_to_string(download), LOG_WARNING);
 			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		break;
 		case PLUGIN_INVALID_PATH:
-			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_INVALID_PATH);
 			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
 			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			log_string("Could not locate plugin folder!", LOG_SEVERE);
@@ -73,14 +72,12 @@ void download_thread(int download) {
 		case PLUGIN_MISSING:
 			// Deprecated: When a plugin is missing, the page will be downloaded directly
 			// May be removed soon
-			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_MISSING);
 			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
 			log_string(std::string("Plugin missing for download ID: ") + int_to_string(download), LOG_WARNING);
 			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
 		break;
 		case PLUGIN_AUTH_FAIL:
-			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_AUTH_FAIL);
 			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
 			wait = atol(global_config.get_cfg_value("auth_fail_wait").c_str());
 			if(wait == 0) {
@@ -95,7 +92,6 @@ void download_thread(int download) {
 	}
 
 	if(success == PLUGIN_SUCCESS) {
-		global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_SUCCESS);
 		log_string(std::string("Successfully parsed download ID: ") + int_to_string(download), LOG_DEBUG);
 		if(global_download_list.get_int_property(download, DL_WAIT_SECONDS) > 0) {
 
@@ -225,7 +221,6 @@ void download_thread(int download) {
 					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
 					global_download_list.set_int_property(download, DL_WAIT_SECONDS, wait);
 				}
-				global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_AUTH_FAIL);
 				return;
 			case 404:
 				log_string(std::string("File not found, ID: ") + int_to_string(download), LOG_WARNING);
