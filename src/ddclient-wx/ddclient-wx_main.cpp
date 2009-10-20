@@ -410,6 +410,9 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 		color = "GREEN";
 		status_text = "Download Finished.";
 
+	}else if(splitted_line[4] == "DOWNLOAD_RECONNECTING") {
+		color = "YELLOW";
+		status_text = "Reconnecting...";
 	}else{ // default, column 4 has unknown input
 		status_text = "Status not detected.";
 	}

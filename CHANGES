@@ -1,3 +1,8 @@
+2009-10-20
+   [adrian]
+	- added status DOWNLOAD_RECONNECTING to ddclient-wx
+	- made ddconsole less case sensitive
+
 2009-10-19
    [adrian]
 	- fixed race condition resulting in get_next_downloadable returning wrong download IDs

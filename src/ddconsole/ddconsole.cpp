@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <algorithm>
 #include "../lib/netpptk/netpptk.h"
 using namespace std;
 
@@ -121,7 +122,7 @@ int main(int argc, char* argv[]) {
 			cout << "Commands for ddconsole:" << endl;
 			cout << "\texit/quit\t\tdisconnect and exit ddconsole" << endl;
 			cout << "\tconnect <host> [port]\tConnect to DownloadDaemon (port is optional)\n" << endl;
-			cout << "Commands to be sent to DownloadDaemon:" << endl;
+			cout << "Commands to be sent to DownloadDaemon (command is not case sensitive, parameters are case sensitive):" << endl;
 			cout << "General command structure: <target> <command> <parameters> " << endl;
 			cout << "Targets are DL for downloads, VAR for configuration variables, FILE for downloaded files, ROUTER for router configuration" << endl;
 			cout << "and PREMIUM for premium account setup" << endl;
@@ -211,7 +212,12 @@ void connect_request(tkSock &sock, std::string &host, const std::string &port, s
 }
 
 void send_command(tkSock &sock, const std::string &command) {
-	std::string snd = command;
+	std::string snd(command);
+
+	// make first 2 words upper case
+	size_t pos = snd.find_first_of(" \n\r\t\0", snd.find_first_of(" \n\r\t\0") + 1);
+	string::iterator end_it = snd.begin() + pos;
+	std::transform(snd.begin(), pos == string::npos ? snd.end() : end_it, snd.begin(), ::toupper);
 	snd.insert(0, "DDP ");
 	sock << snd;
 }
