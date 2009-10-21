@@ -233,9 +233,10 @@ void download_thread(int download) {
 			case 0:
 				log_string(std::string("Finished download ID: ") + int_to_string(download), LOG_DEBUG);
 				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_FINISHED);
-				// RENAME .part FILE HERE!! and change DL_OUTPUT_FILE
 				if(rename(output_filename.c_str(), final_filename.c_str()) != 0) {
 					log_string(std::string("Unable to rename .part file. You can do so manually."), LOG_SEVERE);
+				} else {
+					global_download_list.set_string_property(download, DL_OUTPUT_FILE, final_filename);
 				}
 				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				return;
