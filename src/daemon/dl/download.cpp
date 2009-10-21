@@ -151,9 +151,6 @@ const char* download::get_error_str() {
 	switch(error) {
 		case PLUGIN_SUCCESS:
 			return "PLUGIN_SUCCESS";
-		case PLUGIN_MISSING:
-			// Deprecated -> generic download will be used if no plugin found
-			return "Plugin missing";
 		case PLUGIN_INVALID_HOST:
 			return "Invalid hostname";
 		case PLUGIN_INVALID_PATH:

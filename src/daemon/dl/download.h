@@ -19,7 +19,7 @@
 
 enum download_status { DOWNLOAD_PENDING = 1, DOWNLOAD_INACTIVE, DOWNLOAD_FINISHED, DOWNLOAD_RUNNING, DOWNLOAD_WAITING, DOWNLOAD_DELETED, DOWNLOAD_RECONNECTING };
 enum plugin_status { PLUGIN_SUCCESS = 1, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,
-					 PLUGIN_MISSING, PLUGIN_INVALID_HOST, PLUGIN_INVALID_PATH, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR, PLUGIN_AUTH_FAIL };
+					 PLUGIN_INVALID_HOST, PLUGIN_INVALID_PATH, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR, PLUGIN_AUTH_FAIL };
 
 struct plugin_output {
 	std::string download_url;
@@ -47,7 +47,7 @@ public:
 	*/
 	download(std::string &serializedDL);
 
-	/** Copy constructor because we are not allowed to copy a boost::mutex
+	/** Copy constructor because of CURL* handles
 	* @param dl Download object to copy
 	*/
 	download(const download& dl);
@@ -69,11 +69,6 @@ public:
 	* @param serializedDL Serialized download
 	*/
 	void from_serialized(std::string &serializedDL);
-
-	/** execute the correct plugin with parameters and return information on the download
-	* @returns success status
-	*/
-	//plugin_status get_download(plugin_output &outp);
 
 	/** Serialize the download object to store it in the file
 	* @returns The serialized string

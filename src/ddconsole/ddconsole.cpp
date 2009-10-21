@@ -14,6 +14,7 @@
 #include <string>
 #include <cstdlib>
 #include <algorithm>
+#include <iomanip>
 #include "../lib/netpptk/netpptk.h"
 using namespace std;
 
@@ -120,33 +121,33 @@ int main(int argc, char* argv[]) {
 		if(snd == "help" || snd == "?") {
 			cout << "There are commands for ddconsole and there are commands for a connected DownloadDaemon." << endl;
 			cout << "Commands for ddconsole:" << endl;
-			cout << "\texit/quit\t\tdisconnect and exit ddconsole" << endl;
-			cout << "\tconnect <host> [port]\tConnect to DownloadDaemon (port is optional)\n" << endl;
+			cout << setw(30) << left << "exit/quit" << "disconnect and exit ddconsole" << endl;
+			cout << setw(30) << left << "connect <host> [port]" << "Connect to DownloadDaemon (port is optional)\n" << endl;
 			cout << "Commands to be sent to DownloadDaemon (command is not case sensitive, parameters are case sensitive):" << endl;
 			cout << "General command structure: <target> <command> <parameters> " << endl;
 			cout << "Targets are DL for downloads, VAR for configuration variables, FILE for downloaded files, ROUTER for router configuration" << endl;
 			cout << "and PREMIUM for premium account setup" << endl;
 			cout << "Possible commands:" << endl;
-			cout << "DL LIST\t\t\t\t Dumps the current download list" << endl;
-			cout << "DL ADD <url> <comment>\t\t Add a download" << endl;
-			cout << "DL DEL <id>\t\t\t Deletes a download (get ID from DL LIST)" << endl;
-			cout << "DL STOP <id>\t\t\t Stops a download" << endl;
-			cout << "DL UP <id>\t\t\t moves a download up" << endl;
-			cout << "DL DOWN <id>\t\t\t moves a download down" << endl;
-			cout << "DL ACTIVATE <id>\t\t activates a download" << endl;
-			cout << "DL DEACTIVATE <id>\t\t deactivates a download" << endl;
-			cout << "VAR SET <var>=<value>\t sets a configuration variable (<variable> needs to have the identifier of a variable in downloaddaemon.conf)" << endl;
-			cout << "VAR GET <var>\t\t get the value of a configuration variable" << endl;
-			cout << "FILE DEL <id>\t\t\t delete the file corresponding to the given download id" << endl;
-			cout << "FILE GETPATH <id>\t\t returns the path on the local filesystem of the downloaded file or an empty string if it does not exsist yet" << endl;
-			cout << "FILE GETSIZE <id>\t\t returns the file-size of the file corresponding to the given ID" << endl;
-			cout << "ROUTER LIST\t\t returns a list of supported router models" << endl;
-			cout << "ROUTER SETMODEL <model>\t sets the router model" << endl;
-			cout << "ROUTER SET <var>=<value>\t sets a router configuration varialbe" << endl;
-			cout << "ROUTER GET <var>\t\t returns the value of a router configuration variable" << endl;
-			cout << "PREMIUM LIST\t\t\t returns a list of hosts that support premium setup (only if the plugin supports it)" << endl;
-			cout << "PREMIUM SET <host> <user>;<password>\t sets up premium account information for <host>" << endl;
-			cout << "PREMIUM GET <host>\t\t returns the username specified for <host>. Passwords can not be retrieved" << endl;
+			cout << setw(30) << left << "DL LIST" << "Dumps the current download list" << endl;
+			cout << setw(30) << left << "DL ADD <url> <comment>" << "Add a download" << endl;
+			cout << setw(30) << left << "DL DEL <id>" << "Deletes a download (get ID from DL LIST)" << endl;
+			cout << setw(30) << left << "DL STOP <id>" << "Stops a download" << endl;
+			cout << setw(30) << left << "DL UP <id>" << "moves a download up" << endl;
+			cout << setw(30) << left << "DL DOWN <id>" << "moves a download down" << endl;
+			cout << setw(30) << left << "DL ACTIVATE <id>" << "activates a download" << endl;
+			cout << setw(30) << left << "DL DEACTIVATE <id>" << "deactivates a download" << endl;
+			cout << setw(30) << left << "VAR SET <var>=<value>" << "sets a configuration variable (<variable> needs to have the identifier of a variable in downloaddaemon.conf)" << endl;
+			cout << setw(30) << left << "VAR GET <var>" << "get the value of a configuration variable" << endl;
+			cout << setw(30) << left << "FILE DEL <id>" << "delete the file corresponding to the given download id" << endl;
+			cout << setw(30) << left << "FILE GETPATH <id>" << "returns the path on the local filesystem of the downloaded file or an empty string if it does not exsist yet" << endl;
+			cout << setw(30) << left << "FILE GETSIZE <id>" << "returns the file-size of the file corresponding to the given ID" << endl;
+			cout << setw(30) << left << "ROUTER LIST" << "returns a list of supported router models" << endl;
+			cout << setw(30) << left << "ROUTER SETMODEL <model>" << "sets the router model" << endl;
+			cout << setw(30) << left << "ROUTER SET <var>=<value>" << "sets a router configuration varialbe" << endl;
+			cout << setw(30) << left << "ROUTER GET <var>" << "returns the value of a router configuration variable" << endl;
+			cout << setw(30) << left << "PREMIUM LIST" << "returns a list of hosts that support premium setup (only if the plugin supports it)" << endl;
+			cout << setw(30) << left << "PREMIUM SET <host> <usr>;<pw>" << "sets up premium account information for <host>" << endl;
+			cout << setw(30) << left << "PREMIUM GET <host>" << "returns the username specified for <host>. Passwords can not be retrieved" << endl;
 			continue;
 		}
 

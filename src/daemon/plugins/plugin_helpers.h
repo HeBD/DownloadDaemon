@@ -19,14 +19,15 @@
 
 /*
 	The following types are imported from download.h and may be/have to be used for writing plugins:
-	enum plugin_status { PLUGIN_SUCCESS = 1, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,
-					 PLUGIN_MISSING, PLUGIN_INVALID_HOST, PLUGIN_INVALID_PATH, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR };
+enum plugin_status { PLUGIN_SUCCESS = 1, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,
+					 PLUGIN_INVALID_HOST, PLUGIN_INVALID_PATH, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR, PLUGIN_AUTH_FAIL };
 
 struct plugin_output {
 	std::string download_url;
 	std::string download_filename;
 	bool allows_resumption;
 	bool allows_multiple;
+	bool offers_premium;
 };
 
 struct plugin_input {
@@ -60,5 +61,9 @@ const char* get_url() {
 CURL* get_handle() {
 	return list->get_pointer_property(dlid, DL_HANDLE);
 }
+
+#define IS_PLUGIN
+// I know, this looks ugly, but it does the job and seems to be okay in this case
+#include "../dl/download_container.cpp"
 
 #endif // PLUGIN_HELPERS_H_INCLUDED

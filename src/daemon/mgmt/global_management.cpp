@@ -27,7 +27,9 @@
 using namespace std;
 
 void do_once_per_second() {
-	global_download_list.decrease_waits();
-	global_download_list.purge_deleted();
-	start_next_download();
+	if(global_download_list.total_downloads() > 0) {
+		global_download_list.decrease_waits();
+		global_download_list.purge_deleted();
+		start_next_download();
+	}
 }

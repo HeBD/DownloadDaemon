@@ -69,14 +69,6 @@ void download_thread(int download) {
 			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			exit(-1);
 		break;
-		case PLUGIN_MISSING:
-			// Deprecated: When a plugin is missing, the page will be downloaded directly
-			// May be removed soon
-			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
-			log_string(std::string("Plugin missing for download ID: ") + int_to_string(download), LOG_WARNING);
-			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
-			return;
-		break;
 		case PLUGIN_AUTH_FAIL:
 			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
 			wait = atol(global_config.get_cfg_value("auth_fail_wait").c_str());
@@ -134,6 +126,8 @@ void download_thread(int download) {
 			output_filename += '/' + plug_outp.download_filename;
 		}
 
+		std::string final_filename(output_filename);
+		output_filename += ".part";
 
 		struct stat st;
 
@@ -148,7 +142,7 @@ void download_thread(int download) {
 			// Check if the file should be overwritten if it exists
 			string overwrite(global_config.get_cfg_value("overwrite_files"));
 			if(overwrite == "0" || overwrite == "false" || overwrite == "no") {
-				if(stat(output_filename.c_str(), &st) == 0) {
+				if(stat(final_filename.c_str(), &st) == 0) {
 					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
 					global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_WRITE_FILE_ERROR);
 					global_download_list.set_int_property(download, DL_IS_RUNNING, false);
@@ -239,14 +233,16 @@ void download_thread(int download) {
 			case 0:
 				log_string(std::string("Finished download ID: ") + int_to_string(download), LOG_DEBUG);
 				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_FINISHED);
+				// RENAME .part FILE HERE!! and change DL_OUTPUT_FILE
+				if(rename(output_filename.c_str(), final_filename.c_str()) != 0) {
+					log_string(std::string("Unable to rename .part file. You can do so manually."), LOG_SEVERE);
+				}
 				global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 				return;
 			case 28:
 				if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE) {
 					log_string(std::string("Stopped download ID: ") + int_to_string(download), LOG_WARNING);
-				} else if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
-					// nothing to do
-				} else {
+				} else if(global_download_list.get_int_property(download, DL_STATUS) != DOWNLOAD_DELETED) {
 					log_string(std::string("Connection lost for download ID: ") + int_to_string(download), LOG_WARNING);
 					global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_CONNECTION_LOST);
 					wait = atol(global_config.get_cfg_value("connection_lost_wait").c_str());
