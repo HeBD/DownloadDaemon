@@ -81,6 +81,34 @@ void download_thread(int download) {
 			log_string(std::string("Premium authentication failed for download ") + int_to_string(download), LOG_WARNING);
 			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
 			return;
+		case PLUGIN_SERVER_OVERLOADED:
+			log_string(std::string("Server overloaded for download ID: ") + int_to_string(download), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_WAITING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+			return;
+		case PLUGIN_LIMIT_REACHED:
+			log_string(std::string("Download limit reached for download ID: ") + int_to_string(download) + " (" + global_download_list.get_host(download) + ")", LOG_WARNING);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_WAITING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+			return;
+		// do the same for both
+		case PLUGIN_CONNECTION_ERROR:
+		case PLUGIN_CONNECTION_LOST:
+			log_string(std::string("Plugin failed to connect for ID:") + int_to_string(download), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+			global_download_list.set_int_property(download, DL_WAIT_SECONDS, 10);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+			return;
+		case PLUGIN_FILE_NOT_FOUND:
+			log_string(std::string("File could not be found on the server for ID: ") + int_to_string(download), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+			return;
+		case PLUGIN_ERROR:
+			log_string("An error occured on download ID: " + int_to_string(download), LOG_WARNING);
+			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+			return;
 	}
 
 	if(success == PLUGIN_SUCCESS) {
@@ -270,34 +298,10 @@ void download_thread(int download) {
 				return;
 		}
 	} else {
-		if(success == PLUGIN_SERVER_OVERLOADED) {
-			log_string(std::string("Server overloaded for download ID: ") + int_to_string(download), LOG_WARNING);
-			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_WAITING);
-			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
-			return;
-		} else if(success == PLUGIN_LIMIT_REACHED) {
-			log_string(std::string("Download limit reached for download ID: ") + int_to_string(download) + " (" + global_download_list.get_host(download) + ")", LOG_WARNING);
-			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_WAITING);
-			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
-			return;
-		} else if(success == PLUGIN_CONNECTION_ERROR) {
-			log_string(std::string("Plugin failed to connect for ID:") + int_to_string(download), LOG_WARNING);
-			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_CONNECTION_ERROR);
-			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
-			global_download_list.set_int_property(download, DL_WAIT_SECONDS, 10);
-			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
-			return;
-		} else if(success == PLUGIN_FILE_NOT_FOUND) {
-			log_string(std::string("File could not be found on the server for ID: ") + int_to_string(download), LOG_WARNING);
-			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_FILE_NOT_FOUND);
-			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
-			global_download_list.set_int_property(download, DL_IS_RUNNING, false);
-			return;
-		}
+		log_string("Plugin returned an invalid/unhandled status. Please report! (status returned: " + int_to_string(success) + ")", LOG_SEVERE);
+		global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+		global_download_list.set_int_property(download, DL_WAIT_SECONDS, 30);
+		global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+		return;
 	}
-	// something weird happened...
-	global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
-	global_download_list.set_int_property(download, DL_WAIT_SECONDS, 30);
-	global_download_list.set_int_property(download, DL_IS_RUNNING, false);
-	return;
 }
