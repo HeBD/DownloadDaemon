@@ -210,10 +210,6 @@ void download::set_status(download_status st) {
 	}
 }
 
-download_status download::get_status() {
-	return status;
-}
-
 plugin_output download::get_hostinfo() {
 	plugin_input inp;
 	plugin_output outp;

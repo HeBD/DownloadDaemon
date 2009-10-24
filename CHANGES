@@ -1,3 +1,7 @@
+2009-10-24
+   [adrian]
+	- finally got rid of get_status symbol-missing errors for plugins (by using inline getter)
+
 2009-10-22
    [adrian]
 	- cleanups and fixes in download thread

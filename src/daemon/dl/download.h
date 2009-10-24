@@ -98,7 +98,7 @@ public:
 	/** Returns the status of a download
 	* @returns Download status
 	*/
-	download_status get_status();
+	download_status get_status() {return status;}
 
 	/** gives info about the host of this download (continue downloads, parallel downloads, premium, ...)
 	*	@returns the info
