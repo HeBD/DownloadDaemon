@@ -1,3 +1,7 @@
+2009-10-27
+   [susanne]
+	- picture fixes at ddclient-wx
+
 2009-10-24
    [adrian]
 	- finally got rid of get_status symbol-missing errors for plugins (by using inline getter)

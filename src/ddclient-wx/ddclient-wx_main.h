@@ -108,7 +108,6 @@ class myframe : public wxFrame{
 		wxListCtrl *list;
 
 		// element IDs
-		static const long id_menu_quit;
 		static const long id_menu_about;
 		static const long id_menu_select_all_lines;
 		static const long id_toolbar_connect;

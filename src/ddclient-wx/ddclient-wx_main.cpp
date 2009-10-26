@@ -15,7 +15,6 @@
 #endif
 
 // IDs
-const long myframe::id_menu_quit = wxNewId();
 const long myframe::id_menu_about = wxNewId();
 const long myframe::id_menu_select_all_lines = wxNewId();
 const long myframe::id_toolbar_connect = wxNewId();
@@ -40,7 +39,7 @@ DEFINE_LOCAL_EVENT_TYPE(wxEVT_reload_list)
 
 // event table (has to be after creating IDs, won't work otherwise)
 BEGIN_EVENT_TABLE(myframe, wxFrame)
-	EVT_MENU(id_menu_quit, myframe::on_quit)
+	EVT_MENU(wxID_EXIT, myframe::on_quit)
 	EVT_MENU(id_menu_about, myframe::on_about)
 	EVT_MENU(id_menu_select_all_lines, myframe::on_select_all_lines)
 	EVT_MENU(id_toolbar_connect, myframe::on_connect)
@@ -200,7 +199,7 @@ void myframe::add_bars(){
 	file_menu->Append(id_menu_select_all_lines, wxT("&Select all\tCtrl-A"), wxT("Select all"));
 	file_menu->AppendSeparator();
 
-	file_menu->Append(id_menu_quit, wxT("&Quit\tAlt-F4"), wxT("Quit"));
+	file_menu->Append(wxID_EXIT, wxT("&Quit\tAlt-F4"), wxT("Quit"));
 	menu->Append(file_menu, wxT("&File"));
 
 	help_menu = new wxMenu(_T(""));
@@ -923,7 +922,7 @@ void myframe::on_reload(wxEvent &event){
 }
 
 
-// getter and setter methodsget_content
+// getter and setter
 void myframe::set_connection_attributes(tkSock *mysock, string password){
 	this->mysock = mysock;
 }
