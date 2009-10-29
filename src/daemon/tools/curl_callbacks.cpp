@@ -53,10 +53,13 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	}
 
 	struct stat st;
-	if(stat(output_file.c_str(), &st) == 0) {
-		global_download_list.set_int_property(id, DL_DOWNLOADED_BYTES, st.st_size);
-	} else {
+	if(dlnow > 0) {
 		global_download_list.set_int_property(id, DL_DOWNLOADED_BYTES, dlnow);
+	} else {
+		if(stat(output_file.c_str(), &st) == 0) {
+			global_download_list.set_int_property(id, DL_DOWNLOADED_BYTES, st.st_size);
+		}
 	}
+
 	return 0;
 }

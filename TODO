@@ -3,3 +3,4 @@
 - handle container formats of other downloaders (mainly ccf and rsdf. won't support DLC because it's not open-source friendly)
 - speed regulation (for now impossible because of libcurl bugs I can't fix)
 - Make a multiuser-system out of downloaddaemon with partly individual configuration (download-folder) and administration...
+- do NOT initialize curl handles in the download constructors. instead, initialize them locally when neede for plugin/download

@@ -89,10 +89,17 @@ int download_container::move_up(int id) {
 			return LIST_ID;
 		}
 	}
+	download_container::iterator first, second;
+	first = download_list.begin();
+	second = download_list.begin();
+	for(int i = 0; i < location1; ++i)
+		++first;
+	for(int i = 0; i < location2; ++i)
+		++second;
 
-	swap(download_list[location1], download_list[location2]);
+	iter_swap(first, second);
 	if(!dump_to_file()) {
-		swap(download_list[location1], download_list[location2]);
+		iter_swap(second, first);
 		return LIST_PERMISSION;
 	}
 	return LIST_SUCCESS;
@@ -108,7 +115,7 @@ int download_container::move_down(int id) {
 		}
 		++location1;
 	}
-	if(it == download_list.end() || it == download_list.end() - 1) {
+	if(it == download_list.end() || it == --download_list.end()) {
 		return LIST_ID;
 	}
 	location2 = location1;
@@ -123,10 +130,17 @@ int download_container::move_down(int id) {
 			return LIST_ID;
 		}
 	}
+	download_container::iterator first, second;
+	first = download_list.begin();
+	second = download_list.begin();
+	for(int i = 0; i < location1; ++i)
+		++first;
+	for(int i = 0; i < location2; ++i)
+		++second;
 
-	swap(download_list[location1], download_list[location2]);
+	iter_swap(first, second);
 	if(!dump_to_file()) {
-		swap(download_list[location1], download_list[location2]);
+		iter_swap(second, first);
 		return LIST_PERMISSION;
 	}
 	return LIST_SUCCESS;

@@ -1,6 +1,7 @@
 2009-10-29
    [adrian]
 	- fixed race condition in download curlback
+	- using std::list instead of std::vector for the download list because it does less copy-crap
 
 2009-10-27
    [susanne]

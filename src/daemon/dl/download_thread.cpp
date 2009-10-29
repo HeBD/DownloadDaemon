@@ -226,7 +226,8 @@ void download_thread(int download) {
 		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_LOW_SPEED_TIME, 20);
 
 		log_string(std::string("Starting download ID: ") + int_to_string(download), LOG_DEBUG);
-		success = curl_easy_perform(global_download_list.get_pointer_property(download, DL_HANDLE));
+		CURL* handle_copy = global_download_list.get_pointer_property(download, DL_HANDLE);
+		success = curl_easy_perform(handle_copy);
 		long http_code;
 		curl_easy_getinfo(global_download_list.get_pointer_property(download, DL_HANDLE), CURLINFO_RESPONSE_CODE, &http_code);
 		curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));

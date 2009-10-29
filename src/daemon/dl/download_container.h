@@ -166,11 +166,12 @@ public:
 	std::string list_file;
 
 private:
+	typedef std::list<download>::iterator iterator;
 	/** get an iterator to a download by giving an ID
 	*	@param id download ID to search for
 	*	@returns Iterator to this id
 	*/
-	std::vector<download>::iterator get_download_by_id(int id);
+	download_container::iterator get_download_by_id(int id);
 
 	/** Dumps the download list from RAM to the file
 	*	@returns true on success
@@ -190,10 +191,8 @@ private:
 
 
 
-	typedef std::vector<download>::iterator iterator;
 
-
-	std::vector<download> download_list;
+	std::list<download> download_list;
 	boost::mutex download_mutex;
 	bool is_reconnecting;
 };

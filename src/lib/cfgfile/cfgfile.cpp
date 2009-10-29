@@ -49,16 +49,15 @@ void cfgfile::open_cfg_file(const std::string &fp, bool open_writeable) {
 }
 
 std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
-	mx.lock();
+	boost::mutex::scoped_lock lock(mx);
 	if(!file.is_open()) {
-		mx.unlock();
 		return "";
 	}
-	fstream tmpfile(filepath.c_str(), fstream::in); // second fstream to make const possible
+	file.seekg(0);
 	std::string buff, identstr, val;
 	size_t eqloc;
-	while(!tmpfile.eof() && tmpfile.good()) {
-		getline(tmpfile, buff);
+	while(!file.eof() && file.good()) {
+		getline(file, buff);
 		buff = buff.substr(0, buff.find(comment_token));
 		eqloc = buff.find(eqtoken);
 		identstr = buff.substr(0, eqloc);
@@ -66,13 +65,10 @@ std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 		if(identstr == cfg_identifier) {
 			val = buff.substr(eqloc +1);
 			trim(val);
-			tmpfile.close();
-			mx.unlock();
 			return val;
 		}
 	}
-	tmpfile.close();
-	mx.unlock();
+
 	return "";
 }
 
