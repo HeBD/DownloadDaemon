@@ -1,3 +1,7 @@
+2009-10-29
+   [adrian]
+	- fixed race condition in download curlback
+
 2009-10-27
    [susanne]
 	- picture fixes at ddclient-wx

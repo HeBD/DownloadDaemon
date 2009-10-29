@@ -44,9 +44,8 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 		return 0;
 	}
 
-	CURL* dl_handle = global_download_list.get_pointer_property(id, DL_HANDLE);
 	double curr_speed;
-	curl_easy_getinfo(dl_handle, CURLINFO_SPEED_DOWNLOAD, &curr_speed);
+	curl_easy_getinfo(global_download_list.get_pointer_property(id, DL_HANDLE), CURLINFO_SPEED_DOWNLOAD, &curr_speed);
 	if(curr_speed == 0) {
 		global_download_list.set_int_property(id, DL_SPEED, -1);
 	} else {
