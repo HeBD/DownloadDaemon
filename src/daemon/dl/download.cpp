@@ -208,6 +208,10 @@ void download::set_status(download_status st) {
 		}
 		status = st;
 	}
+
+	if(st == DOWNLOAD_INACTIVE) {
+		wait_seconds = 0;
+	}
 	if(global_download_list.reconnect_needed()) {
 		boost::thread t(download_container::do_reconnect, &global_download_list);
 	}
