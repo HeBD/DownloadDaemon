@@ -204,7 +204,7 @@ int main(int argc, char* argv[], char* env[]) {
 
 	// tick download counters, start new downloads, etc each second
 	while(true) {
-		boost::thread secondly(do_once_per_second);
+		do_once_per_second();
 		sleep(1);
 	}
 }
