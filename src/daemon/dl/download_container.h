@@ -163,6 +163,9 @@ public:
 	*/
 	bool url_is_in_list(std::string url);
 
+	void init_handle(int id);
+	void cleanup_handle(int id);
+
 	std::string list_file;
 
 private:

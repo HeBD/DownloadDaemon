@@ -19,5 +19,6 @@
 void start_next_download();
 int get_running_count();
 void download_thread(int id);
+void download_thread_wrapper(int download);
 
 #endif /*DOWNLOAD_THREAD_H_*/

@@ -34,6 +34,7 @@ download::download(std::string& dl_url, int next_id)
 	time(&rawtime);
 	add_date = ctime(&rawtime);
 	add_date.erase(add_date.length() - 1);
+	is_init = false;
 }
 
 download::download(std::string& serializedDL) {
@@ -94,6 +95,7 @@ void download::from_serialized(std::string& serializedDL) {
 	is_running = false;
 	need_stop = false;
 	speed = 0;
+	is_init = false;
 }
 
 download::download(const download& dl) {
@@ -115,9 +117,13 @@ void download::operator=(const download& dl) {
 	is_running = dl.is_running;
 	speed = 0;
 	handle = dl.handle;
+	is_init = dl.is_init;
 }
 
 download::~download() {
+	if(is_init) {
+		curl_easy_cleanup(handle);
+	}
 }
 
 std::string download::serialize() {

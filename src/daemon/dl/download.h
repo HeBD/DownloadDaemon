@@ -106,6 +106,7 @@ public:
 	plugin_output get_hostinfo();
 
 	friend bool operator<(const download& x, const download& y);
+	friend class download_container;
 
 	std::string url;
 	std::string comment;
@@ -117,13 +118,17 @@ public:
 	long size;
 	int wait_seconds;
 	plugin_status error;
-	CURL* handle;
+
 	std::string output_file;
 
 	bool is_running;
 	bool need_stop;
 	download_status status;
 	int speed;
+private:
+	CURL* handle;
+	bool is_init;
+
 };
 
 bool operator<(const download& x, const download& y);

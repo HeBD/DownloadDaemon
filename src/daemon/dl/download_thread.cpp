@@ -38,9 +38,18 @@ void start_next_download() {
 	} else {
 		global_download_list.set_int_property(downloadable, DL_IS_RUNNING, true);
 		global_download_list.set_int_property(downloadable, DL_STATUS, DOWNLOAD_RUNNING);
-		boost::thread t(boost::bind(download_thread, downloadable));
+		boost::thread t(boost::bind(download_thread_wrapper, downloadable));
 		start_next_download();
 	}
+}
+
+/** Does basic work before download_thread is called and after it has finished */
+void download_thread_wrapper(int download) {
+	global_download_list.init_handle(download);
+	download_thread(download);
+	global_download_list.cleanup_handle(download);
+	global_download_list.set_int_property(download, DL_IS_RUNNING, false);
+
 }
 
 /** This function does the magic of downloading a file, calling the right plugin, etc.
@@ -230,7 +239,6 @@ void download_thread(int download) {
 		success = curl_easy_perform(handle_copy);
 		long http_code;
 		curl_easy_getinfo(handle_copy, CURLINFO_RESPONSE_CODE, &http_code);
-		curl_easy_cleanup(handle_copy);
 		output_file.close();
 
 		switch(http_code) {

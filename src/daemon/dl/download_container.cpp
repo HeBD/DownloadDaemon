@@ -426,12 +426,12 @@ int download_container::set_pointer_property(int id, pointer_property prop, void
 	if(dl == download_list.end()) {
 		return LIST_ID;
 	}
-	switch(prop) {
-		case DL_HANDLE:
-			curl_easy_cleanup(dl->handle);
-			dl->handle = value;
-		break;
-	}
+	//switch(prop) {
+	//	case DL_HANDLE:
+	//		dl->cleanup_handle();
+	//		dl->handle = value;
+	//	break;
+	//}
 	return LIST_SUCCESS;
 }
 
@@ -662,7 +662,6 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	plugin_input pinp;
 	download_container::iterator dlit = get_download_by_id(dl);
 
-	dlit->handle = curl_easy_init();
 	std::string host(dlit->get_host());
 	std::string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);
@@ -685,6 +684,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	if(use_generic) {
 		log_string("No plugin found, using generic download", LOG_WARNING);
 		poutp.download_url = dlit->url.c_str();
+
 		return PLUGIN_SUCCESS;
 	}
 
@@ -745,9 +745,6 @@ void download_container::decrease_waits() {
 void download_container::purge_deleted() {
 	boost::mutex::scoped_lock lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(download_list.empty()) {
-			return;
-		}
 		if(it->get_status() == DOWNLOAD_DELETED && it->is_running == false) {
 			remove_download(it->id);
 			it = download_list.begin();
@@ -837,7 +834,6 @@ int download_container::remove_download(int id) {
 	if(it == download_list.end()) {
 		return LIST_ID;
 	}
-
 	download tmpdl = *it;
 	download_list.erase(it);
 	if(!dump_to_file()) {
@@ -855,5 +851,19 @@ bool download_container::url_is_in_list(std::string url) {
 		}
 	}
 	return false;
+}
+
+void download_container::init_handle(int id) {
+	boost::mutex::scoped_lock lock(download_mutex);
+	download_container::iterator it = get_download_by_id(id);
+	it->handle = curl_easy_init();
+	it->is_init = true;
+}
+
+void download_container::cleanup_handle(int id) {
+	boost::mutex::scoped_lock lock(download_mutex);
+	download_container::iterator it = get_download_by_id(id);
+	curl_easy_cleanup(it->handle);
+	it->is_init = false;
 }
 #endif
