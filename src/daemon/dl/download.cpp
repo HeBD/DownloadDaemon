@@ -209,7 +209,7 @@ void download::set_status(download_status st) {
 		status = st;
 	}
 
-	if(st == DOWNLOAD_INACTIVE) {
+	if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_PENDING) {
 		wait_seconds = 0;
 	}
 	if(global_download_list.reconnect_needed()) {
