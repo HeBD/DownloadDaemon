@@ -662,6 +662,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	plugin_input pinp;
 	download_container::iterator dlit = get_download_by_id(dl);
 
+	dlit->handle = curl_easy_init();
 	std::string host(dlit->get_host());
 	std::string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);

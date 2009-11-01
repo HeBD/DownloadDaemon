@@ -211,26 +211,26 @@ void download_thread(int download) {
 			return;
 		}
 
+		CURL* handle_copy = global_download_list.get_pointer_property(download, DL_HANDLE);
 		// set url
-		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_FOLLOWLOCATION, 1);
-		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_URL, plug_outp.download_url.c_str());
+		curl_easy_setopt(handle_copy, CURLOPT_FOLLOWLOCATION, 1);
+		curl_easy_setopt(handle_copy, CURLOPT_URL, plug_outp.download_url.c_str());
 		// set file-writing function as callback
-		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_WRITEFUNCTION, write_file);
-		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_WRITEDATA, &output_file);
+		curl_easy_setopt(handle_copy, CURLOPT_WRITEFUNCTION, write_file);
+		curl_easy_setopt(handle_copy, CURLOPT_WRITEDATA, &output_file);
 		// show progress
-		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_NOPROGRESS, 0);
-		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_PROGRESSFUNCTION, report_progress);
-		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_PROGRESSDATA, &download);
+		curl_easy_setopt(handle_copy, CURLOPT_NOPROGRESS, 0);
+		curl_easy_setopt(handle_copy, CURLOPT_PROGRESSFUNCTION, report_progress);
+		curl_easy_setopt(handle_copy, CURLOPT_PROGRESSDATA, &download);
 		// set timeouts
-		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_LOW_SPEED_LIMIT, 100);
-		curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_LOW_SPEED_TIME, 20);
+		curl_easy_setopt(handle_copy, CURLOPT_LOW_SPEED_LIMIT, 100);
+		curl_easy_setopt(handle_copy, CURLOPT_LOW_SPEED_TIME, 20);
 
 		log_string(std::string("Starting download ID: ") + int_to_string(download), LOG_DEBUG);
-		CURL* handle_copy = global_download_list.get_pointer_property(download, DL_HANDLE);
 		success = curl_easy_perform(handle_copy);
 		long http_code;
-		curl_easy_getinfo(global_download_list.get_pointer_property(download, DL_HANDLE), CURLINFO_RESPONSE_CODE, &http_code);
-		curl_easy_reset(global_download_list.get_pointer_property(download, DL_HANDLE));
+		curl_easy_getinfo(handle_copy, CURLINFO_RESPONSE_CODE, &http_code);
+		curl_easy_cleanup(handle_copy);
 		output_file.close();
 
 		switch(http_code) {

@@ -1,3 +1,7 @@
+2009-11-01
+   [adrian]
+	- fixed bugs when moving a running download up/down
+
 2009-10-29
    [adrian]
 	- fixed race condition in download curlback

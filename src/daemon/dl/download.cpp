@@ -30,7 +30,6 @@ using namespace std;
 download::download(std::string& dl_url, int next_id)
 	: url(dl_url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
 	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0) {
-	handle = curl_easy_init();
 	time_t rawtime;
 	time(&rawtime);
 	add_date = ctime(&rawtime);
@@ -95,13 +94,11 @@ void download::from_serialized(std::string& serializedDL) {
 	is_running = false;
 	need_stop = false;
 	speed = 0;
-	handle = curl_easy_init();
 }
 
 download::download(const download& dl) {
 	operator=(dl);
 	need_stop = false;
-	handle = curl_easy_init();
 }
 
 void download::operator=(const download& dl) {
@@ -117,10 +114,10 @@ void download::operator=(const download& dl) {
 	status = dl.status;
 	is_running = dl.is_running;
 	speed = 0;
+	handle = dl.handle;
 }
 
 download::~download() {
-	curl_easy_cleanup(handle);
 }
 
 std::string download::serialize() {
