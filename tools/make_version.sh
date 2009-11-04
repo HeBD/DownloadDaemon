@@ -21,7 +21,7 @@ then
 fi
 
 # debian target distribution
-DEB_DIST="jaunty"
+DEB_DIST="karmic"
 
 # upstream authors "Name LastName <mail@foo.foo>", seperated by newline and 4 spaces
 UPSTREAM_AUTHORS="Adrian Batzill <adrian # batzill ! com>
@@ -32,8 +32,8 @@ COPYRIGHT_HOLDERS="Copyright (C) 2009 by Adrian Batzill <adrian # batzill ! com>
     Copyright (C) 2009 by Susanne Eichel <susanne.eichel # web ! de>"
 
 # build dependencies
-BUILDDEP_DD="debhelper (>= 7), cmake, libboost-thread1.37-dev | libboost-thread1.35-dev | libboost-thread-dev (>=1.35.0), libcurl4-gnutls-dev"
-BUILDDEP_DDCLIENTWX="debhelper (>= 7), cmake, libboost-thread1.37-dev | libboost-thread1.35-dev | libboost-thread-dev (>=1.35.0), libwxbase2.8-dev, libwxgtk2.8-dev"
+BUILDDEP_DD="debhelper (>= 7), cmake, libboost-thread-dev (>=1.37.0) | libboost-thread1.37-dev, libcurl4-gnutls-dev"
+BUILDDEP_DDCLIENTWX="debhelper (>= 7), cmake, libboost-thread-dev (>=1.37.0) | libboost-thread1.37-dev, libwxbase2.8-dev, libwxgtk2.8-dev"
 BUILDDEP_DDCONSOLE="debhelper (>= 7), cmake"
 
 # dependencies (leave empty for auto-detection)
