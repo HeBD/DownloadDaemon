@@ -1,3 +1,7 @@
+2009-11-09
+   [adrian]
+	- made ddconsole correctly handle EOF signals (reuslted in infinite loob before)
+
 2009-11-01
    [adrian]
 	- fixed bugs when moving a running download up/down

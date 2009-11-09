@@ -93,11 +93,14 @@ int main(int argc, char* argv[]) {
 		} else {
 			snd = command;
 		}
+		if(cin.fail() || cin.bad()) {
+			exit(0);
+		}
 		if(snd.empty()) {
 			continue;
 		}
 		trim_string(snd);
-		if(snd == "quit" || snd == "q" || snd == "exit") {
+		if(snd == "quit" || snd == "q" || snd == "exit" || snd == "\f" || snd == "\0") {
 			return 0;
 		} else if(snd.find("connect") == 0) {
 			snd = snd.substr(7);
