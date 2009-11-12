@@ -14,6 +14,8 @@
 
 #include <string>
 #include <fstream>
+// cstdint will exist in c++0x, we use stdint.h (C99) to be compatible with older compilers
+#include <stdint.h>
 #include <curl/curl.h>
 #include <boost/thread.hpp>
 
@@ -114,8 +116,8 @@ public:
 
 	std::string add_date;
 	int id;
-	long downloaded_bytes;
-	long size;
+	uint64_t downloaded_bytes;
+	uint64_t size;
 	int wait_seconds;
 	plugin_status error;
 

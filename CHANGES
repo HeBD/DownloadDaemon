@@ -1,3 +1,8 @@
+2009-11-12
+   [adrian]
+	- download size and downloaded bytes are now uint64_t instead of long to even work on
+	  weird compilers if the downloaded files are huge (DVD-sized)
+
 2009-11-09
    [adrian]
 	- made ddconsole correctly handle EOF signals (reuslted in infinite loob before)
