@@ -68,7 +68,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_CONNECTION_ERROR;
 	}
 
-	if(resultstr.find("The file could not be found") != std::string::npos || resultstr.find("404 Not Found") != std::string::npos || resultstr.find("file has been removed") != std::string::npos) {
+	if(resultstr.find("The file could not be found") != std::string::npos || resultstr.find("404 Not Found") != std::string::npos || resultstr.find("file has been removed") != std::string::npos
+		|| resultstr.find("suspected to contain illegal content and has been blocked") != std::string::npos) {
 		return PLUGIN_FILE_NOT_FOUND;
 	}
 

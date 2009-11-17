@@ -1,3 +1,7 @@
+2009-11-17
+   [adrian]
+	- correctly handle rapidshare's "This file is suspected to contain illegal content and has been blocked." message
+
 2009-11-12
    [adrian]
 	- download size and downloaded bytes are now uint64_t instead of long to even work on
