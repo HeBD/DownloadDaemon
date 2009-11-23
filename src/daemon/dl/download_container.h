@@ -197,6 +197,8 @@ private:
 
 	std::list<download> download_list;
 	boost::mutex download_mutex;
+	boost::mutex plugin_mutex; // makes sure that you don't call the same plugin multiple times at the same time
+				   // because it would bring thread-safety problems
 	bool is_reconnecting;
 };
 

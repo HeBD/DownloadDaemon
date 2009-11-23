@@ -712,6 +712,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	trim_string(pinp.premium_password);
 
 	download_mutex.unlock();
+	boost::mutex::scoped_lock plugin_lock(plugin_mutex);
 	plugin_status retval = plugin_exec_func(*this, dl, pinp, poutp);
 	dlclose(handle);
 	return retval;

@@ -1,3 +1,8 @@
+2009-11-23
+   [adrian]
+	- updated installing notes (which now include a tutorial on how to execute DownloadDaemon without root privileges)
+	- fixed bug then when multiple plugin-based downloads start at the same time, not all files are written correctly
+
 2009-11-17
    [adrian]
 	- correctly handle rapidshare's "This file is suspected to contain illegal content and has been blocked." message

@@ -3,6 +3,7 @@ This guide is seperated in 3 parts:
 2: Things you have to do if you got this guide in a .tar.gz or .tar.bz2 source package
 3: Things you have to do if you are building from SVN
 4: Installing the ARM/NAS package (a bit more complicated)
+5: Doing a user-only installation (which does not require root privileges for execution)
 
 1:	To build DownloadDaemon, you need to have libcurl (libcurl-dev) and libboost-thread (at least version 1.35.0) installed.
 	To build ddconsole, you don't have any special dependencies
@@ -53,3 +54,14 @@ This guide is seperated in 3 parts:
 	ln -s /mnt/<path to files>/usr/bin/* /usr/bin/*
 	ln -s /mnt/<path to files>/etc/downloaddaemon /etc/downloaddaemon
 	ln -s /mnt/<path to files>/usr/share/downloaddaemon /usr/share/downloaddaemon
+
+5:	First, do a normal installation as described above. When done, do the
+	following steps:
+	1: Copy the configuration files to ~/.downloaddaemon and make them writeable
+	   for your user (chmod/chown).
+	2: open ~/.downloaddaemon/downloaddaemon.conf and change the variable dlist_file
+	   (at the bottom of the file) to ~/.downloaddaemon/dlist
+	3: Change the download_folder variable in that file to a writeable folder.
+	After that, executing DownloadDaemon as a normal user should be no problem.
+
+	  
