@@ -2,6 +2,8 @@
    [adrian]
 	- updated installing notes (which now include a tutorial on how to execute DownloadDaemon without root privileges)
 	- fixed bug then when multiple plugin-based downloads start at the same time, not all files are written correctly
+	- added AES.h and AES.cpp (rijndael) from www.lomont.org/Software/Misc/AES/AES.php to repository
+	  which will be used for encrypted authentication in the future (and for rsdf containers in the future) 
 
 2009-11-17
    [adrian]
