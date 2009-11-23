@@ -194,8 +194,8 @@ void myframe::add_bars(){
 	file_menu->Append(id_toolbar_deactivate, wxT("&Deactivate Download\tAlt-D"), wxT("Deactivate Download"));
 	file_menu->AppendSeparator();
 
-	file_menu->Append(id_toolbar_add, wxT("&Add Downloads..\tAlt-I"), wxT("Add Downloads"));
-	file_menu->Append(id_toolbar_delete, wxT("&Delete Downloads\tDEL"), wxT("Delete Downloads"));
+	file_menu->Append(id_toolbar_add, wxT("&Add Download..\tAlt-I"), wxT("Add Download"));
+	file_menu->Append(id_toolbar_delete, wxT("&Delete Download\tDEL"), wxT("Delete Download"));
 	file_menu->Append(id_menu_select_all_lines, wxT("&Select all\tCtrl-A"), wxT("Select all"));
 	file_menu->AppendSeparator();
 
@@ -214,7 +214,7 @@ void myframe::add_bars(){
 	toolbar->AddSeparator();
 
 	toolbar->AddTool(id_toolbar_add, wxT("Add"), wxBitmap(working_dir + wxT("img/2_add.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Add a new Download"), wxT("Add a new Download"));
-	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxBitmap(working_dir + wxT("img/3_delete.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download(s)"), wxT("Delete the selected Download(s)"));
+	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxBitmap(working_dir + wxT("img/3_delete.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download"), wxT("Delete the selected Download"));
 	toolbar->AddSeparator();
 
 	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxBitmap(working_dir + wxT("img/5_start.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Activate the selected Download"), wxT("Activate the selected Download"));
