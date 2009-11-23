@@ -777,7 +777,7 @@ void myframe::on_priority_down(wxCommandEvent &event){
 	string id, answer;
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before increasing Priority."), wxT("No Connection to Server"));
+		wxMessageBox(wxT("Please connect before decreasing Priority."), wxT("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
 
 	}else{ // we have a connection
