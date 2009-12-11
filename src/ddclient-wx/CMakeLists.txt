@@ -11,7 +11,7 @@ SET(ddclient_wx_SRCS	ddclient-wx_about_dialog.cpp
 			ddclient-wx_delete_dialog.cpp
 			../lib/netpptk/netpptk.cpp)
 
-find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
 find_package(wxWidgets REQUIRED base core richtext)
 
 IF(Boost_FOUND AND wxWidgets_FOUND)
