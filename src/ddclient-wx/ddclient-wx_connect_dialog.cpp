@@ -10,6 +10,7 @@
  */
 
 #include "ddclient-wx_connect_dialog.h"
+#include "../lib/crypt/md5.h"
 
 
 // event table
@@ -95,14 +96,66 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 		if(snd.find("100") == 0){ // 100 SUCCESS <-- Operation succeeded
 			// nothing to do here if you reach this
 		}else if(snd.find("102") == 0){ // 102 AUTHENTICATION <-- Authentication failed
-			mysock->send(pass);
-			mysock->recv(snd);
 
-			if(snd.find("100") == 0){
+			// try md5 authentication
+			mysock->send("ENCRYPT");
+			std::string rnd;
+			mysock->recv(rnd); // random bytes
+
+			if(rnd.find("102") != 0) { // encryption permitted
+				rnd += pass;
+
+				MD5_CTX md5;
+				MD5_Init(&md5);
+
+				unsigned char *enc_data = new unsigned char[rnd.length()];
+				for(size_t i = 0; i < rnd.length(); ++i){ // copy random bytes from string to cstring
+					enc_data[i] = rnd[i];
+				}
+
+				MD5_Update(&md5, enc_data, rnd.length());
+				unsigned char result[16];
+				MD5_Final(result, &md5); // put md5hash in result
+				std::string enc_passwd((char*)result, 16);
+				delete [] enc_data;
+
+				mysock->send(enc_passwd);
+				mysock->recv(snd);
+
+			}else{ // encryption not permitted
+				wxMessageDialog dialog(this, wxT("Encrypted authentication not supported by server.\nDo you want to try unsecure plain-text authentication?"),
+									   wxT("No Encryption"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+				int del = dialog.ShowModal();
+
+				if(del == wxID_YES){ // user clicked yes
+					// reconnect
+					try{
+						connection = mysock->connect(host, port);
+					}catch(...){} // no code needed here due to boolean connection
+
+					if(connection){
+						mysock->recv(snd);
+						mysock->send(pass);
+						mysock->recv(snd);
+					}else{
+						wxMessageBox(wxT("Unknown Error while Authentication."), wxT("Authentification Error"));
+						error_occured = true;
+					}
+				}else{
+					snd = "99"; // user doesn't want to connect without encryption => own error code
+					error_occured = true;
+				}
+			}
+
+			if(snd.find("100") == 0 && connection){
 				// nothing to do here if you reach this
 
-			}else if(snd.find("102") == 0){
+			}else if(snd.find("102") == 0 && connection){
 				wxMessageBox(wxT("Wrong Password, Authentification failed."), wxT("Authentification Error"));
+				error_occured = true;
+
+			}else if(snd.find("99") == 0 && connection){
+				wxMessageBox(wxT("No connection established."), wxT("Authentification Error"));
 				error_occured = true;
 
 			}else{
