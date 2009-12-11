@@ -6,6 +6,8 @@
 	- increased socket recv timeout to 60 seconds
 	- added md5 algorithm to repository for encrypted authentication
 	- added encrypted authentication support in daemon and ddconsole. more to follow
+	- added encrypted authentication support in ddclient-php
+	- some cleanups in ddclient-php
    [susanne]
 	- added encrypted authentication support to ddclient-wx
 

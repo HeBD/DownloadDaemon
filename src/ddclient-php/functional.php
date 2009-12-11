@@ -57,25 +57,67 @@ function connect_to_daemon(&$socket) {
 	
 	$host = $_COOKIE['ddclient_host'];
 	$port = $_COOKIE['ddclient_port'];
-	
+	$enc = $_COOKIE['ddclient_enc'];
+	$pw = "";
+	if(isset($_COOKIE['ddclient_passwd'])) {
+		$pw = $_COOKIE['ddclient_passwd'];
+	}
+
 	if(!@socket_connect($socket, $host, $port)) {
 		return "CONNECT";
 	}
 	
-	if(!@recv_all($socket, $recv_buf)) {
-		return "RECV";
+	@recv_all($socket, $recv_buf);
+
+	if(mb_substr($recv_buf, 0, 3) == "100") {
+		return "SUCCESS";
 	}
 
-	if(mb_substr($recv_buf, 0, 3) != "100") {
-		$passwd = $_COOKIE['ddclient_passwd'];
-		send_all($socket, $passwd);
-		recv_all($socket, $recv_buf);
-		if(mb_substr($recv_buf, 0, 3) != "100") {
-			return "PASSWD";
+	@send_all($socket, "ENCRYPT");
+	$rnd = "";
+	@recv_all($socket, $rnd);
+	$result = "";
+	if(mb_substr($rnd, 0, 3) != "102") {
+		$rnd .= $pw;
+		$enc_passwd = md5($rnd, true);
+		send_all($socket, $enc_passwd);
+		recv_all($socket, $result);
+	} else {
+		// use plain-text if allowed
+		if($enc == "0") {
+			socket_close($socket);
+			$socket = socket_create(AF_INET, SOCK_STREAM, 0);
+			if(!@socket_connect($socket, $host, $port)) {
+				return "CONNECT";
+			}
+			recv_all($socket, $recv_buf);
+			send_all($socket, $pw);
+			recv_all($socket, $result);
 		}
 	}
+	
+	if(mb_substr($result, 0, 3) != "100") {
+		return "PASSWD";
+	} else {
+		return "SUCCESS";
+	}
+}
 
-	return "SUCCESS";
+function conn_error_quit($ret) {
+	if($ret == "COOKIE") {
+		echo "Cookies missing. If you have cookies disabled on your machine, please enable them. Else, try to log on again by clicking <a href=\"index.php\">here</a>";
+		exit;
+	} else if ($ret == "CONNECT") {
+		echo "Coult not connect to DownloadDaemon. Maybe it is not running?";
+		exit;
+	} else if ($ret == "RECV") {
+		echo "Successfully connected to the server, but data could not be received. Connection problem";
+		exit;
+	} else if ($ret == "PASSWD") {
+		echo "You entered a wrong password or used an encryption method the server does not support. Please go back to the login page.";
+		exit;
+	}
+
 }
 
 ?>

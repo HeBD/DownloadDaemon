@@ -29,19 +29,8 @@ include("functional.php");
 <?php
 	$socket = socket_create(AF_INET, SOCK_STREAM, 0);
 	$ret = connect_to_daemon($socket);
-	if($ret == "COOKIE") {
-		echo "Cookies missing. If you have cookies disabled on your machine, please enable them. Else, try to log on again by clicking <a href=\"index.php\">here</a>";
-		exit;
-	} else if ($ret == "CONNECT") {
-		echo "Coult not connect to DownloadDaemon. Maybe it is not running?";
-		exit;
-	} else if ($ret == "RECV") {
-		echo "Successfully connected to the server, but data could not be received. Connection problem";
-		exit;
-	} else if ($ret == "PASSWD") {
-		echo "You entered a wrong password. Please go back to the login page.";
-		exit;
-	}
+	conn_error_quit($ret);
+
 	echo "<br><br>";
 
 	$list = "";
