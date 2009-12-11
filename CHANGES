@@ -1,3 +1,12 @@
+2009-12-11
+   [adrian]
+	- updated documentation
+	- added encryption setting to config file
+	- automatically reload config files on error
+	- increased socket recv timeout to 60 seconds
+	- added md5 algorithm to repository for encrypted authentication
+	- added encrypted authentication support in daemon and ddconsole. more to follow
+
 2009-11-23
    [adrian]
 	- updated installing notes (which now include a tutorial on how to execute DownloadDaemon without root privileges)

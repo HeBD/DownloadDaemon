@@ -332,7 +332,7 @@ int tkSock::recv(std::string& s) {
 	}
 
 	struct timeval tv;
-	tv.tv_sec = 3;
+	tv.tv_sec = 60;
 	tv.tv_usec = 0;
 	if (setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,  sizeof(tv))) {
 		valid = false;

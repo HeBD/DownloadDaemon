@@ -21,9 +21,14 @@ These commands will return their answer, and an empty string if no answer can be
 Authentication:
 	Authentication is a bit weird. As soon as you connect to DownloadDaemon, you should call a recv() to find out if you need to authenticate or not.
 	You will receive "100 SUCCESS" (see status list below) if you do not need to authenticate. If you need to authenticate, you will receive a
-	"102 AUTHENTICATION" error. As soon as you receive that, you should send the password and only the password. If authentication then succeeds, you will
-	get a "100 SUCCESS" now. If it fails, you will get another "102 AUTHENTICATION" and will then be disconnected. If you want to try again, you have to
-	reconnect.
+	"102 AUTHENTICATION" error. As a next step, you can decide if encrypted authentication should be used, by just sending "ENCRYPT", you choose encryption (md5).
+	If you don't send that, plain-text is assumed. However, the server needs to be configured to understand your choice. again, if your choice is invalid, you will receive
+	"102 AUTHENTICATION". If plain-text is used, you just send the password over in plain text, when you receive the first "102 AUTHENTICATION". if encryption should
+	be used, you send over "ENCRYPT". The server will then answer with 128 bytes of random data. (including the header, so it's basically "128:<128 bytes>".
+	To these 128 bytes, you append your password at the end and create a MD5 hash of the whole string. Just send back this hash in order to authenticate.
+	Usually a authentication would probably look like this:
+	ask user for password -> connect -> send ENCRYPT -> if 102 received, reconnect andtry plain text, if random stuff received, continue -> append password to received data
+	-> md5 it all -> send back -> if 102 received, wrong password, ich 100 received, done
 
 Every command sent to DownloadDaemon has to start with "DDP", followed by at least one whitespace.
 Also every command can address one of three targets. these targets can be "DL", "VAR", "FILE" and "ROUTER".
@@ -93,7 +98,7 @@ All error codes may vary between 100 and 999, to make parsing simple.
 For now, this list represents all codes:
 100 SUCCESS		<-- Operation succeeded
 101 PROTOCOL		<-- If you misunderstood this protocol documentation ;)
-102 AUTHENTICATION	<-- Authentication failed
+102 AUTHENTICATION	<-- Authentication failed (wrong password or wrong encryption)
 103 URL			<-- Invalid URL (when adding downloads)
 104 ID			<-- Entered a not-existing ID (also returned if you try to move the top-download up or the bottom download down)
 105 STOP		<-- If a download could not be stopped, because it's not running

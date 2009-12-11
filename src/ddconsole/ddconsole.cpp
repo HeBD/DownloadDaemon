@@ -15,7 +15,9 @@
 #include <cstdlib>
 #include <algorithm>
 #include <iomanip>
+#include <cstring>
 #include "../lib/netpptk/netpptk.h"
+#include "../lib/crypt/md5.h"
 using namespace std;
 
 void trim_string(std::string &str);
@@ -188,7 +190,6 @@ void connect_request(tkSock &sock, std::string &host, const std::string &port, s
 	}
 
 	std::string snd;
-
 	sock >> snd;
 	if(snd.find("100") == 0) {
 		cout << "No Password." << endl;
@@ -197,8 +198,44 @@ void connect_request(tkSock &sock, std::string &host, const std::string &port, s
 			cout << "Password: ";
 			getline(cin, password);
 		}
-		sock << password;
-		sock >> snd;
+		trim_string(password);
+
+		// try md5 authentication, then ask for plain authentication.
+		sock << "ENCRYPT";
+		std::string rnd;
+		sock.recv(rnd);
+		rnd += password;
+		if(rnd.find("102") != 0) {
+			MD5_CTX md5;
+			MD5_Init(&md5);
+			unsigned char* enc_data = new unsigned char[rnd.length()];
+			for(size_t i = 0; i < rnd.length(); ++i) {
+				enc_data[i] = rnd[i];
+			}
+
+			MD5_Update(&md5, enc_data, rnd.length());
+			unsigned char result[16];
+			MD5_Final(result, &md5);
+			std::string enc_passwd((char*)result, 16);
+			delete [] enc_data;
+			sock.send(enc_passwd);
+			sock.recv(snd);
+		} else {
+			cout << "Encrypted authentication not supported by server. Do you want to try unsecure plain-text authentication? (y/n) ";
+			std::string do_plain;
+			cin >> do_plain;
+			if(do_plain == "y" || do_plain == "Y") {
+				if(!sock.connect(host, atoi(port.c_str()))) {
+					host = "";
+					return;
+				}
+				sock.recv(snd);
+				sock.send(password);
+				sock.recv(snd);
+			}
+		}
+
+
 		if(snd.find("100") == 0) {
 			cout << "Authentication success" << endl;
 		} else if(snd.find("102") == 0) {

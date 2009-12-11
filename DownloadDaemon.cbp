@@ -236,6 +236,16 @@
 		<Unit filename="src/lib/cfgfile/cfgfile.h">
 			<Option target="Daemon" />
 		</Unit>
+		<Unit filename="src/lib/crypt/md5.cpp">
+			<Option target="Daemon" />
+			<Option target="DDConsole" />
+			<Option target="DDClient-wx" />
+		</Unit>
+		<Unit filename="src/lib/crypt/md5.h">
+			<Option target="Daemon" />
+			<Option target="DDConsole" />
+			<Option target="DDClient-wx" />
+		</Unit>
 		<Unit filename="src/lib/netpptk/netpptk.cpp">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />

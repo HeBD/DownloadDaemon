@@ -50,8 +50,8 @@ void cfgfile::open_cfg_file(const std::string &fp, bool open_writeable) {
 
 std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 	boost::mutex::scoped_lock lock(mx);
-	if(!file.is_open()) {
-		return "";
+	if(!file.is_open() || !file.good()) {
+		reload_file();
 	}
 	file.seekg(0);
 	std::string buff, identstr, val;

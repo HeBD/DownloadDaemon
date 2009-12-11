@@ -9,11 +9,13 @@
  * GNU General Public License for more details.
  */
 
-#include<iostream>
-#include<vector>
-#include<cassert>
-#include<string>
-#include<sstream>
+#include <iostream>
+#include <vector>
+#include <cassert>
+#include <string>
+#include <sstream>
+#include <ctime>
+#include <cstring>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -24,6 +26,7 @@
 #include "../dl/download.h"
 #include "../../lib/netpptk/netpptk.h"
 #include "../../lib/cfgfile/cfgfile.h"
+#include "../../lib/crypt/md5.h"
 #include "../tools/helperfunctions.h"
 #include "../dl/download_container.h"
 #include "../dl/download_thread.h"
@@ -49,6 +52,8 @@ void mgmt_thread_main() {
 		exit(-1);
 	}
 
+	srand(time(NULL));
+
 	main_sock.auto_accept(connection_handler);
 	main_sock.auto_accept_join();
 
@@ -63,8 +68,47 @@ void connection_handler(tkSock *sock) {
 	if(*sock && passwd != "") {
 		*sock << "102 AUTHENTICATION";
 		*sock >> data;
-		if(data != passwd) {
-			log_string("Authentication failed. " + sock->get_peer_name() + " entered a wrong password", LOG_WARNING);
+		trim_string(data);
+		bool auth_success = false;
+		std::string auth_allowed = global_config.get_cfg_value("mgmt_accept_enc");
+		if(auth_allowed != "plain" && auth_allowed != "encrypt") {
+			auth_allowed = "both";
+		}
+
+		if(data == passwd && (auth_allowed == "plain" || auth_allowed == "both")) {
+			auth_success = true;
+		} else if(data == "ENCRYPT" && (auth_allowed == "both" || auth_allowed == "encrypt")) {
+			std::string rnd;
+			rnd.resize(128);
+			for(int i = 0; i < 128; ++i) {
+				rnd[i] = rand() % 255;
+			}
+			sock->send(rnd);
+			std::string response_have;
+			sock->recv(response_have);
+			rnd += passwd;
+
+			MD5_CTX md5;
+			MD5_Init(&md5);
+			unsigned char* enc_data = new unsigned char[rnd.length()];
+			memset(enc_data, 0, 128);
+			for(size_t i = 0; i < rnd.length(); ++i) {
+				enc_data[i] = rnd[i];
+			}
+
+			MD5_Update(&md5, enc_data, rnd.length());
+			unsigned char result[16];
+			MD5_Final(result, &md5);
+			std::string response_should((char*)result, 16);
+			delete [] enc_data;
+
+			if(response_should == response_have) {
+				auth_success = true;
+			}
+		}
+
+		if(!auth_success) {
+			log_string("Authentication failed. " + sock->get_peer_name() + " entered a wrong password or used invalid encryption", LOG_WARNING);
 			if(*sock) *sock << "102 AUTHENTICATION";
 			return;
 		} else {
