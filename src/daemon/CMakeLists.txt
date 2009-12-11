@@ -15,7 +15,7 @@ SET(daemon_SRCS downloaddaemon.cpp
 		dl/download_container.cpp)
 
 
-find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
 find_package(CURL REQUIRED)
 IF(Boost_FOUND AND CURL_FOUND)
 	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
