@@ -38,7 +38,24 @@
 					<Add option="-DNO_BOOST_THREAD" />
 				</Compiler>
 			</Target>
-			<Target title="DDClient-wx">
+			<Target title="ddclient-wx_unix">
+				<Option platforms="Unix;Mac;" />
+				<Option output="build/bin/ddclient-wx" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="built/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="`wx-config --cflags`" />
+				</Compiler>
+				<Linker>
+					<Add option="`wx-config --libs`" />
+					<Add library="boost_thread-mt" />
+				</Linker>
+			</Target>
+			<Target title="ddclient-wx_win">
+				<Option platforms="Windows;" />
 				<Option output="build/bin/ddclient-wx" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="built/" />
 				<Option type="0" />
@@ -180,52 +197,71 @@
 			<Option target="Daemon" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx.cpp">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx.h">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_about_dialog.cpp">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_about_dialog.h">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_add_dialog.cpp">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_add_dialog.h">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_configure_dialog.cpp">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_configure_dialog.h">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_connect_dialog.cpp">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_connect_dialog.h">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_delete_dialog.cpp">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_delete_dialog.h">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_main.cpp">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_main.h">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_picture.cpp">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/ddclient-wx/ddclient-wx_picture.h">
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
+		</Unit>
+		<Unit filename="src/ddclient-wx/resource.rc">
+			<Option target="ddclient-wx_win" />
 		</Unit>
 		<Unit filename="src/ddconsole/ddconsole.cpp">
 			<Option target="DDConsole" />
@@ -239,22 +275,26 @@
 		<Unit filename="src/lib/crypt/md5.cpp">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/lib/crypt/md5.h">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/lib/netpptk/netpptk.cpp">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="src/lib/netpptk/netpptk.h">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />
-			<Option target="DDClient-wx" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
 		</Unit>
 		<Unit filename="tools/jdownloader-router-converter/jd-router-convert.cpp">
 			<Option target="&lt;{~None~}&gt;" />
