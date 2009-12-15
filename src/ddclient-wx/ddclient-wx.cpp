@@ -19,6 +19,9 @@ bool myapp::OnInit(){
 
 	if(argc > 0){
 		myframe* frame = new myframe(argv[0], 0, wxT("DownloadDaemon-ClientWX"));
+		#ifdef _WIN32
+		frame->SetIcon(wxICON(aaaa));
+		#endif
 		frame->Show();
 		SetTopWindow(frame);
 	}
