@@ -12,7 +12,8 @@ SET(daemon_SRCS downloaddaemon.cpp
 		dl/download.cpp 
 		../lib/netpptk/netpptk.cpp 
 		../lib/cfgfile/cfgfile.cpp
-		dl/download_container.cpp)
+		dl/download_container.cpp
+		 ../lib/crypt/md5.cpp)
 
 
 find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)

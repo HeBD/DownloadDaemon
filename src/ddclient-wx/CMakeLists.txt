@@ -9,7 +9,8 @@ SET(ddclient_wx_SRCS	ddclient-wx_about_dialog.cpp
 			ddclient-wx_connect_dialog.cpp
 			ddclient-wx_main.cpp
 			ddclient-wx_delete_dialog.cpp
-			../lib/netpptk/netpptk.cpp)
+			../lib/netpptk/netpptk.cpp
+			../lib/crypt/md5.cpp)
 
 find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
 find_package(wxWidgets REQUIRED base core richtext)

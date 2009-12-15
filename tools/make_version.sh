@@ -69,7 +69,7 @@ mkdir -p ../version/ddclient-wx-${1}/src/
 mkdir -p ../version/ddclient-wx-${1}/src/lib
 mkdir -p ../version/ddclient-wx-${1}/share
 cp -rf ../src/ddclient-wx ../version/ddclient-wx-${1}/src/
-cp -rf ../src/lib/netpptk ../version/ddclient-wx-${1}/src/lib
+cp -rf ../src/lib/netpptk ../src/lib/crypt ../version/ddclient-wx-${1}/src/lib
 cp -rf ../share/applications ../share/ddclient-wx ../share/doc ../share/pixmaps ../version/ddclient-wx-${1}/share/
 cp -f ../AUTHORS ../CHANGES ../TODO ../LICENCE ../INSTALLING ../version/ddclient-wx-${1}/
 echo "cmake_minimum_required (VERSION 2.6)
@@ -109,7 +109,7 @@ echo "copying ddconsole"
 mkdir -p ../version/ddconsole-${1}/src/
 mkdir -p ../version/ddconsole-${1}/src/lib
 cp -rf ../src/ddconsole ../version/ddconsole-${1}/src
-cp -rf ../src/lib/netpptk ../version/ddconsole-${1}/src/lib/
+cp -rf ../src/lib/netpptk ../src/lib/crypt ../version/ddconsole-${1}/src/lib/
 cp -f ../AUTHORS ../CHANGES ../TODO ../LICENCE ../INSTALLING ../version/ddconsole-${1}/
 echo "cmake_minimum_required (VERSION 2.6)
 

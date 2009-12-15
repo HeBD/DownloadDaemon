@@ -1,0 +1,4 @@
+#ifdef _WIN32
+aaaa ICON "doc/artwork/ddico.ico"
+#include "wx/msw/wx.rc"
+#endif

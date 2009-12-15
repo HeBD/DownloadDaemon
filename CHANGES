@@ -1,3 +1,10 @@
+2009-12-15
+   [adrian]
+	- split up ddclient-wx for windows and unix to make use of resource files on windows
+2009-12-14
+   [adrian]
+	- fixed CMakeLists and versioning script for new files
+
 2009-12-11
    [adrian]
 	- updated documentation
