@@ -4,6 +4,7 @@
 	  I hope I can fix that.
 	- fixed deadlock in cfgfile
 	- rewrite of device specification to use a setable address in bind() and don't use SO_BINDTODEVICE (because of root-problem)
+	- DownloadDaemon should now compile under Windows/Cygwin (beta required, stable does not work)	
 
 ----- 2009-12-15 - VERSION 0.5 RELEASED
 

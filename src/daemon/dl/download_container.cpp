@@ -610,6 +610,9 @@ void download_container::do_reconnect(download_container *dlist) {
 	}
 
 	std::string reconnect_script = program_root + "/reconnect/lib" + reconnect_plugin + ".so";
+	#ifdef __CYGWIN__
+		reconnect_script = program_root + "/reconnect/cyg" + reconnect_plugin + ".dll";
+	#endif
 	struct stat st;
 	if(stat(reconnect_script.c_str(), &st) != 0) {
 		log_string("Reconnect plugin for selected router model not found!", LOG_SEVERE);
@@ -675,6 +678,9 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	}
 
 	std::string pluginfile(plugindir + "lib" + host + ".so");
+	#ifdef __CYGWIN__
+		pluginfile = plugindir + "cyg" + host + ".dll";
+	#endif
 	bool use_generic = false;
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;

@@ -65,7 +65,7 @@ int main(int argc, char* argv[], char* env[]) {
 	program_root = argv[0];
 	if(argv0[0] != '/' && argv0.find('/') != string::npos) {
 		// Relative path.. sux, but is okay.
-		char* c_old_wd = get_current_dir_name();
+		char* c_old_wd = getcwd(0, 0);
 		std::string wd = c_old_wd;
 		free(c_old_wd);
 		wd += '/';
