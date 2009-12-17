@@ -45,11 +45,12 @@ public:
 	/** Normal destructor to close the socket */
 	virtual ~tkSock();
 
-	/** Bind the socket to a port
+	/** Bind the socket to a port and address
 	*	@param port Port number
-	*	@returns True on success
+	*	@param addr Address to bind to (empty = bind to all)
+	*	@returns True if we succeed to bind to at least one address
 	*/
-	bool bind(const int port);
+	bool bind(const int port, std::string addr = "");
 
 	/** Listen on the specified port
 	*	@returns True on success

@@ -144,29 +144,39 @@ tkSock::~tkSock() {
 	--m_instanceCount;
 }
 
-bool tkSock::bind(const int port) {
+bool tkSock::bind(const int port, std::string addr) {
 	addrinfo hints;
 	memset(&hints, 0, sizeof(hints));
 	addrinfo *res;
-	hints.ai_family = AF_UNSPEC;
+	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 	std::stringstream ss;
 	ss << port;
-	if(getaddrinfo(NULL, ss.str().c_str(), &hints, &res) != 0) {
+	int ret;
+	if(addr.empty()) {
+		ret = getaddrinfo(NULL, ss.str().c_str(), &hints, &res);
+	} else {
+		ret = getaddrinfo(addr.c_str(), ss.str().c_str(), &hints, &res);
+	}
+
+	if(ret != 0) {
 		valid = false;
 		return false;
 	}
 
-	int bind_return = ::bind(m_sock, res->ai_addr, sizeof(*res));
-	if(bind_return < 0) {
-		freeaddrinfo(res);
-		valid = false;
-		return false;
+	addrinfo *resptr = res;
+	bool func_return = false;
+	while(resptr) {
+		if(::bind(m_sock, resptr->ai_addr, resptr->ai_addrlen) == 0) {
+			func_return = true;
+		}
+		resptr = resptr->ai_next;
 	}
+
 	freeaddrinfo(res);
-	valid = true;
-	return true;
+	return func_return;
+
 }
 
 bool tkSock::listen() {

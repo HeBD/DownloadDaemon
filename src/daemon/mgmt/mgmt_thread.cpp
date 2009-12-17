@@ -46,15 +46,9 @@ void mgmt_thread_main() {
 		mgmt_port = 56789;
 	}
 
-	string listen_interface = global_config.get_cfg_value("listen_interface");
-	if(!listen_interface.empty()) {
-		if(setsockopt(main_sock.get_sockdesc(), SOL_SOCKET, SO_BINDTODEVICE, listen_interface.c_str(), listen_interface.size()) < 0) {
-			log_string("Unable to set SO_BINDTODEVICE. Need root privileges to bind to a specific network interface. Listening on all interfaces instead", LOG_SEVERE);
-			//exit(-1);
-		}
-	}
+	string bind_addr = global_config.get_cfg_value("bind_addr");
 
-	if(!main_sock.bind(mgmt_port)) {
+	if(!main_sock.bind(mgmt_port, bind_addr)) {
 		log_string("bind failed for remote-management-socket. Maybe you specified a port wich is "
 				   "already in use or you don't have read-permissions to the config-file.", LOG_SEVERE);
 		exit(-1);
