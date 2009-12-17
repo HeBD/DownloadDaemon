@@ -17,6 +17,8 @@
 #include <ctime>
 #include <cstring>
 
+#include <sys/socket.h>
+#include <net/if.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -38,15 +40,26 @@ using namespace std;
  */
 void mgmt_thread_main() {
 	tkSock main_sock(string_to_int(global_config.get_cfg_value("mgmt_max_connections")), 1024);
-	if(global_config.get_cfg_value("mgmt_port") == "") {
-		log_string("Unable to get management-socket-port from configuration file.", LOG_SEVERE);
-		exit(-1);
+	int mgmt_port = string_to_int(global_config.get_cfg_value("mgmt_port"));
+	if(mgmt_port == 0) {
+		log_string("Unable to get management-socket-port from configuration file. defaulting to 56789", LOG_SEVERE);
+		mgmt_port = 56789;
 	}
-	if(!main_sock.bind(string_to_int(global_config.get_cfg_value("mgmt_port")))) {
+
+	string listen_interface = global_config.get_cfg_value("listen_interface");
+	if(!listen_interface.empty()) {
+		if(setsockopt(main_sock.get_sockdesc(), SOL_SOCKET, SO_BINDTODEVICE, listen_interface.c_str(), listen_interface.size()) < 0) {
+			log_string("Unable to set SO_BINDTODEVICE. Need root privileges to bind to a specific network interface. Listening on all interfaces instead", LOG_SEVERE);
+			//exit(-1);
+		}
+	}
+
+	if(!main_sock.bind(mgmt_port)) {
 		log_string("bind failed for remote-management-socket. Maybe you specified a port wich is "
 				   "already in use or you don't have read-permissions to the config-file.", LOG_SEVERE);
 		exit(-1);
 	}
+
 	if(!main_sock.listen()) {
 		log_string("Could not listen on management socket", LOG_SEVERE);
 		exit(-1);

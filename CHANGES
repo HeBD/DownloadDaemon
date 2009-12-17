@@ -1,6 +1,14 @@
+2009-12-17
+   [adrian]
+	- added possibility to open only on a specific device using SO_BINDTODEVICE. Only works if DD is executed as root.
+	  I hope I can fix that.
+
+----- 2009-12-15 - VERSION 0.5 RELEASED
+
 2009-12-15
    [adrian]
 	- split up ddclient-wx for windows and unix to make use of resource files on windows
+
 2009-12-14
    [adrian]
 	- fixed CMakeLists and versioning script for new files
