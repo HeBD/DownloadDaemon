@@ -10,7 +10,7 @@
 -->
 
 <div align="center">
-	<h1>DownloadDaemon Manager</h1> | 
+	<h1><a href="http://downloaddaemon.sourceforge.net" title="DownloadDaemon Website">DownloadDaemon</a> Manager</h1> | 
 	<a href="list.php">Download List</a> | 
 	<a href="add.php">Add Download(s)</a> | 
 	<a href="mgmt.php">Manage Downloads</a> | 

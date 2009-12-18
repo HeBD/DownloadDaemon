@@ -43,7 +43,8 @@ int main(int argc, char* argv[]) {
 			cout << "\t--port <port>\t\t Specifies the port to use [56789]" << endl;
 			cout << "\t--password <password>\t Specifies the password to connect" << endl;
 			cout << "\t--command <command(s)>\t Specifies a command to send after connectiong. The client will close after execution." << endl;
-			cout << "\t\t\t\t To find out about possible commands, type \"help\" in the console." << endl;
+			cout << "\t\t\t\t To find out about possible commands, type \"help\" in the console or visit" << endl;
+			cout << "\t\t\t\t http://downloaddaemon.sourceforge.net for more information." << endl;
 			return 0;
 		}
 		if(*it == "--host") {
@@ -153,6 +154,7 @@ int main(int argc, char* argv[]) {
 			cout << setw(30) << left << "PREMIUM LIST" << "returns a list of hosts that support premium setup (only if the plugin supports it)" << endl;
 			cout << setw(30) << left << "PREMIUM SET <host> <usr>;<pw>" << "sets up premium account information for <host>" << endl;
 			cout << setw(30) << left << "PREMIUM GET <host>" << "returns the username specified for <host>. Passwords can not be retrieved" << endl;
+			cout << "\n\nVisit http://downloaddaemon.sourceforge.net for more information." << endl;
 			continue;
 		}
 
