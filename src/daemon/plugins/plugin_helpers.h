@@ -18,7 +18,7 @@
 
 
 /*
-	The following types are imported from download.h and may be/have to be used for writing plugins:
+The following types are imported from download.h and may be/have to be used for writing plugins:
 enum plugin_status { PLUGIN_SUCCESS = 1, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,
 					 PLUGIN_INVALID_HOST, PLUGIN_INVALID_PATH, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR, PLUGIN_AUTH_FAIL };
 
@@ -34,6 +34,8 @@ struct plugin_input {
 	std::string premium_user;
 	std::string premium_password;
 };
+
+You also might be interested in checking ../dl/download_container.h to see what you can do with the result of get_dl_container().
 */
 
 download_container *list;
@@ -56,6 +58,14 @@ int get_wait_time() {
 
 const char* get_url() {
 	return list->get_string_property(dlid, DL_URL).c_str();
+}
+
+void set_url(const char* url) {
+	list->set_string_property(dlid, DL_URL, url);
+}
+
+download_container* get_dl_container() {
+	return list;
 }
 
 CURL* get_handle() {
