@@ -168,10 +168,10 @@ void configure_dialog::create_download_panel(){
 	overall_download_sizer = new wxBoxSizer(wxVERTICAL);
 	outer_time_sizer = new wxStaticBoxSizer(wxHORIZONTAL, download_panel, wxT("Download Time"));
 	outer_save_dir_sizer = new wxStaticBoxSizer(wxHORIZONTAL, download_panel, wxT("Download Folder"));
-	outer_count_sizer = new wxStaticBoxSizer(wxHORIZONTAL, download_panel, wxT("Download Count"));
-	time_sizer = new wxFlexGridSizer(2, 2, 10, 10);
+	outer_count_sizer = new wxStaticBoxSizer(wxHORIZONTAL, download_panel, wxT("Additional Download Options"));
+	time_sizer = new wxFlexGridSizer(1, 4, 10, 10);
 	save_dir_sizer = new wxFlexGridSizer(1, 2, 10, 10);
-	count_sizer = new wxFlexGridSizer(1, 2, 10, 10);
+	count_sizer = new wxFlexGridSizer(1, 4, 10, 10);
 	download_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
 	exp_time_text = new wxStaticText(download_panel, -1, wxT("You can force DownloadDaemon to only download at specific times by entering a start and\nend time in the format hours:minutes.\nLeave these fields empty if you want to allow DownloadDaemon to download permanently."));
@@ -179,14 +179,16 @@ void configure_dialog::create_download_panel(){
 	end_time_text = new wxStaticText(download_panel, -1, wxT("End Time"));
 	exp_save_dir_text = new wxStaticText(download_panel, -1, wxT("This option specifies where finished downloads should be safed on the server."));
 	save_dir_text = new wxStaticText(download_panel, -1, wxT("Download Folder"));
-	exp_count_text = new wxStaticText(download_panel, -1, wxT("Here you can specify how many downloads may run at the same time."));
-	count_text = new wxStaticText(download_panel, -1, wxT("Simultaneous downloads"));
+	exp_count_text = new wxStaticText(download_panel, -1, wxT("Here you can specify how many downloads may run at the same time and regulate the\ndownload speed."));
+	count_text = new wxStaticText(download_panel, -1, wxT("Simultaneous Downoads"));
+	speed_text = new wxStaticText(download_panel, -1, wxT("Maximal Download Speed"));
 
 	start_time_input = new wxTextCtrl(download_panel,-1, get_var("download_timing_start"), wxDefaultPosition, wxSize(100, 25));
 	start_time_input->SetFocus();
 	end_time_input = new wxTextCtrl(download_panel, -1, get_var("download_timing_end"), wxDefaultPosition, wxSize(100, 25));
 	save_dir_input = new wxTextCtrl(download_panel, -1, get_var("download_folder"), wxDefaultPosition, wxSize(400, 25));
 	count_input = new wxTextCtrl(download_panel, -1, get_var("simultaneous_downloads"), wxDefaultPosition, wxSize(100, 25));
+	speed_input = new wxTextCtrl(download_panel, -1, get_var("max_dl_speed"), wxDefaultPosition, wxSize(100, 25));
 
 	download_button = new wxButton(download_panel, wxID_APPLY);
 	download_cancel_button = new wxButton(download_panel, wxID_CANCEL);
@@ -202,6 +204,8 @@ void configure_dialog::create_download_panel(){
 
 	count_sizer->Add(count_text, 0, wxALIGN_LEFT);
 	count_sizer->Add(count_input, 0, wxALIGN_LEFT);
+	count_sizer->Add(speed_text, 0, wxALIGN_LEFT);
+	count_sizer->Add(speed_input, 0, wxALIGN_LEFT);
 
 	download_button_sizer->Add(download_button, 1, wxLEFT|wxRIGHT, 20);
 	download_button_sizer->Add(download_cancel_button, 1, wxLEFT|wxRIGHT, 10);
@@ -540,6 +544,7 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 	string end_time = string(end_time_input->GetValue().mb_str());
 	string save_dir = string(save_dir_input->GetValue().mb_str());
 	string count = string(count_input->GetValue().mb_str());
+	string speed = string(speed_input->GetValue().mb_str());
 
 	string log_output = string(log_output_input->GetValue().mb_str());
 	string activity_level;
@@ -622,6 +627,10 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 
 		// download count
 		mysock->send("DDP VAR SET simultaneous_downloads = " + count);
+		mysock->recv(answer);
+
+		// download speed
+		mysock->send("DDP VAR SET max_dl_speed = " + speed);
 		mysock->recv(answer);
 
 		// log output

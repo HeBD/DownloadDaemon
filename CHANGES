@@ -1,9 +1,10 @@
 2009-12-21
    [adrian]
-	- added possibility to limit download speed (only for not running downloads
-	  because of libcurl limits)
+	- added possibility to limit download speed (only for not running downloads because of libcurl limits)
 	- added download speed regulation to ddclient-php
 	- finally fixed usage on cygwin! Now you can use DownloadDaemon under Windows with cygwin!
+   [susanne]
+	- added download speed regulation to ddclient-wx
 
 2009-12-17
    [adrian]
@@ -104,7 +105,7 @@
 	- reverted IPv6 compatibility because of problems on Windows
 
 2009-10-16
-   [adrian]h
+   [adrian]
 	- fixed libboost-thread dependency bug in ddconsole
 	- added support for '~' in the beginning of a path in a configuration file, which will be replaced with $HOME
 	- removed max packet size of 9999 bytes in netpptk

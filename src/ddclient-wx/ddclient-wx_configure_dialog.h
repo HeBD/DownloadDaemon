@@ -77,10 +77,12 @@ class configure_dialog : public wxDialog{
 		wxStaticText *save_dir_text;
 		wxStaticText *exp_count_text;
 		wxStaticText *count_text;
+		wxStaticText *speed_text;
 		wxTextCtrl *start_time_input;
 		wxTextCtrl *end_time_input;
 		wxTextCtrl *save_dir_input;
 		wxTextCtrl *count_input;
+		wxTextCtrl *speed_input;
 		wxButton *download_button;
 		wxButton *download_cancel_button;
 
