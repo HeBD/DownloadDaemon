@@ -39,7 +39,7 @@ void cfgfile::open_cfg_file(const std::string &fp, bool open_writeable) {
 	file.close();
 	filepath = fp;
 	if (open_writeable) {
-		file.open(filepath.c_str(), fstream::out | fstream::in | fstream::ate);
+		file.open(filepath.c_str(), fstream::out | fstream::in);
 		is_writeable = true;
 	}
 	else {
@@ -142,10 +142,12 @@ void cfgfile::set_comment_token(const std::string &token) {
 
 void cfgfile::reload_file() {
 	mx.lock();
-	file.close();
+	if(file.is_open()) {
+		file.close();
+	}
 
 	if(is_writeable) {
-		file.open(this->filepath.c_str(), fstream::in | fstream::out | fstream::ate);
+		file.open(this->filepath.c_str(), fstream::in | fstream::out);
 	} else {
 		file.open(this->filepath.c_str(), fstream::in);
 	}
