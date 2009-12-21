@@ -2,11 +2,12 @@ This guide is seperated in 3 parts:
 1: Things that you always have to do
 2: Things you have to do if you got this guide in a .tar.gz or .tar.bz2 source package
 3: Things you have to do if you are building from SVN
-4: Installing the ARM/NAS package (a bit more complicated)
+4: Installing the ARM/armel package (a bit more complicated)
 5: Doing a user-only installation (which does not require root privileges for execution)
 
 1:	To build DownloadDaemon, you need to have libcurl (libcurl-dev) and libboost-thread (at least version 1.36.0) installed.
-	To build ddconsole, you don't have any special dependencies
+	DownloadDaemon only runs on Unix-systems (Linux tested). However, you can run it under Windows by using Cygwin.
+	To build ddconsole, you don't have to meet any special dependencies
 	To build ddclient-wx, you need to have libboost-thread (at least version 1.36.0) and wxWidgets development packages installed
 	You also need cmake in order to build any of the packages
 
@@ -62,6 +63,7 @@ This guide is seperated in 3 parts:
 	2: open ~/.downloaddaemon/downloaddaemon.conf and change the variable dlist_file
 	   (at the bottom of the file) to ~/.downloaddaemon/dlist
 	3: Change the download_folder variable in that file to a writeable folder.
+	4: change the log-file to a folder where you have write permissions
 	After that, executing DownloadDaemon as a normal user should be no problem.
 
 	  
