@@ -181,7 +181,7 @@ void configure_dialog::create_download_panel(){
 	save_dir_text = new wxStaticText(download_panel, -1, wxT("Download Folder"));
 	exp_count_text = new wxStaticText(download_panel, -1, wxT("Here you can specify how many downloads may run at the same time and regulate the\ndownload speed."));
 	count_text = new wxStaticText(download_panel, -1, wxT("Simultaneous Downoads"));
-	speed_text = new wxStaticText(download_panel, -1, wxT("Maximal Download Speed"));
+	speed_text = new wxStaticText(download_panel, -1, wxT("Maximal Speed in kb/s"));
 
 	start_time_input = new wxTextCtrl(download_panel,-1, get_var("download_timing_start"), wxDefaultPosition, wxSize(100, 25));
 	start_time_input->SetFocus();
