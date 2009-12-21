@@ -86,16 +86,18 @@ void log_string(const std::string logstr, LOG_LEVEL level) {
 	}
 
 	std::string desiredLogFile = global_config.get_cfg_value("log_file");
+	std::stringstream to_log;
+	to_log << '[' << log_date << "] " << desiredLogLevel << ": " << logstr << '\n';
 
 	boost::mutex::scoped_lock(logfile_mutex);
 	if(desiredLogFile == "stdout" || desiredLogFile == "") {
-		cout << '[' << log_date << "] " << logstr << '\n' << flush;
+		cout << to_log.str() << flush;
 	} else if(desiredLogFile == "stderr") {
-		cerr << '[' << log_date << "] " << logstr << '\n' << flush;
+		cerr << to_log.str() << flush;
 	} else {
 		correct_path(desiredLogFile);
 		ofstream ofs(desiredLogFile.c_str(), ios::app);
-		ofs << '[' << log_date << "] " << logstr << '\n' << flush;
+		ofs << to_log.str() << flush;
 		ofs.close();
 	}
 }

@@ -58,8 +58,7 @@ std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 	file.seekg(0);
 	std::string buff, identstr, val;
 	size_t eqloc;
-	while(!file.eof() && file.good()) {
-		getline(file, buff);
+	while(getline(file, buff) && !file.eof() && file.good()) {
 		buff = buff.substr(0, buff.find(comment_token));
 		eqloc = buff.find(eqtoken);
 		identstr = buff.substr(0, eqloc);
