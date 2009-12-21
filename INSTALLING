@@ -5,9 +5,9 @@ This guide is seperated in 3 parts:
 4: Installing the ARM/NAS package (a bit more complicated)
 5: Doing a user-only installation (which does not require root privileges for execution)
 
-1:	To build DownloadDaemon, you need to have libcurl (libcurl-dev) and libboost-thread (at least version 1.35.0) installed.
+1:	To build DownloadDaemon, you need to have libcurl (libcurl-dev) and libboost-thread (at least version 1.36.0) installed.
 	To build ddconsole, you don't have any special dependencies
-	To build ddclient-wx, you need to have libboost-thread (at least version 1.35.0) and wxWidgets development packages installed
+	To build ddclient-wx, you need to have libboost-thread (at least version 1.36.0) and wxWidgets development packages installed
 	You also need cmake in order to build any of the packages
 
 2:	Building a package from a source package is pretty simple. Extract the archive (if you read this, this should be done by now)
