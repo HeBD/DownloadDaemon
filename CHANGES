@@ -3,6 +3,7 @@
 	- added possibility to limit download speed (only for not running downloads
 	  because of libcurl limits)
 	- added download speed regulation to ddclient-php
+	- finally fixed usage on cygwin! Now you can use DownloadDaemon under Windows with cygwin!
 
 2009-12-17
    [adrian]

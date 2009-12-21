@@ -715,6 +715,8 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	boost::mutex::scoped_lock plugin_lock(plugin_mutex);
 	plugin_status retval = plugin_exec_func(*this, dl, pinp, poutp);
 	dlclose(handle);
+	// lock, followed by scoped unlock. otherwise lock will be called 2 times
+	download_mutex.lock();
 	return retval;
 }
 
