@@ -1,3 +1,8 @@
+2009-12-21
+   [adrian]
+	- added possibility to limit download speed (only for not running downloads
+	  because of libcurl limits)
+
 2009-12-17
    [adrian]
 	- added possibility to open only on a specific device using SO_BINDTODEVICE. Only works if DD is executed as root.

@@ -222,6 +222,10 @@ void download_thread(int download) {
 		// set timeouts
 		curl_easy_setopt(handle_copy, CURLOPT_LOW_SPEED_LIMIT, 100);
 		curl_easy_setopt(handle_copy, CURLOPT_LOW_SPEED_TIME, 20);
+		long dl_speed = atol(global_config.get_cfg_value("max_dl_speed").c_str()) * 1024;
+		if(dl_speed > 0) {
+			curl_easy_setopt(handle_copy, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
+		}
 
 		log_string(std::string("Starting download ID: ") + int_to_string(download), LOG_DEBUG);
 		success = curl_easy_perform(handle_copy);
