@@ -2,6 +2,7 @@
    [adrian]
 	- added possibility to limit download speed (only for not running downloads
 	  because of libcurl limits)
+	- added download speed regulation to ddclient-php
 
 2009-12-17
    [adrian]

@@ -70,7 +70,9 @@ include("functional.php");
 		send_all($socket, "DDP VAR SET log_level = " . $_POST['log_level']);
 		recv_all($socket, $buf);
 		send_all($socket, "DDP VAR SET log_file = " . $_POST['log_file']);
-		recv_all($socket, $buf);	
+		recv_all($socket, $buf);
+		send_all($socket, "DDP VAR SET max_dl_speed = " . $_POST['max_dl_speed']);
+		recv_all($socket, $buf);
 
 	}
 
@@ -144,6 +146,12 @@ include("functional.php");
 	recv_all($socket, $log_file);
 	echo "This option specifies the destination for log-output and can either be a filename, \"stderr\" or \"stdout\" for local console output<br>";
 	echo "Log file: <input type=\"text\" name=\"log_file\" value=\"". $log_file ."\" size=\"40\">";
+	echo "<br><br><br>";
+	$max_dl_speed = "";
+	send_all($socket, "DDP VAR GET max_dl_speed");
+	recv_all($socket, $max_dl_speed);
+	echo "Max download speed (will only be used for Downloads that are not yet running): ";
+	echo "<input type=\"text\" size=\"5\" name=\"max_dl_speed\" value=\"" . $max_dl_speed . "\">";
 	echo "<br><br><br>";
 	echo "<input type=\"submit\" name=\"apply\" value=\"Apply\">";
 
