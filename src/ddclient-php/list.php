@@ -48,7 +48,7 @@ include("functional.php");
 
 	echo "<table border=\"1\">\n";
 	echo "<tr><td>ID</td><td>Date</td><td>Title</td><td>URL</td><td>Status</td></tr>";
-	
+	$display_ddinactive_warn = false;
 	for($i = 0; $i < $download_count; $i++) {
 		echo "<tr>";
 		for($j = 0; $j < 5; $j++) {
@@ -88,6 +88,7 @@ include("functional.php");
 					if($exp_dls[$i][8] == "PLUGIN_SUCCESS") {
 						echo "<td>";
 						echo "Download Pending";
+						$display_ddinactive_warn = true;
 					} else {
 						echo "<td bgcolor=\"red\">";
 						echo "Error: " . $exp_dls[$i][8];
@@ -113,7 +114,17 @@ include("functional.php");
 		echo "</tr>";
 	}
 
-	echo "</table>"
+	echo "</table>";
+
+	if($display_ddinactive_warn) {
+		$buf = "";
+		send_all($socket, "DDP VAR GET downloading_active");
+		recv_all($socket, $buf);
+		if($buf == 0 || $buf == "false") {
+			echo "<br><div style=\"align:center; color:red\">Downloading is currently inactive. Click <a href=\"conf_mgmt.php\">here</a> to activate it.</div>";
+
+		}
+	}
 ?>
 	</div>
 </body>

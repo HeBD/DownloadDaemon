@@ -1,6 +1,7 @@
 2009-12-23
    [adrian]
-	- added favicon to ddclient-php and webpage (thanks to ingo2)
+	- ddclient-php now shows a warning on the main page if DD is inactive and there are pending downloads (#2918650)
+	- added favicon to ddclient-php and webpage (#2919386) (thanks to ingo2)
 
 2009-12-21
    [adrian]
