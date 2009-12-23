@@ -2,6 +2,7 @@
    [adrian]
 	- ddclient-php now shows a warning on the main page if DD is inactive and there are pending downloads (#2918650)
 	- added favicon to ddclient-php and webpage (#2919386) (thanks to ingo2)
+	- made cfgfile parser more safe (better checking when writing. reduces flushed config files
 
 2009-12-21
    [adrian]

@@ -58,7 +58,7 @@ std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 	file.seekg(0);
 	std::string buff, identstr, val;
 	size_t eqloc;
-	while(getline(file, buff) && !file.eof() && file.good()) {
+	while(getline(file, buff) && file.good()) {
 		buff = buff.substr(0, buff.find(comment_token));
 		eqloc = buff.find(eqtoken);
 		identstr = buff.substr(0, eqloc);
@@ -77,9 +77,14 @@ bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string
 	mx.lock();
 	std::string cfg_value = value;
 	trim(cfg_value);
-	if(!is_writeable || !file.is_open()) {
+	if(!is_writeable) {
 		mx.unlock();
 		return false;
+	}
+	if(!file.is_open() || !file.good()) {
+		mx.unlock();
+		reload_file();
+		mx.lock();
 	}
 
 	file.seekg(0);
@@ -88,9 +93,15 @@ bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string
 	size_t eqloc;
 	bool done = false;
 
-	while(!file.eof() && file.good()) {
+	while(file.good()) {
 		getline(file, buff);
 		cfgvec.push_back(buff);
+	}
+
+	file.seekg(0);
+	if(file.bad()) {
+		mx.unlock();
+		return false;
 	}
 
 	for(vector<std::string>::iterator it = cfgvec.begin(); it != cfgvec.end(); ++it) {
