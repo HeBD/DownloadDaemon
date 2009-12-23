@@ -86,6 +86,9 @@ void log_string(const std::string logstr, LOG_LEVEL level) {
 	}
 
 	std::string desiredLogFile = global_config.get_cfg_value("log_file");
+	if(desiredLogFile.empty()) {
+		desiredLogFile = "stdout";
+	}
 	std::stringstream to_log;
 	to_log << '[' << log_date << "] " << desiredLogLevel << ": " << logstr << '\n';
 
