@@ -190,18 +190,26 @@ int download_container::deactivate(int id) {
 }
 
 int download_container::get_next_downloadable(bool do_lock) {
+	boost::mutex::scoped_lock lock(download_mutex, boost::defer_lock);
 	if(do_lock) {
-		download_mutex.lock();
+		lock.lock();
 	}
-	if(is_reconnecting) {
-		download_mutex.unlock();
+
+	if(is_reconnecting || download_list.empty()) {
+		return LIST_ID;
+	}
+	int pending_downloads = 0;
+	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+		if(it->get_status() == DOWNLOAD_PENDING) {
+			++pending_downloads;
+		}
+	}
+	if(pending_downloads == 0) {
 		return LIST_ID;
 	}
 
 	download_container::iterator downloadable = download_list.end();
-	if(download_list.empty() || running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str())
-	   || global_config.get_cfg_value("downloading_active") == "0") {
-	   	download_mutex.unlock();
+	if(running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str()) || global_config.get_cfg_value("downloading_active") == "0") {
 		return LIST_ID;
 	}
 
@@ -220,46 +228,38 @@ int download_container::get_next_downloadable(bool do_lock) {
 		// we have a 0:00 shift
 		if(starthours > endhours) {
 			if(current_time->tm_hour < starthours && current_time->tm_hour > endhours) {
-				download_mutex.unlock();
 				return LIST_ID;
 			}
 			if(current_time->tm_hour == starthours) {
 				if(current_time->tm_min < startminutes) {
-					download_mutex.unlock();
 					return LIST_ID;
 				}
 			} else if(current_time->tm_hour == endhours) {
 				if(current_time->tm_min > endminutes) {
-					download_mutex.unlock();
 					return LIST_ID;
 				}
 			}
 		// download window are just a few minutes
 		} else if(starthours == endhours) {
 			if(current_time->tm_min < startminutes || current_time->tm_min > endminutes) {
-				download_mutex.unlock();
 				return LIST_ID;
 			}
 		// no 0:00 shift
 		} else if(starthours < endhours) {
 			if(current_time->tm_hour < starthours || current_time->tm_hour > endhours) {
-				download_mutex.unlock();
 				return LIST_ID;
 			}
 			if(current_time->tm_hour == starthours) {
 				if(current_time->tm_min < startminutes) {
-					download_mutex.unlock();
 					return LIST_ID;
 				}
 			} else if(current_time->tm_hour == endhours) {
 				if(current_time->tm_min > endminutes) {
-					download_mutex.unlock();
 					return LIST_ID;
 				}
 			}
 		}
 	}
-
 
 	for(iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_PENDING && it->wait_seconds == 0) {
@@ -276,12 +276,10 @@ int download_container::get_next_downloadable(bool do_lock) {
 				}
 			}
 			if(can_attach) {
-				download_mutex.unlock();
 				return it->id;
 			}
 		}
 	}
-	download_mutex.unlock();
 	return LIST_ID;
 }
 #endif // IS_PLUGIN
@@ -642,10 +640,10 @@ void download_container::do_reconnect(download_container *dlist) {
 			it->wait_seconds = 0;
 		}
 	}
-	dlist->download_mutex.unlock();
+	lock.unlock();
 	reconnect(router_ip, router_username, router_password);
 	dlclose(handle);
-	dlist->download_mutex.lock();
+	lock.lock();
 	for(download_container::iterator it = dlist->download_list.begin(); it != dlist->download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_WAITING || it->get_status() == DOWNLOAD_RECONNECTING) {
 			it->set_status(DOWNLOAD_PENDING);
@@ -653,7 +651,6 @@ void download_container::do_reconnect(download_container *dlist) {
 		}
 	}
 	dlist->is_reconnecting = false;
-	dlist->download_mutex.unlock();
 	return;
 }
 
@@ -711,12 +708,13 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	trim_string(pinp.premium_user);
 	trim_string(pinp.premium_password);
 
-	download_mutex.unlock();
-	boost::mutex::scoped_lock plugin_lock(plugin_mutex);
+	lock.unlock();
+	plugin_mutex.lock();
 	plugin_status retval = plugin_exec_func(*this, dl, pinp, poutp);
 	dlclose(handle);
+	plugin_mutex.unlock();
 	// lock, followed by scoped unlock. otherwise lock will be called 2 times
-	download_mutex.lock();
+	lock.lock();
 	return retval;
 }
 
