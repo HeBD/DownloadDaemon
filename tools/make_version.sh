@@ -322,13 +322,13 @@ expecially the changelog file should be changed."
 
 echo "building downloaddaemon package..."
 cd downloaddaemon-${1}
-debuild -d -S -sa
+debuild -d -sa
 cd ..
 echo "building ddclient-wx package..."
 cd ddclient-wx-${1}
-debuild -d -S -sa
+debuild -d -sa
 cd ..
 echo "building ddconsole package..."
 cd ddconsole-${1}
-debuild -d -S -sa
+debuild -d -sa
 cd ..
