@@ -18,6 +18,7 @@ include("functional.php");
 <html>
 	<head>
 		<title>DownloadDaemon Manager - Reconnect Setup</title>
+		<link rel="shortcut icon" href="ddico.ico" type="image/x-icon">
 	</head>
 <body>
 	

@@ -19,6 +19,7 @@ include("functional.php");
 	<head>
 		<title>DownloadDaemon Manager - Download Management</title>
 		<meta HTTP-EQUIV="REFRESH" content="5; url=mgmt.php">
+		<link rel="shortcut icon" href="ddico.ico" type="image/x-icon">
 	</head>
 <body>
 	

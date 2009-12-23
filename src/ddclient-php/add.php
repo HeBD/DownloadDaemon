@@ -15,6 +15,7 @@
 <html>
 	<head>
 		<title>DownloadDaemon Manager - Add Downloads</title>
+		<link rel="shortcut icon" href="ddico.ico" type="image/x-icon">
 	</head>
 <body>
 	

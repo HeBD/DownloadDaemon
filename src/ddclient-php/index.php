@@ -42,6 +42,7 @@
 <html>
 	<head>
 		<title>DownloadDaemon Login</title>
+		<link rel="shortcut icon" href="ddico.ico" type="image/x-icon">
 	</head>
 
 	<body>

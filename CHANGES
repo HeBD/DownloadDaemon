@@ -1,3 +1,7 @@
+2009-12-23
+   [adrian]
+	- added favicon to ddclient-php and webpage (thanks to ingo2)
+
 2009-12-21
    [adrian]
 	- added possibility to limit download speed (only for not running downloads because of libcurl limits)
