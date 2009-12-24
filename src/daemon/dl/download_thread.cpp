@@ -237,12 +237,18 @@ void download_thread(int download) {
 			umask_ss << global_config.get_cfg_value("dl_file_umask");
 			int umask;
 			umask_ss >> umask;
-			if(umask != 0) chmod(output_filename.c_str(), umask);
+			if(umask != 0) {
+				if(chmod(output_filename.c_str(), umask) != 0) {
+					log_string("Unable to chmod downloaded file: " + output_filename, LOG_WARNING);
+				}
+			}
 			int uid = atoi(global_config.get_cfg_value("dl_file_owner").c_str());
 			int gid = atoi(global_config.get_cfg_value("dl_file_group").c_str());
 			if(uid == 0) uid = -1;
 			if(gid == 0) gid = -1;
-			chown(output_filename.c_str(), uid, gid);
+			if((uid != -1 || gid != -1) && chown(output_filename.c_str(), uid, gid) != 0) {
+				log_string("Unable to chown downloaded file: " + output_filename, LOG_WARNING);
+			}
 		}
 
 		long http_code;
