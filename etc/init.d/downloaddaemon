@@ -3,8 +3,8 @@
 # Provides:          DownloadDaemon
 # Should-Start:      $network
 # Should-Stop:       $network
-# Default-Start:     3 4 5
-# Default-Stop:      1
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
 # Short-Description: DownloadDaemon download manager service
 ### END INIT INFO
 
