@@ -1,3 +1,7 @@
+2009-12-24
+   [adrian]
+	- added option to set the file owner, group and permission for downloaded files (#2920686)
+
 2009-12-23
    [adrian]
 	- ddclient-php now shows a warning on the main page if DD is inactive and there are pending downloads (#2918650)

@@ -229,6 +229,22 @@ void download_thread(int download) {
 
 		log_string(std::string("Starting download ID: ") + int_to_string(download), LOG_DEBUG);
 		success = curl_easy_perform(handle_copy);
+
+		if(stat(output_filename.c_str(), &st) == 0) {
+			// set the file permission umask
+			std::stringstream umask_ss;
+			umask_ss << std::oct;
+			umask_ss << global_config.get_cfg_value("dl_file_umask");
+			int umask;
+			umask_ss >> umask;
+			if(umask != 0) chmod(output_filename.c_str(), umask);
+			int uid = atoi(global_config.get_cfg_value("dl_file_owner").c_str());
+			int gid = atoi(global_config.get_cfg_value("dl_file_group").c_str());
+			if(uid == 0) uid = -1;
+			if(gid == 0) gid = -1;
+			chown(output_filename.c_str(), uid, gid);
+		}
+
 		long http_code;
 		curl_easy_getinfo(handle_copy, CURLINFO_RESPONSE_CODE, &http_code);
 		output_file.close();
