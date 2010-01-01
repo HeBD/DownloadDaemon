@@ -1,8 +1,8 @@
 #! /bin/sh
 ### BEGIN INIT INFO
 # Provides:          DownloadDaemon
-# Should-Start:      $network
-# Should-Stop:       $network
+# Required-Start:    $network
+# Required-Stop:     $network
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: DownloadDaemon download manager service
@@ -29,7 +29,7 @@ case "$1" in
 	;;
   status)
 	echo "Status of DownloadDaemon:"
-	if [ `pidof DownloadDaemon`=="" ]; then
+	if [ -z `pidof DownloadDaemon` ]; then
 		echo "$NAME is not running."
 		exit 3
 	else

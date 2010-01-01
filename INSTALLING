@@ -1,4 +1,4 @@
-This guide is seperated in 3 parts:
+This guide is seperated in 5 parts:
 1: Things that you always have to do
 2: Things you have to do if you got this guide in a .tar.gz or .tar.bz2 source package
 3: Things you have to do if you are building from SVN
@@ -7,7 +7,7 @@ This guide is seperated in 3 parts:
 
 1:	To build DownloadDaemon, you need to have libcurl (libcurl-dev) and libboost-thread (at least version 1.36.0) installed.
 	DownloadDaemon only runs on Unix-systems (Linux tested). However, you can run it under Windows by using Cygwin (you need cygwin
-	1.7 which is still in beta).
+	1.7 or later).
 	To build ddconsole, you don't have to meet any special dependencies
 	To build ddclient-wx, you need to have libboost-thread (at least version 1.36.0) and wxWidgets development packages installed
 	You also need cmake in order to build any of the packages

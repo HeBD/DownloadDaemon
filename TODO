@@ -1,5 +1,5 @@
 - make it possible to download files through the mgmt interface
 - write a few plugins
 - handle container formats of other downloaders (mainly ccf and rsdf. won't support DLC because it's not open-source friendly)
-- speed regulation (for now impossible because of libcurl bugs I can't fix)
+- improve speed regulation
 - Make a multiuser-system out of downloaddaemon with partly individual configuration (download-folder) and administration...
