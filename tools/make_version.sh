@@ -1,25 +1,5 @@
 #!/bin/bash
 
-if [ "$1" == "" ]
-then
-	echo "No version number specified"
-	echo "usage: $0 version email [ubuntu revision]"
-	exit
-fi
-
-if [ "$2" == "" ]
-then
-	echo "No email address specified"
-	echo "usage: $0 version email [ubuntu revision]"	
-	exit
-fi
-UBUNTU_REV=$3
-if [ "$3" == "" ]
-then
-	echo "No ubuntu revision specified, assuming 1"
-	UBUNTU_REV="1"
-fi
-
 # debian target distribution
 DEB_DIST="karmic"
 
@@ -58,117 +38,123 @@ DESC_DDCLIENTWX="With ddclient-wx you can manage your DownloadDaemon
 DESC_DDCONSOLE="with ddclient you can easily manage your
  DownloadDaemon server - even without X"
 
-rm -rf ../version/*-${1}*
-if [ "$UBUNTU_REV" == "1" ]; then
-	rm -rf ../version/debs_${1}
+# specify all files/directorys (array) and the path's where they should go to (basically a cp -r FILES_XXX[i] PATHS_XXX[i] is done)
+# the .svn folders are removed automatically. Folders are created automatically before copying
+FILES_DD=("../src/daemon" "../src/lib/" "../etc/downloaddaemon" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DD=("src/" "src/" "etc/")
+
+FILES_DDCLIENTWX=("../src/ddclient-wx" "../src/lib/netpptk" "../src/lib/crypt" "../share/applications" "../share/ddclient-wx" "../share/doc" "../share/pixmaps" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DDCLIENTWX=("src/" "src/lib/" "src/lib/" "share/" "share/" "share/" "share/" )
+
+FILES_DDCONSOLE=("../src/ddconsole" "../src/lib/netpptk" "../src/lib/crypt" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DDCONSOLE=("src/" "src/lib/" "src/lib/")
+
+FILES_DDCLIENTPHP=("src/ddclient-php/*" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DDCLIENTPHP=("ddclient-php")
+
+
+if [ "$1" == "" ]
+then
+	echo "No version number specified"
+	echo "usage: $0 version email [ubuntu revision]"
+	exit
 fi
 
-# ddclient-wx...
-echo "copying ddclient-wx..."
-mkdir -p ../version/ddclient-wx-${1}/src/
-mkdir -p ../version/ddclient-wx-${1}/src/lib
-mkdir -p ../version/ddclient-wx-${1}/share
-cp -rf ../src/ddclient-wx ../version/ddclient-wx-${1}/src/
-cp -rf ../src/lib/netpptk ../src/lib/crypt ../version/ddclient-wx-${1}/src/lib
-cp -rf ../share/applications ../share/ddclient-wx ../share/doc ../share/pixmaps ../version/ddclient-wx-${1}/share/
-cp -f ../AUTHORS ../CHANGES ../TODO ../LICENCE ../INSTALLING ../version/ddclient-wx-${1}/
+if [ "$2" == "" ]
+then
+	echo "No email address specified"
+	echo "usage: $0 version email [ubuntu revision]"	
+	exit
+fi
+UBUNTU_REV=$3
+if [ "$3" == "" ]
+then
+	echo "No ubuntu revision specified, assuming 1"
+	UBUNTU_REV="1"
+fi
+
+VERSION=$1
+EMAIL=$2
+
+
+mkdir -p ../version/${VERSION}
+
+
+for path in $(seq 0 $((${#FILES_DD[@]} - 1))); do
+	mkdir -p ../version/${VERSION}/downloaddaemon-${VERSION}/${PATHS_DD[${path}]}
+	cp -r ${FILES_DD[${path}]} ../version/${VERSION}/downloaddaemon-${VERSION}/${PATHS_DD[${path}]}
+done
+
+for path in $(seq 0 $((${#FILES_DDCLIENTWX[@]} - 1))); do
+	mkdir -p ../version/${VERSION}/ddclient-wx-${VERSION}/${PATHS_DDCLIENTWX[${path}]}
+	cp -r ${FILES_DDCLIENTWX[${path}]} ../version/${VERSION}/ddclient-wx-${VERSION}/${PATHS_DDCLIENTWX[${path}]}
+done
+
+for path in $(seq 0 $((${#FILES_DDCONSOLE[@]} - 1))); do
+	mkdir -p ../version/${VERSION}/ddconsole-${VERSION}/${PATHS_DDCONSOLE[${path}]}
+	cp -r ${FILES_DDCONSOLE[${path}]} ../version/${VERSION}/ddconsole-${VERSION}/${PATHS_DDCONSOLE[${path}]}
+done
+
+for path in $(seq 0 $((${#FILES_DDCLIENTPHP[@]} - 1))); do
+	mkdir -p ../version/${VERSION}/ddclient-php-${VERSION}/${PATHS_DDCLIENTPHP[${path}]}
+	cp -r ${FILES_DDCLIENTPHP[${path}]} ../version/${VERSION}/ddclient-php-${VERSION}/${PATHS_DDCLIENTPHP[${path}]}
+done
+
+cd ../version/${VERSION}
+
 echo "cmake_minimum_required (VERSION 2.6)
-
-project(ddclient-wx)
-add_subdirectory(src)" > ../version/ddclient-wx-${1}/CMakeLists.txt
-
-echo "cmake_minimum_required (VERSION 2.6)
-
-project(ddclient-wx)
-add_subdirectory(ddclient-wx)
-add_subdirectory(lib)" > ../version/ddclient-wx-${1}/src/CMakeLists.txt
-
-
-
-# DownloadDaemon
-echo "copying DownloadDaemon"
-mkdir -p ../version/downloaddaemon-${1}/src/ ../version/downloaddaemon-${1}/share/ ../version/downloaddaemon-${1}/etc
-cp -rf ../src/daemon ../version/downloaddaemon-${1}/src/
-cp -rf ../src/lib ../version/downloaddaemon-${1}/src/
-cp -rf ../share/downloaddaemon ../version/downloaddaemon-${1}/share/
-cp -rf ../etc/downloaddaemon ../version/downloaddaemon-${1}/etc/downloaddaemon
-cp -f ../AUTHORS ../CHANGES ../TODO ../LICENCE ../INSTALLING ../version/downloaddaemon-${1}/
-echo "cmake_minimum_required (VERSION 2.6)
-
 project(DownloadDaemon)
-add_subdirectory(src)" > ../version/downloaddaemon-${1}/CMakeLists.txt
+add_subdirectory(src/daemon)" > downloaddaemon-${VERSION}/CMakeLists.txt
 
 echo "cmake_minimum_required (VERSION 2.6)
+project(ddclient-wx)
+add_subdirectory(src/ddclient-wx)" > ddclient-wx-${VERSION}/CMakeLists.txt
 
-project(DownloadDaemon)
-add_subdirectory(daemon)" > ../version/downloaddaemon-${1}/src/CMakeLists.txt
-
-
-# ddconsole
-echo "copying ddconsole"
-mkdir -p ../version/ddconsole-${1}/src/
-mkdir -p ../version/ddconsole-${1}/src/lib
-cp -rf ../src/ddconsole ../version/ddconsole-${1}/src
-cp -rf ../src/lib/netpptk ../src/lib/crypt ../version/ddconsole-${1}/src/lib/
-cp -f ../AUTHORS ../CHANGES ../TODO ../LICENCE ../INSTALLING ../version/ddconsole-${1}/
 echo "cmake_minimum_required (VERSION 2.6)
-
 project(ddconsole)
-add_subdirectory(src)" > ../version/ddconsole-${1}/CMakeLists.txt
-
-echo "cmake_minimum_required (VERSION 2.6)
-
-project(ddconsole)
-add_subdirectory(ddconsole)" > ../version/ddconsole-${1}/src/CMakeLists.txt
-
-
-# ddclient-php
-echo "copying ddclient-php"
-mkdir -p ../version/ddclient-php-${1}
-cp -rf ../src/ddclient-php/* ../version/ddclient-php-${1}
-cp -f ../AUTHORS ../CHANGES ../TODO ../LICENCE ../INSTALLING ../version/ddclient-php-${1}/
-
-
+add_subdirectory(src/ddconsole)" > ddconsole-${VERSION}/CMakeLists.txt
 
 echo "removing unneeded files..."
-cd ../version
 find -name .svn | xargs rm -rf
 find -name "*~" | xargs rm -f
 
-echo "building source archives..."
-tar -cz downloaddaemon-${1} > downloaddaemon-${1}.tar.gz
-tar -cz ddclient-wx-${1} > ddclient-wx-${1}.tar.gz
-tar -cz ddconsole-${1} > ddconsole-${1}.tar.gz
-tar -cz ddclient-php-${1} > ddclient-php-${1}.tar.gz
 
-
-echo "creating debian packages..."
-mkdir debs_${1}
+echo "BUILDING SOURCE ARCHIVES..."
+tar -cz downloaddaemon-${VERSION} > downloaddaemon-${1}.tar.gz
+tar -cz ddclient-wx-${VERSION} > ddclient-wx-${1}.tar.gz
+tar -cz ddconsole-${VERSION} > ddconsole-${1}.tar.gz
+tar -cz ddclient-php-${VERSION} > ddclient-php-${1}.tar.gz
+echo "DONE"
+echo "PREPARING DEBIAN ARCHIVES..."
+mkdir debs_${VERSION}
+# only if it's the first ubuntu rev, we copy the .orig files. otherwise we just update.
 if [ "$UBUNTU_REV" == "1" ]; then
-	cp downloaddaemon-${1}.tar.gz debs_${1}/downloaddaemon_${1}.orig.tar.gz
-	cp ddclient-wx-${1}.tar.gz debs_${1}/ddclient-wx_${1}.orig.tar.gz
-	cp ddconsole-${1}.tar.gz debs_${1}/ddconsole_${1}.orig.tar.gz
+	cp downloaddaemon-${VERSION}.tar.gz debs_${VERSION}/downloaddaemon_${VERSION}.orig.tar.gz
+	cp ddclient-wx-${VERSION}.tar.gz debs_${VERSION}/ddclient-wx_${VERSION}.orig.tar.gz
+	cp ddconsole-${VERSION}.tar.gz debs_${VERSION}/ddconsole_${VERSION}.orig.tar.gz
 fi
-cd debs_${1}
-rm -rf downloaddaemon-${1} ddclient-wx-${1} ddconsole-${1}
-cp -rf ../downloaddaemon-${1} ../ddclient-wx-${1} ../ddconsole-${1} .
 
-cd downloaddaemon-${1}
+cd debs_${VERSION}
+rm -rf downloaddaemon-${VERSION} ddclient-wx-${VERSION} ddconsole-${VERSION}
+cp -rf ../downloaddaemon-${VERSION} ../ddclient-wx-${VERSION} ../ddconsole-${VERSION} .
+
+cd downloaddaemon-${VERSION}
 echo "Settings for DownloadDaemon:"
-dh_make -s -c gpl -e $2
+dh_make -s -c gpl -e ${EMAIL}
 cd debian
 #rm *.ex *.EX
-cd ../../ddclient-wx-${1}
+cd ../../ddclient-wx-${VERSION}
 echo "Settings for ddclient-wx:"
-dh_make -s -c gpl -e $2
+dh_make -s -c gpl -e ${EMAIL}
 cd debian
 #rm *.ex *.EX
-cd ../../ddconsole-${1}
+cd ../../ddconsole-${VERSION}
 echo "Settings for ddconsole:"
-dh_make -s -c gpl -e $2
+dh_make -s -c gpl -e ${EMAIL}
 cd debian
 #rm *.ex *.EX
 cd ../..
+
 
 if [ "$DEP_DD" == "" ]; then
 	DEP_DD='${shlibs:Depends}, ${misc:Depends}'
@@ -181,11 +167,12 @@ if [ "$DEP_DDCONSOLE" == "" ]; then
 	DEP_DDCONSOLE='${shlibs:Depends}, ${misc:Depends}'
 fi
 
-################################################################################
+
+################################################################################ DOWNLOADDAEMON PREPARATION
 echo "Preparing debian/* files for DownloadDaemon"
-cd downloaddaemon-${1}/debian
+cd downloaddaemon-${VERSION}/debian
 replace="$(<changelog)"
-replace="${replace/${1}-1/${1}-0ubuntu${UBUNTU_REV}}"
+replace="${replace/${VERSION}-1/${VERSION}-0ubuntu${UBUNTU_REV}}"
 replace="${replace/unstable/$DEB_DIST}"
 echo "$replace" > changelog
 
@@ -227,11 +214,11 @@ echo "$replace" > dirs
 rm docs cron.d.ex downloaddaemon.default.ex downloaddaemon.doc-base.EX emacsen-install.ex emacsen-remove.ex emacsen-startup.ex init.d.ex init.d.lsb.ex manpage.* menu.ex README.Debian watch.ex postinst.ex  postrm.ex  preinst.ex  prerm.ex
 cd ../..
 
-########################################################################
+######################################################################## DDCLIENT-WX PREPARATION
 echo "Preparing debian/* files for ddclient-wx"
-cd ddclient-wx-${1}/debian
+cd ddclient-wx-${VERSION}/debian
 replace="$(<changelog)"
-replace="${replace/${1}-1/${1}-0ubuntu${UBUNTU_REV}}"
+replace="${replace/${VERSION}-1/${VERSION}-0ubuntu${UBUNTU_REV}}"
 replace="${replace/unstable/$DEB_DIST}"
 echo "$replace" > changelog
 
@@ -271,11 +258,13 @@ echo "$replace" > dirs
 
 rm docs cron.d.ex ddclient-wx.default.ex ddclient-wx.doc-base.EX emacsen-install.ex emacsen-remove.ex emacsen-startup.ex init.d.ex init.d.lsb.ex manpage.* menu.ex README.Debian watch.ex postinst.ex  postrm.ex  preinst.ex  prerm.ex
 cd ../..
-######################################################################
+
+
+###################################################################### DDCONSOLE PREPARATION
 echo "Preparing debian/* files for ddconsole"
-cd ddconsole-${1}/debian
+cd ddconsole-${VERSION}/debian
 replace="$(<changelog)"
-replace="${replace/${1}-1/${1}-0ubuntu${UBUNTU_REV}}"
+replace="${replace/${VERSION}-1/${VERSION}-0ubuntu${UBUNTU_REV}}"
 replace="${replace/unstable/$DEB_DIST}"
 echo "$replace" > changelog
 
@@ -312,6 +301,7 @@ rm docs cron.d.ex ddconsole.default.ex ddconsole.doc-base.EX emacsen-install.ex 
 cd ../..
 
 ####################################################################
+
 echo "
 
 
@@ -321,14 +311,14 @@ expecially the changelog file should be changed."
 
 
 echo "building downloaddaemon package..."
-cd downloaddaemon-${1}
-debuild -d -sa
+cd downloaddaemon-${VERSION}
+debuild -S -sa
 cd ..
 echo "building ddclient-wx package..."
-cd ddclient-wx-${1}
-debuild -d -sa
+cd ddclient-wx-${VERSION}
+debuild -S -sa
 cd ..
 echo "building ddconsole package..."
-cd ddconsole-${1}
-debuild -d -sa
+cd ddconsole-${VERSION}
+debuild -S -sa
 cd ..
