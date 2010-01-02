@@ -101,7 +101,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		std::string have_to_wait(resultstr.substr(pos, end - pos));
 		set_wait_time(atoi(have_to_wait.c_str()) * 60);
 		return PLUGIN_LIMIT_REACHED;
-	} else if(resultstr.find("Please try again in 2 minutes") != std::string::npos || resultstr.find("wait 2 minutes") != std::string::npos) {
+	} else if(resultstr.find("Please try again in 2 minutes") != std::string::npos
+			  || resultstr.find("wait 2 minutes") != std::string::npos
+			  || resultstr.find("our servers are overloaded") != std::string::npos) {
 		set_wait_time(120);
 		return PLUGIN_SERVER_OVERLOADED;
 	} else {

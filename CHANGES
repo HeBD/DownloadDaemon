@@ -1,5 +1,6 @@
 2010-01-02
    [adrian]
+	- fixed "server overloaded" error for rapidshare.com
 	- made plugins a lot more crash-safe, even if hosters change their page-layout
 
 2009-12-30
