@@ -707,10 +707,15 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	pinp.premium_password = global_premium_config.get_cfg_value(dlit->get_host() + "_password");
 	trim_string(pinp.premium_user);
 	trim_string(pinp.premium_password);
-
 	lock.unlock();
 	plugin_mutex.lock();
-	plugin_status retval = plugin_exec_func(*this, dl, pinp, poutp);
+	plugin_status retval;
+	try {
+		retval = plugin_exec_func(*this, dl, pinp, poutp);
+	} catch(...) {
+		retval = PLUGIN_ERROR;
+	}
+
 	dlclose(handle);
 	plugin_mutex.unlock();
 	// lock, followed by scoped unlock. otherwise lock will be called 2 times

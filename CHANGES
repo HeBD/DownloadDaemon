@@ -1,3 +1,7 @@
+2010-01-02
+   [adrian]
+	- made plugins a lot more crash-safe, even if hosters change their page-layout
+
 2009-12-30
    [adrian]
 	- default config file lines are now <= 80 characters long
