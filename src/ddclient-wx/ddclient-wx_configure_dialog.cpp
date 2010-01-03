@@ -179,7 +179,7 @@ void configure_dialog::create_download_panel(){
 	end_time_text = new wxStaticText(download_panel, -1, wxT("End Time"));
 	exp_save_dir_text = new wxStaticText(download_panel, -1, wxT("This option specifies where finished downloads should be safed on the server."));
 	save_dir_text = new wxStaticText(download_panel, -1, wxT("Download Folder"));
-	exp_count_text = new wxStaticText(download_panel, -1, wxT("Here you can specify how many downloads may run at the same time and regulate the\ndownload speed."));
+	exp_count_text = new wxStaticText(download_panel, -1, wxT("Here you can specify how many downloads may run at the same time and regulate the\ndownload speed for each download (overall max speed is download number * max speed)."));
 	count_text = new wxStaticText(download_panel, -1, wxT("Simultaneous Downoads"));
 	speed_text = new wxStaticText(download_panel, -1, wxT("Maximal Speed in kb/s"));
 
