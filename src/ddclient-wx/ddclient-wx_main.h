@@ -113,6 +113,7 @@ class myframe : public wxFrame{
 		static const long id_toolbar_connect;
 		static const long id_toolbar_add;
 		static const long id_toolbar_delete;
+		static const long id_toolbar_delete_finished;
 		static const long id_toolbar_activate;
 		static const long id_toolbar_deactivate;
 		static const long id_toolbar_priority_up;
@@ -144,6 +145,7 @@ class myframe : public wxFrame{
 		void on_connect(wxCommandEvent &event);
 		void on_add(wxCommandEvent &event);
 		void on_delete(wxCommandEvent &event);
+		void on_delete_finished(wxCommandEvent &event);
 		void on_activate(wxCommandEvent &event);
 		void on_deactivate(wxCommandEvent &event);
 		void on_priority_up(wxCommandEvent &event);

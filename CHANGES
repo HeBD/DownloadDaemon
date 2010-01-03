@@ -1,3 +1,7 @@
+2010-01-03
+   [susanne]
+	- added option (menu item and toolbar icon) to delete all finished downloads at ddclient-wx
+
 2010-01-02
    [adrian]
 	- fixed "server overloaded" error for rapidshare.com

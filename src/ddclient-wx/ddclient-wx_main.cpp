@@ -20,6 +20,7 @@ const long myframe::id_menu_select_all_lines = wxNewId();
 const long myframe::id_toolbar_connect = wxNewId();
 const long myframe::id_toolbar_add = wxNewId();
 const long myframe::id_toolbar_delete = wxNewId();
+const long myframe::id_toolbar_delete_finished = wxNewId();
 const long myframe::id_toolbar_activate = wxNewId();
 const long myframe::id_toolbar_deactivate = wxNewId();
 const long myframe::id_toolbar_priority_up = wxNewId();
@@ -45,6 +46,7 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_toolbar_connect, myframe::on_connect)
 	EVT_MENU(id_toolbar_add, myframe::on_add)
 	EVT_MENU(id_toolbar_delete, myframe::on_delete)
+	EVT_MENU(id_toolbar_delete_finished, myframe::on_delete_finished)
 	EVT_MENU(id_toolbar_activate, myframe::on_activate)
 	EVT_MENU(id_toolbar_deactivate, myframe::on_deactivate)
 	EVT_MENU(id_toolbar_priority_up, myframe::on_priority_up)
@@ -196,6 +198,7 @@ void myframe::add_bars(){
 
 	file_menu->Append(id_toolbar_add, wxT("&Add Download..\tAlt-I"), wxT("Add Download"));
 	file_menu->Append(id_toolbar_delete, wxT("&Delete Download\tDEL"), wxT("Delete Download"));
+	file_menu->Append(id_toolbar_delete_finished, wxT("&Delete finished Downloads\tCtrl-DEL"), wxT("Delete finished Downloads"));
 	file_menu->Append(id_menu_select_all_lines, wxT("&Select all\tCtrl-A"), wxT("Select all"));
 	file_menu->AppendSeparator();
 
@@ -215,6 +218,7 @@ void myframe::add_bars(){
 
 	toolbar->AddTool(id_toolbar_add, wxT("Add"), wxBitmap(working_dir + wxT("img/2_add.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Add a new Download"), wxT("Add a new Download"));
 	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxBitmap(working_dir + wxT("img/3_delete.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download"), wxT("Delete the selected Download"));
+	toolbar->AddTool(id_toolbar_delete_finished, wxT("Delete Finished"), wxBitmap(working_dir + wxT("img/10_delete_finished.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Delete all finished Downloads"), wxT("Delete all finished Downloads"));
 	toolbar->AddSeparator();
 
 	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxBitmap(working_dir + wxT("img/5_start.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Activate the selected Download"), wxT("Activate the selected Download"));
@@ -673,6 +677,87 @@ void myframe::on_delete(wxCommandEvent &event){
 		get_content();
 	}
  }
+
+
+void myframe::on_delete_finished(wxCommandEvent &event){
+	vector<string>::iterator it;
+	vector<string> finished_ids;
+	vector<vector<string> >::iterator content_it;
+	string answer;
+	bool error_occured = false;
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before deleting Downloads."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
+
+	}else{ // we have a connection
+
+		mx.lock();
+
+		// find all finished downloads
+		for(content_it = content.begin(); content_it<content.end(); content_it++){
+			if((*content_it)[4] == "DOWNLOAD_FINISHED")
+				finished_ids.push_back((*content_it)[0]);
+		}
+
+		if(!finished_ids.empty()){
+
+			// make sure user wants to delete downloads
+			wxMessageDialog dialog(this, wxT("Do you really want to delete\nall finished Download(s)?"), wxT("Delete Downloads"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+			int del = dialog.ShowModal();
+
+			if(del == wxID_YES){ // user clicked yes to delete
+				int dialog_answer = 2; // possible answers are 0 = yes all, 1 = yes, 2 = no, 3 = no all
+
+				for(it = finished_ids.begin(); it<finished_ids.end(); it++){
+					//id = (content[*it])[0]; // gets the id of the line, which index is stored in finished_ids
+
+					// test if there is a file on the server
+					mysock->send("DDP FILE GETPATH " + *it);
+					mysock->recv(answer);
+
+					if(!answer.empty()){ // file exists
+
+						// only show dialog if user didn't choose yes_all (0) or no_all (3) before
+						if((dialog_answer != 0) && (dialog_answer != 3)){
+							delete_dialog dialog(&dialog_answer, *it, this);
+							dialog.ShowModal();
+						}
+
+
+						if((dialog_answer == 0) || (dialog_answer == 1)){ // user clicked yes all (0) or yes (1) to delete
+							mysock->send("DDP DL DEACTIVATE " + *it);
+							mysock->recv(answer);
+
+							mysock->send("DDP FILE DEL " + *it);
+							mysock->recv(answer);
+
+							if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
+								string message = "Error occured at deleting File from ID " + *it;
+								wxMessageBox(wxString(message.c_str(), wxConvUTF8), wxT("Error"));
+							}
+
+						}
+					}
+
+					mysock->send("DDP DL DEL " + *it);
+					mysock->recv(answer);
+
+					if(answer.find("104") == 0) // 104 ID <-- Entered a not-existing ID
+						error_occured = true;
+				}
+			}
+		}
+
+		deselect_lines();
+		mx.unlock();
+
+		if(error_occured)
+			wxMessageBox(wxT("Error occured at deleting Download(s)."), wxT("Error"));
+
+		get_content();
+	}
+}
 
 
 void myframe::on_activate(wxCommandEvent &event){
