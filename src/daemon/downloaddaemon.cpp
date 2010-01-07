@@ -92,18 +92,20 @@ int main(int argc, char* argv[], char* env[]) {
 	fl.l_start = 0;
 	fl.l_len = 1;
 	int fdlock;
+	#ifndef __CYGWIN__
 	if((fdlock = open("/tmp/downloadd.lock", O_WRONLY|O_CREAT, 0777)) < 0 || fcntl(fdlock, F_SETLK, &fl) == -1) {
 		std::cerr << "DownloadDaemon is already running. Exiting this instance" << endl;
 		exit(0);
 	}
 	// need to chmod seperately because the permissions set in open() are affected by the umask. chmod() isn't
 	fchmod(fdlock, 0777);
+	#endif
 
 	struct stat st;
 
 	// getting working dir
 	std::string argv0 = argv[0];
-	program_root = argv[0];
+	program_root = argv0;
 	if(argv0[0] != '/' && argv0.find('/') != string::npos) {
 		// Relative path.. sux, but is okay.
 		char* c_old_wd = getcwd(0, 0);
@@ -148,8 +150,11 @@ int main(int argc, char* argv[], char* env[]) {
 				found = true;
 			}
 		}
-
+		#ifdef __CYGWIN__
+            found = true;
+		#endif
 		if(found) {
+		    #ifndef __CYGWIN__
 			// successfully located the file..
 			// resolve symlinks, etc
 			char* real_path = realpath(curr_path.c_str(), 0);
@@ -160,6 +165,7 @@ int main(int argc, char* argv[], char* env[]) {
 				program_root = real_path;
 				free(real_path);
 			}
+			#endif
 		} else {
 			cerr << "Unable to locate executable!" << endl;
 			exit(-1);
@@ -169,9 +175,12 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 
 	// else: it's an absolute path.. nothing to do - perfect!
-	program_root = program_root.substr(0, program_root.find_last_of('/'));
-	program_root = program_root.substr(0, program_root.find_last_of('/'));
+	program_root = program_root.substr(0, program_root.find_last_of("/\\"));
+	program_root = program_root.substr(0, program_root.find_last_of("/\\"));
 	program_root.append("/share/downloaddaemon/");
+	#ifdef __CYGWIN__
+        program_root = "/share/downloaddaemon/";
+    #endif
 	if(stat(program_root.c_str(), &st) != 0) {
 		cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
 		cerr << "We were looking in: " << program_root << endl;
@@ -184,6 +193,7 @@ int main(int argc, char* argv[], char* env[]) {
 	string dd_conf_path("/etc/downloaddaemon/downloaddaemon.conf");
 	string premium_conf_path("/etc/downloaddaemon/premium_accounts.conf");
 	string router_conf_path("/etc/downloaddaemon/routerinfo.conf");
+	#ifndef __CYGWIN__
 	if(check_home_for_cfg && stat(string(home_dd_dir + "downloaddaemon.conf").c_str(), &st) == 0) {
 		dd_conf_path = home_dd_dir + "downloaddaemon.conf";
 	}
@@ -193,6 +203,7 @@ int main(int argc, char* argv[], char* env[]) {
 	if(check_home_for_cfg && stat(string(home_dd_dir + "routerinfo.conf").c_str(), &st) == 0) {
 		router_conf_path = home_dd_dir + "routerinfo.conf";
 	}
+    #endif
 
 	// check again - will fail if the conf file does not exist at all
 	if(stat(dd_conf_path.c_str(), &st) != 0) {

@@ -217,7 +217,7 @@ void correct_path(std::string &path) {
 		path.replace(0, 1, "$HOME");
 	}
 	substitute_env_vars(path);
-	if(path[0] != '/') {
+	if(path[0] != '/' && path[0] != '\\' && path.find(":\\") == std::string::npos) {
 		path.insert(0, program_root);
 	}
 
@@ -228,12 +228,12 @@ void correct_path(std::string &path) {
 	}
 
 	// remove slashes at the end
-	while(*(path.end() - 1) == '/') {
+	while(*(path.end() - 1) == '/' || *(path.end() - 1) == '\\') {
 		path.erase(path.end() - 1);
 	}
 
 	for(std::string::iterator it = path.begin(); it != path.end(); ++it) {
-		if(*it == '/' && *(it + 1) == '/') {
+		if((*it == '/' || *it == '\\') && (*(it + 1) == '/' || *(it + 1) == '\\')) {
 			path.erase(it);
 		}
 	}
