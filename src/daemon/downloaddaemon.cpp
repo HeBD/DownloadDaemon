@@ -25,6 +25,7 @@
 #include <climits>
 #include <cstdlib>
 
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dlfcn.h>
@@ -53,7 +54,8 @@ int main(int argc, char* argv[], char* env[]) {
 	if (getuid() == 0 || geteuid() == 0) {
 		struct passwd *pw = getpwnam(DAEMON_USER /* "downloadd" */);
 		if ( pw ) {
-			setuid( pw->pw_uid );
+			setuid(pw->pw_uid);
+			setgid(pw->pw_gid);
 			check_home_for_cfg = false;
 		} else {
 			std::cerr << "Never run DownloadDaemon as root!" << endl;
@@ -65,6 +67,18 @@ int main(int argc, char* argv[], char* env[]) {
 			exit(0);
 		}
 	}
+	int lfp = open("/var/lock/downloadd.lock", O_RDWR | O_CREAT, 0640);
+	if(lfp < 0) {
+		std::cerr << "Unable to create lock-file /var/lock/downloadd.lock" << endl;
+		exit(1);
+	}
+	if(lockf(lfp, F_TLOCK, 0) < 0) {
+		std::cerr << "DownloadDaemon is already running. Exiting this instance" << endl;
+		exit(0);
+	}
+	std::stringstream pid;
+	pid << getpid();
+	write(lfp, pid.str().c_str(), pid.str().length());
 
 	for(int i = 1; i < argc; ++i) {
 		std::string arg = argv[i];
@@ -81,7 +95,6 @@ int main(int argc, char* argv[], char* env[]) {
 			if (j > 0) return 0; /* parent exits */
 			/* child (daemon) continues */
 			setsid();
-			umask(077);
 		}
 	}
 
@@ -202,6 +215,15 @@ int main(int argc, char* argv[], char* env[]) {
 
 	std::string dlist_fn = global_config.get_cfg_value("dlist_file");
 	correct_path(dlist_fn);
+
+	// set the daemons umask
+	std::stringstream umask_ss;
+	umask_ss << std::oct;
+	umask_ss << global_config.get_cfg_value("daemon_umask");
+	int umask_i = 0;
+	umask_ss >> umask_i;
+	umask(umask_i);
+
 	global_download_list.from_file(dlist_fn.c_str());
 
 	// Create the needed folders
