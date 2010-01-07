@@ -42,7 +42,7 @@ void mgmt_thread_main() {
 	tkSock main_sock(string_to_int(global_config.get_cfg_value("mgmt_max_connections")), 1024);
 	int mgmt_port = string_to_int(global_config.get_cfg_value("mgmt_port"));
 	if(mgmt_port == 0) {
-		log_string("Unable to get management-socket-port from configuration file. defaulting to 56789", LOG_SEVERE);
+		log_string("Unable to get management-socket-port from configuration file. defaulting to 56789", LOG_ERR);
 		mgmt_port = 56789;
 	}
 
@@ -50,12 +50,12 @@ void mgmt_thread_main() {
 
 	if(!main_sock.bind(mgmt_port, bind_addr)) {
 		log_string("bind failed for remote-management-socket. Maybe you specified a port wich is "
-				   "already in use or you don't have read-permissions to the config-file.", LOG_SEVERE);
+				   "already in use or you don't have read-permissions to the config-file.", LOG_ERR);
 		exit(-1);
 	}
 
 	if(!main_sock.listen()) {
-		log_string("Could not listen on management socket", LOG_SEVERE);
+		log_string("Could not listen on management socket", LOG_ERR);
 		exit(-1);
 	}
 
@@ -292,7 +292,7 @@ void target_dl_add(std::string &data, tkSock *sock) {
 		logstr.erase(logstr.length() - 1);
 		log_string(logstr, LOG_DEBUG);
 		if(global_download_list.add_download(dl) != LIST_SUCCESS) {
-			log_string("No permission to write download list file", LOG_SEVERE);
+			log_string("No permission to write download list file", LOG_ERR);
 			*sock << "110 PERMISSION";
 		} else {
 			*sock << "100 SUCCESS";
@@ -306,7 +306,7 @@ void target_dl_add(std::string &data, tkSock *sock) {
 void target_dl_del(std::string &data, tkSock *sock) {
 	switch(global_download_list.set_int_property(string_to_int(data), DL_STATUS, DOWNLOAD_DELETED)) {
 		case LIST_PERMISSION:
-			log_string("Failed to remove download ID: " + data, LOG_SEVERE);
+			log_string("Failed to remove download ID: " + data, LOG_ERR);
 			*sock << "110 PERMISSION";
 		break;
 		case LIST_SUCCESS:
@@ -314,7 +314,7 @@ void target_dl_del(std::string &data, tkSock *sock) {
 			*sock << "100 SUCCESS";
 		break;
 		default:
-			log_string("Failed to remove download ID: " + data, LOG_SEVERE);
+			log_string("Failed to remove download ID: " + data, LOG_ERR);
 			*sock << "104 ID";
 		break;
 	}
@@ -323,7 +323,7 @@ void target_dl_del(std::string &data, tkSock *sock) {
 void target_dl_stop(std::string &data, tkSock *sock) {
 	switch(global_download_list.stop_download(atoi(data.c_str()))) {
 		case LIST_PERMISSION:
-			log_string(std::string("Failed to stop download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to stop download ID: ") + data, LOG_ERR);
 			*sock << "110 PERMISSION";
 		break;
 		case LIST_SUCCESS:
@@ -331,7 +331,7 @@ void target_dl_stop(std::string &data, tkSock *sock) {
 			*sock << "100 SUCCESS";
 		break;
 		default:
-			log_string("Failed to remove download ID: " + data, LOG_SEVERE);
+			log_string("Failed to remove download ID: " + data, LOG_ERR);
 			*sock << "104 ID";
 		break;
 	}
@@ -343,10 +343,10 @@ void target_dl_up(std::string &data, tkSock *sock) {
 			log_string(std::string("Moved download ID: ") + data + " upwards", LOG_DEBUG);
 			*sock << "100 SUCCESS"; break;
 		case LIST_ID:
-			log_string(std::string("Failed to move download ID: ") + data + " upwards", LOG_SEVERE);
+			log_string(std::string("Failed to move download ID: ") + data + " upwards", LOG_ERR);
 			*sock << "104 ID"; break;
 		case LIST_PERMISSION:
-			log_string(std::string("Failed to move download ID: ") + data + " upwards", LOG_SEVERE);
+			log_string(std::string("Failed to move download ID: ") + data + " upwards", LOG_ERR);
 			*sock << "110 PERMISSION"; break;
 	}
 }
@@ -358,11 +358,11 @@ void target_dl_down(std::string &data, tkSock *sock) {
 			*sock << "100 SUCCESS";
 		break;
 		case LIST_ID:
-			log_string(std::string("Failed to move download ID: ") + data + " downwards", LOG_SEVERE);
+			log_string(std::string("Failed to move download ID: ") + data + " downwards", LOG_ERR);
 			*sock << "104 ID";
 		break;
 		case LIST_PERMISSION:
-			log_string(std::string("Failed to move download ID: ") + data + " downwards", LOG_SEVERE);
+			log_string(std::string("Failed to move download ID: ") + data + " downwards", LOG_ERR);
 			*sock << "110 PERMISSION";
 		break;
 	}
@@ -372,10 +372,10 @@ void target_dl_activate(std::string &data, tkSock *sock) {
 	switch(global_download_list.activate(atoi(data.c_str()))) {
 		case LIST_ID:
 			*sock << "104 ID";
-			log_string(std::string("Failed to activate download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to activate download ID: ") + data, LOG_ERR);
 		break;
 		case LIST_PERMISSION:
-			log_string(std::string("Failed to activate download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to activate download ID: ") + data, LOG_ERR);
 			*sock << "110 PERMISSION";
 		break;
 		case LIST_SUCCESS:
@@ -394,10 +394,10 @@ void target_dl_deactivate(std::string &data, tkSock *sock) {
 	switch(global_download_list.deactivate(atoi(data.c_str()))) {
 		case LIST_ID:
 			*sock << "104 ID";
-			log_string(std::string("Failed to deactivate download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to deactivate download ID: ") + data, LOG_ERR);
 		break;
 		case LIST_PERMISSION:
-			log_string(std::string("Failed to deactivate download ID: ") + data, LOG_SEVERE);
+			log_string(std::string("Failed to deactivate download ID: ") + data, LOG_ERR);
 			*sock << "110 PERMISSION";
 		break;
 		case LIST_SUCCESS:
@@ -469,12 +469,12 @@ void target_var_set(std::string &data, tkSock *sock) {
 				log_string("Changed management password", LOG_WARNING);
 				*sock << "100 SUCCESS";
 			} else {
-				log_string("Unable to write configuration file", LOG_SEVERE);
+				log_string("Unable to write configuration file", LOG_ERR);
 				*sock << "110 PERMISSION";
 			}
 
 		} else {
-			log_string("Unable to change management password", LOG_SEVERE);
+			log_string("Unable to change management password", LOG_ERR);
 			*sock << "102 AUTHENTICATION";
 		}
 	} else {
@@ -625,7 +625,7 @@ void target_router_list(std::string &data, tkSock *sock) {
 	std::string path = program_root + "reconnect/";
 	dp = opendir (path.c_str());
 	if (dp == NULL) {
-		log_string("Could not open reconnect script directory", LOG_SEVERE);
+		log_string("Could not open reconnect script directory", LOG_ERR);
 		*sock << "";
 		return;
 	}
@@ -663,7 +663,7 @@ void target_router_setmodel(std::string &data, tkSock *sock) {
 	d = opendir(dir.c_str());
 
 	if(d == NULL) {
-		log_string("Could not open reconnect plugin directory", LOG_SEVERE);
+		log_string("Could not open reconnect plugin directory", LOG_ERR);
 		*sock << "109 FILE";
 		return;
 	}
@@ -692,7 +692,7 @@ void target_router_setmodel(std::string &data, tkSock *sock) {
 		log_string("Changed router model to " + data, LOG_DEBUG);
 		*sock << "100 SUCCESS";
 	} else {
-		log_string("Unable to set router model", LOG_SEVERE);
+		log_string("Unable to set router model", LOG_ERR);
 		*sock << "110 PERMISSION";
 	}
 }
@@ -718,7 +718,7 @@ void target_router_set(std::string &data, tkSock *sock) {
 		log_string("Changed router variable", LOG_DEBUG);
 		*sock << "100 SUCCESS";
 	} else {
-		log_string("Unable to set router variable!", LOG_SEVERE);
+		log_string("Unable to set router variable!", LOG_ERR);
 		*sock << "110 PERMISSION";
 	}
 }
@@ -770,7 +770,7 @@ void target_premium_list(std::string &data, tkSock *sock) {
 	correct_path(path);
 	dp = opendir (path.c_str());
 	if (dp == NULL) {
-		log_string("Could not open Plugin directory", LOG_SEVERE);
+		log_string("Could not open Plugin directory", LOG_ERR);
 		*sock << "";
 		return;
 	}
@@ -786,7 +786,7 @@ void target_premium_list(std::string &data, tkSock *sock) {
 			// open each plugin and check if it supports premium stuff
 			void* handle = dlopen((path + current).c_str(), RTLD_LAZY);
 			if (!handle) {
-				log_string(std::string("Unable to open library file: ") + dlerror() + '/' + current, LOG_SEVERE);
+				log_string(std::string("Unable to open library file: ") + dlerror() + '/' + current, LOG_ERR);
 				continue;
 			}
 			dlerror();	// Clear any existing error
@@ -794,7 +794,7 @@ void target_premium_list(std::string &data, tkSock *sock) {
 			plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(handle, "plugin_getinfo");
 			char *l_error;
 			if ((l_error = dlerror()) != NULL)  {
-				log_string(std::string("Unable to get plugin information: ") + l_error, LOG_SEVERE);
+				log_string(std::string("Unable to get plugin information: ") + l_error, LOG_ERR);
 				continue;;
 			}
 			outp.offers_premium = false;

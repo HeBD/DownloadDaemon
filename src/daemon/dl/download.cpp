@@ -253,7 +253,7 @@ plugin_output download::get_hostinfo() {
 	// Load the plugin function needed
 	void* l_handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
 	if (!l_handle) {
-		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_SEVERE);
+		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_ERR);
 		return outp;
 	}
 
@@ -264,7 +264,7 @@ plugin_output download::get_hostinfo() {
 
 	char* l_error;
 	if ((l_error = dlerror()) != NULL)  {
-		log_string(std::string("Unable to get plugin information: ") + l_error, LOG_SEVERE);
+		log_string(std::string("Unable to get plugin information: ") + l_error, LOG_ERR);
 		return outp;
 	}
 	inp.premium_user = global_premium_config.get_cfg_value(get_host() + "_user");

@@ -578,7 +578,7 @@ bool download_container::reconnect_needed() {
 		return true;
 
 	} else {
-		log_string("Invalid reconnect policy", LOG_SEVERE);
+		log_string("Invalid reconnect policy", LOG_ERR);
 		return false;
 	}
 }
@@ -610,14 +610,14 @@ void download_container::do_reconnect(download_container *dlist) {
 	std::string reconnect_script = program_root + "/reconnect/lib" + reconnect_plugin + ".so";
 	struct stat st;
 	if(stat(reconnect_script.c_str(), &st) != 0) {
-		log_string("Reconnect plugin for selected router model not found!", LOG_SEVERE);
+		log_string("Reconnect plugin for selected router model not found!", LOG_ERR);
 		dlist->is_reconnecting = false;
 		return;
 	}
 
 	void* handle = dlopen(reconnect_script.c_str(), RTLD_LAZY);
 	if (!handle) {
-		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + reconnect_script, LOG_SEVERE);
+		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + reconnect_script, LOG_ERR);
 		dlist->is_reconnecting = false;
 		return;
 	}
@@ -629,7 +629,7 @@ void download_container::do_reconnect(download_container *dlist) {
 
 	char *error;
 	if ((error = dlerror()) != NULL)  {
-		log_string(std::string("Unable to get reconnect information: ") + error, LOG_SEVERE);
+		log_string(std::string("Unable to get reconnect information: ") + error, LOG_ERR);
 		dlist->is_reconnecting = false;
 		return;
 	}
@@ -688,7 +688,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	// Load the plugin function needed
 	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
 	if (!handle) {
-		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_SEVERE);
+		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
 		return PLUGIN_ERROR;
 	}
 
@@ -699,7 +699,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 
 	char *error;
 	if ((error = dlerror()) != NULL)  {
-		log_string(std::string("Unable to execute plugin: ") + error, LOG_SEVERE);
+		log_string(std::string("Unable to execute plugin: ") + error, LOG_ERR);
 		return PLUGIN_ERROR;
 	}
 

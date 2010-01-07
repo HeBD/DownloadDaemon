@@ -73,7 +73,7 @@ void download_thread(int download) {
 		break;
 		case PLUGIN_INVALID_PATH:
 			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
-			log_string("Could not locate plugin folder!", LOG_SEVERE);
+			log_string("Could not locate plugin folder!", LOG_ERR);
 			exit(-1);
 		break;
 		case PLUGIN_AUTH_FAIL:
@@ -181,7 +181,7 @@ void download_thread(int download) {
 		}
 
 		if(!output_file.good()) {
-			log_string(std::string("Could not write to file: ") + output_filename, LOG_SEVERE);
+			log_string(std::string("Could not write to file: ") + output_filename, LOG_ERR);
 			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_WRITE_FILE_ERROR);
 			wait = atol(global_config.get_cfg_value("write_error_wait").c_str());
 			if(wait == 0) {
@@ -196,7 +196,7 @@ void download_thread(int download) {
 		global_download_list.set_string_property(download, DL_OUTPUT_FILE, output_filename);
 
 		if(plug_outp.download_url.empty()) {
-			log_string(std::string("Empty URL for download ID: ") + int_to_string(download), LOG_SEVERE);
+			log_string(std::string("Empty URL for download ID: ") + int_to_string(download), LOG_ERR);
 			global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_ERROR);
 			wait = atol(global_config.get_cfg_value("plugin_fail_wait").c_str());
 			if(wait == 0) {
@@ -283,7 +283,7 @@ void download_thread(int download) {
 				log_string(std::string("Finished download ID: ") + int_to_string(download), LOG_DEBUG);
 				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_FINISHED);
 				if(rename(output_filename.c_str(), final_filename.c_str()) != 0) {
-					log_string(std::string("Unable to rename .part file. You can do so manually."), LOG_SEVERE);
+					log_string(std::string("Unable to rename .part file. You can do so manually."), LOG_ERR);
 				} else {
 					global_download_list.set_string_property(download, DL_OUTPUT_FILE, final_filename);
 				}
@@ -316,7 +316,7 @@ void download_thread(int download) {
 				return;
 		}
 	} else {
-		log_string("Plugin returned an invalid/unhandled status. Please report! (status returned: " + int_to_string(success) + ")", LOG_SEVERE);
+		log_string("Plugin returned an invalid/unhandled status. Please report! (status returned: " + int_to_string(success) + ")", LOG_ERR);
 		global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
 		global_download_list.set_int_property(download, DL_WAIT_SECONDS, 30);
 		return;

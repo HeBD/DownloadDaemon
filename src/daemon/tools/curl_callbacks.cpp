@@ -39,7 +39,7 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	try {
 		output_file = global_download_list.get_string_property(id, DL_OUTPUT_FILE);
 	} catch(download_exception &e) {
-		log_string("Download ID " + int_to_string(id) + " has been deleted internally while actively downloading. Please report this bug!", LOG_SEVERE);
+		log_string("Download ID " + int_to_string(id) + " has been deleted internally while actively downloading. Please report this bug!", LOG_ERR);
 		global_download_list.deactivate(id);
 		return 0;
 	}

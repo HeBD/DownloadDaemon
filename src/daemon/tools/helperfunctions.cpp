@@ -18,6 +18,7 @@
 #include <vector>
 #include <boost/thread.hpp>
 #include <sys/stat.h>
+#include <syslog.h>
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../dl/download.h"
 #include "../dl/download_container.h"
@@ -62,9 +63,10 @@ bool validate_url(std::string &url) {
 	return valid;
 }
 
-void log_string(const std::string logstr, LOG_LEVEL level) {
+void log_string(const std::string logstr, int level) {
+
 	std::string desiredLogLevel = global_config.get_cfg_value("log_level");
-	LOG_LEVEL desiredLogLevelInt = LOG_DEBUG;
+	int desiredLogLevelInt = LOG_DEBUG;
 
 	time_t rawtime;
 	time(&rawtime);
@@ -74,7 +76,7 @@ void log_string(const std::string logstr, LOG_LEVEL level) {
 	if(desiredLogLevel == "OFF") {
 		return;
 	} else if (desiredLogLevel == "SEVERE") {
-		desiredLogLevelInt = LOG_SEVERE;
+		desiredLogLevelInt = LOG_ERR;
 	} else if (desiredLogLevel == "WARNING") {
 		desiredLogLevelInt = LOG_WARNING;
 	} else if (desiredLogLevel == "DEBUG") {
@@ -85,23 +87,23 @@ void log_string(const std::string logstr, LOG_LEVEL level) {
 		return;
 	}
 
-	std::string desiredLogFile = global_config.get_cfg_value("log_file");
-	if(desiredLogFile.empty()) {
-		desiredLogFile = "stdout";
+	std::string log_procedure = global_config.get_cfg_value("log_procedure");
+	if(log_procedure.empty()) {
+		log_procedure = "syslog";
 	}
+
 	std::stringstream to_log;
-	to_log << '[' << log_date << "] " << desiredLogLevel << ": " << logstr << '\n';
+	to_log << '[' << log_date << "] " << logstr << '\n';
 
 	boost::mutex::scoped_lock(logfile_mutex);
-	if(desiredLogFile == "stdout" || desiredLogFile == "") {
+	if(log_procedure == "stdout") {
 		cout << to_log.str() << flush;
-	} else if(desiredLogFile == "stderr") {
+	} else if(log_procedure == "stderr") {
 		cerr << to_log.str() << flush;
-	} else {
-		correct_path(desiredLogFile);
-		ofstream ofs(desiredLogFile.c_str(), ios::app);
-		ofs << to_log.str() << flush;
-		ofs.close();
+	} else if(log_procedure == "syslog") {
+		openlog("DownloadDaemon", LOG_PID, LOG_DAEMON);
+		syslog(level, logstr.c_str(), 0);
+		closelog();
 	}
 }
 
@@ -144,7 +146,7 @@ long string_to_long(std::string str) {
 bool variable_is_valid(std::string &variable) {
 	trim_string(variable);
 	std::string possible_vars = ",enable_resume,enable_reconnect,downloading_active,download_timing_start,download_timing_end,download_folder,"
-						   "simultaneous_downloads,log_level,log_file,mgmt_max_connections,mgmt_port,mgmt_password,plugin_dir,mgmt_accept_enc,max_dl_speed,"
+						   "simultaneous_downloads,log_level,log_procedure,mgmt_max_connections,mgmt_port,mgmt_password,plugin_dir,mgmt_accept_enc,max_dl_speed,"
 						   "bind_addr,dlist_file,auth_fail_wait,write_error_wait,plugin_fail_wait,connection_lost_wait,refuse_existing_links,overwrite_files,"
 						   "dl_file_umask,dl_file_owner,dl_file_group,";
 	size_t pos;

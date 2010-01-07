@@ -60,20 +60,22 @@ int main(int argc, char* argv[], char* env[]) {
 		}
 	}
 
-	if(argc == 2) {
-		std::string argv1 = argv[1];
-		if(argv1 == "-d" || argv1 == "--daemon") {
-			int i = fork();
-			if (i < 0) return 1; /* fork error */
-			if (i > 0) return 0; /* parent exits */
+	for(int i = 1; i < argc; ++i) {
+		std::string arg = argv[i];
+		if(arg == "--help" || arg == "-h") {
+			cout << "Usage: downloaddaemon [options]" << endl << endl;
+			cout << "Options:" << endl;
+			cout << "   -d, --daemon\t\tStart DownloadDaemon in Background" << endl;
+
+			return 0;
+		}
+		if(arg == "-d" || arg == "--daemon") {
+			int j = fork();
+			if (j < 0) return 1; /* fork error */
+			if (j > 0) return 0; /* parent exits */
 			/* child (daemon) continues */
 			setsid();
-			for (i=getdtablesize();i>=0;--i) close(i); /* close all descriptors */
-			umask(022);
-
-		} else if(argv1 == "--help") {
-			cout << "Usage: downloaddaemon [-d|--daemon]" << endl;
-			return 0;
+			umask(077);
 		}
 	}
 

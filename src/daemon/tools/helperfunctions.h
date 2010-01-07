@@ -13,8 +13,7 @@
 #define HELPERFUNCTIONS_H_
 
 #include <string>
-
-enum LOG_LEVEL { LOG_OFF = 0, LOG_SEVERE, LOG_WARNING, LOG_DEBUG };
+#include <syslog.h>
 
 /** Convert a string to an int
 * @param str string to convert
@@ -40,9 +39,9 @@ bool validate_url(std::string &url);
 
 /** log a string with a specified log-level
 * @param logstr String to write to the log
-* @param level Log-level of the string - the higher, the more likely the user will see it (possible: LOG_OFF, LOG_SEVERE, LOG_WARNING, LOG_DEBUG)
+* @param level Log-level of the string - the higher, the more likely the user will see it (possible: LOG_ERR, LOG_WARNING, LOG_DEBUG)
 */
-void log_string(const std::string logstr, LOG_LEVEL level);
+void log_string(const std::string logstr, int level);
 
 /** replaces all occurences of a string with another string
 * @param searchIn String in which stuff has to be replaced
