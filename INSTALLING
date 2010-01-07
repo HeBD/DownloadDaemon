@@ -21,6 +21,16 @@ This guide is seperated in 5 parts:
 	The easyest way to build all programs (server and client) is by changing to the build directory and running
 	"cmake ..", then "make" and "make install"(as root). This will install the daemon with all plugins and 
 	all available clients (except for the web-based php client, you need to do that manually).
+	If you are installing the Daemon, you have to add a user and a group called "downloadd" to restrict permissions
+	when executing. Therefore execute these commands:
+	sudo addgroup --system downloadd
+	sudo adduser --system --ingroup downloadd --home /etc/downloaddaemon downloadd
+	sudo chown -R downloadd:downloadd /etc/downloaddaemon
+	
+	You might also want to start DownloadDaemon automatically when booting up the system. To achieve that, you have to enable
+	the init-script placed in /etc/init.d. On debian-based systems, this can be done by executing
+	sudo update-rc.d downloadd defaults
+		
 
 3:	Building one of the programs from SVN is a bit harder and depends on what you want to build.
 	First, create a directory in your svn root where you want to build:
@@ -37,6 +47,12 @@ This guide is seperated in 5 parts:
 	
 	in any case, to install the program, run
 	sudo make install
+
+	To run the Daemon, you have to create a user for it. You can do that by executing this:
+	sudo addgroup --system downloadd
+	sudo adduser --system --ingroup downloadd --home /etc/downloaddaemon downloadd
+	sudo chown -R downloadd:downloadd /etc/downloaddaemon
+
 
 4:	Since there is no general way to install programs on NAS', the ARM package only contains a packed structure
 	which needs to be rebuild on the filesystem. Usually the embedded Linux distribution is installed on a ROM.
@@ -64,7 +80,6 @@ This guide is seperated in 5 parts:
 	2: open ~/.downloaddaemon/downloaddaemon.conf and change the variable dlist_file
 	   (at the bottom of the file) to ~/.downloaddaemon/dlist
 	3: Change the download_folder variable in that file to a writeable folder.
-	4: change the log-file to a folder where you have write permissions
 	After that, executing DownloadDaemon as a normal user should be no problem.
 
 	  
