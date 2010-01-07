@@ -67,18 +67,6 @@ int main(int argc, char* argv[], char* env[]) {
 			exit(0);
 		}
 	}
-	int lfp = open("/var/lock/downloadd.lock", O_RDWR | O_CREAT, 0640);
-	if(lfp < 0) {
-		std::cerr << "Unable to create lock-file /var/lock/downloadd.lock" << endl;
-		exit(1);
-	}
-	if(lockf(lfp, F_TLOCK, 0) < 0) {
-		std::cerr << "DownloadDaemon is already running. Exiting this instance" << endl;
-		exit(0);
-	}
-	std::stringstream pid;
-	pid << getpid();
-	write(lfp, pid.str().c_str(), pid.str().length());
 
 	for(int i = 1; i < argc; ++i) {
 		std::string arg = argv[i];
@@ -96,6 +84,17 @@ int main(int argc, char* argv[], char* env[]) {
 			/* child (daemon) continues */
 			setsid();
 		}
+	}
+
+	struct flock fl;
+	fl.l_type = F_WRLCK;
+	fl.l_whence = SEEK_SET;
+	fl.l_start = 0;
+	fl.l_len = 1;
+	int fdlock;
+	if((fdlock = open("/var/lock/downloadd.lock", O_WRONLY|O_CREAT, 0666)) < 0 || fcntl(fdlock, F_SETLK, &fl) == -1) {
+		std::cerr << "DownloadDaemon is already running. Exiting this instance" << endl;
+		exit(0);
 	}
 
 	struct stat st;

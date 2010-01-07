@@ -37,6 +37,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-wx/img/7_down.png
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-wx/img/8_configure.png DESTINATION share/ddclient-wx/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-wx/img/9_activate.png DESTINATION share/ddclient-wx/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-wx/img/9_deactivate.png DESTINATION share/ddclient-wx/img/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-wx/img/10_delete_finished.png DESTINATION share/ddclient-wx/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-wx.png DESTINATION share/pixmaps)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-wx.xpm DESTINATION share/pixmaps)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/applications/ddclient-wx.desktop DESTINATION share/applications/)
