@@ -49,10 +49,12 @@ char** env_vars;
 int main(int argc, char* argv[], char* env[]) {
 	env_vars = env;
 	// Drop user if there is one, and we were run as root
+	bool check_home_for_cfg = true;
 	if (getuid() == 0 || geteuid() == 0) {
 		struct passwd *pw = getpwnam(DAEMON_USER /* "downloadd" */);
 		if ( pw ) {
 			setuid( pw->pw_uid );
+			check_home_for_cfg = false;
 		} else {
 			std::cerr << "Please don't run DownloadDaemon as root or create a user called "
 					  << DAEMON_USER << ". This is usually done automatically when installing DownloadDaemon." << endl;
@@ -164,13 +166,13 @@ int main(int argc, char* argv[], char* env[]) {
 	string dd_conf_path("/etc/downloaddaemon/downloaddaemon.conf");
 	string premium_conf_path("/etc/downloaddaemon/premium_accounts.conf");
 	string router_conf_path("/etc/downloaddaemon/routerinfo.conf");
-	if(stat(string(home_dd_dir + "downloaddaemon.conf").c_str(), &st) == 0) {
+	if(check_home_for_cfg && stat(string(home_dd_dir + "downloaddaemon.conf").c_str(), &st) == 0) {
 		dd_conf_path = home_dd_dir + "downloaddaemon.conf";
 	}
-	if(stat(string(home_dd_dir + "premium_accounts.conf").c_str(), &st) == 0) {
+	if(check_home_for_cfg && stat(string(home_dd_dir + "premium_accounts.conf").c_str(), &st) == 0) {
 		premium_conf_path = home_dd_dir + "premium_accounts.conf";
 	}
-	if(stat(string(home_dd_dir + "routerinfo.conf").c_str(), &st) == 0) {
+	if(check_home_for_cfg && stat(string(home_dd_dir + "routerinfo.conf").c_str(), &st) == 0) {
 		router_conf_path = home_dd_dir + "routerinfo.conf";
 	}
 
