@@ -73,7 +73,6 @@ class configure_dialog : public wxDialog{
 		wxStaticText *exp_time_text;
 		wxStaticText *start_time_text;
 		wxStaticText *end_time_text;
-		wxStaticText *exp_save_dir_text;
 		wxStaticText *save_dir_text;
 		wxStaticText *exp_count_text;
 		wxStaticText *count_text;
@@ -91,7 +90,6 @@ class configure_dialog : public wxDialog{
 		wxStaticBoxSizer *outer_save_dir_sizer;
 		wxStaticBoxSizer *outer_count_sizer;
 		wxFlexGridSizer *time_sizer;
-		wxFlexGridSizer *save_dir_sizer;
 		wxFlexGridSizer *count_sizer;
 		wxBoxSizer *download_button_sizer;
 
@@ -110,17 +108,15 @@ class configure_dialog : public wxDialog{
 
 		// for log_panel
 		wxStaticText *log_activity_text;
-		wxStaticText *exp_log_output_text;
 		wxStaticText *log_output_text;
 		wxChoice *log_activity_choice;
-		wxTextCtrl *log_output_input;
+		wxChoice *log_output_choice;
 		wxButton *log_button;
 		wxButton *log_cancel_button;
 
 		wxBoxSizer *overall_log_sizer;
 		wxStaticBoxSizer *outer_log_activity_sizer;
 		wxStaticBoxSizer *outer_log_output_sizer;
-		wxFlexGridSizer *log_output_sizer;
 		wxBoxSizer *log_button_sizer;
 
 		// for reconnect_panel

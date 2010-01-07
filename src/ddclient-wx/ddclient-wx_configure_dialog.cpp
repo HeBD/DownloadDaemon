@@ -166,19 +166,17 @@ void configure_dialog::create_download_panel(){
 	download_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_download_sizer = new wxBoxSizer(wxVERTICAL);
-	outer_time_sizer = new wxStaticBoxSizer(wxHORIZONTAL, download_panel, wxT("Download Time"));
-	outer_save_dir_sizer = new wxStaticBoxSizer(wxHORIZONTAL, download_panel, wxT("Download Folder"));
-	outer_count_sizer = new wxStaticBoxSizer(wxHORIZONTAL, download_panel, wxT("Additional Download Options"));
+	outer_time_sizer = new wxStaticBoxSizer(wxVERTICAL, download_panel, wxT("Download Time"));
+	outer_save_dir_sizer = new wxStaticBoxSizer(wxVERTICAL, download_panel, wxT("Download Folder"));
+	outer_count_sizer = new wxStaticBoxSizer(wxVERTICAL, download_panel, wxT("Additional Download Options"));
 	time_sizer = new wxFlexGridSizer(1, 4, 10, 10);
-	save_dir_sizer = new wxFlexGridSizer(1, 2, 10, 10);
 	count_sizer = new wxFlexGridSizer(1, 4, 10, 10);
 	download_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
 	exp_time_text = new wxStaticText(download_panel, -1, wxT("You can force DownloadDaemon to only download at specific times by entering a start and\nend time in the format hours:minutes.\nLeave these fields empty if you want to allow DownloadDaemon to download permanently."));
 	start_time_text = new wxStaticText(download_panel, -1, wxT("Start Time"));
 	end_time_text = new wxStaticText(download_panel, -1, wxT("End Time"));
-	exp_save_dir_text = new wxStaticText(download_panel, -1, wxT("This option specifies where finished downloads should be safed on the server."));
-	save_dir_text = new wxStaticText(download_panel, -1, wxT("Download Folder"));
+	save_dir_text = new wxStaticText(download_panel, -1, wxT("This option specifies where finished downloads should be safed on the server."));
 	exp_count_text = new wxStaticText(download_panel, -1, wxT("Here you can specify how many downloads may run at the same time and regulate the\ndownload speed for each download (overall max speed is download number * max speed)."));
 	count_text = new wxStaticText(download_panel, -1, wxT("Simultaneous Downoads"));
 	speed_text = new wxStaticText(download_panel, -1, wxT("Maximal Speed in kb/s"));
@@ -199,9 +197,6 @@ void configure_dialog::create_download_panel(){
 	time_sizer->Add(end_time_text, 0, wxALIGN_LEFT);
 	time_sizer->Add(end_time_input, 0, wxALIGN_LEFT);
 
-	save_dir_sizer->Add(save_dir_text, 0, wxALIGN_LEFT);
-	save_dir_sizer->Add(save_dir_input, 0, wxALIGN_LEFT);
-
 	count_sizer->Add(count_text, 0, wxALIGN_LEFT);
 	count_sizer->Add(count_input, 0, wxALIGN_LEFT);
 	count_sizer->Add(speed_text, 0, wxALIGN_LEFT);
@@ -210,15 +205,15 @@ void configure_dialog::create_download_panel(){
 	download_button_sizer->Add(download_button, 1, wxLEFT|wxRIGHT, 20);
 	download_button_sizer->Add(download_cancel_button, 1, wxLEFT|wxRIGHT, 10);
 
+	outer_time_sizer->Add(exp_time_text, 0,wxALL|wxEXPAND,10);
 	outer_time_sizer->Add(time_sizer, 0,wxALL|wxEXPAND,10);
-	outer_save_dir_sizer->Add(save_dir_sizer, 0,wxALL|wxEXPAND,10);
+	outer_save_dir_sizer->Add(save_dir_text, 0,wxALL|wxEXPAND,10);
+	outer_save_dir_sizer->Add(save_dir_input, 0,wxALL|wxEXPAND,10);
+	outer_count_sizer->Add(exp_count_text, 0,wxALL|wxEXPAND,10);
 	outer_count_sizer->Add(count_sizer, 0,wxALL|wxEXPAND,10);
 
-	overall_download_sizer->Add(exp_time_text, 0, wxGROW|wxLEFT|wxRIGHT|wxTOP, 20);
 	overall_download_sizer->Add(outer_time_sizer, 0, wxGROW|wxALL, 20);
-	overall_download_sizer->Add(exp_save_dir_text, 0, wxGROW|wxLEFT|wxRIGHT|wxTOP, 20);
 	overall_download_sizer->Add(outer_save_dir_sizer, 0, wxGROW|wxALL, 20);
-	overall_download_sizer->Add(exp_count_text, 0, wxGROW|wxLEFT|wxRIGHT|wxTOP, 20);
 	overall_download_sizer->Add(outer_count_sizer, 0, wxGROW|wxALL, 20);
 	overall_download_sizer->Add(download_button_sizer, 0, wxLEFT|wxRIGHT, 0);
 
@@ -267,19 +262,33 @@ void configure_dialog::create_log_panel(){
 
 	overall_log_sizer = new wxBoxSizer(wxVERTICAL);
 	outer_log_activity_sizer = new wxStaticBoxSizer(wxVERTICAL, log_panel, wxT("Logging Activity"));
-	outer_log_output_sizer = new wxStaticBoxSizer(wxHORIZONTAL, log_panel, wxT("Log Output"));
-	log_output_sizer = new wxFlexGridSizer(1, 2, 10, 10);
+	outer_log_output_sizer = new wxStaticBoxSizer(wxVERTICAL, log_panel, wxT("Log Procedure"));
 	log_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
 	log_activity_text = new wxStaticText(log_panel, -1, wxT("This option specifies DownloadDaemons logging activity."));
-	exp_log_output_text = new wxStaticText(log_panel, -1, wxT("This option specifies the destination for log-output and can either be a filename, stderr\nor stdout for local console output"));
-	log_output_text = new wxStaticText(log_panel, -1, wxT("Log File"));
+	log_output_text = new wxStaticText(log_panel, -1, wxT("This option specifies how logging should be done (Standard output, Standard error\noutput, Syslog-daemon)."));
 
-	log_output_input = new wxTextCtrl(log_panel, -1, get_var("log_file"), wxDefaultPosition, wxSize(400, 25));
+	// wxChoice log_output
+	wxString old_output = get_var("log_procedure");
+	int selection = 0;
+
+	if(old_output == wxT("stdout"))
+		selection = 0;
+	else if(old_output == wxT("stderr"))
+		selection = 1;
+	else if(old_output == wxT("syslog"))
+		selection = 2;
+
+	wxArrayString output;
+	output.Add(wxT("stdout - Standard output"));
+	output.Add(wxT("stderr - Standard error output"));
+	output.Add(wxT("syslog - Syslog-daemon"));
+	log_output_choice = new wxChoice(log_panel, -1, wxDefaultPosition, wxSize(250, 30), output);
+	log_output_choice->SetSelection(selection);
 
 	// wxChoice log_activity
 	wxString old_activity = get_var("log_level");
-	int selection = 0;
+	selection = 0;
 
 	if(old_activity == wxT("DEBUG"))
 		selection = 0;
@@ -302,17 +311,14 @@ void configure_dialog::create_log_panel(){
 	log_cancel_button = new wxButton(log_panel, wxID_CANCEL);
 
 	// filling sizers
-	log_output_sizer->Add(log_output_text, 0, wxALIGN_LEFT);
-	log_output_sizer->Add(log_output_input, 0, wxALIGN_LEFT);
-
-	outer_log_output_sizer->Add(log_output_sizer, 0,wxALL|wxEXPAND,10);
+	outer_log_output_sizer->Add(log_output_text, 0,wxALL|wxEXPAND,10);
+	outer_log_output_sizer->Add(log_output_choice, 0,wxALL,10);
 	outer_log_activity_sizer->Add(log_activity_text, 0,wxALL|wxEXPAND,10);
 	outer_log_activity_sizer->Add(log_activity_choice, 0,wxALL,10);
 
 	log_button_sizer->Add(log_button, 1, wxLEFT|wxRIGHT, 20);
 	log_button_sizer->Add(log_cancel_button, 1, wxLEFT|wxRIGHT, 10);
 
-	overall_log_sizer->Add(exp_log_output_text, 0, wxGROW|wxLEFT|wxRIGHT|wxTOP, 20);
 	overall_log_sizer->Add(outer_log_output_sizer, 0, wxGROW|wxALL, 20);
 	overall_log_sizer->Add(outer_log_activity_sizer, 0, wxGROW|wxALL, 20);
 	overall_log_sizer->Add(log_button_sizer, 0, wxALL);
@@ -546,9 +552,20 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 	string count = string(count_input->GetValue().mb_str());
 	string speed = string(speed_input->GetValue().mb_str());
 
-	string log_output = string(log_output_input->GetValue().mb_str());
+	string log_output;
+	int selection = log_output_choice->GetCurrentSelection();
+
+	switch (selection){
+		case 0: 	log_output = "stdout";
+					break;
+		case 1: 	log_output = "stderr";
+					break;
+		case 2: 	log_output = "syslog";
+					break;
+	}
+
 	string activity_level;
-	int selection = log_activity_choice->GetCurrentSelection();
+	selection = log_activity_choice->GetCurrentSelection();
 
 	switch (selection){
 		case 0: 	activity_level = "DEBUG";
@@ -634,7 +651,7 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 		mysock->recv(answer);
 
 		// log output
-		mysock->send("DDP VAR SET log_file = " + log_output);
+		mysock->send("DDP VAR SET log_procedure = " + log_output);
 		mysock->recv(answer);
 
 		if(answer.find("102") == 0) // 102 AUTHENTICATION	<-- Authentication failed
