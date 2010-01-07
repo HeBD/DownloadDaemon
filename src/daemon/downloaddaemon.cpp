@@ -92,7 +92,7 @@ int main(int argc, char* argv[], char* env[]) {
 	fl.l_start = 0;
 	fl.l_len = 1;
 	int fdlock;
-	if((fdlock = open("/var/lock/downloadd.lock", O_WRONLY|O_CREAT, 0777)) < 0 || fcntl(fdlock, F_SETLK, &fl) == -1) {
+	if((fdlock = open("/tmp/downloadd.lock", O_WRONLY|O_CREAT, 0777)) < 0 || fcntl(fdlock, F_SETLK, &fl) == -1) {
 		std::cerr << "DownloadDaemon is already running. Exiting this instance" << endl;
 		exit(0);
 	}
