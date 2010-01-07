@@ -773,6 +773,7 @@ void target_premium_list(std::string &data, tkSock *sock) {
 	std::string current;
 	std::string path = global_config.get_cfg_value("plugin_dir");
 	correct_path(path);
+	path += '/';
 	dp = opendir (path.c_str());
 	if (dp == NULL) {
 		log_string("Could not open Plugin directory", LOG_ERR);

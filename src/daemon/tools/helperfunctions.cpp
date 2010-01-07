@@ -93,7 +93,21 @@ void log_string(const std::string logstr, int level) {
 	}
 
 	std::stringstream to_log;
-	to_log << '[' << log_date << "] " << logstr << '\n';
+	std::stringstream to_syslog;
+	to_log << '[' << log_date << "] ";
+	if(level == LOG_ERR) {
+		to_log << "SEVERE: ";
+		to_syslog << "SEVERE: ";
+	} else if(level == LOG_WARNING) {
+		to_log << "WARNING: ";
+		to_syslog << "WARNING: ";
+	} else if(level == LOG_DEBUG) {
+		to_log << "DEBUG: ";
+		to_syslog << "DEBUG: ";
+	}
+
+	to_log << logstr << '\n';
+	to_syslog << logstr;
 
 	boost::mutex::scoped_lock(logfile_mutex);
 	if(log_procedure == "stdout") {
@@ -102,7 +116,7 @@ void log_string(const std::string logstr, int level) {
 		cerr << to_log.str() << flush;
 	} else if(log_procedure == "syslog") {
 		openlog("DownloadDaemon", LOG_PID, LOG_DAEMON);
-		syslog(level, logstr.c_str(), 0);
+		syslog(level, to_syslog.str().c_str(), 0);
 		closelog();
 	}
 }

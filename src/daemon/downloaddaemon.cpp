@@ -96,6 +96,8 @@ int main(int argc, char* argv[], char* env[]) {
 		std::cerr << "DownloadDaemon is already running. Exiting this instance" << endl;
 		exit(0);
 	}
+	// need to chmod seperately because the permissions set in open() are affected by the umask. chmod() isn't
+	fchmod(fdlock, 0777);
 
 	struct stat st;
 
@@ -232,11 +234,6 @@ int main(int argc, char* argv[], char* env[]) {
 		string dlist = global_config.get_cfg_value("dlist_file");
 		correct_path(dl_folder);
 		mkdir_recursive(dl_folder);
-		if(log_file != "stdout" && log_file != "stderr") {
-			correct_path(log_file);
-			log_file = log_file.substr(0, log_file.find_last_of('/'));
-			mkdir_recursive(log_file);
-		}
 		correct_path(dlist);
 		dlist = dlist.substr(0, dlist.find_last_of('/'));
 		mkdir_recursive(dlist);
