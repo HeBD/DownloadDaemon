@@ -1,5 +1,6 @@
 2010-01-07
    [adrian]
+	- fixed plugin-injection exploit
 	- removed config setting for permissions and owners of new files
 	- added config setting for the daemons umask (replaces above)
 	- added init-script to default installation

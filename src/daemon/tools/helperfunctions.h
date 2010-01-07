@@ -61,6 +61,13 @@ bool dump_list_to_file();
 */
 bool variable_is_valid(std::string &variable);
 
+/** When a variable changes, some actions might have to be done in order to apply that setting. this only affects very few variables.
+* @param variable the config-variable that will be changed
+* @param value The value that will be set
+* @returns returns true if everything is okay, false to veto (do not set the variable)
+*/
+bool proceed_variable(const std::string &variable, std::string value);
+
 /** Checks if a given idetifier is a valid router config variable or not
 * @param variable Identifier to check
 * @returns true if it's valid, false if not

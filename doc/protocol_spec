@@ -107,3 +107,4 @@ For now, this list represents all codes:
 108 VARIABLE		<-- If the variable you tried to set is invalid (if get fails, you just receive an empty string)
 109 FILE		<-- If you do any file operation on a file that does not exist.
 110 PERMISSION		<-- If a file could not be written (this can also happen if you add/del a download and don't have write permissions to the list-file)
+111 VALUE		<-- If you change a config-variable to an invalid value

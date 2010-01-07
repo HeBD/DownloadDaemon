@@ -158,6 +158,28 @@ bool variable_is_valid(std::string &variable) {
 	return false;
 }
 
+bool proceed_variable(const std::string &variable, std::string value) {
+	if(variable == "plugin_dir") {
+		correct_path(value);
+		std::string df = global_config.get_cfg_value("download_folder");
+		correct_path(df);
+		if(value == df) {
+			return false;
+		}
+		return true;
+	} else if(variable == "download_folder") {
+		correct_path(value);
+		std::string pd = global_config.get_cfg_value("plugin_dir");
+		correct_path(pd);
+		if(pd == value) {
+			return false;
+		}
+		return true;
+	}
+
+	return true;
+}
+
 bool router_variable_is_valid(std::string &variable) {
 	trim_string(variable);
 	std::string possible_vars = ",reconnect_policy,router_ip,router_username,router_password,";
@@ -176,6 +198,7 @@ void correct_path(std::string &path) {
 		path = program_root;
 		return;
 	}
+
 	if(path[0] == '~') {
 		path.replace(0, 1, "$HOME");
 	}
@@ -184,6 +207,22 @@ void correct_path(std::string &path) {
 		path.insert(0, program_root);
 	}
 
+	char* real_path = realpath(path.c_str(), 0);
+	if(real_path != 0) {
+		path = real_path;
+		free(real_path);
+	}
+
+	// remove slashes at the end
+	while(*(path.end() - 1) == '/') {
+		path.erase(path.end() - 1);
+	}
+
+	for(std::string::iterator it = path.begin(); it != path.end(); ++it) {
+		if(*it == '/' && *(it + 1) == '/') {
+			path.erase(it);
+		}
+	}
 }
 
 std::string get_env_var(const std::string &var) {

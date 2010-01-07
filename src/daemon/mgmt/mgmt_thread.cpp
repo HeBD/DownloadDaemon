@@ -482,6 +482,11 @@ void target_var_set(std::string &data, tkSock *sock) {
 		trim_string(identifier);
 		std::string value(data.substr(data.find('=') + 1));
 		trim_string(value);
+		if(!proceed_variable(identifier, value)) {
+			*sock << "111 VALUE";
+			return;
+		}
+
 		if(variable_is_valid(identifier)) {
 			if(global_config.set_cfg_value(identifier, value)) {
 				*sock << "100 SUCCESS";
