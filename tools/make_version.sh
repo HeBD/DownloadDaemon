@@ -40,8 +40,8 @@ DESC_DDCONSOLE="with ddclient you can easily manage your
 
 # specify all files/directorys (array) and the path's where they should go to (basically a cp -r FILES_XXX[i] PATHS_XXX[i] is done)
 # the .svn folders are removed automatically. Folders are created automatically before copying
-FILES_DD=("../src/daemon" "../src/lib/" "../etc/downloaddaemon" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
-PATHS_DD=("src/" "src/" "etc/")
+FILES_DD=("../src/daemon" "../src/lib/" "../etc/downloaddaemon" "../etc/init.d/downloadd" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DD=("src/" "src/" "etc/" "/etc/init.d")
 
 FILES_DDCLIENTWX=("../src/ddclient-wx" "../src/lib/netpptk" "../src/lib/crypt" "../share/applications" "../share/ddclient-wx" "../share/doc" "../share/pixmaps" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
 PATHS_DDCLIENTWX=("src/" "src/lib/" "src/lib/" "share/" "share/" "share/" "share/" )
@@ -211,7 +211,39 @@ replace+="
 /usr/share"
 echo "$replace" > dirs
 
-rm docs cron.d.ex downloaddaemon.default.ex downloaddaemon.doc-base.EX emacsen-install.ex emacsen-remove.ex emacsen-startup.ex init.d.ex init.d.lsb.ex manpage.* menu.ex README.Debian watch.ex postinst.ex  postrm.ex  preinst.ex  prerm.ex
+mv postinst.ex postinst
+mv postrm.ex postrm
+replace="$(<postinst)"
+replace="${replace/'    configure)'/    configure)
+	if ! getent group downloadd >/dev/null; then
+        	addgroup --system downloadd
+	fi
+
+	if ! getent passwd downloadd >/dev/null; then
+        	adduser --system --ingroup downloadd --home /etc/downloaddaemon downloadd
+        	usermod -c DownloadDaemon downloadd
+	fi
+
+	if [ -d /etc/downloaddaemon ]; then
+  		chown -R downloadd:downloadd /etc/downloaddaemon
+	fi
+	if [ -x /etc/init.d/downloadd ]; then
+		update-rc.d downloadd defaults >/dev/null
+		/etc/init.d/downloadd start
+	fi
+}"
+echo "$replace" > postinst
+
+replace="$(<postrm)"
+replace="${replace/'    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)'/    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+	if [ \"\$1\" = \"purge\" ] ; then
+		update-rc.d downloadd remove >/dev/null || exit \$?
+	fi
+}"
+
+echo "$replace" > postrm
+
+rm docs cron.d.ex downloaddaemon.default.ex downloaddaemon.doc-base.EX emacsen-install.ex emacsen-remove.ex emacsen-startup.ex init.d.ex init.d.lsb.ex manpage.* menu.ex README.Debian watch.ex  preinst.ex  prerm.ex
 cd ../..
 
 ######################################################################## DDCLIENT-WX PREPARATION

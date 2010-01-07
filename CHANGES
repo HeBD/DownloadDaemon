@@ -1,6 +1,9 @@
 2010-01-07
    [adrian]
-	- improved daemonization and disallowed running DD as root (rest of the patch will come tomorrow)
+	- added init-script to default installation
+	- updated versioning script to automatically add the downloadd user when installing the package
+	- improved daemonization and disallowed running DD as root
+	- when running DD as root and no downloadd user exists, you will get an error telling you what to do
 	- moved from custom logging function to syslog. instead of a log_file, you can now choose
 	  a log procedure (stdout, stderr, syslog)
 

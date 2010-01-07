@@ -56,8 +56,12 @@ int main(int argc, char* argv[], char* env[]) {
 			setuid( pw->pw_uid );
 			check_home_for_cfg = false;
 		} else {
-			std::cerr << "Please don't run DownloadDaemon as root or create a user called "
-					  << DAEMON_USER << ". This is usually done automatically when installing DownloadDaemon." << endl;
+			std::cerr << "Never run DownloadDaemon as root!" << endl;
+			std::cerr << "In order to run DownloadDaemon, please execute these commands as root:" << endl;
+			std::cerr << "   addgroup --system " DAEMON_USER << endl;
+			std::cerr << "   adduser --system --ingroup " DAEMON_USER " --home /etc/downloaddaemon " DAEMON_USER << endl;
+			std::cerr << "   chown -R " DAEMON_USER ":" DAEMON_USER " /etc/downloaddaemon" << endl;
+			std::cerr << "then rerun DownloadDaemon." << endl;
 			exit(0);
 		}
 	}
