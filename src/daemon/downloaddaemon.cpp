@@ -28,6 +28,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dlfcn.h>
+#include <pwd.h>
+
+#define DAEMON_USER "downloadd"
 
 using namespace std;
 
@@ -45,6 +48,18 @@ char** env_vars;
 
 int main(int argc, char* argv[], char* env[]) {
 	env_vars = env;
+	// Drop user if there is one, and we were run as root
+	if (getuid() == 0 || geteuid() == 0) {
+		struct passwd *pw = getpwnam(DAEMON_USER /* "downloadd" */);
+		if ( pw ) {
+			setuid( pw->pw_uid );
+		} else {
+			std::cerr << "Please don't run DownloadDaemon as root or create a user called "
+					  << DAEMON_USER << ". This is usually done automatically when installing DownloadDaemon." << endl;
+			exit(0);
+		}
+	}
+
 	if(argc == 2) {
 		std::string argv1 = argv[1];
 		if(argv1 == "-d" || argv1 == "--daemon") {
@@ -52,6 +67,10 @@ int main(int argc, char* argv[], char* env[]) {
 			if (i < 0) return 1; /* fork error */
 			if (i > 0) return 0; /* parent exits */
 			/* child (daemon) continues */
+			setsid();
+			for (i=getdtablesize();i>=0;--i) close(i); /* close all descriptors */
+			umask(022);
+
 		} else if(argv1 == "--help") {
 			cout << "Usage: downloaddaemon [-d|--daemon]" << endl;
 			return 0;

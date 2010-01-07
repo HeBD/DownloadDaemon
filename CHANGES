@@ -1,3 +1,7 @@
+2010-01-07
+   [adrian]
+	- improved daemonization and disallowed running DD as root (rest of the patch will come tomorrow)
+
 2010-01-03
    [susanne]
 	- added option (menu item and toolbar icon) to delete all finished downloads at ddclient-wx
