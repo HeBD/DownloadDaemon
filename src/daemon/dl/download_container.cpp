@@ -662,6 +662,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	std::string host(dlit->get_host());
 	std::string plugindir = global_config.get_cfg_value("plugin_dir");
 	correct_path(plugindir);
+	plugindir += '/';
 	if(host == "") {
 		return PLUGIN_INVALID_HOST;
 	}
