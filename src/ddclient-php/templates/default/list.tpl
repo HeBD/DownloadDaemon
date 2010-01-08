@@ -1,0 +1,14 @@
+<table>
+	<thead>
+	<tr>
+		<td>{L_ID}</td>
+		<td>{L_Date}</td>
+		<td>{L_Title}</td>
+		<td>{L_URL}</td>
+		<td>{L_Status}</td>
+	</tr>
+	</thead>
+	<tbody>
+		{DL_List}
+	</tbody>
+</table>

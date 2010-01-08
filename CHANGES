@@ -1,3 +1,8 @@
+2010-01-09
+   [adrian]
+	- Uploaded ddclient-php rewrite by bungh0le! it's not yet finished, bit
+	  it shows what to expect
+
 2010-01-08
    [susanne]
 	- added possibility to save login data and auto connect at program startup to ddclient-wx
