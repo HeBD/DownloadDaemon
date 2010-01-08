@@ -10,6 +10,8 @@
  */
 
 #include "ddclient-wx_main.h"
+#include "../lib/crypt/md5.h"
+
 #ifdef _WIN32
 	#define sleep(x) Sleep(x * 1000)
 #endif
@@ -120,6 +122,18 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	wxFileName fn(working_dir);
 	fn.SetCwd();
 
+	// getting config dir
+	#ifdef _WIN32
+		wxGetEnv(wxT("APPDATA"), &config_dir);
+		config_dir += wxT("/ddclient-wx/");
+	#else
+		wxGetEnv(wxT("HOME"), &config_dir);
+		config_dir += wxT("/.ddclient-wx/");
+	#endif
+	if(!wxFileName::DirExists(config_dir))
+		wxFileName::Mkdir(config_dir, 0755);
+
+
 	SetClientSize(wxSize(750,500));
 	SetMinSize(wxSize(750,500));
 	CenterOnScreen();
@@ -133,6 +147,132 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 	mysock = new tkSock();
 	boost::thread(boost::bind(&myframe::update_list, this));
+
+	// connect if logindata was saved
+	string file_name = string(config_dir.mb_str()) + "save.dat";
+	ifstream ifs(file_name.c_str(), fstream::in | fstream::binary); // open file
+
+	if((ifs.rdstate() & ifstream::failbit) == 0){ // file successfully opened
+		login_data last_data =  { "", 0, ""};
+
+		ifs.read((char *) &last_data, sizeof(login_data));
+
+		// try to connect with the data read from file
+		tkSock *mysock = new tkSock();
+		bool connection = false, error_occured = false;
+
+		try{
+		   connection = mysock->connect(last_data.host, last_data.port);
+		}catch(...){} // no code needed here due to boolean connection
+
+
+		if(connection){ // connection succeeded,  host (IP/URL or port) is ok
+
+			// authentification
+			std::string snd;
+			mysock->recv(snd);
+
+			if(snd.find("100") == 0){ // 100 SUCCESS <-- Operation succeeded
+				// nothing to do here if you reach this
+			}else if(snd.find("102") == 0){ // 102 AUTHENTICATION <-- Authentication failed
+
+				// try md5 authentication
+				mysock->send("ENCRYPT");
+				std::string rnd;
+				mysock->recv(rnd); // random bytes
+
+				if(rnd.find("102") != 0) { // encryption permitted
+					rnd += last_data.pass;
+
+					MD5_CTX md5;
+					MD5_Init(&md5);
+
+					unsigned char *enc_data = new unsigned char[rnd.length()];
+					for(size_t i = 0; i < rnd.length(); ++i){ // copy random bytes from string to cstring
+						enc_data[i] = rnd[i];
+					}
+
+					MD5_Update(&md5, enc_data, rnd.length());
+					unsigned char result[16];
+					MD5_Final(result, &md5); // put md5hash in result
+					std::string enc_passwd((char*)result, 16);
+					delete [] enc_data;
+
+					mysock->send(enc_passwd);
+					mysock->recv(snd);
+
+				}else{ // encryption not permitted
+					wxMessageDialog dialog(this, wxT("Encrypted authentication not supported by server. \nDo you want to try unsecure plain-text authentication?"),
+										   wxT("Auto Connection: No Encryption Supported"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+					int del = dialog.ShowModal();
+
+					if(del == wxID_YES){ // user clicked yes
+						// reconnect
+						try{
+							connection = mysock->connect(last_data.host, last_data.port);
+						}catch(...){} // no code needed here due to boolean connection
+
+						if(connection){
+							mysock->recv(snd);
+							mysock->send(last_data.pass);
+							mysock->recv(snd);
+						}else{
+							error_occured = true;
+						}
+					}else{
+						snd = "99"; // user doesn't want to connect without encryption => own error code
+						error_occured = true;
+					}
+				}
+
+				if(snd.find("100") == 0 && connection){
+					// nothing to do here if you reach this
+
+				}else if(snd.find("102") == 0 && connection){
+					error_occured = true;
+
+				}else if(snd.find("99") == 0 && connection){
+					error_occured = true;
+
+				}else{
+					error_occured = true;
+				}
+			}else{
+				error_occured = true;
+			}
+
+
+			if(!error_occured){
+
+				// save socket and password
+				mx.lock();
+
+				if(this->mysock != NULL){ //if there is already a connection, delete the old one
+					delete this->mysock;
+					this->mysock = NULL;
+				}
+
+				this->mysock = mysock;
+				password = last_data.pass;
+				mx.unlock();
+				update_status();
+
+			}else{
+				delete mysock;
+			}
+
+		}else{ // connection failed due to host (IP/URL or port)
+			delete mysock;
+		}
+
+
+
+
+
+	// TODO: missing - connect if possible, if not do NOT send out an error message
+
+
+	}
 }
 
 
@@ -586,7 +726,7 @@ void myframe::on_select_all_lines(wxCommandEvent &event){
 
 
  void myframe::on_connect(wxCommandEvent &event){
-	connect_dialog dialog(this);
+	connect_dialog dialog(config_dir, this);
 	dialog.ShowModal();
 	get_content();
  }
@@ -1010,6 +1150,7 @@ void myframe::on_reload(wxEvent &event){
 // getter and setter
 void myframe::set_connection_attributes(tkSock *mysock, string password){
 	this->mysock = mysock;
+	this->password = password;
 }
 
 

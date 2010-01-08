@@ -19,6 +19,7 @@
 #include <climits>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
+#include <fstream>
 
 #include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/frame.h>
@@ -88,6 +89,7 @@ class myframe : public wxFrame{
 		vector<int> selected_lines;
 		vector<string> reselect_lines;
 		wxString working_dir;
+		wxString config_dir;
 		boost::mutex mx;
 
 		// connection attributes
@@ -122,7 +124,6 @@ class myframe : public wxFrame{
 		static const long id_toolbar_download_activate;
 		static const long id_toolbar_download_deactivate;
 
-
 		void add_bars();
 		void add_components();
 		void update_list();
@@ -132,7 +133,6 @@ class myframe : public wxFrame{
 		void select_lines();
 		void select_line_by_id(string id);
 		void deselect_lines();
-
 
 		// methods for comparing and actualizing content if necessary
 		void compare_vectorvector();
@@ -157,6 +157,12 @@ class myframe : public wxFrame{
 		void on_reload(wxEvent &event);
 
 		DECLARE_EVENT_TABLE()
+};
+
+struct login_data{
+	char host[256];
+	int port;
+	char pass[256];
 };
 
 #endif // DDCLIENT_WX_MAIN_H

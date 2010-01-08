@@ -20,8 +20,27 @@ BEGIN_EVENT_TABLE(connect_dialog, wxDialog)
 END_EVENT_TABLE()
 
 
-connect_dialog::connect_dialog(wxWindow *parent):
+connect_dialog::connect_dialog(wxString config_dir, wxWindow *parent):
 	wxDialog(parent, -1, wxString(wxT("Connect to Host"))){
+
+	this->config_dir = config_dir;
+
+	// read saved data if it exists
+	string file_name = string(config_dir.mb_str()) + "save.dat";
+	ifstream ifs(file_name.c_str(), fstream::in | fstream::binary); // open file
+
+	login_data last_data =  { "", 0, ""};
+	if((ifs.rdstate() & ifstream::failbit) == 0){ // file successfully opened
+
+		ifs.read((char *) &last_data,sizeof(login_data));
+	}
+	ifs.close();
+
+	if(strcmp(last_data.host, "") == 0){ // data wasn't read from file
+		snprintf(last_data.host, 256, "127.0.0.1");
+		last_data.port = 56789;
+		last_data.pass[0] = '\0';
+	}
 
 	// create elements
 	dialog_sizer = new wxBoxSizer(wxVERTICAL);
@@ -35,11 +54,14 @@ connect_dialog::connect_dialog(wxWindow *parent):
 	port_text = new wxStaticText(this, -1, wxT("Port"));
 	pass_text = new wxStaticText(this, -1, wxT("Password"));
 
-	host_input = new wxTextCtrl(this,-1,wxT("127.0.0.1"), wxDefaultPosition, wxSize(300, 25));
+	host_input = new wxTextCtrl(this, -1, wxString(last_data.host, wxConvUTF8), wxDefaultPosition, wxSize(300, 25));
 	host_input->SetSelection(-1, -1);
 	host_input->SetFocus();
-	port_input = new wxTextCtrl(this,-1,wxT("56789"), wxDefaultPosition, wxSize(50, 25));
-	pass_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(150, 25), wxTE_PASSWORD);
+	port_input = new wxTextCtrl(this, -1, wxString::Format(wxT("%i"),last_data.port), wxDefaultPosition, wxSize(50, 25));
+	pass_input = new wxTextCtrl(this, -1, wxString(last_data.pass, wxConvUTF8), wxDefaultPosition, wxSize(150, 25), wxTE_PASSWORD);
+
+	save_data_check = new wxCheckBox(this, -1, wxT("Save Data"));
+	save_data_check->SetValue(true);
 
 	connect_button = new wxButton(this, wxID_OK);
 	connect_button->SetDefault();
@@ -55,6 +77,7 @@ connect_dialog::connect_dialog(wxWindow *parent):
 	input_sizer->Add(port_input, 0, wxALIGN_LEFT);
 	input_sizer->Add(pass_text, 0, wxALIGN_LEFT);
 	input_sizer->Add(pass_input, 0, wxALIGN_LEFT);
+	input_sizer->Add(save_data_check, 0, wxALIGN_LEFT);
 
 	button_sizer->Add(connect_button, 1, wxALL, 20);
 	button_sizer->Add(cancel_button, 1, wxALL, 20);
@@ -185,6 +208,24 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 			myparent->set_connection_attributes(mysock, pass);
 			mx->unlock();
 			myparent->update_status();
+
+			// write login_data to a file
+			if(save_data_check->GetValue()){ // user clicked checkbox to save data
+
+				string file_name = string(config_dir.mb_str()) + "save.dat";
+				ofstream ofs(file_name.c_str(), fstream::out | fstream::binary | fstream::trunc); // open file
+
+				login_data last_data;
+				snprintf(last_data.host, 256, "%s", host.c_str());
+				last_data.port = port;
+				snprintf(last_data.pass, 256, "%s", pass.c_str());
+
+				if((ofs.rdstate() & ofstream::failbit) == 0){ // file successfully opened
+
+					ofs.write((char *) &last_data, sizeof(login_data));
+				}
+				ofs.close();
+			}
 
 			Destroy();
 

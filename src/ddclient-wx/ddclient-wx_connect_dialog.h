@@ -12,12 +12,15 @@
 #ifndef DDCLIENT_WX_CONNECT_DIALOG_H
 #define DDCLIENT_WX_CONNECT_DIALOG_H
 
+#include <fstream>
+
 #include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/dialog.h>
 #include <wx/stattext.h>
 #include <wx/button.h>
 #include <wx/sizer.h>
 #include <wx/textctrl.h>
+#include <wx/checkbox.h>
 
 #include "../lib/netpptk/netpptk.h"
 #if defined(__WXMSW__)
@@ -31,11 +34,13 @@ class connect_dialog : public wxDialog{
 	public:
 
 		/** Constructor
+		*	@param config_dir Configuration Directory of the Program
 		*	@param parent Parent wxWindow
 		*/
-		connect_dialog(wxWindow *parent);
+		connect_dialog(wxString config_dir, wxWindow *parent);
 
 	private:
+		wxString config_dir;
 		wxStaticText *message_text;
 		wxStaticText *host_text;
 		wxStaticText *port_text;
@@ -45,6 +50,7 @@ class connect_dialog : public wxDialog{
 		wxTextCtrl *pass_input;
 		wxButton *connect_button;
 		wxButton *cancel_button;
+		wxCheckBox *save_data_check;
 
 		wxBoxSizer *dialog_sizer;
 		wxBoxSizer *text_sizer;
