@@ -1,0 +1,63 @@
+This is a shourt introduction about how to write new Plugins for the downloader to support more hosters.
+Generally a plugin can only be written in C++ (C might be supported soon).
+Plugins are basically shared libraries which are loaded on runtime to execute some funtions.
+Good examples can be found for the rapidshare.com and uploaded.to plugins in src/daemon/plugins.
+A plugin always has to be named after its hoster, plus the ".so" file extension and "lib" file prefix for shared libraries.
+so for rapidshare.com, you will get a plugin-library called "librapidshare.com.so".
+Maybe in a far future, i will include some captcha-decode-helper program or something, but right now, 
+this is not offered and you have to look for yourself.
+Anyhow, all work should be done by the plugin except for the final step of downloading the file. 
+The main program will do that.
+Now let's start!
+every plugin has to define two functions for the downloader, with the following prototypes:
+
+plugin_status plugin_exec(plugin_input &inp, plugin_output &outp)
+extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp)
+
+The extern "C" is required in order to make execution possible. The plugin will fail if this is missing.
+in order to get the needed types from above, you need to include plugin_helpers.h. View that file to see what variables the structs contain.
+
+the first function, plugin_exec is the main plugin function. The parameters are as follows:
+
+plugin_input &inp:
+	This parameter will feed you the parameters specified in the plugin_input struct. If your plugin/hoster supports premium access,
+	username/password will be specified in here.
+
+plugin_output &outp:
+	This structure contains information the downloader needs from you.
+	std::string download_url 	= the final URL to download from. If you are done with your plugin, this needs to be specified.
+	std::string download_filename	= Some hosters (e.g. uploaded.to) do not specify their filename in the URL. If it's a simple URL (like asdf.com/hello.rar, 
+					= you don't need to fill this out. If it's a special URL (uploaded.to/asdf, filename should be Hello.rar), this needs to
+					= be specified.
+	bool allows_resumption		= Specifies if the download shoul be resumed if the download on this file has been partly finished before.
+					= this is not supported by all hosters.
+	bool allows_multiple		= This specifies if the hoster currently supports multiple downloads at the same time. (If this depends on if you are
+					= a premium user or not, make your answer dependent.
+
+When your plugin finished, you may return one of the following values: 
+PLUGIN_SUCCESS, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,
+PLUGIN_MISSING, PLUGIN_INVALID_HOST, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR, PLUGIN_AUTH_FAIL
+
+You should consider making your plugin premium account compatible. You will receive the credentials from the plugin_input structure, if present.
+DownloadDaemon supports basic http authentication for premium accounts. Your plugin only needs to set the authentication options into the
+curl handle returned by get_handle(). If the authentication method is just a simple http auth, DownloadDaemon will check if they are wrong automatically.
+If the server does not return a 401 answer if the credentials are wrong, you need to do manual validity checks and return PLUGIN_AUTH_FAIL if the
+credentials are wrong.
+
+When compiling the plugin, you have to define IS_PLUGIN (compiler option for g++: -DIS_PLUGIN) and also compile the src/daemon/dl/download_container.cpp file
+which is required by the functions below.
+
+Most of them should be pretty self-explanatory. So this shouldn't be a problem. Statuses for premium accounts will come soon (auth fail, etc).
+
+plugin_helpers.h also defines the following functions you will probably need in order to make your plugin work: 
+void set_wait_time(int seconds) -- Sets the wait time that will be displayed to the user. If you have something like 
+				   [do plugin work] [wait x seconds] [do plugin work] [start download], you need to count down the seconds manually (so just make a loop
+				   that sleeps a second and adjusts the wait time. When your plugin is more like
+				   [do plugin work] [wait x seconds] [start download], you can just set the wait time and exit your plugin function.
+				   DownloadDaemon will then count down for you.
+int get_wait_time()		   returns the currently set wait time
+const char* get_url()		   returns the URL your plugin has to handle
+CURL* get_handle() 		   returns the curl handle that will be used for downloading later. You can set auth-credentials or cookies here.
+
+If you need more functionality to support your specific hoster, please write me, Adrian Batzill (see AUTHORS file) an email. I will then implement it.
+
