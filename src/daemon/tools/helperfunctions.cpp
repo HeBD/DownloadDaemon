@@ -185,7 +185,9 @@ bool proceed_variable(const std::string &variable, std::string value) {
 		correct_path(value);
 		std::string pd = global_config.get_cfg_value("plugin_dir");
 		correct_path(pd);
-		if(pd == value) {
+		std::string rcp = program_root + "/reconnect/";
+		correct_path(rcp);
+		if(pd == value || value == rcp) {
 			return false;
 		}
 		return true;
