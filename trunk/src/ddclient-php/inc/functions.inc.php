@@ -56,7 +56,7 @@ function connect_to_daemon(&$socket, $host, $port, $pwd, $enc, $timeout = 0) {
 	@recv_all($socket, $rnd);
 	$result = "";
 	if(mb_substr($rnd, 0, 3) != "102") {
-		$rnd .= $pw;
+		$rnd .= $pwd;
 		$enc_passwd = md5($rnd, true);
 		send_all($socket, $enc_passwd);
 		recv_all($socket, $result);
