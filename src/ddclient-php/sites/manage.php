@@ -9,7 +9,7 @@ if(isset($_POST['activate'])) {
 	$buf = "";
 	recv_all($socket, $buf);
 	if(mb_substr($buf, 0, 3) != "100") {
-		$err_message .= "Could not activate download " . $_POST['id'];
+		$err_message .= msg_generate($LANG['ERR_DL_ACTIVATE'], 'error');
 	}
 }
 
@@ -18,7 +18,7 @@ if(isset($_POST['deactivate'])) {
 	$buf = "";
 	recv_all($socket, $buf);
 	if(mb_substr($buf, 0, 3) != "100") {
-		$err_message .= "Could not deactivate download " . $_POST['id'];
+		$err_message .= msg_generate($LANG['ERR_DL_DEACTIVATE'], 'error');
 	}
 }
 
@@ -27,7 +27,7 @@ if(isset($_POST['delete'])) {
 	$buf = "";
 	recv_all($socket, $buf);
 	if(mb_substr($buf, 0, 3) != "100") {
-		$err_message .= "Could not delete download " . $_POST['id'];
+		$err_message .= msg_generate($LANG['ERR_DL_DEL'], 'error');
 	}
 }
 
@@ -36,7 +36,7 @@ if(isset($_POST['delete_file'])) {
 	$buf = "";
 	recv_all($socket, $buf);
 	if(mb_substr($buf, 0, 3) != "100") {
-		$err_message .= "Could not delete File " . $_POST['id'];
+		$err_message .= msg_generate($LANG['ERR_FILE_DEL'], 'error');
 	}
 }
 
@@ -45,7 +45,7 @@ if(isset($_POST['up'])) {
 	$buf = "";
 	recv_all($socket, $buf);
 	if(mb_substr($buf, 0, 3) != "100") {
-		$err_message .= "Could not move download upwards";
+		$err_message .= msg_generate($LANG['ERR_DL_UP'], 'error');
 	}
 }
 

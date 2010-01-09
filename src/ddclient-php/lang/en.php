@@ -35,6 +35,11 @@ $LANG = array(
 	'ERR_SUCCESS' => 'läuft',
 	'ERR_PASSWD' => 'You entered a wrong password or used an encryption method the server does not support.',
 	'ERR_URL_INVALID' => 'The Download could not be added. The URL seems to be invalid!',
+	'ERR_DL_ACTIVATE' => 'The Download could not be activated.',
+	'ERR_DL_DEACTIVATE' => 'The Download could not be deactivated.',
+	'ERR_DL_DEL' => 'Unable to delete this download.',
+	'ERR_FILE_DEL' => 'Unable to delete this file.',
+	'ERR_DL_UP' => 'The Download could not be moved.',
 // Success
 	'SUCC_ADD_SINGLE' => 'Download added successfully!',
 	'SUCC_ADD_MULTI' => 'All Downloads added successfully!',
