@@ -35,22 +35,22 @@ if(isset($_POST['submit'])) {
 			$err_message = msg_generate($LANG[$test], 'error');	
 		}
 	}
-} else {
-
-	$tpl_vars = array('L_DD' => $LANG['DD'],
-		'L_Add_DL' => $LANG['Add_DL'],
-		'L_List_DL' => $LANG['List_DL'],
-		'L_Manage_DL' => $LANG['Manage_DL'],
-		'L_Config_DD' => $LANG['Config_DD'],
-		'L_Logout' => $LANG['Logout'],
-		'L_Site' => $LANG['Login'],
-		'L_Host' => $LANG['Host'],
-		'L_Port' => $LANG['Port'],
-		'L_Password' => $LANG['Password'],
-		'L_Encrypt' => $LANG['Encrypt'],
-		'C_DEFAULT_HOST' => DEFAULT_HOST,
-		'C_DEFAULT_PORT' => DEFAULT_PORT,
-		'err_message' => $err_message,
-	);
 }
+
+$tpl_vars = array('L_DD' => $LANG['DD'],
+	'L_Add_DL' => $LANG['Add_DL'],
+	'L_List_DL' => $LANG['List_DL'],
+	'L_Manage_DL' => $LANG['Manage_DL'],
+	'L_Config_DD' => $LANG['Config_DD'],
+	'L_Logout' => $LANG['Logout'],
+	'L_Site' => $LANG['Login'],
+	'L_Host' => $LANG['Host'],
+	'L_Port' => $LANG['Port'],
+	'L_Password' => $LANG['Password'],
+	'L_Encrypt' => $LANG['Encrypt'],
+	'C_DEFAULT_HOST' => DEFAULT_HOST,
+	'C_DEFAULT_PORT' => DEFAULT_PORT,
+	'err_message' => $err_message,
+);
+
 ?>
