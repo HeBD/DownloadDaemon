@@ -16,11 +16,12 @@ if(isset($_POST['submit'])) {
 	}
 	$timeout = 5;
 	
+	if(!preg_match('/^\d+\.\d+\.\d+\.\d+$/', $host)) {
+		$host = gethostbyname($host);
+	}
 	if(!is_numeric($port)) {
 		$err_message = msg_generate($LANG['ERR_INVALID_PORT'], 'error');
-	}elseif(!preg_match('/^\d+\.\d+\.\d+\.\d+$/', $host)) {
-		$host = gethostbyname($host);
-	}else{
+	} else {
 
 		$test = connect_to_daemon($socket, $host, $port, $pwd, $enc, $timeout);
 	
