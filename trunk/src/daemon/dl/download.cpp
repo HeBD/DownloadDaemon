@@ -31,9 +31,13 @@ download::download(std::string& dl_url, int next_id)
 	: url(dl_url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
 	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0) {
 	time_t rawtime;
+	struct tm* timeinfo;
 	time(&rawtime);
-	add_date = ctime(&rawtime);
-	add_date.erase(add_date.length() - 1);
+	timeinfo = localtime(&rawtime);
+	char timestr[20];
+	strftime(timestr, 20, "%Y-%m-%d %X", timeinfo);
+	add_date = timestr;
+	//add_date.erase(add_date.length() - 1);
 	is_init = false;
 }
 
