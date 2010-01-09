@@ -12,8 +12,8 @@
 <html>
 	<head>
 		<title>{L_DD} - {L_Site}</title>
-		<link rel="shortcut icon" href="templates/ddico.ico" type="image/x-icon" />
-		<link rel="stylesheet" href="templates/default/css/style.css" type="text/css" media="screen" />
+		<link rel="shortcut icon" href="templates/ddico.ico" type="image/x-icon">
+		<link rel="stylesheet" href="templates/default/css/style.css" type="text/css" media="screen">
 	</head>
 	<body>
 		<div id="wrapper">

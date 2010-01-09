@@ -69,7 +69,7 @@ if(isset($_POST['apply'])) {
 	$log_lvl = "";	
 	send_all($socket, "DDP VAR GET log_level");
 	recv_all($socket, $log_lvl);
-	$debug = "<select name=\"log_level\"><option value=\"DEBUG\" ";
+	$debug = "<select name=\"log_level\" id=\"debug\"><option value=\"DEBUG\" ";
 	if($log_lvl == "DEBUG") {
 		$debug .= "SELECTED ";
 	}
