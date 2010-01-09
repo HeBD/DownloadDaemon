@@ -25,7 +25,7 @@ if(isset($_POST['submit'])) {
 
 		$test = connect_to_daemon($socket, $host, $port, $pwd, $enc, $timeout);
 	
-		if($test = 'SUCCESS') {
+		if($test == 'SUCCESS') {
 			setcookie("ddclient_host", $host, $day);
 			setcookie("ddclient_port", $port, $day);
 			setcookie("ddclient_passwd", $pwd, $day);
