@@ -178,13 +178,15 @@ int main(int argc, char* argv[], char* env[]) {
 	program_root = program_root.substr(0, program_root.find_last_of("/\\"));
 	program_root = program_root.substr(0, program_root.find_last_of("/\\"));
 	program_root.append("/share/downloaddaemon/");
-	#ifdef __CYGWIN__
-        program_root = "/share/downloaddaemon/";
-    #endif
+
 	if(stat(program_root.c_str(), &st) != 0) {
+	    #ifdef __CYGWIN__
+            program_root = "/share/downloaddaemon";
+        #else
 		cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
 		cerr << "We were looking in: " << program_root << endl;
 		exit(-1);
+		#endif
 	}
 	chdir(program_root.c_str());
 
