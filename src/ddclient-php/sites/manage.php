@@ -68,18 +68,18 @@ for($i = 0; $i < $download_count; $i++) {
 	$dl_list .= '<tr><td>'.$exp_dls[$i][0].'</td><td>'.$exp_dls[$i][1].'</td><td>'.$exp_dls[$i][2].'</td><td>'.$exp_dls[$i][3].'</td><td>';
 	$dl_list .= '<form action="index.php?site=manage" method="post">';
 	if($exp_dls[$i][4] == "DOWNLOAD_INACTIVE") {
-		$dl_list .= '<input type="submit" name="activate" value=" " id="activate" />';
+		$dl_list .= '<input type="submit" name="activate" value=" " id="activate" >';
 	} else {
-		$dl_list .= '<input type="submit" name="deactivate" value=" " id="deactivate" />';
+		$dl_list .= '<input type="submit" name="deactivate" value=" " id="deactivate" >';
 	}
-	$dl_list .= '<input type="submit" name="delete" value=" " id="delete" />';
-	$dl_list .= '<input type="submit" name="up" value=" " id="up" />';
+	$dl_list .= '<input type="submit" name="delete" value=" " id="delete" >';
+	$dl_list .= '<input type="submit" name="up" value=" " id="up" >';
 
 	send_all($socket, "DDP FILE GETPATH " . $exp_dls[$i][0]);
 	$buf = "";
 	recv_all($socket, $buf);
 	if($buf != "") {
-		$dl_list .= '<input type="submit" name="delete_file" value="Delete File" id="delete" />';
+		$dl_list .= '<input type="submit" name="delete_file" value="Delete File" id="delete" >';
 	}
 
 	$dl_list .= "<input type=\"hidden\" name=\"id\" value=\"" . $exp_dls[$i][0] . "\">";
@@ -87,8 +87,6 @@ for($i = 0; $i < $download_count; $i++) {
 	$dl_list .= "</td>";
 	$dl_list .= "</tr>";
 }
-
-$dl_list .= "</table>";
 
 $tpl_vars = array('L_DD' => $LANG['DD'],
 	'L_Add_DL' => $LANG['Add_DL'],
