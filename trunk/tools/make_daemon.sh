@@ -33,7 +33,7 @@ DESC_DD="A remote controlable download manager
 FILES_DD=("../src/daemon" "../src/lib/" "../etc/downloaddaemon" "../etc/init.d/downloadd" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
 PATHS_DD=("src/" "src/" "etc/" "/etc/init.d")
 
-
+script_dir=`pwd`
 
 if [ "$1" == "" ]
 then
@@ -186,6 +186,8 @@ replace="${replace/'    purge|remove|upgrade|failed-upgrade|abort-install|abort-
 }"
 
 echo "$replace" > postrm
+
+cp $script_dir/rules_tpl rules
 
 rm docs cron.d.ex downloaddaemon.default.ex downloaddaemon.doc-base.EX emacsen-install.ex emacsen-remove.ex emacsen-startup.ex init.d.ex init.d.lsb.ex manpage.* menu.ex README.Debian watch.ex  preinst.ex  prerm.ex
 cd ../..
