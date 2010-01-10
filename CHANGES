@@ -3,6 +3,7 @@
 	- fixed download resumption displaying wrong values
    [susanne]
 	- added screenshots of ddclient-php to website
+	- added possibility to copy urls to clipboard at ddclient-wx
 
 2010-01-09
    [adrian]

@@ -36,6 +36,8 @@
 #include <wx/string.h>
 #include <wx/filename.h>
 #include <wx/file.h>
+#include <wx/clipbrd.h>
+#include <wx/dataobj.h>
 
 #include "ddclient-wx_connect_dialog.h"
 #include "ddclient-wx_about_dialog.h"
@@ -123,6 +125,7 @@ class myframe : public wxFrame{
 		static const long id_toolbar_configure;
 		static const long id_toolbar_download_activate;
 		static const long id_toolbar_download_deactivate;
+		static const long id_toolbar_copy_url;
 
 		void add_bars();
 		void add_components();
@@ -153,6 +156,7 @@ class myframe : public wxFrame{
 		void on_configure(wxCommandEvent &event);
 		void on_download_activate(wxCommandEvent &event);
 		void on_download_deactivate(wxCommandEvent &event);
+		void on_copy_url(wxCommandEvent &event);
 		void on_resize(wxSizeEvent &event);
 		void on_reload(wxEvent &event);
 
