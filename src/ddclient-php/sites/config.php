@@ -52,9 +52,9 @@ if(isset($_POST['apply'])) {
 	send_all($socket, 'DDP VAR GET downloading_active');
 	recv_all($socket, $buf);
 	if($buf == '0') {
-		$dl_list .= '<input type="submit" name="downloading_active" value="Activate Downloading">';
+		$enable_button = '<input type="submit" name="downloading_active" value="Activate Downloading" class="submit" />';
 	} else {
-		$dl_list .= '<input type="submit" name="downloading_active" value="Deactivate Downloading">';
+		$enable_button = '<input type="submit" name="downloading_active" value="Deactivate Downloading" class="submit" />';
 	}
 
 	$dl_start = '';
@@ -105,6 +105,7 @@ if(isset($_POST['apply'])) {
 	send_all($socket, 'DDP VAR GET max_dl_speed');
 	recv_all($socket, $max_dl_speed);
 }
+	$tpl_vars['T_Enable_Button'] = $enable_button;
 	$tpl_vars['L_Conf_general'] = $LANG['Conf_general'];
 	$tpl_vars['L_Conf_reconnect'] = $LANG['Conf_reconnect'];
 	$tpl_vars['L_Conf_premium'] = $LANG['Conf_premium'];
