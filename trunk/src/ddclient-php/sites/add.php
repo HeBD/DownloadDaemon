@@ -45,18 +45,11 @@ if(isset($_POST['submit_single']) || isset($_POST['submit_multiple'])) {
 	}
 }
 
-$tpl_vars = array('L_DD' => $LANG['DD'],
-	'L_Add_DL' => $LANG['Add_DL'],
-	'L_List_DL' => $LANG['List_DL'],
-	'L_Manage_DL' => $LANG['Manage_DL'],
-	'L_Config_DD' => $LANG['Config_DD'],
-	'L_Logout' => $LANG['Logout'],
-	'L_Site' => $LANG['Add_DL'],
-	'L_Title' => $LANG['Title'],
-	'L_URL' => $LANG['URL'],
-	'L_Add_single_DL' => $LANG['Add_single_DL'],
-	'L_Add_multi_DL' => $LANG['Add_multi_DL'],
-	'L_Add_multi_DL_Desc' => $LANG['Add_multi_DL_Desc'],
-	'err_message' => $err_message,
-);
+
+$tpl_vars['L_Title'] = $LANG['Title'];
+$tpl_vars['L_URL'] = $LANG['URL'];
+$tpl_vars['L_Add_single_DL'] = $LANG['Add_single_DL'];
+$tpl_vars['L_Add_multi_DL'] = $LANG['Add_multi_DL'];
+$tpl_vars['L_Add_multi_DL_Desc'] = $LANG['Add_multi_DL_Desc'];
+$tpl_vars['err_message'] = $err_message;
 ?>

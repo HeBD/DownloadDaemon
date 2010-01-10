@@ -1,24 +1,36 @@
 <?php
 
-function get_template($file){
-	if(file_exists('templates/'.TEMPLATE.'/'.$file.'.tpl')){
-		$temp = file_get_contents('templates/'.TEMPLATE.'/header.tpl');
-		$temp .= file_get_contents('templates/'.TEMPLATE.'/'.$file.'.tpl');
-		$temp .= file_get_contents('templates/'.TEMPLATE.'/footer.tpl');
+function template_get($file){
+	if(file_exists('templates/'.TEMPLATE.'/'.$file.'.htm')){
+		$temp = file_get_contents('templates/'.TEMPLATE.'/'.$file.'.htm');
 		return $temp;
 	}else{
 		return false;
 	}
 }
 
-function parse_template($file, $array){
-	$temp = get_template($file);
+function template_parse($file, $array){
+	$temp = template_get($file);
 	if($temp){
 		foreach ($array as $key => $value){
 			$temp = str_replace('{'.$key.'}', $value, $temp);
 		}
 	}else{
-		echo '\"templates/'.TEMPLATE.'/'.$file.'.tpl\" Does Not Exist.';
+		echo '\"templates/'.TEMPLATE.'/'.$file.'.htm\" Does Not Exist.';
+	}
+	return $temp;
+}
+
+function template_parse_site($file, $array){
+	$temp = template_get('header');
+	$temp .= template_get($file);
+	$temp .= template_get('footer');
+	if($temp){
+		foreach ($array as $key => $value){
+			$temp = str_replace('{'.$key.'}', $value, $temp);
+		}
+	}else{
+		echo '\"templates/'.TEMPLATE.'/'.$file.'.htm\" Does Not Exist.';
 	}
 	return $temp;
 }
