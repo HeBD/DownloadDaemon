@@ -64,8 +64,10 @@ class myframe : public wxFrame{
 		/** Destructor */
 		~myframe();
 
-		/** Updates Status of the Program, should be called after Connecting to a Server */
-		void update_status();
+		/** Updates Status of the Program, should be called after Connecting to a Server
+		*	@param server Location of the Server, which the client is connected to
+		*/
+		void update_status(wxString server);
 
 		// getter and setter methods
 		/** Setter for Attributes of Connection with DownloadDaemon Server

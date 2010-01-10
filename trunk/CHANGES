@@ -5,6 +5,7 @@
 	- added screenshots of ddclient-php to website
 	- added possibility to copy urls to clipboard at ddclient-wx
 	- added context menu to ddclient-wx
+	- ddclient-wx now shows the server its connected to
 
 2010-01-09
    [adrian]

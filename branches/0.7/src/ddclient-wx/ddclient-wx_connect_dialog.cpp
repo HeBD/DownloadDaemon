@@ -207,7 +207,7 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 
 			myparent->set_connection_attributes(mysock, pass);
 			mx->unlock();
-			myparent->update_status();
+			myparent->update_status(host_input->GetValue());
 
 			// write login_data to a file
 			if(save_data_check->GetValue()){ // user clicked checkbox to save data
