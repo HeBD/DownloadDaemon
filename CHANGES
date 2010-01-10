@@ -1,10 +1,12 @@
 2010-01-10
    [adrian]
 	- fixed download resumption displaying wrong values
+   [susanne]
+	- added screenshots of ddclient-php to website
 
 2010-01-09
    [adrian]
-	- Uploaded ddclient-php rewrite by bungh0le! it's not yet finished, bit
+	- Uploaded ddclient-php rewrite by bungh0le! it's not yet finished, but
 	  it shows what to expect
 	- changed date-format for downloads to yyyy-mm-dd hh:mm:ss
 
