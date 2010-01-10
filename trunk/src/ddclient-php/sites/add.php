@@ -1,9 +1,15 @@
 <?php
+// Connect to Daemon
+$socket = socket_create(AF_INET, SOCK_STREAM, 0);
+$connect = connect_to_daemon($socket, $_COOKIE['ddclient_host'], $_COOKIE['ddclient_port'], $_COOKIE['ddclient_passwd'], $_COOKIE['ddclient_enc'], 5);
+
+// Site Vars
 $err_message = '';
-if(isset($_POST['submit_single']) || isset($_POST['submit_multiple'])) {
-	$socket = socket_create(AF_INET, SOCK_STREAM, 0);
-	connect_to_daemon($socket, $_COOKIE['ddclient_host'], $_COOKIE['ddclient_port'], $_COOKIE['ddclient_passwd'], $_COOKIE['ddclient_enc'], 5);
-	
+$dl_list = '';
+
+if($connect != 'SUCCESS') {
+	$err_msg = msg_generate($LANG[$connect], 'error');
+}else{
 	if(isset($_POST['submit_single'])) {
 		if($_POST['url'] != '') {
 			send_all($socket, "DDP DL ADD " . $_POST['url'] . " " . $_POST['title']);
@@ -15,7 +21,8 @@ if(isset($_POST['submit_single']) || isset($_POST['submit_multiple'])) {
 				$err_message .= msg_generate($LANG['SUCC_ADD_SINGLE'], 'success');
 			}
 		}
-	} elseif(isset($_POST['submit_multi'])) {
+	} 
+	if(isset($_POST['submit_multi'])) {
 		$list = $_POST['titles_urls'];
 		$download_count = substr_count($list, "http://");
 		if($download_count == 0) {
