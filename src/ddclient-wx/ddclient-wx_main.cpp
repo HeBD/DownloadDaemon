@@ -289,13 +289,6 @@ void myframe::update_status(wxString server){
 		mysock = NULL;
 		mx.unlock();
 
-		// make sure mysock doesn't crash the programm
-		mx.lock();
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
-
 	}else{
 		string answer;
 
@@ -431,7 +424,8 @@ void myframe::update_list(){
 
 			// make sure mysock doesn't crash the programm
 			mx.lock();
-			delete mysock;
+			if(mysock != NULL)
+				delete mysock;
 			mysock = NULL;
 			mx.unlock();
 
