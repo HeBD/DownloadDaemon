@@ -128,7 +128,7 @@ if($connect != 'SUCCESS') {
 	send_all($socket, "DDP FILE GETPATH " . $exp_dls[$i][0]);
 	$buf = "";
 	recv_all($socket, $buf);
-	if($buf == "") {
+	if($buf != "") {
 		$del_file = '<a href="index.php?site=manage&action=del_file&id={T_DL_ID}" title="{L_Delete_File}"><img src="{T_SITE_URL}/templates/default/css/images/delete_file.png" alt="{L_Delete_File}" /></a>';
 	}else{
 		$del_file = '';

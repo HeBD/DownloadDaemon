@@ -15,7 +15,7 @@ if(isset($_POST['submit_single']) || isset($_POST['submit_multiple'])) {
 				$err_message .= msg_generate($LANG['SUCC_ADD_SINGLE'], 'success');
 			}
 		}
-	} elseif(isset($_POST['submit_multiple'])) {
+	} elseif(isset($_POST['submit_multi'])) {
 		$list = $_POST['titles_urls'];
 		$download_count = substr_count($list, "http://");
 		if($download_count == 0) {
