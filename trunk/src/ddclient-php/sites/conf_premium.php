@@ -36,9 +36,9 @@ for($i = 0; $i != count($host_list); $i++) {
 	$content .= '>' . $host_list[$i] . '</option>';
 }
 $content .= '</select>';
-$content .= '<br><br>';
-$content .= 'Username: <input type="text" name="user"><br>';
-$content .= 'Password: <input type="password" name="pass"><br>';
+$content .= '<br /><br />';
+$content .= 'Username: <input type="text" name="user" /><br />';
+$content .= 'Password: <input type="password" name="pass" /><br />';
 $content .= '<input type="submit" name="apply" value="Apply" id="apply" class="submit" />';	
 }
 

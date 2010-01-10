@@ -49,11 +49,11 @@ if($buf == '1' || $buf == 'true') {
 	send_all($socket, 'DDP ROUTER GET reconnect_policy');
 	$buf = '';
 	recv_all($socket, $buf);
-	$content .= 'This option specifies DownloadDaemons reconnect activity: <br>';
-	$content .= 'HARD cancels all downloads if a reconnect is needed<br>';
-	$content .= 'CONTINUE only cancels downloads that can be continued after the reconnect<br>';
-	$content .= 'SOFT will wait until all other downloads are finished<br>';
-	$content .= 'PUSSY will only reconnect if there is no other choice (no other download can be started without a reconnect)<br>';
+	$content .= 'This option specifies DownloadDaemons reconnect activity: <br />';
+	$content .= 'HARD cancels all downloads if a reconnect is needed<br />';
+	$content .= 'CONTINUE only cancels downloads that can be continued after the reconnect<br />';
+	$content .= 'SOFT will wait until all other downloads are finished<br />';
+	$content .= 'PUSSY will only reconnect if there is no other choice (no other download can be started without a reconnect)<br />';
 	$content .= 'Reconnect Policy: <select name="reconnect_policy"><option value="HARD" ';
 	if($buf == 'HARD') {
 		$content .= 'SELECTED ';
@@ -74,7 +74,7 @@ if($buf == '1' || $buf == 'true') {
 		$content .= 'SELECTED ';
 	}
 	$content .= '>PUSSY</option></select>';
-	$content .= '<br><br>';
+	$content .= '<br /><br />';
 	$buf = '';
 	$model = '';
 	send_all($socket, 'DDP ROUTER GET router_model');
@@ -94,16 +94,16 @@ if($buf == '1' || $buf == 'true') {
 		$content .= '>' . $model_list[$i] . '</option>';
 	}
 	$content .= '</select>';
-	$content .= '<br><br>';
+	$content .= '<br /><br />';
 	$buf = '';
 	send_all($socket, 'DDP ROUTER GET router_ip');
 	recv_all($socket, $buf);
-	$content .= 'Router IP: <input type="text" name="router_ip" value="' . $buf . '"><br>';
+	$content .= 'Router IP: <input type="text" name="router_ip" value="' . $buf . '" /><br />';
 	send_all($socket, 'DDP ROUTER GET router_username');
 	recv_all($socket, $buf);
-	$content .= 'Username: <input type="text" name="router_username" value="' . $buf . '"><br>';
-	$content .= 'Password: <input type="text" name="router_password"><br>';
-	$content .= '<br><input type="submit" name="apply" value="Apply" id="apply" class="submit" /><br>';
+	$content .= 'Username: <input type="text" name="router_username" value="' . $buf . '" /><br />';
+	$content .= 'Password: <input type="text" name="router_password" /><br />';
+	$content .= '<br /><input type="submit" name="apply" value="Apply" id="apply" class="submit" /><br />';
 }
 
 $tpl_vars['content'] = $content;
