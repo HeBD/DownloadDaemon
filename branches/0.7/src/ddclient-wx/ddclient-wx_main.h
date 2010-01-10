@@ -126,6 +126,7 @@ class myframe : public wxFrame{
 		static const long id_toolbar_download_activate;
 		static const long id_toolbar_download_deactivate;
 		static const long id_toolbar_copy_url;
+		static const long id_right_click;
 
 		void add_bars();
 		void add_components();
@@ -159,6 +160,7 @@ class myframe : public wxFrame{
 		void on_copy_url(wxCommandEvent &event);
 		void on_resize(wxSizeEvent &event);
 		void on_reload(wxEvent &event);
+		void on_right_click(wxContextMenuEvent &event);
 
 		DECLARE_EVENT_TABLE()
 };
