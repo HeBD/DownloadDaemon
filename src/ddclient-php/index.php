@@ -2,13 +2,19 @@
 include 'inc/_config.inc.php';
 include 'inc/functions.inc.php';
 include 'inc/template.inc.php';
-include 'lang/en.php';
 
+//Language File
+if(file_exists('lang/'.LANG.'.php')){
+	include 'lang/'.LANG.'.php';	
+}else{
+	include 'lang/en.php';	
+}
+
+//Logged in?
 if(isset($_COOKIE['ddclient_host'])){
 	$logged_in = true;	
 }else{
 	$logged_in = false;
-//	$logged_in = true;
 }
 
 
@@ -18,6 +24,20 @@ if(isset($_GET['site']) && file_exists('sites/'.$_GET['site'].'.php') && $logged
 	$site = 'login';
 }
 
+$tpl_vars = array(
+	'T_SITE_URL' => 'http://'. $_SERVER['HTTP_HOST'] . substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], "/")+1),
+	'T_DEFAULT_LANG' => LANG,
+	'L_DD' => $LANG['DD'],
+	'L_Manager' => $LANG['Manager'],
+	'L_Add' => $LANG['Add'],
+	'L_List' => $LANG['List'],
+	'L_Manage' => $LANG['Manage'],
+	'L_Config' => $LANG['Config'],
+	'L_Logout' => $LANG['Logout'],
+	'L_Site' => $LANG[ucfirst($site)],
+);
+
 include 'sites/'.$site.'.php';
-echo parse_template($site, $tpl_vars);
+
+echo template_parse_site($site, $tpl_vars);
 ?>

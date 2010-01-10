@@ -30,27 +30,20 @@ if(isset($_POST['submit'])) {
 			setcookie("ddclient_port", $port, $day);
 			setcookie("ddclient_passwd", $pwd, $day);
 			setcookie("ddclient_enc", $enc, $day);
-			header("Location: index.php?site=list");
+			header("Location: index.php?site=manage");
 		} else {
 			$err_message = msg_generate($LANG[$test], 'error');	
 		}
 	}
 }
 
-$tpl_vars = array('L_DD' => $LANG['DD'],
-	'L_Add_DL' => $LANG['Add_DL'],
-	'L_List_DL' => $LANG['List_DL'],
-	'L_Manage_DL' => $LANG['Manage_DL'],
-	'L_Config_DD' => $LANG['Config_DD'],
-	'L_Logout' => $LANG['Logout'],
-	'L_Site' => $LANG['Login'],
-	'L_Host' => $LANG['Host'],
-	'L_Port' => $LANG['Port'],
-	'L_Password' => $LANG['Password'],
-	'L_Encrypt' => $LANG['Encrypt'],
-	'C_DEFAULT_HOST' => DEFAULT_HOST,
-	'C_DEFAULT_PORT' => DEFAULT_PORT,
-	'err_message' => $err_message,
-);
 
+$tpl_vars['L_Login'] = $LANG['Login'];
+$tpl_vars['L_Host'] = $LANG['Host'];
+$tpl_vars['L_Port'] = $LANG['Port'];
+$tpl_vars['L_Password'] = $LANG['Password'];
+$tpl_vars['L_Encrypt'] = $LANG['Encrypt'];
+$tpl_vars['C_DEFAULT_HOST'] = DEFAULT_HOST;
+$tpl_vars['C_DEFAULT_PORT'] = DEFAULT_PORT;
+$tpl_vars['err_message'] = $err_message;
 ?>
