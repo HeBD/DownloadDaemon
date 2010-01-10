@@ -30,6 +30,7 @@ const long myframe::id_toolbar_priority_down = wxNewId();
 const long myframe::id_toolbar_configure = wxNewId();
 const long myframe::id_toolbar_download_activate = wxNewId();
 const long myframe::id_toolbar_download_deactivate = wxNewId();
+const long myframe::id_toolbar_copy_url = wxNewId();
 
 
 // for custom event
@@ -56,8 +57,9 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_toolbar_configure, myframe::on_configure)
 	EVT_MENU(id_toolbar_download_activate, myframe::on_download_activate)
 	EVT_MENU(id_toolbar_download_deactivate, myframe::on_download_deactivate)
+	EVT_MENU(id_toolbar_copy_url, myframe::on_copy_url)
 	EVT_SIZE(myframe::on_resize)
-	EVT_CUSTOM(wxEVT_reload_list, wxID_ANY, myframe::on_reload )
+	EVT_CUSTOM(wxEVT_reload_list, wxID_ANY, myframe::on_reload)
 END_EVENT_TABLE()
 
 
@@ -243,7 +245,6 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 
 			if(!error_occured){
-
 				// save socket and password
 				mx.lock();
 
@@ -264,14 +265,6 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 		}else{ // connection failed due to host (IP/URL or port)
 			delete mysock;
 		}
-
-
-
-
-
-	// TODO: missing - connect if possible, if not do NOT send out an error message
-
-
 	}
 }
 
@@ -339,7 +332,10 @@ void myframe::add_bars(){
 	file_menu->Append(id_toolbar_add, wxT("&Add Download..\tAlt-I"), wxT("Add Download"));
 	file_menu->Append(id_toolbar_delete, wxT("&Delete Download\tDEL"), wxT("Delete Download"));
 	file_menu->Append(id_toolbar_delete_finished, wxT("&Delete finished Downloads\tCtrl-DEL"), wxT("Delete finished Downloads"));
+	file_menu->AppendSeparator();
+
 	file_menu->Append(id_menu_select_all_lines, wxT("&Select all\tCtrl-A"), wxT("Select all"));
+	file_menu->Append(id_toolbar_copy_url, wxT("&Copy URL\tCtrl-C"), wxT("Copy URL"));
 	file_menu->AppendSeparator();
 
 	file_menu->Append(wxID_EXIT, wxT("&Quit\tAlt-F4"), wxT("Quit"));
@@ -806,7 +802,8 @@ void myframe::on_delete(wxCommandEvent &event){
 						error_occured = true;
 				}
 			}
-		}
+		}else
+			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
 
 		deselect_lines();
 		mx.unlock();
@@ -922,7 +919,8 @@ void myframe::on_activate(wxCommandEvent &event){
 				mysock->recv(answer); // might receive error 106 ACTIVATE, but that doesn't matter
 			}
 
-		}
+		}else
+			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
 
 		mx.unlock();
 		get_content();
@@ -951,7 +949,8 @@ void myframe::on_deactivate(wxCommandEvent &event){
 				mysock->recv(answer); // might receive error 107 DEACTIVATE, but that doesn't matter
 			}
 
-		}
+		}else
+			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
 
 		mx.unlock();
 		get_content();
@@ -988,7 +987,8 @@ void myframe::on_deactivate(wxCommandEvent &event){
 				}
 			}
 
-		}
+		}else
+			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
 
 		deselect_lines();
 		mx.unlock();
@@ -1026,7 +1026,8 @@ void myframe::on_priority_down(wxCommandEvent &event){
 				}
 			}
 
-		}
+		}else
+			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
 
 		deselect_lines();
 		mx.unlock();
@@ -1102,6 +1103,42 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 		file_menu->Enable(id_toolbar_download_deactivate, false);
 	}
 }
+
+
+void myframe::on_copy_url(wxCommandEvent &event){
+	vector<int>::iterator it;
+	string url, answer;
+	wxString clipboard_data = wxT("");
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before copying URLs."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
+
+	}else{ // we have a connection
+
+		mx.lock();
+
+		find_selected_lines(); // save selection into selected_lines
+		if(!selected_lines.empty()){
+
+			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+				url = (content[*it])[3]; // gets the url of the line, which index is stored in selected_lines
+				url += "\n";
+				clipboard_data += wxString(url.c_str(), wxConvUTF8);
+			}
+
+			if(wxTheClipboard->Open()){
+				wxTheClipboard->SetData(new wxTextDataObject(clipboard_data));
+				wxTheClipboard->Close();
+			}else
+				wxMessageBox(wxT("Couldn't write into clipboard."), wxT("Clipboard Error"));
+		}else
+			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
+
+		mx.unlock();
+
+	}
+ }
 
 
  void myframe::on_resize(wxSizeEvent &event){
