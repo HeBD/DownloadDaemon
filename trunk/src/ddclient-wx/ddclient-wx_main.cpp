@@ -5,7 +5,7 @@
 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
  * GNU General Public License for more details.
  */
 
@@ -31,6 +31,7 @@ const long myframe::id_toolbar_configure = wxNewId();
 const long myframe::id_toolbar_download_activate = wxNewId();
 const long myframe::id_toolbar_download_deactivate = wxNewId();
 const long myframe::id_toolbar_copy_url = wxNewId();
+const long myframe::id_right_click = wxNewId();
 
 
 // for custom event
@@ -60,6 +61,7 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_toolbar_copy_url, myframe::on_copy_url)
 	EVT_SIZE(myframe::on_resize)
 	EVT_CUSTOM(wxEVT_reload_list, wxID_ANY, myframe::on_reload)
+	EVT_CONTEXT_MENU(myframe::on_right_click)
 END_EVENT_TABLE()
 
 
@@ -91,7 +93,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 		if(!found) {
 			// search the last folder of $PATH which is not included in the while loop
-			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
+			curr_path = env_path.substr(last_pos, curr_pos - last_pos);
 			curr_path += wxT("/ddclient-wx");
 			if(wxFile::Exists(curr_path)) {
 				found = true;
@@ -315,7 +317,7 @@ void myframe::add_bars(){
 	menu = new wxMenuBar();
 	SetMenuBar(menu);
 
-	file_menu = new wxMenu(_T(""));
+	file_menu = new wxMenu(wxT(""));
 
 	file_menu->Append(id_toolbar_connect, wxT("&Connect..\tAlt-C"), wxT("Connect"));
 	file_menu->Append(id_toolbar_configure, wxT("&Configure..\tAlt-P"), wxT("Configure"));
@@ -1181,6 +1183,21 @@ void myframe::on_reload(wxEvent &event){
 	}
 
 	mx.unlock();
+}
+
+
+void myframe::on_right_click(wxContextMenuEvent &event){
+	wxMenu popup_menu;
+
+	popup_menu.Append(id_toolbar_activate, wxT("&Activate Download\tAlt-A"), wxT("Activate Download"));
+	popup_menu.Append(id_toolbar_deactivate, wxT("&Deactivate Download\tAlt-D"), wxT("Deactivate Download"));
+	popup_menu.AppendSeparator();
+
+	popup_menu.Append(id_toolbar_delete, wxT("&Delete Download\tDEL"), wxT("Delete Download"));
+	popup_menu.Append(id_toolbar_copy_url, wxT("&Copy URL\tCtrl-C"), wxT("Copy URL"));
+	popup_menu.AppendSeparator();
+
+	PopupMenu(&popup_menu);
 }
 
 
