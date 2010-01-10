@@ -56,22 +56,22 @@ if($buf == '1' || $buf == 'true') {
 	$content .= 'PUSSY will only reconnect if there is no other choice (no other download can be started without a reconnect)<br />';
 	$content .= 'Reconnect Policy: <select name="reconnect_policy"><option value="HARD" ';
 	if($buf == 'HARD') {
-		$content .= 'SELECTED ';
+		$content .= 'selected="selected" ';
 	}
 	$content .= '>HARD</option>';
 	$content .= '<option value="CONTINUE" ';
 	if($buf == 'CONTINUE') {
-		$content .= 'SELECTED ';
+		$content .= 'selected="selected" ';
 	}
 	$content .= '>CONTINUE</option>';
 	$content .= '<option value="SOFT" ';
 	if($buf == 'SOFT') {
-		$content .= 'SELECTED ';
+		$content .= 'selected="selected" ';
 	}
 	$content .= '>SOFT</option>';
 	$content .= '<option value="PUSSY" ';
 	if($buf == 'PUSSY') {
-		$content .= 'SELECTED ';
+		$content .= 'selected="selected" ';
 	}
 	$content .= '>PUSSY</option></select>';
 	$content .= '<br /><br />';

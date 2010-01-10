@@ -78,22 +78,22 @@ if(isset($_POST['apply'])) {
 	recv_all($socket, $log_lvl);
 	$debug = '<select name="log_level" id="log_level"><option value="DEBUG" ';
 	if($log_lvl == 'DEBUG') {
-		$debug .= 'SELECTED ';
+		$debug .= 'selected="selected" ';
 	}
 	$debug .= '>Debug</option>';
 	$debug .= '<option value="WARNING" ';
 	if($log_lvl == 'WARNING') {
-		$debug .= 'SELECTED ';
+		$debug .= 'selected="selected" ';
 	}
 	$debug .= '>Warning</option>';
 	$debug .= '<option value="SEVERE" ';
 	if($log_lvl == 'SEVERE') {
-		$debug .= 'SELECTED ';
+		$debug .= 'selected="selected" ';
 	}
 	$debug .= '>Severe</option>';
 	$debug .= '<option value="OFF" ';
 	if($log_lvl == 'OFF') {
-		$debug .= 'SELECTED ';
+		$debug .= 'selected="selected" ';
 	}
 	$debug .= '>Off</option></select>';
 

@@ -129,7 +129,7 @@ if($connect != 'SUCCESS') {
 	$buf = "";
 	recv_all($socket, $buf);
 	if($buf != "") {
-		$del_file = '<a href="index.php?site=manage&action=del_file&id={T_DL_ID}" title="{L_Delete_File}"><img src="{T_SITE_URL}/templates/default/css/images/delete_file.png" alt="{L_Delete_File}" /></a>';
+		$del_file = '<a href="index.php?site=manage&amp;action=del_file&amp;id={T_DL_ID}" title="{L_Delete_File}"><img src="{T_SITE_URL}/templates/default/css/images/delete_file.png" alt="{L_Delete_File}" /></a>';
 	}else{
 		$del_file = '';
 	}
