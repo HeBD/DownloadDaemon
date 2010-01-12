@@ -1,3 +1,8 @@
+2010-01-12
+   [adrian]
+	- improved env var resolution
+	- improved documentation if DD doesn't run because of wrong permissions
+
 2010-01-10
    [adrian]
 	- fixed download resumption displaying wrong values
