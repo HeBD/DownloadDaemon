@@ -242,15 +242,7 @@ void correct_path(std::string &path) {
 }
 
 std::string get_env_var(const std::string &var) {
-	std::string result;
-	std::string curr_env;
-	for(char** curr_c = env_vars; curr_c != 0 && *curr_c != 0; ++curr_c) {
-		curr_env = *curr_c;
-		if(curr_env.find(var) == 0) {
-			result = curr_env.substr(curr_env.find('=') + 1);
-			break;
-		}
-	}
+	std::string result(getenv(var.c_str()));
 	return result;
 }
 
