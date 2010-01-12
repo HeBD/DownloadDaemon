@@ -171,6 +171,9 @@ replace="${replace/'    configure)'/    configure)
 	if [ -d /etc/downloaddaemon ]; then
   		chown -R downloadd:downloadd /etc/downloaddaemon
 	fi
+	if [ -d /var/downloads ]; then
+  		chown -R downloadd:downloadd /var/downloads
+	fi
 	if [ -x /etc/init.d/downloadd ]; then
 		update-rc.d downloadd defaults >/dev/null
 		/etc/init.d/downloadd start
