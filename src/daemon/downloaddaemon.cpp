@@ -217,9 +217,16 @@ int main(int argc, char* argv[], char* env[]) {
 	global_router_config.open_cfg_file(router_conf_path.c_str(), true);
 	global_premium_config.open_cfg_file(premium_conf_path.c_str(), true);
 	if(!global_config) {
+		uid_t uid = geteuid();
+		struct passwd *pw = getpwuid(uid);
+		std::string unam = "downloadd";
+		if(pw) {
+			unam = pw->pw_name;
+		}
+
 		cerr << "Unable to open config file!" << endl;
 		cerr << "You probably don't have enough permissions to write the configuration file. executing \"chown -R "
-			 << get_env_var("USER") << ":" << get_env_var("USER") << " /etc/downloaddaemon /var/downloads\" might help";
+			 << unam << ":downloadd /etc/downloaddaemon /var/downloads\" might help" << endl;
 		exit(-1);
 	}
 	if(!global_router_config) {
