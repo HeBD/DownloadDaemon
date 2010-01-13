@@ -1,6 +1,7 @@
 2010-01-13
    [adrian]
 	- fixed group-setting for downloaded files (was root, is now downloadd)
+	- fixed permissions for created directories
 
 ----- 2010-01-13 - VERSION 0.7 RELEASED
 
