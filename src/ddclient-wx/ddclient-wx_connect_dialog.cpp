@@ -220,7 +220,7 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 				last_data.port = port;
 				snprintf(last_data.pass, 256, "%s", pass.c_str());
 
-				if((ofs.rdstate() & ofstream::failbit) == 0){ // file successfully opened
+				if(ofs.good()){ // file successfully opened
 
 					ofs.write((char *) &last_data, sizeof(login_data));
 				}
