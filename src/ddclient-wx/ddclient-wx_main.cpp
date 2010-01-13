@@ -272,12 +272,15 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 
 myframe::~myframe(){
-		delete mysock;
+		mx.lock();
+		if(mysock != NULL)
+			delete mysock;
+		mysock = NULL;
+		mx.unlock();
 }
 
 
 void myframe::update_status(wxString server){
-
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		wxMessageBox(wxT("Please reconnect."), wxT("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
@@ -420,7 +423,7 @@ void myframe::add_components(){
 void myframe::update_list(){
 	while(true){ // for boost::thread
 		if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){
-			SetStatusText(wxT("Not connected"),1);
+			SetStatusText(wxT("Not connected"), 1);
 
 			// make sure mysock doesn't crash the programm
 			mx.lock();
