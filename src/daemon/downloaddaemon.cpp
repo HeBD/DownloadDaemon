@@ -181,7 +181,7 @@ int main(int argc, char* argv[], char* env[]) {
 
 	if(stat(program_root.c_str(), &st) != 0) {
 	    #ifdef __CYGWIN__
-            program_root = "/share/downloaddaemon";
+            program_root = "/share/downloaddaemon/";
         #else
 		cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
 		cerr << "We were looking in: " << program_root << endl;
