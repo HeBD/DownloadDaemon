@@ -237,12 +237,18 @@ read -p "Basic debian package preparation for the clients is done. Please move t
 Then press [enter] to continue package building. expecially the changelog file should be changed."
 
 if [ $BINARY == true ]; then
-	echo "building ddclient-wx package..."
+	echo "building client packages..."
 	cd ddclient-wx-${VERSION}
 	debuild -d -sa
 	cd ..
+	cd ddconsole-${VERSION}
+	debuild -d -sa
+	cd ..
 else
-	echo "building ddconsole package..."
+	echo "building client packages..."
+	cd ddclient-wx-${VERSION}
+	debuild -S -sa
+	cd ..
 	cd ddconsole-${VERSION}
 	debuild -S -sa
 	cd ..
