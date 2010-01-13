@@ -54,7 +54,6 @@ int main(int argc, char* argv[], char* env[]) {
 	if (getuid() == 0 || geteuid() == 0) {
 		struct passwd *pw = getpwnam(DAEMON_USER /* "downloadd" */);
 		if ( pw && setgid(pw->pw_gid) == 0 && setuid(pw->pw_uid) == 0) {
-			//cout << setuid(pw->pw_uid) << ":" << setgid(pw->pw_gid) << endl;
 			check_home_for_cfg = false;
 		} else {
 			std::cerr << "Never run DownloadDaemon as root!" << endl;
