@@ -150,7 +150,6 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	Fit();
 
 	mysock = new tkSock();
-	boost::thread(boost::bind(&myframe::update_list, this));
 
 	// connect if logindata was saved
 	string file_name = string(config_dir.mb_str()) + "save.dat";
@@ -268,6 +267,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 			delete mysock_tmp;
 		}
 	}
+	boost::thread(boost::bind(&myframe::update_list, this));
 }
 
 
