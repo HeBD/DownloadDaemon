@@ -156,7 +156,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	string file_name = string(config_dir.mb_str()) + "save.dat";
 	ifstream ifs(file_name.c_str(), fstream::in | fstream::binary); // open file
 
-	if((ifs.rdstate() & ifstream::failbit) == 0){ // file successfully opened
+	if(ifs.good()){ // file successfully opened
 		login_data last_data =  { "", 0, ""};
 
 		ifs.read((char *) &last_data, sizeof(login_data));
@@ -303,7 +303,7 @@ void myframe::update_status(wxString server){
 		if(answer == "1"){ // downloading active
 			toolbar->AddTool(download_deactivate);
 			file_menu->Enable(id_toolbar_download_deactivate, true);
-		}else if(answer =="0"){ // downloadin not active
+		}else if(answer =="0"){ // downloading not active
 			toolbar->AddTool(download_activate);
 			file_menu->Enable(id_toolbar_download_activate, true);
 		}else{
