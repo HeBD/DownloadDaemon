@@ -1,3 +1,7 @@
+2010-01-13
+   [adrian]
+	- fixed group-setting for downloaded files (was root, is now downloadd)
+
 ----- 2010-01-13 - VERSION 0.7 RELEASED
 
 2010-01-13
