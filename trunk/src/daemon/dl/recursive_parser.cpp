@@ -26,7 +26,7 @@ void recursive_parser::deep_parse(std::string url) {
 	std::vector<std::string> urls = parse_list(list);
 	for(std::vector<std::string>::iterator it = urls.begin(); it != urls.end(); ++it) {
 		if((*it)[it->size() - 1] == '/') {
-			deep_parse(url += *it);
+			deep_parse(url + *it);
 		} else {
 			download dl(url + *it, global_download_list.get_next_id());
 			global_download_list.add_download(dl);
