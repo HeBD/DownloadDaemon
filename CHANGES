@@ -1,6 +1,7 @@
 2010-01-14
    [adrian]
 	- added possibillity to recursively download ftp-folders (#2931619)
+	- fixed download resumption: if resumption is impossible, start from beginning
 
 2010-01-13
    [adrian]
