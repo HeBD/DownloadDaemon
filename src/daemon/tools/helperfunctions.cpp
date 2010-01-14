@@ -274,7 +274,7 @@ void mkdir_recursive(std::string dir) {
 	for(size_t index = 0; index < len; ++index) {
 		if(dir[index] == '/') {
 			tmp = dir.substr(0, dir.find('/', index + 1));
-			mkdir(tmp.c_str(), 0);
+			mkdir(tmp.c_str(), 0777);
 		}
 	}
 }
