@@ -10,6 +10,7 @@ SET(daemon_SRCS downloaddaemon.cpp
 		mgmt/mgmt_thread.cpp
 		dl/download_thread.cpp 
 		dl/download.cpp 
+		dl/recursive_parser.cpp
 		../lib/netpptk/netpptk.cpp 
 		../lib/cfgfile/cfgfile.cpp
 		dl/download_container.cpp
