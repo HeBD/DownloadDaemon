@@ -162,7 +162,7 @@ bool variable_is_valid(std::string &variable) {
 	std::string possible_vars = ",enable_resume,enable_reconnect,downloading_active,download_timing_start,download_timing_end,download_folder,"
 						   "simultaneous_downloads,log_level,log_procedure,mgmt_max_connections,mgmt_port,mgmt_password,plugin_dir,mgmt_accept_enc,max_dl_speed,"
 						   "bind_addr,dlist_file,auth_fail_wait,write_error_wait,plugin_fail_wait,connection_lost_wait,refuse_existing_links,overwrite_files,"
-						   "daemon_umask,";
+						   "daemon_umask,recursive_ftp_download,";
 	size_t pos;
 	if((pos = possible_vars.find(variable)) != std::string::npos) {
 		if(possible_vars[pos - 1] == ',' && possible_vars[pos + variable.length()] == ',') {
@@ -277,4 +277,13 @@ void mkdir_recursive(std::string dir) {
 			mkdir(tmp.c_str(), 0);
 		}
 	}
+}
+
+std::string filename_from_url(const std::string &url) {
+	std::string fn;
+	if(url.find("/") != std::string::npos) {
+		fn = url.substr(url.find_last_of("/\\"));
+		fn = fn.substr(1, fn.find('?'));
+	}
+	return fn;
 }

@@ -27,6 +27,7 @@
 #include "../tools/helperfunctions.h"
 #include "../tools/curl_callbacks.h"
 #include "../global.h"
+#include "recursive_parser.h"
 
 using namespace std;
 
@@ -58,6 +59,18 @@ void download_thread_wrapper(int download) {
 void download_thread(int download) {
 	plugin_output plug_outp;
 	int success = global_download_list.prepare_download(download, plug_outp);
+	std::string url = plug_outp.download_url;
+	if(url[url.size() - 1] == '/' && url.find("ftp://") == 0 && global_config.get_cfg_value("recursive_ftp_download") != "0") {
+		recursive_parser parser(url);
+		parser.add_to_list();
+		if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
+			return;
+		}
+		global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+		log_string("Downloading directory: " + url, LOG_DEBUG);
+		return;
+	}
+
 	if(global_download_list.get_int_property(download, DL_STATUS) != DOWNLOAD_RUNNING) {
 		return;
 	}
@@ -142,11 +155,13 @@ void download_thread(int download) {
 		correct_path(download_folder);
 		mkdir_recursive(download_folder);
 		if(plug_outp.download_filename == "") {
-			if(plug_outp.download_url != "" && plug_outp.download_url.find('/') != std::string::npos) {
-				output_filename += download_folder;
-				output_filename += '/' + plug_outp.download_url.substr(plug_outp.download_url.find_last_of("/\\"));
-				if(output_filename.find('?') != string::npos) {
-					output_filename = output_filename.substr(0, output_filename.find('?'));
+			if(plug_outp.download_url != "") {
+				std::string fn = filename_from_url(plug_outp.download_url);
+				output_filename = download_folder + '/';
+				if(fn.empty()) {
+					output_filename += "file";
+				} else {
+					output_filename += fn;
 				}
 			}
 		} else {
@@ -252,11 +267,17 @@ void download_thread(int download) {
 				log_string(std::string("File not found, ID: ") + int_to_string(download), LOG_WARNING);
 				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
 				global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_FILE_NOT_FOUND);
-				string file(global_download_list.get_string_property(download, DL_OUTPUT_FILE));
-				if(!file.empty()) {
-					remove(file.c_str());
+				if(!output_filename.empty()) {
+					remove(output_filename.c_str());
 					global_download_list.set_string_property(download, DL_OUTPUT_FILE, "");
 				}
+				return;
+			case 530:
+				log_string("Invalid http authentication on download ID: " + int_to_string(download), LOG_WARNING);
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+				global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_AUTH_FAIL);
+				remove(output_filename.c_str());
+				global_download_list.set_string_property(download, DL_OUTPUT_FILE, "");
 				return;
 		}
 
