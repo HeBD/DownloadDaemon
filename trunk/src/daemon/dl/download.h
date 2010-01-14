@@ -127,6 +127,7 @@ public:
 	bool need_stop;
 	download_status status;
 	int speed;
+	bool can_resume;
 private:
 	CURL* handle;
 	bool is_init;

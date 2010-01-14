@@ -29,7 +29,7 @@ using namespace std;
 
 download::download(const std::string& dl_url, int next_id)
 	: url(dl_url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
-	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0) {
+	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true) {
 	time_t rawtime;
 	struct tm* timeinfo;
 	time(&rawtime);
@@ -100,6 +100,7 @@ void download::from_serialized(std::string& serializedDL) {
 	need_stop = false;
 	speed = 0;
 	is_init = false;
+	can_resume = true;
 }
 
 download::download(const download& dl) {
@@ -122,6 +123,7 @@ void download::operator=(const download& dl) {
 	speed = 0;
 	handle = dl.handle;
 	is_init = dl.is_init;
+	can_resume = dl.can_resume;
 }
 
 download::~download() {

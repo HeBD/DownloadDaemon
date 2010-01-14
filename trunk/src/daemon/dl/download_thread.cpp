@@ -177,11 +177,12 @@ void download_thread(int download) {
 		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file;
 		if(global_download_list.get_hostinfo(download).allows_resumption && global_config.get_cfg_value("enable_resume") != "0" &&
-		   stat(output_filename.c_str(), &st) == 0 && st.st_size == global_download_list.get_int_property(download, DL_DOWNLOADED_BYTES)) {
+		   stat(output_filename.c_str(), &st) == 0 && st.st_size == global_download_list.get_int_property(download, DL_DOWNLOADED_BYTES) &&
+		   global_download_list.get_int_property(download, DL_CAN_RESUME)) {
 
 			curl_easy_setopt(global_download_list.get_pointer_property(download, DL_HANDLE), CURLOPT_RESUME_FROM, global_download_list.get_int_property(download, DL_DOWNLOADED_BYTES));
 			output_file.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
-			log_string(std::string("Download already started. Will continue to download ID: ") + int_to_string(download), LOG_DEBUG);
+			log_string(std::string("Download already started. Will try to continue to download ID: ") + int_to_string(download), LOG_DEBUG);
 		} else {
 			// Check if the file should be overwritten if it exists
 			string overwrite(global_config.get_cfg_value("overwrite_files"));
@@ -305,6 +306,12 @@ void download_thread(int download) {
 						global_download_list.set_int_property(download, DL_WAIT_SECONDS, wait);
 					}
 				}
+				return;
+			case 36:
+				// if download resumption fails, retry without resumption
+				global_download_list.set_int_property(download, DL_CAN_RESUME, false);
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+				log_string("Resuming download failed. retrying without resumption", LOG_WARNING);
 				return;
 			default:
 				log_string(std::string("Download error for download ID: ") + int_to_string(download), LOG_WARNING);

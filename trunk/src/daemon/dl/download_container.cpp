@@ -411,6 +411,10 @@ int download_container::set_int_property(int id, property prop, double value) {
 		case DL_SPEED:
 			dl->speed = value;
 			// No need to dump, nothing will change because it's not saved to the dlist file
+		break;
+		case DL_CAN_RESUME:
+			dl->can_resume = value;
+		break;
 		default:
 			return LIST_PROPERTY;
 		break;
@@ -470,6 +474,9 @@ double download_container::get_int_property(int id, property prop) {
 		break;
 		case DL_SPEED:
 			return dl->speed;
+		break;
+		case DL_CAN_RESUME:
+			return dl->can_resume;
 		break;
 	}
 	return -1;
