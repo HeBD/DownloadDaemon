@@ -27,7 +27,7 @@
 #include "../global.h"
 using namespace std;
 
-download::download(std::string& dl_url, int next_id)
+download::download(const std::string& dl_url, int next_id)
 	: url(dl_url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
 	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0) {
 	time_t rawtime;

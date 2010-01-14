@@ -98,5 +98,11 @@ void substitute_env_vars(std::string &str);
 */
 void mkdir_recursive(std::string dir);
 
+/** detects the name of a file if you give a URL or an empty string if it's a directory (url ending with /) ex.: http://blah.com/asdf?q=1 will return "asdf"
+*	@param url URL from which to get the filename
+*	@returns the filename (NOT path)
+*/
+std::string filename_from_url(const std::string &url);
+
 
 #endif /*HELPERFUNCTIONS_H_*/

@@ -1,3 +1,7 @@
+2010-01-14
+   [adrian]
+	- added possibillity to recursively download ftp-folders (#2931619)
+
 2010-01-13
    [adrian]
 	- fixed group-setting for downloaded files (was root, is now downloadd)
