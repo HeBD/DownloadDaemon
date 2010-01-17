@@ -242,7 +242,7 @@ plugin_output download::get_hostinfo() {
 		return outp;
 	}
 
-	std::string pluginfile(plugindir + "lib" + host + ".so");
+	std::string pluginfile(plugindir + "/lib" + host + ".so");
 	bool use_generic = false;
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;
