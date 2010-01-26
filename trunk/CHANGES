@@ -1,3 +1,7 @@
+2010-01-26
+   [adrian]
+	- permissions of config-files will now be set to 600 when installing
+
 2010-01-14
    [adrian]
 	- added possibillity to recursively download ftp-folders (#2931619)
