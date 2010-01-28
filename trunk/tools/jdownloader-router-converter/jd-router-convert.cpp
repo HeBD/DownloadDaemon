@@ -88,7 +88,7 @@ void request(std::istream &str, std::string& result) {
 				to_exec = to_exec.substr(4);
 				trim_string(to_exec);
 				to_exec = to_exec.substr(0, to_exec.find_first_of(" \t\n"));
-				result += "\t\tcurl_easy_setopt_s(handle, CURLOPT_URL, \"http://\" + host + \"";
+				result += "\t\tcurl_easy_setopt(handle, CURLOPT_URL, \"http://\" + host + \"";
 				result += to_exec;
 				result += "\");\n";
 				continue;
@@ -159,7 +159,8 @@ int main(int argc, char* argv[]) {
 		exec_next(file, line, cppresult);
 	}
 
-	cppresult += "}";
+	cppresult += "\tcurl_easy_cleanup(handle);\n"
+				 "}";
 
 
 
