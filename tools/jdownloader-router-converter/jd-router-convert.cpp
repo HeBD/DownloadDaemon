@@ -28,6 +28,8 @@ bool exec_next(std::istream &str, std::string& to_exec, std::string &result) {
 		step(str, result);
 	} else if(to_exec.find("[[[REQUEST]]]") == 0) {
 		request(str, result);
+	} else if(to_exec.find("[[[WAIT]]]") == 0) {
+		wait(str, result);
 	}
 	return true;
 }
@@ -109,6 +111,11 @@ void request(std::istream &str, std::string& result) {
 		}
 	}
 	result += "\t}\n";
+}
+
+void wait(std::istream &str, std::string& result) {
+	//  sleep for the time specified in the wait tag
+
 }
 
 int main(int argc, char* argv[]) {
