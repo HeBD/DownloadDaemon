@@ -9,6 +9,7 @@ void trim_string(std::string &str);
 bool exec_next(std::istream &str, std::string& to_exec, std::string &result);
 void step(std::istream &str, std::string& result);
 void request(std::istream &str, std::string& result);
+void wait(std::istream &str, std::string& result);
 
 void trim_string(std::string &str) {
 	while(str.length() > 0 && isspace(str[0])) {

@@ -1,3 +1,7 @@
+2010-01-29
+   [adrian]
+	- made jdownloader-reconnect script parser object-oriented and included it in DD (but it's not in use for now)
+
 2010-01-26
    [adrian]
 	- permissions of config-files will now be set to 600 when installing

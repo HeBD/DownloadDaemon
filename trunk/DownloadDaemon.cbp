@@ -209,6 +209,12 @@
 		<Unit filename="src/daemon/reconnect/belkin_generic.cpp">
 			<Option target="belkin_generic" />
 		</Unit>
+		<Unit filename="src/daemon/reconnect/reconnect_parser.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/reconnect/reconnect_parser.h">
+			<Option target="Daemon" />
+		</Unit>
 		<Unit filename="src/daemon/tools/curl_callbacks.cpp">
 			<Option target="Daemon" />
 		</Unit>
