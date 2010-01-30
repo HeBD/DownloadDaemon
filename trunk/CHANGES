@@ -1,6 +1,8 @@
 2010-01-30
    [adrian]
 	- DD now uses JDownloader reconnect scripts for reconnecting (2 example scripts added, more to follow)
+   [susane]
+	- added possibility to delete file without deleting download entry at right click menu of ddclient-wx
 
 2010-01-29
    [adrian]

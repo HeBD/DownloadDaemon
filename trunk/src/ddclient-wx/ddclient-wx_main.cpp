@@ -23,6 +23,7 @@ const long myframe::id_toolbar_connect = wxNewId();
 const long myframe::id_toolbar_add = wxNewId();
 const long myframe::id_toolbar_delete = wxNewId();
 const long myframe::id_toolbar_delete_finished = wxNewId();
+const long myframe::id_menu_delete_file = wxNewId();
 const long myframe::id_toolbar_activate = wxNewId();
 const long myframe::id_toolbar_deactivate = wxNewId();
 const long myframe::id_toolbar_priority_up = wxNewId();
@@ -51,6 +52,7 @@ BEGIN_EVENT_TABLE(myframe, wxFrame)
 	EVT_MENU(id_toolbar_add, myframe::on_add)
 	EVT_MENU(id_toolbar_delete, myframe::on_delete)
 	EVT_MENU(id_toolbar_delete_finished, myframe::on_delete_finished)
+	EVT_MENU(id_menu_delete_file, myframe::on_delete_file)
 	EVT_MENU(id_toolbar_activate, myframe::on_activate)
 	EVT_MENU(id_toolbar_deactivate, myframe::on_deactivate)
 	EVT_MENU(id_toolbar_priority_up, myframe::on_priority_up)
@@ -946,6 +948,72 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 }
 
 
+ void myframe::on_delete_file(wxCommandEvent &event){
+	vector<int>::iterator it;
+	string id, answer;
+	bool error_occured = false;
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		wxMessageBox(wxT("Please connect before deleting Files."), wxT("No Connection to Server"));
+		SetStatusText(wxT("Not connected"),1);
+
+		// make sure mysock doesn't crash the programm
+		mx.lock();
+		if(mysock != NULL)
+			delete mysock;
+		mysock = NULL;
+		mx.unlock();
+
+	}else{ // we have a connection
+
+		mx.lock();
+
+		find_selected_lines(); // save selection into selected_lines
+		if(!selected_lines.empty()){
+
+			// make sure user wants to delete downloads
+			wxMessageDialog dialog(this, wxT("Do you really want to delete\nthe selected File(s)?"), wxT("Delete Files"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+			int del = dialog.ShowModal();
+
+			if(del == wxID_YES){ // user clicked yes to delete
+
+				for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+					id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+
+					// test if there is a file on the server
+					mysock->send("DDP FILE GETPATH " + id);
+					mysock->recv(answer);
+
+					if(!answer.empty()){ // file exists
+
+						mysock->send("DDP DL DEACTIVATE " + id);
+						mysock->recv(answer);
+
+						mysock->send("DDP FILE DEL " + id);
+						mysock->recv(answer);
+
+						if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
+							string message = "Error occured at deleting File from ID " + id;
+							wxMessageBox(wxString(message.c_str(), wxConvUTF8), wxT("Error"));
+						}
+
+					}
+				}
+			}
+		}else
+			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
+
+		deselect_lines();
+		mx.unlock();
+
+		if(error_occured)
+			wxMessageBox(wxT("Error occured at deleting Files(s)."), wxT("Error"));
+
+		get_content();
+	}
+ }
+
+
 void myframe::on_activate(wxCommandEvent &event){
 	vector<int>::iterator it;
 	string id, answer;
@@ -1290,6 +1358,7 @@ void myframe::on_right_click(wxContextMenuEvent &event){
 	popup_menu.AppendSeparator();
 
 	popup_menu.Append(id_toolbar_delete, wxT("&Delete Download\tDEL"), wxT("Delete Download"));
+	popup_menu.Append(id_menu_delete_file, wxT("&Delete File\tCtrl-F"), wxT("Delete File"));
 	popup_menu.Append(id_toolbar_copy_url, wxT("&Copy URL\tCtrl-C"), wxT("Copy URL"));
 	popup_menu.AppendSeparator();
 
