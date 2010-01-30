@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
 add_subdirectory(plugins)
-add_subdirectory(reconnect)
 
 SET(daemon_SRCS downloaddaemon.cpp 
 		tools/helperfunctions.cpp 
@@ -14,7 +13,8 @@ SET(daemon_SRCS downloaddaemon.cpp
 		../lib/netpptk/netpptk.cpp 
 		../lib/cfgfile/cfgfile.cpp
 		dl/download_container.cpp
-		 ../lib/crypt/md5.cpp)
+		 ../lib/crypt/md5.cpp
+		reconnect/reconnect_parser.cpp)
 
 
 find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
@@ -32,4 +32,4 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../LICENCE DESTINATION share/downlo
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/downloaddaemon.conf DESTINATION /etc/downloaddaemon PERMISSIONS OWNER_READ OWNER_WRITE)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/routerinfo.conf DESTINATION /etc/downloaddaemon PERMISSIONS OWNER_READ OWNER_WRITE)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/premium_accounts.conf DESTINATION /etc/downloaddaemon PERMISSIONS OWNER_READ OWNER_WRITE)
-
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../share/downloaddaemon/reconnect DESTINATION share/downloaddaemon PATTERN ".svn" EXCLUDE)

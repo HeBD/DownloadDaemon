@@ -12,17 +12,15 @@ public:
 
 	~reconnect();
 
+	static std::string get_current_ip();
+
 	bool do_reconnect();
-
-
-
 
 private:
 	std::map<std::string, std::string> variables;
 	std::string path, host, user, pass, curr_line;
 	std::ifstream file;
 	CURL* handle;
-	bool reconnect_success;
 
 	bool exec_next();
 	void step();

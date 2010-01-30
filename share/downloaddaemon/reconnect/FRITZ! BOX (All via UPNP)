@@ -1,0 +1,12 @@
+[[[HSRC]]]
+    [[[STEP]]]
+        [[[REQUEST]]]
+            POST /upnp/control/WANIPConn1 HTTP/1.1
+            Host: %%%routerip%%%:49000
+            Content-Type: text/xml; charset=&quot;utf-8&quot;
+            SoapAction:urn:schemas-upnp-org:service:WANIPConnection:1#ForceTermination
+
+            &lt;?xml version=&apos;1.0&apos; encoding=&apos;utf-8&apos;?&gt; &lt;s:Envelope s:encodingStyle=&apos;http://schemas.xmlsoap.org/soap/encoding/&apos; xmlns:s=&apos;http://schemas.xmlsoap.org/soap/envelope/&apos;&gt; &lt;s:Body&gt; &lt;u:ForceTermination xmlns:u=&apos;urn:schemas-upnp-org:service:WANIPConnection:1&apos; /&gt; &lt;/s:Body&gt; &lt;/s:Envelope&gt;
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+[[[/HSRC]]]

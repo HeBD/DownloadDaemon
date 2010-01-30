@@ -640,14 +640,7 @@ void target_router_list(std::string &data, tkSock *sock) {
 			continue;
 		}
 		current = ep->d_name;
-		if(current.find("lib") == 0) {
-			current = current.substr(3);
-			if(current.find(".so") != std::string::npos) {
-				current = current.substr(0, current.find(".so"));
-				content.push_back(current);
-			}
-		}
-
+		content.push_back(current);
 	}
 	(void) closedir (dp);
 	std::string to_send;
@@ -675,12 +668,9 @@ void target_router_setmodel(std::string &data, tkSock *sock) {
 
 	bool plugin_found = true;
 	if(!data.empty()) {
-		std::string searched_plugin(data);
-		searched_plugin.append(".so");
-		searched_plugin.insert(0, "lib");
 		plugin_found = false;
 		while((de = readdir(d))) {
-			if(searched_plugin == de->d_name) {
+			if(data == de->d_name) {
 				plugin_found = true;
 			}
 		}
