@@ -1,0 +1,209 @@
+[[[HSRC]]]
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET / HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /setup_top.htm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /status.stm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /prototype.js HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /system_r.stm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /login.stm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /setup_top.htm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /md5.js HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /prototype.js HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /setup_top.htm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /prototype.js HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        POST /cgi-bin/doConnectTest.exe HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /doConnectTest.stm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        POST /cgi-bin/login.exe HTTP/1.1
+        Host: %%%routerip%%%
+
+totalMSec=1264771274&pws=d41d8cd98f00b204e9800998ecf8427e&pws_temp=
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /index.htm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /setup_top.htm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /system_r.stm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /prototype.js HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /data.js HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        POST /cgi-bin/doConnectTest.exe HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /doConnectTest.stm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        POST /cgi-bin/restart.exe HTTP/1.1
+        Host: %%%routerip%%%
+
+page=tools_gateway&logout=
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        POST /cgi-bin/doConnectTest.exe HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /waitp.stm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /doConnectTest.stm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        POST /cgi-bin/doConnectTest.exe HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /doConnectTest.stm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        POST /cgi-bin/doConnectTest.exe HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+    [[[STEP]]]
+        [[[REQUEST]]]
+        GET /doConnectTest.stm HTTP/1.1
+        Host: %%%routerip%%%
+        [[[/REQUEST]]]
+    [[[/STEP]]]
+
+[[[/HSRC]]]

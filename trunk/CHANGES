@@ -1,3 +1,7 @@
+2010-01-30
+   [adrian]
+	- DD now uses JDownloader reconnect scripts for reconnecting (2 example scripts added, more to follow)
+
 2010-01-29
    [adrian]
 	- made jdownloader-reconnect script parser object-oriented and included it in DD (but it's not in use for now)

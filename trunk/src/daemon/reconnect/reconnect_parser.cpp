@@ -15,8 +15,20 @@ reconnect::~reconnect() {
 	curl_easy_cleanup(handle);
 }
 
+std::string reconnect::get_current_ip() {
+	CURL* ip_handle = curl_easy_init();
+	curl_easy_setopt(ip_handle, CURLOPT_URL, "http://www.whatismyip.com/automation/n09230945.asp");
+	std::string resultstr;
+	curl_easy_setopt(ip_handle, CURLOPT_WRITEFUNCTION, reconnect::write_data);
+	curl_easy_setopt(ip_handle, CURLOPT_WRITEDATA, &resultstr);
+	curl_easy_perform(ip_handle);
+	trim_string(resultstr);
+	return resultstr;
+}
 
 bool reconnect::do_reconnect() {
+	std::string old_ip = get_current_ip();
+
 	file.open(path.c_str());
 	if(!file.good() || !file.is_open()) {
 		log_string("Unable to open reconnect script", LOG_WARNING);
@@ -27,9 +39,13 @@ bool reconnect::do_reconnect() {
 		trim_string(curr_line);
 		exec_next();
 	}
-	return reconnect_success;
-}
 
+	if(old_ip == get_current_ip()) {
+		return false;
+	} else {
+		return true;
+	}
+}
 
 bool reconnect::exec_next() {
 	if(curr_line.find("[[[") != 0) {
@@ -51,7 +67,6 @@ bool reconnect::exec_next() {
 		if(curr_line.find("]]]") != string::npos) {
 			curr_line = curr_line.substr(curr_line.find("]]]") + 3);
 		} else {
-			reconnect_success = false;
 			return false;
 		}
 	}
@@ -61,7 +76,6 @@ bool reconnect::exec_next() {
 
 void reconnect::step() {
 	if(curr_line.find("]]]") == string::npos) {
-		reconnect_success = false;
 		return;
 	}
 
@@ -84,7 +98,6 @@ void reconnect::step() {
 				curr_line = curr_line.substr(curr_line.find("]]]") + 3);
 				trim_string(curr_line);
 			} else {
-				reconnect_success = false;
 				curr_line.clear();
 			}
 			trim_string(curr_line);
@@ -97,7 +110,6 @@ void reconnect::step() {
 
 void reconnect::request() {
 	if(curr_line.find("]]]") != 0) {
-		reconnect_success = false;
 		return;
 	}
 	curr_line = curr_line.substr(curr_line.find("]]]") + 3);
@@ -160,7 +172,12 @@ void reconnect::request() {
 				curr_post_data = cmd;
 				continue;
 			}
-			header = curl_slist_append(header, cmd.c_str());
+			struct curl_slist *tmp_slist = curl_slist_append(header, cmd.c_str());
+			if(tmp_slist == 0) {
+				curr_post_data = cmd;
+			} else {
+				header = tmp_slist;
+			}
 		}
 		trim_string(curr_line);
 	}

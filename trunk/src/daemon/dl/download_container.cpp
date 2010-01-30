@@ -21,6 +21,7 @@
 #include "download.h"
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../tools/helperfunctions.h"
+#include "../reconnect/reconnect_parser.h"
 #ifdef IS_PLUGIN
 	#include <iostream>
 #else
@@ -614,7 +615,8 @@ void download_container::do_reconnect(download_container *dlist) {
 		return;
 	}
 
-	std::string reconnect_script = program_root + "/reconnect/lib" + reconnect_plugin + ".so";
+	std::string reconnect_script = program_root + "/reconnect/" + reconnect_plugin;
+	correct_path(reconnect_script);
 	struct stat st;
 	if(stat(reconnect_script.c_str(), &st) != 0) {
 		log_string("Reconnect plugin for selected router model not found!", LOG_ERR);
@@ -622,24 +624,7 @@ void download_container::do_reconnect(download_container *dlist) {
 		return;
 	}
 
-	void* handle = dlopen(reconnect_script.c_str(), RTLD_LAZY);
-	if (!handle) {
-		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + reconnect_script, LOG_ERR);
-		dlist->is_reconnecting = false;
-		return;
-	}
-
-	dlerror();	// Clear any existing error
-
-	void (*reconnect)(std::string, std::string, std::string);
-	reconnect = (void (*)(std::string, std::string, std::string))dlsym(handle, "reconnect");
-
-	char *error;
-	if ((error = dlerror()) != NULL)  {
-		log_string(std::string("Unable to get reconnect information: ") + error, LOG_ERR);
-		dlist->is_reconnecting = false;
-		return;
-	}
+	reconnect rc(reconnect_script, router_ip, router_username, router_password);
 	log_string("Reconnecting now!", LOG_WARNING);
 	for(download_container::iterator it = dlist->download_list.begin(); it != dlist->download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_WAITING) {
@@ -648,8 +633,9 @@ void download_container::do_reconnect(download_container *dlist) {
 		}
 	}
 	lock.unlock();
-	reconnect(router_ip, router_username, router_password);
-	dlclose(handle);
+	if(!rc.do_reconnect()) {
+		log_string("Reconnect failed, change your settings.", LOG_ERR);
+	}
 	lock.lock();
 	for(download_container::iterator it = dlist->download_list.begin(); it != dlist->download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_WAITING || it->get_status() == DOWNLOAD_RECONNECTING) {
