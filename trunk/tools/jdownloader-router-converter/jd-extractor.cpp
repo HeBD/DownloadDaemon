@@ -4,6 +4,15 @@
 #include <string>
 using namespace std;
 
+void trim_string(std::string &str) {
+	while(str.length() > 0 && isspace(str[0])) {
+		str.erase(str.begin());
+	}
+	while(str.length() > 0 && isspace(*(str.end() - 1))) {
+		str.erase(str.end() -1);
+	}
+}
+
 void replace_all(std::string& str, const std::string& old, const std::string& new_s) {
 	size_t n;
 	while((n = str.find(old)) != string::npos) {
@@ -66,6 +75,8 @@ int main(int argc, char* argv[]) {
 		replace_all(curr_router_name, "<", " ");
 		replace_all(curr_router_name, ">", " ");
 		replace_all(curr_router_name, "|", " ");
+
+		trim_string(curr_router_name);
 
 		ofstream out(string("scripts/" + curr_router_name).c_str());
 		out << curr_script;
