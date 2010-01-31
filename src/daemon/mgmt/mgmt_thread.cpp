@@ -642,7 +642,9 @@ void target_router_list(std::string &data, tkSock *sock) {
 		current = ep->d_name;
 		content.push_back(current);
 	}
+
 	(void) closedir (dp);
+	sort(content.begin(), content.end(), CompareNoCase);
 	std::string to_send;
 	for(vector<std::string>::iterator it = content.begin(); it != content.end(); ++it) {
 		to_send.append(*it);
@@ -651,6 +653,7 @@ void target_router_list(std::string &data, tkSock *sock) {
 	if(!to_send.empty()) {
 		to_send.erase(to_send.end() - 1);
 	}
+
 	*sock << to_send;
 }
 

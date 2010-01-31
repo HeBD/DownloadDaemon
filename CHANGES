@@ -1,6 +1,7 @@
 2010-01-31
    [adrian]
 	- DD should now support all router models JD supports (391 models by default). You can create your own script by recording it with JD
+	- sort router-list serverside (case insensitive)
 
 2010-01-30
    [adrian]

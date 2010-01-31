@@ -1,11 +1,6 @@
-Writing a reconnector-script is pretty simple. It can be written in c++ (support for C and other languages that are compilable to shared libraries will be
-added some day, if there is interest in that, please contact me, Adrian Batzill).
-To write a plugin, you simply need to create a .cpp file which includes the following function:
-
-extern "C" void reconnect(std::string host, std::string user, std::string password)
-
-extern "C" is neccessary for symbol loading.. just use it. the parameters will be the router-credentials for you to use.
-The filename of the reconnector should be lib<vendor>_<model>.so and nothing else. (spaces within names should be replaced by -
-Now just make sure that reconnecting works.
-When done, mail me the source ;) and place the .so file in /opt/downloaddaemon/reconnect.
-From then on, it is usable, no restart required.
+As of version 0.8, DownloadDaemon supports JDownloaders reconnect script.
+A guide on how to write one can be found here: http://jdownloader.org/knowledge/wiki/reconnect/live-header-script
+(If you have JD installed, you may also use it to record and create a new script).
+When done, send it to me ;-)
+In order to use it, put the script in /usr/[local/]share/downloaddaemon/reconnect.
+No DD-restart required.
