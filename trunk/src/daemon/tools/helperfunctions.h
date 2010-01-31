@@ -104,5 +104,12 @@ void mkdir_recursive(std::string dir);
 */
 std::string filename_from_url(const std::string &url);
 
+/** sort() callback to compare strings case-insensitive
+*	@param s1 first string
+*	@param s2 second string
+*	@returns true if s1 < s2
+*/
+bool CompareNoCase( const std::string& s1, const std::string& s2 );
+
 
 #endif /*HELPERFUNCTIONS_H_*/
