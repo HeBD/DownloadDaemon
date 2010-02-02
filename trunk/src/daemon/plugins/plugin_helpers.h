@@ -78,6 +78,30 @@ void replace_this_download(download_container &lst) {
 	list->set_int_property(dlid, DL_STATUS, DOWNLOAD_DELETED);
 }
 
+void trim_string(std::string &str) {
+	while(str.length() > 0 && isspace(str[0])) {
+		str.erase(str.begin());
+	}
+	while(str.length() > 0 && isspace(*(str.end() - 1))) {
+		str.erase(str.end() -1);
+	}
+}
+
+void replace_all(std::string& str, const std::string& old, const std::string& new_s) {
+	size_t n;
+	while((n = str.find(old)) != std::string::npos) {
+		str.replace(n, old.length(), new_s);
+	}
+}
+
+void replace_html_special_chars(std::string& s) {
+	replace_all(s, "&quot;", "\"");
+	replace_all(s, "&lt;", "<");
+	replace_all(s, "&gt;", ">");
+	replace_all(s, "&apos;", "'");
+	replace_all(s, "&amp;", "&");
+}
+
 
 
 // I know, this looks ugly, but it does the job and seems to be okay in this case

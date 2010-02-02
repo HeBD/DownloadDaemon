@@ -56,6 +56,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 		outp.download_url = "http://youtube.com/get_video?video_id=" + video_id + "&t=" + t;
 		outp.download_filename = title + ".flv";
+		replace_html_special_chars(outp.download_filename);
 		return PLUGIN_SUCCESS;
 	} else if(url.find("/view_play_list?p=") != string::npos) {
 		download_container urls;
@@ -67,9 +68,17 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			if(curr_url.find("&playnext") != string::npos) {
 				continue;
 			}
-			download dl(curr_url);
+
 			if(!urls.url_is_in_list(curr_url)) {
-				urls.add_download(dl);
+				string title;
+				size_t title_pos = result.find("<img title=\"", pos);
+				if(title_pos != string::npos) {
+					title_pos += 12;
+					title = result.substr(title_pos, result.find("\" ", title_pos) - title_pos);
+					replace_html_special_chars(title);
+				}
+
+				urls.add_download(curr_url, title);
 			}
 
 
