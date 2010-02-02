@@ -36,19 +36,51 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 	string url = get_url();
 
-	size_t pos = url.find("v=") + 2;
-	std::string video_id = url.substr(pos, url.find("&", pos) - pos);
+	if(url.find("/watch?v=") != string::npos) {
+		size_t pos = url.find("v=") + 2;
+		std::string video_id = url.substr(pos, url.find("&", pos) - pos);
 
-	pos = result.find("\"t\": \"") + 6;
-	std::string t = result.substr(pos, result.find("\"", pos) - pos);
+		pos = result.find("\"t\": \"");
+		if(pos == string::npos) {
+			return PLUGIN_FILE_NOT_FOUND;
+		}
+		pos += 6;
+		std::string t = result.substr(pos, result.find("\"", pos) - pos);
 
-	pos = result.find("<meta name=\"title\" content=\"") + 28;
-	std::string title = result.substr(pos, result.find("\">", pos) - pos);
+		pos = result.find("<meta name=\"title\" content=\"");
+		if(pos == string::npos) {
+			return PLUGIN_ERROR;
+		}
+		pos += 28;
+		std::string title = result.substr(pos, result.find("\">", pos) - pos);
 
-	outp.download_url = "http://youtube.com/get_video?video_id=" + video_id + "&t=" + t;
-	outp.download_filename = title + ".flv";
+		outp.download_url = "http://youtube.com/get_video?video_id=" + video_id + "&t=" + t;
+		outp.download_filename = title + ".flv";
+		return PLUGIN_SUCCESS;
+	} else if(url.find("/view_play_list?p=") != string::npos) {
+		download_container urls;
+		size_t pos = 0;
+		while((pos = result.find("/watch?v=", pos + 1)) != string::npos) {
+			string curr_url = "http://www.youtube.com";
+			curr_url += result.substr(pos, result.find("\"", pos) - pos);
+			//curr_url = curr_url.substr(0, curr_url.find("&"));
+			if(curr_url.find("&playnext") != string::npos) {
+				continue;
+			}
+			download dl(curr_url);
+			if(!urls.url_is_in_list(curr_url)) {
+				urls.add_download(dl);
+			}
 
-	return PLUGIN_SUCCESS;
+
+		}
+		replace_this_download(urls);
+		return PLUGIN_SUCCESS;
+
+
+	}
+
+	return PLUGIN_ERROR;
 }
 
 
