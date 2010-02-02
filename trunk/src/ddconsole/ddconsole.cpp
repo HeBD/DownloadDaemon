@@ -26,6 +26,7 @@ void connect_request(tkSock &sock, std::string &host, const std::string &port, s
 void send_command(tkSock &sock, const std::string &command);
 
 int main(int argc, char* argv[]) {
+	setlocale(LC_ALL, "");
 	vector<string> args;
 	for(int i = 1; i < argc; ++i) {
 		args.push_back(argv[i]);
