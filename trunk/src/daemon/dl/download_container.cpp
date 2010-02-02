@@ -190,6 +190,18 @@ int download_container::deactivate(int id) {
 	}
 }
 
+void download_container::del(int id) {
+	boost::mutex::scoped_lock lock(download_mutex);
+	download_container::iterator it = get_download_by_id(id);
+	if(it == download_list.end()) {
+		return;
+	}
+	it->set_status(DOWNLOAD_DELETED);
+	#ifndef IS_PLUGIN
+		dump_to_file();
+	#endif
+}
+
 int download_container::get_next_downloadable(bool do_lock) {
 	boost::mutex::scoped_lock lock(download_mutex, boost::defer_lock);
 	if(do_lock) {
@@ -714,6 +726,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	plugin_mutex.unlock();
 	// lock, followed by scoped unlock. otherwise lock will be called 2 times
 	lock.lock();
+	dump_to_file();
 	return retval;
 }
 
@@ -867,3 +880,28 @@ void download_container::cleanup_handle(int id) {
 	it->is_init = false;
 }
 #endif
+
+int download_container::get_list_position(int id) {
+	boost::mutex::scoped_lock lock(download_mutex);
+	int curr_pos = 0;
+	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+		if(id == it->id) {
+			return curr_pos;
+		}
+		++curr_pos;
+	}
+	return LIST_ID;
+}
+
+void download_container::insert_downloads(int pos, const download_container &dl) {
+	boost::mutex::scoped_lock lock(download_mutex);
+	download_container::iterator it = download_list.begin();
+	for(int i = 0; i < pos; ++i) {
+		++it;
+	}
+	download_list.insert(it, dl.download_list.begin(), dl.download_list.end());
+	#ifndef IS_PLUGIN
+		dump_to_file();
+	#endif
+}
+
