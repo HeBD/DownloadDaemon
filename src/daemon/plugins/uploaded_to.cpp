@@ -20,15 +20,6 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 	return nmemb;
 }
 
-void trim_string(std::string &str) {
-	while(str.length() > 0 && isspace(str[0])) {
-		str.erase(str.begin());
-	}
-	while(str.length() > 0 && isspace(*(str.end() - 1))) {
-		str.erase(str.end() -1);
-	}
-}
-
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	CURL* handle = curl_easy_init();
 	std::string resultstr;
