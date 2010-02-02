@@ -135,7 +135,8 @@ class myframe : public wxFrame{
 		void add_components();
 		void update_list();
 		void get_content();
-		string build_status(string &status_text, vector<string> &splitted_line);
+		void cut_time(string &time_left);
+		string build_status(string &status_text, string &time_left, vector<string> &splitted_line);
 		void find_selected_lines();
 		void select_lines();
 		void select_line_by_id(string id);

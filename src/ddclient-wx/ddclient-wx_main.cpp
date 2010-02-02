@@ -397,7 +397,7 @@ void myframe::add_bars(){
 
 	// statusbar
 	CreateStatusBar(2);
-	SetStatusText(wxT("DownloadDaemon-ClientWX"),0);
+	SetStatusText(wxT("DownloadDaemon Client-wx"),0);
 	SetStatusText(wxT("Not connected"),1);
 }
 
@@ -415,10 +415,10 @@ void myframe::add_components(){
 
 	// columns
 	list->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
-	list->InsertColumn(1, wxT("Added"), wxLIST_AUTOSIZE_USEHEADER, 190);
-	list->InsertColumn(2, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 76);
-	list->InsertColumn(3, wxT("URL"), wxLIST_AUTOSIZE_USEHEADER, 178);
-	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 126);
+	list->InsertColumn(1, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 76);
+	list->InsertColumn(2, wxT("URL"), wxLIST_AUTOSIZE_USEHEADER, 170);
+	list->InsertColumn(3, wxT("Time left"), wxLIST_AUTOSIZE_USEHEADER, 100);
+	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 150);
 }
 
 
@@ -460,7 +460,7 @@ void myframe::get_content(){
 
 		vector<string> splitted_line;
 		string answer, line, tab;
-		size_t lineend = 1, tabend = 1, column_nr, line_nr = 0;
+		size_t lineend = 1, tabend = 1;
 
 		mx.lock();
 		new_content.clear();
@@ -476,7 +476,6 @@ void myframe::get_content(){
 			answer = answer.substr(lineend+1);
 
 			// parse columns
-			column_nr = 0;
 			tabend = 0;
 			while(line.length() > 0 && tabend != string::npos){
 				tabend = line.find("|"); // termination character for column
@@ -492,11 +491,9 @@ void myframe::get_content(){
 					line = line.substr(tabend+1);
 
 				}
-				splitted_line.push_back(tab); // save all tabs per line for later use
+			splitted_line.push_back(tab); // save all tabs per line for later use
 			}
 
-
-			line_nr++;
 			new_content.push_back(splitted_line);
 			splitted_line.clear();
 		}
@@ -511,20 +508,64 @@ void myframe::get_content(){
 }
 
 
-string myframe::build_status(string &status_text, vector<string> &splitted_line){
+void myframe::cut_time(string &time_left){
+	long time_span = atol(time_left.c_str());
+	int hours = 0, mins = 0, secs = 0;
+	stringstream stream_buffer;
+
+	secs = time_span % 60;
+	if(time_span >= 60) // cut time_span down to minutes
+		time_span /= 60;
+	else { // we don't have minutes
+		stream_buffer << secs << " s";
+		time_left = stream_buffer.str();
+		return;
+	}
+
+	mins = time_span % 60;
+	if(time_span >= 60) // cut time_span down to hours
+		time_span /= 60;
+	else { // we don't have hours
+		stream_buffer << mins << ":";
+		if(secs < 10)
+			stream_buffer << "0";
+		stream_buffer << secs << "m";
+		time_left = stream_buffer.str();
+		return;
+	}
+
+	hours = time_span;
+	stream_buffer << hours << "h, ";
+	if(mins < 10)
+		stream_buffer << "0";
+	stream_buffer << mins << ":";
+	if(secs < 10)
+		stream_buffer << "0";
+	stream_buffer << secs << "m";
+
+	time_left = stream_buffer.str();
+	return;
+}
+
+string myframe::build_status(string &status_text, string &time_left, vector<string> &splitted_line){
 	string color = "WHITE";
 
 	if(splitted_line[4] == "DOWNLOAD_RUNNING"){
 		color = "LIME GREEN";
 
 		if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] == "PLUGIN_SUCCESS"){ // waiting time > 0
-			status_text = "Download running. Waiting " + splitted_line[7] + " seconds.";
+			status_text = "Download running. Waiting.";
+			time_left =  splitted_line[7];
+			cut_time(time_left);
 
 		}else if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] != "PLUGIN_SUCCESS") {
 			color = "RED";
-			status_text = "Error: " + splitted_line[8] + " Retrying in " + splitted_line[7] + " seconds.";
+			status_text = "Error: " + splitted_line[8] + " Retrying soon.";
+			time_left =  splitted_line[7];
+			cut_time(time_left);
+
 		}else{ // no waiting time
-			stringstream stream_buffer;
+			stringstream stream_buffer, time_buffer;
 			stream_buffer << "Running";
 
 			if(splitted_line[9] != "0" || splitted_line[9] != "-1") // download speed known
@@ -534,6 +575,7 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 
 			if(splitted_line[6] == "0" || splitted_line[6] == "1"){ // download size unknown
 				stream_buffer << "0.00% - ";
+				time_left = "?";
 
 				if(splitted_line[5] == "0" || splitted_line[5] == "1") // nothing downloaded yet
 					stream_buffer << "0.00 MB/ 0.00 MB";
@@ -541,25 +583,42 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[5].c_str()) / 1048576 << " MB/ 0.00 MB";
 
 			}else{ // download size known
-				if(splitted_line[5] == "0" || splitted_line[5] == "1") // nothing downloaded yet
+				if(splitted_line[5] == "0" || splitted_line[5] == "1"){ // nothing downloaded yet
 					stream_buffer << "0.00% - 0.00 MB/ " << fixed << (float)atol(splitted_line[6].c_str()) / 1048576 << " MB";
-				else{ // download size known and something downloaded
+
+					if(splitted_line[9] != "0" || splitted_line[9] != "-1"){ // download speed known => calc time left
+						time_buffer << (atol(splitted_line[6].c_str()) / atol(splitted_line[9].c_str()));
+						time_left = time_buffer.str();
+						cut_time(time_left);
+					}else
+						time_left = "?";
+
+				}else{ // download size known and something downloaded
 					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[5].c_str()) / (float)atol(splitted_line[6].c_str()) * 100 << "% - ";
 					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[5].c_str()) / 1048576 << " MB/ ";
 					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[6].c_str()) / 1048576 << " MB";
+
+					if(splitted_line[9] != "0" || splitted_line[9] != "-1"){ // download speed known => calc time left
+						time_buffer << ((atol(splitted_line[6].c_str()) - atol(splitted_line[5].c_str())) / atol(splitted_line[9].c_str()));
+						time_left = time_buffer.str();
+						cut_time(time_left);
+					}else
+						time_left = "?";
 				}
 			}
 			status_text = stream_buffer.str();
 		}
 
-	}else if(splitted_line[4] == "DOWNLOAD_INACTIVE"){ // TODO: test the rest of the status stuff!
+	}else if(splitted_line[4] == "DOWNLOAD_INACTIVE"){
 		if(splitted_line[8] == "PLUGIN_SUCCESS"){
 			color = "YELLOW";
 			status_text = "Download Inactive.";
+			time_left = "";
 
 		}else{ // error occured
 			color = "RED";
 			status_text = "Inactive. Error: " + splitted_line[8];
+			time_left = "";
 		}
 
 	}else if(splitted_line[4] == "DOWNLOAD_PENDING"){
@@ -569,21 +628,27 @@ string myframe::build_status(string &status_text, vector<string> &splitted_line)
 		}else{ //error occured
 			color = "RED";
 			status_text = "Error: " + splitted_line[8];
+			time_left = "";
 		}
 
 	}else if(splitted_line[4] == "DOWNLOAD_WAITING"){
 		color = "YELLOW";
-		status_text = "Have to wait " + splitted_line[7] + " seconds.";
+		status_text = "Have to wait.";
+		time_left = splitted_line[7];
+		cut_time(time_left);
 
 	}else if(splitted_line[4] == "DOWNLOAD_FINISHED"){
 		color = "GREEN";
 		status_text = "Download Finished.";
+		time_left = "";
 
 	}else if(splitted_line[4] == "DOWNLOAD_RECONNECTING") {
 		color = "YELLOW";
 		status_text = "Reconnecting...";
+		time_left = "";
 	}else{ // default, column 4 has unknown input
 		status_text = "Status not detected.";
+		time_left = "";
 	}
 
 	return color;
@@ -651,7 +716,7 @@ void myframe::compare_vectorvector(){
 	vector<vector<string> >::iterator new_content_it = new_content.begin();
 
 	size_t line_nr = 0, line_index;
-	string status_text, color;
+	string status_text, time_left, color;
 
 
 	// compare the i-th vector in content with the i-th vector in new_content
@@ -670,12 +735,14 @@ void myframe::compare_vectorvector(){
 			// insert content
 			line_index = list->InsertItem(line_nr, wxString(new_content_it->at(0).c_str(), wxConvUTF8));
 
-			for(int i=1; i<4; i++) // column 1 to 3
-				list->SetItem(line_index, i, wxString(new_content_it->at(i).c_str(), wxConvUTF8));
+			for(int i=1; i<3; i++){ // column 1 to 2
+				list->SetItem(line_index, i, wxString(new_content_it->at(i+1).c_str(), wxConvUTF8));
+			}
 
 			// status column
-			color = build_status(status_text, *new_content_it);
+			color = build_status(status_text, time_left, *new_content_it);
 			list->SetItemBackgroundColour(line_index, wxString(color.c_str(), wxConvUTF8));
+			list->SetItem(line_index, 3, wxString(time_left.c_str(), wxConvUTF8));
 			list->SetItem(line_index, 4, wxString(status_text.c_str(), wxConvUTF8));
 
 			new_content_it++;
@@ -704,15 +771,18 @@ void myframe::compare_vector(size_t line_nr, vector<string> &splitted_line_new, 
 
 	size_t column_nr = 0;
 	bool status_change = false;
-	string status_text, color;
+	string status_text, time_left, color;
 
 	// compare every column
 	while((it_new < end_new) && (it_old < end_old)){
 
 		if(*it_new != *it_old){ // content of column_new != content of column_old
 
-			if(column_nr < 4) // direct input for columns 0 to 3
+			if(column_nr == 0) // id
 				list->SetItem(line_nr, column_nr, wxString(it_new->c_str(), wxConvUTF8));
+
+			else if(column_nr == 2 || column_nr == 3) // content of column 2 and 3 goes into gui column 1 and 2! (content column 1 is no needed)
+				list->SetItem(line_nr, column_nr-1, wxString(it_new->c_str(), wxConvUTF8));
 
 			else // status column
 				status_change = true;
@@ -724,8 +794,9 @@ void myframe::compare_vector(size_t line_nr, vector<string> &splitted_line_new, 
 	}
 
 	if(status_change){
-		color = build_status(status_text, splitted_line_new);
+		color = build_status(status_text, time_left, splitted_line_new);
 		list->SetItemBackgroundColour(line_nr, wxString(color.c_str(), wxConvUTF8));
+		list->SetItem(line_nr, 3, wxString(time_left.c_str(), wxConvUTF8));
 		list->SetItem(line_nr, 4, wxString(status_text.c_str(), wxConvUTF8));
 	}
 }
@@ -1315,15 +1386,15 @@ void myframe::on_copy_url(wxCommandEvent &event){
 
 		// change column widths on resize
 		int width = GetClientSize().GetWidth();
-		width -= 255; // minus width of fix sized columns
+		width -= 160; // minus width of fix sized columns
 
 		#if defined(__WXMSW__)
 			width -= 10;
 		#endif // defined(__WXMSW__)
 
-		list->SetColumnWidth(2, width*0.2); // only column 2 to 4, because 0 and 1 have fix sizes
-		list->SetColumnWidth(3, width*0.45);
-		list->SetColumnWidth(4, width*0.35);
+		list->SetColumnWidth(1, width*0.25);  // only column 1, 2 and 4, because 0 and 3 have fix sizes
+		list->SetColumnWidth(2, width*0.3);
+		list->SetColumnWidth(4, width*0.45);
  	}
  }
 

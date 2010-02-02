@@ -18,7 +18,7 @@ bool myapp::OnInit(){
 	wxInitAllImageHandlers(); // so that pictures can be seen
 
 	if(argc > 0){
-		myframe* frame = new myframe(argv[0], 0, wxT("DownloadDaemon-ClientWX"));
+		myframe* frame = new myframe(argv[0], 0, wxT("DownloadDaemon Client-wx"));
 		#ifdef _WIN32
 		frame->SetIcon(wxICON(aaaa));
 		#endif
