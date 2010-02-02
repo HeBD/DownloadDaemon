@@ -71,6 +71,12 @@ int download_container::add_download(download &dl) {
 	return LIST_SUCCESS;
 }
 
+int download_container::add_download(const std::string& url, const std::string& title) {
+	download dl(url);
+	dl.comment = title;
+	return add_download(dl);
+}
+
 int download_container::move_up(int id) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator it;
@@ -901,9 +907,8 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 	}
 
 	for(download_container::iterator it = dl.download_list.begin(); it != dl.download_list.end(); ++it) {
-		it->id = this->get_next_id();
-
 		insert_it = download_list.insert(insert_it, *it);
+		insert_it->id = get_next_id();
 		++insert_it;
 	}
 

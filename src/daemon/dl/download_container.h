@@ -89,6 +89,13 @@ public:
 	*/
 	int add_download(download &dl);
 
+	/** Adds a download by strings
+	*	@param url URL of the download
+	*	@param title Title of the download
+	*	@returns LIST_SUCCESS, LIST_PERMISSION
+	*/
+	int add_download(const std::string& url, const std::string& title = "");
+
 
 	/** Functions to set download element variables
 	*	@param id ID of the download to set a variable for
