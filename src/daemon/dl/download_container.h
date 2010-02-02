@@ -74,6 +74,11 @@ public:
 	*/
 	int deactivate(int id);
 
+	/** deletes a download by id
+	*	@param id ID of the download to be deleted
+	*/
+	void del(int id);
+
 	/** Gets the next downloadable item in the global download list (filters stuff like inactives, wrong time, etc)
  	*	@returns ID of the next download that can be downloaded or LIST_ID if there is none, LIST_SUCCESS
  	*/
@@ -163,8 +168,27 @@ public:
 	*/
 	bool url_is_in_list(std::string url);
 
+	/** inits a download-handle
+	*	@param id ID of the download
+	*/
 	void init_handle(int id);
+
+	/** cleans up the handle for a download
+	*	@param id ID of the download
+	*/
 	void cleanup_handle(int id);
+
+	/** returns the position in the download-list for a given download ID
+	*	@param id ID of the download to get the position for
+	*	@returns the position
+	*/
+	int get_list_position(int id);
+
+	/** inserts a container of downloads into this container
+	*	@param pos position where to insert
+	*	@param dl download list to insert
+	*/
+	void insert_downloads(int pos, const download_container &dl);
 
 	std::string list_file;
 
