@@ -37,12 +37,83 @@ struct plugin_input {
 };
 
 You also might be interested in checking ../dl/download_container.h to see what you can do with the result of get_dl_container().
+Also, the functions below may help you writing your plugin by implementing some basic things you might need and simplifying tasks
+you would usually do with the result of get_dl_container().
 */
+
+
+
+
+/** Set the wait-time for the currently active download. Set this whenever you have to wait for the host. DownloadDaemon will count down
+ *	that time until it reaches 0. This is just for the purpose of displaying a status to the user.
+ *	@param seconds Seconds to wait
+ */
+void set_wait_time(int seconds);
+
+/** returns the currently set wait-time for your download
+ *	@returns wait time in seconds
+ */
+int get_wait_time();
+
+/** Get the URL for your download, which was entered by the user
+ *	@returns the url
+ */
+const char* get_url();
+
+/** allows you to change the URL in the download list
+ *	@param url URL to set
+ */
+void set_url(const char* url);
+
+/** gives you a pointer to the main download-list. With this, you can do almost anything with any download
+ *	@returns pointer to the main download list
+ */
+download_container* get_dl_container();
+
+/** this returns the curl-handle which will be used for downloading later. You may need it for setting special options like cookies, etc.
+ *	@returns the curl handle
+ */
+CURL* get_handle();
+
+/** passing a download_container object to that function will delete the current download and replace it by all the links specified in lst.
+ *	this is mainly for decrypter-plugins for hosters that contain several download-links of other hosters
+ *	@param lst the download list to use for replacing
+ */
+void replace_this_download(download_container &lst);
+
+/** remove white-spaces from the beginning and ending of str
+ *	@param str String from which whitespaces will be stripped
+ */
+void trim_string(std::string &str);
+
+/** replace all occurences of old with new_s in str
+ *	@param str string to use for replacing
+ *	@param old string that should be replaced
+ *	@param new_s string which will be inserted instead of old
+ */
+void replace_all(std::string& str, const std::string& old, const std::string& new_s);
+
+/** this function replaces some html-encoded characters with native ansi characters (eg replaces &quot; with " and &lt; with <)
+ *	@param s string in which to replace
+ */
+void replace_html_special_chars(std::string& s);
+
+/** convert anything with an overloaded operator << to string (eg int, long, double, ...)
+ *	@param p1 any type to convert into std::string
+ *	@returns the result of the conversion
+ */
+template <class PARAM>
+std::string convert_to_string(PARAM p1);
+
+
+/////////////////////// IMPLEMENTATION ////////////////////////
+
 
 download_container *list;
 int dlid;
 plugin_status plugin_exec(plugin_input &pinp, plugin_output &poutp);
 
+/** This function is just a wrapper for defining globals and calling your plugin */
 extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, plugin_input& pinp, plugin_output& poutp) {
 	list = &dlc;
 	dlid = id;
