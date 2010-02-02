@@ -5,6 +5,8 @@
 	- better handling of CURLE_COULDNT_RESOLVE_HOST
 	- extended plugin api
 	- the new youtube plugin can now also download playlists (using the new decrypter-api)
+   [susanne]
+	- replaced added column with time left column at ddclient-wx
 
 2010-01-31
    [adrian]
