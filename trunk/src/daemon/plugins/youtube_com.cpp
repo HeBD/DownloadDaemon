@@ -60,29 +60,51 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_SUCCESS;
 	} else if(url.find("/view_play_list?p=") != string::npos) {
 		download_container urls;
-		size_t pos = 0;
-		while((pos = result.find("/watch?v=", pos + 1)) != string::npos) {
-			string curr_url = "http://www.youtube.com";
-			curr_url += result.substr(pos, result.find("\"", pos) - pos);
-			//curr_url = curr_url.substr(0, curr_url.find("&"));
-			if(curr_url.find("&playnext") != string::npos) {
-				continue;
+		for(int i = 1; i < 50; ++i) {
+			result.clear();
+			string page_url = url.substr(0, url.find("&"));
+			page_url += "&page=" + convert_to_string(i);
+
+			curl_easy_setopt(handle, CURLOPT_URL, page_url.c_str());
+			res = curl_easy_perform(handle);
+			if(res != 0) {
+				return PLUGIN_ERROR;
 			}
 
-			if(!urls.url_is_in_list(curr_url)) {
-				string title;
-				size_t title_pos = result.find("<img title=\"", pos);
-				if(title_pos != string::npos) {
-					title_pos += 12;
-					title = result.substr(title_pos, result.find("\" ", title_pos) - title_pos);
-					replace_html_special_chars(title);
+			int added_downloads_this_round = 0;
+
+			size_t pos = 0;
+			while((pos = result.find("href=\"/watch?v=", pos + 1)) != string::npos) {
+				string curr_url = "http://www.youtube.com";
+				pos += 6;
+				curr_url += result.substr(pos, result.find("\"", pos) - pos);
+				//curr_url = curr_url.substr(0, curr_url.find("&"));
+				if(curr_url.find("&playnext") != string::npos) {
+					continue;
 				}
 
-				urls.add_download(curr_url, title);
+				if(!urls.url_is_in_list(curr_url)) {
+					string title;
+					size_t title_pos = result.find("<img title=\"", pos);
+					if(title_pos != string::npos) {
+						title_pos += 12;
+						title = result.substr(title_pos, result.find("\" ", title_pos) - title_pos);
+						replace_html_special_chars(title);
+					}
+
+					urls.add_download(curr_url, title);
+					++added_downloads_this_round;
+				}
+
+
+			}
+			if(added_downloads_this_round == 0) {
+				break;
 			}
 
 
 		}
+
 		replace_this_download(urls);
 		return PLUGIN_SUCCESS;
 
