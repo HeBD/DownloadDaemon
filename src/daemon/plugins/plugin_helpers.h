@@ -103,6 +103,14 @@ void replace_html_special_chars(std::string& s) {
 }
 
 
+template <class PARAM>
+std::string convert_to_string(PARAM p1) {
+	std::stringstream ss;
+	ss << p1;
+	return ss.str();
+}
+
+
 
 // I know, this looks ugly, but it does the job and seems to be okay in this case
 #include "../dl/download_container.cpp"
