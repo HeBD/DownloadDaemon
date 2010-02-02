@@ -1,7 +1,9 @@
 2010-02-02
    [adrian]
 	- extended host-plugin api. You can now replace the current download by a list of
-	  new downloads. this makes decrypter-plugins possible.
+	  new downloads. this makes decrypter- or playlist-download-plugins possible.
+	- better handling of CURLE_COULDNT_RESOLVE_HOST
+	- extended plugin api
 
 2010-01-31
    [adrian]

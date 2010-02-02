@@ -30,8 +30,8 @@ DESC_DD="A remote controlable download manager
 
 # specify all files/directorys (array) and the path's where they should go to (basically a cp -r FILES_XXX[i] PATHS_XXX[i] is done)
 # the .svn folders are removed automatically. Folders are created automatically before copying
-FILES_DD=("../src/daemon" "../src/lib/" "../etc/downloaddaemon" "../etc/init.d/downloadd" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
-PATHS_DD=("src/" "src/" "etc/" "/etc/init.d")
+FILES_DD=("../src/daemon" "../src/lib/" "../etc/downloaddaemon" "../etc/init.d/downloadd" "../share/downloaddaemon/reconnect" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DD=("src/" "src/" "etc/" "etc/init.d" "share/downloaddaemon")
 
 script_dir=`pwd`
 

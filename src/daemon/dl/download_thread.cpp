@@ -59,6 +59,9 @@ void download_thread_wrapper(int download) {
 void download_thread(int download) {
 	plugin_output plug_outp;
 	int success = global_download_list.prepare_download(download, plug_outp);
+	if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
+		return;
+	}
 	std::string url = plug_outp.download_url;
 	if(url[url.size() - 1] == '/' && url.find("ftp://") == 0 && global_config.get_cfg_value("recursive_ftp_download") != "0") {
 		recursive_parser parser(url);
@@ -283,7 +286,7 @@ void download_thread(int download) {
 		}
 
 		switch(success) {
-			case 0:
+			case CURLE_OK:
 				log_string(std::string("Finished download ID: ") + int_to_string(download), LOG_DEBUG);
 				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_FINISHED);
 				if(rename(output_filename.c_str(), final_filename.c_str()) != 0) {
@@ -292,7 +295,8 @@ void download_thread(int download) {
 					global_download_list.set_string_property(download, DL_OUTPUT_FILE, final_filename);
 				}
 				return;
-			case 28:
+			case CURLE_OPERATION_TIMEDOUT:
+			case CURLE_COULDNT_RESOLVE_HOST:
 				if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE) {
 					log_string(std::string("Stopped download ID: ") + int_to_string(download), LOG_WARNING);
 				} else if(global_download_list.get_int_property(download, DL_STATUS) != DOWNLOAD_DELETED) {
@@ -307,7 +311,7 @@ void download_thread(int download) {
 					}
 				}
 				return;
-			case 36:
+			case CURLE_BAD_DOWNLOAD_RESUME:
 				// if download resumption fails, retry without resumption
 				global_download_list.set_int_property(download, DL_CAN_RESUME, false);
 				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);

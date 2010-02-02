@@ -11,6 +11,7 @@
 
 #ifndef PLUGIN_HELPERS_H_INCLUDED
 #define PLUGIN_HELPERS_H_INCLUDED
+#define IS_PLUGIN
 
 #include "../dl/download.h"
 #include "../dl/download_container.h"
@@ -72,14 +73,15 @@ CURL* get_handle() {
 	return list->get_pointer_property(dlid, DL_HANDLE);
 }
 
-void replace_this_download(const download_container &lst) {
+void replace_this_download(download_container &lst) {
 	list->insert_downloads(list->get_list_position(dlid), lst);
-	list->del(dlid);
+	list->set_int_property(dlid, DL_STATUS, DOWNLOAD_DELETED);
 }
 
 
-#define IS_PLUGIN
+
 // I know, this looks ugly, but it does the job and seems to be okay in this case
 #include "../dl/download_container.cpp"
+#include "../dl/download.cpp"
 
 #endif // PLUGIN_HELPERS_H_INCLUDED

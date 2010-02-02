@@ -34,13 +34,16 @@ download_container::download_container(const char* filename) {
 	from_file(filename);
 }
 
+
 int download_container::from_file(const char* filename) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	list_file = filename;
 	ifstream dlist(filename);
 	std::string line;
 	while(getline(dlist, line)) {
-		download_list.push_back(download(line));
+		download dl;
+		dl.from_serialized(line);
+		download_list.push_back(dl);
 	}
 	if(!dlist.good()) {
 		dlist.close();
@@ -49,15 +52,18 @@ int download_container::from_file(const char* filename) {
 	dlist.close();
 	return LIST_SUCCESS;
 }
+#endif
 
 int download_container::total_downloads() {
 	boost::mutex::scoped_lock lock(download_mutex);
 	return download_list.size();
 }
 
-int download_container::add_download(const download &dl) {
+int download_container::add_download(download &dl) {
 	boost::mutex::scoped_lock lock(download_mutex);
+	dl.id = get_next_id();
 	download_list.push_back(dl);
+
 	if(!dump_to_file()) {
 		download_list.pop_back();
 		return LIST_PERMISSION;
@@ -155,9 +161,9 @@ int download_container::activate(int id) {
 	} else if(it->get_status() != DOWNLOAD_INACTIVE) {
 		return LIST_PROPERTY;
 	} else {
-		it->set_status(DOWNLOAD_PENDING);
+		set_dl_status(it, DOWNLOAD_PENDING);
 		if(!dump_to_file()) {
-			it->set_status(DOWNLOAD_INACTIVE);
+			set_dl_status(it, DOWNLOAD_INACTIVE);
 			return LIST_PERMISSION;
 		} else {
 			return LIST_SUCCESS;
@@ -175,14 +181,12 @@ int download_container::deactivate(int id) {
 		if(it->get_status() == DOWNLOAD_INACTIVE) {
 			return LIST_PROPERTY;
 		}
-		if(it->get_status() == DOWNLOAD_RUNNING) {
-			it->set_status(DOWNLOAD_INACTIVE);
-		} else {
-			it->set_status(DOWNLOAD_INACTIVE);
-		}
+
+		set_dl_status(it, DOWNLOAD_INACTIVE);
+
 		it->wait_seconds = 0;
 		if(!dump_to_file()) {
-			it->set_status(old_status);
+			set_dl_status(it, old_status);
 			return LIST_PERMISSION;
 		} else {
 			return LIST_SUCCESS;
@@ -190,17 +194,7 @@ int download_container::deactivate(int id) {
 	}
 }
 
-void download_container::del(int id) {
-	boost::mutex::scoped_lock lock(download_mutex);
-	download_container::iterator it = get_download_by_id(id);
-	if(it == download_list.end()) {
-		return;
-	}
-	it->set_status(DOWNLOAD_DELETED);
-	#ifndef IS_PLUGIN
-		dump_to_file();
-	#endif
-}
+#ifndef IS_PLUGIN
 
 int download_container::get_next_downloadable(bool do_lock) {
 	boost::mutex::scoped_lock lock(download_mutex, boost::defer_lock);
@@ -400,15 +394,12 @@ int download_container::set_int_property(int id, property prop, double value) {
 			#endif
 		break;
 		case DL_STATUS:
+			set_dl_status(dl, download_status(value));
 			#ifndef IS_PLUGIN
-			dl->set_status(download_status(value));
 			if(!dump_to_file()) {
-				dl->set_status(download_status(old_val));
+				set_dl_status(dl, download_status(old_val));
 				return LIST_PERMISSION;
 			}
-			#else
-			cout << "You are not allowed to set the status from a plugin. exiting." << endl;
-			exit(-1);
 			#endif
 
 		break;
@@ -432,6 +423,7 @@ int download_container::set_int_property(int id, property prop, double value) {
 			return LIST_PROPERTY;
 		break;
 	}
+
 	return LIST_SUCCESS;
 }
 
@@ -603,18 +595,18 @@ bool download_container::reconnect_needed() {
 	}
 }
 
-void download_container::do_reconnect(download_container *dlist) {
-	if(dlist->is_reconnecting) {
+void download_container::do_reconnect() {
+	if(is_reconnecting) {
 		return;
 	}
-	dlist->is_reconnecting = true;
-	boost::mutex::scoped_lock lock(dlist->download_mutex);
+	is_reconnecting = true;
+	boost::mutex::scoped_lock lock(download_mutex);
 	std::string router_ip, router_username, router_password, reconnect_plugin;
 
 	router_ip = global_router_config.get_cfg_value("router_ip");
 	if(router_ip.empty()) {
 		log_string("Reconnecting activated, but no router ip specified", LOG_WARNING);
-		dlist->is_reconnecting = false;
+		is_reconnecting = false;
 		return;
 	}
 
@@ -623,7 +615,7 @@ void download_container::do_reconnect(download_container *dlist) {
 	reconnect_plugin = global_router_config.get_cfg_value("router_model");
 	if(reconnect_plugin.empty()) {
 		log_string("Reconnecting activated, but no router model specified", LOG_WARNING);
-		dlist->is_reconnecting = false;
+		is_reconnecting = false;
 		return;
 	}
 
@@ -632,15 +624,15 @@ void download_container::do_reconnect(download_container *dlist) {
 	struct stat st;
 	if(stat(reconnect_script.c_str(), &st) != 0) {
 		log_string("Reconnect plugin for selected router model not found!", LOG_ERR);
-		dlist->is_reconnecting = false;
+		is_reconnecting = false;
 		return;
 	}
 
 	reconnect rc(reconnect_script, router_ip, router_username, router_password);
 	log_string("Reconnecting now!", LOG_WARNING);
-	for(download_container::iterator it = dlist->download_list.begin(); it != dlist->download_list.end(); ++it) {
+	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_WAITING) {
-			it->set_status(DOWNLOAD_RECONNECTING);
+			set_dl_status(it, DOWNLOAD_RECONNECTING);
 			it->wait_seconds = 0;
 		}
 	}
@@ -649,13 +641,13 @@ void download_container::do_reconnect(download_container *dlist) {
 		log_string("Reconnect failed, change your settings.", LOG_ERR);
 	}
 	lock.lock();
-	for(download_container::iterator it = dlist->download_list.begin(); it != dlist->download_list.end(); ++it) {
+	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_WAITING || it->get_status() == DOWNLOAD_RECONNECTING) {
-			it->set_status(DOWNLOAD_PENDING);
+			set_dl_status(it, DOWNLOAD_PENDING);
 			it->wait_seconds = 0;
 		}
 	}
-	dlist->is_reconnecting = false;
+	is_reconnecting = false;
 	return;
 }
 
@@ -748,7 +740,7 @@ void download_container::decrease_waits() {
 		if(it->wait_seconds > 0 && it->get_status() != DOWNLOAD_RUNNING) {
 			--(it->wait_seconds);
 		} else if(it->wait_seconds == 0 && it->get_status() == DOWNLOAD_WAITING) {
-			it->set_status(DOWNLOAD_PENDING);
+			set_dl_status(it, DOWNLOAD_PENDING);
 		} else if(it->wait_seconds > 0 && it->get_status() == DOWNLOAD_INACTIVE) {
 			it->wait_seconds = 0;
 		}
@@ -783,8 +775,9 @@ std::string download_container::create_client_list() {
 	return ss.str();
 }
 
+#endif
+
 int download_container::get_next_id() {
-	boost::mutex::scoped_lock lock(download_mutex);
 	int max_id = -1;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->id > max_id) {
@@ -794,12 +787,13 @@ int download_container::get_next_id() {
 	return ++max_id;
 }
 
+#ifndef IS_PLUGIN
 int download_container::stop_download(int id) {
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end() || it->get_status() == DOWNLOAD_DELETED) {
 		return LIST_ID;
 	} else {
-		if(it->get_status() != DOWNLOAD_INACTIVE) it->set_status(DOWNLOAD_PENDING);
+		if(it->get_status() != DOWNLOAD_INACTIVE) set_dl_status(it, DOWNLOAD_PENDING);
 		it->need_stop = true;
 		dump_to_file();
 		return LIST_SUCCESS;
@@ -815,8 +809,9 @@ download_container::iterator download_container::get_download_by_id(int id) {
 	}
 	return download_list.end();
 }
-#ifndef IS_PLUGIN
+
 bool download_container::dump_to_file() {
+	#ifndef IS_PLUGIN
 	if(list_file == "") {
 		return false;
 	}
@@ -829,8 +824,10 @@ bool download_container::dump_to_file() {
 		dlfile << it->serialize();
 	}
 	dlfile.close();
+	#endif
 	return true;
 }
+
 
 int download_container::running_downloads() {
 	int running_dls = 0;
@@ -866,6 +863,7 @@ bool download_container::url_is_in_list(std::string url) {
 	return false;
 }
 
+#ifndef IS_PLUGIN
 void download_container::init_handle(int id) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
@@ -876,7 +874,8 @@ void download_container::init_handle(int id) {
 void download_container::cleanup_handle(int id) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
-	curl_easy_cleanup(it->handle);
+	if(it->is_init)
+		curl_easy_cleanup(it->handle);
 	it->is_init = false;
 }
 #endif
@@ -893,15 +892,45 @@ int download_container::get_list_position(int id) {
 	return LIST_ID;
 }
 
-void download_container::insert_downloads(int pos, const download_container &dl) {
+void download_container::insert_downloads(int pos, download_container &dl) {
 	boost::mutex::scoped_lock lock(download_mutex);
-	download_container::iterator it = download_list.begin();
+	download_container::iterator insert_it = download_list.begin();
+	// set input iterator to correct position
 	for(int i = 0; i < pos; ++i) {
-		++it;
+		++insert_it;
 	}
-	download_list.insert(it, dl.download_list.begin(), dl.download_list.end());
+
+	for(download_container::iterator it = dl.download_list.begin(); it != dl.download_list.end(); ++it) {
+		it->id = get_next_id();
+		download_list.insert(insert_it, *it);
+		++insert_it;
+	}
+
 	#ifndef IS_PLUGIN
 		dump_to_file();
 	#endif
 }
 
+
+void download_container::set_dl_status(download_container::iterator it, download_status st) {
+	if(it->status == DOWNLOAD_DELETED) {
+		return;
+	} else {
+		if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) {
+			it->need_stop = true;
+		} else {
+			it->need_stop = false;
+		}
+		it->status = st;
+	}
+
+	if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_PENDING) {
+		it->wait_seconds = 0;
+	}
+	#ifndef IS_PLUGIN
+	if(global_download_list.reconnect_needed()) {
+		boost::thread t(boost::bind(&download_container::do_reconnect, this));
+	}
+	#endif
+
+}

@@ -47,8 +47,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 	outp.download_url = "http://youtube.com/get_video?video_id=" + video_id + "&t=" + t;
 	outp.download_filename = title + ".flv";
-	return PLUGIN_SUCCESS;
 
+	return PLUGIN_SUCCESS;
 }
 
 

@@ -28,7 +28,7 @@ void recursive_parser::deep_parse(std::string url) {
 		if((*it)[it->size() - 1] == '/') {
 			deep_parse(url + *it);
 		} else {
-			download dl(url + *it, global_download_list.get_next_id());
+			download dl(url + *it);
 			global_download_list.add_download(dl);
 		}
 	}
