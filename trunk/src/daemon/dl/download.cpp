@@ -27,8 +27,8 @@
 #include "../global.h"
 using namespace std;
 
-download::download(const std::string& dl_url, int next_id)
-	: url(dl_url), id(next_id), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
+download::download(const std::string& dl_url)
+	: url(dl_url), id(0), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
 	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true) {
 	time_t rawtime;
 	struct tm* timeinfo;
@@ -41,10 +41,11 @@ download::download(const std::string& dl_url, int next_id)
 	is_init = false;
 }
 
-download::download(std::string& serializedDL) {
-	from_serialized(serializedDL);
-}
+//download::download(std::string& serializedDL) {
+//	from_serialized(serializedDL);
+//}
 
+#ifndef IS_PLUGIN
 void download::from_serialized(std::string& serializedDL) {
 	std::string current_entry;
 	size_t curr_pos = 0;
@@ -102,6 +103,7 @@ void download::from_serialized(std::string& serializedDL) {
 	is_init = false;
 	can_resume = true;
 }
+#endif
 
 download::download(const download& dl) {
 	operator=(dl);
@@ -203,26 +205,7 @@ const char* download::get_status_str() {
 	}
 }
 
-void download::set_status(download_status st) {
-	if(status == DOWNLOAD_DELETED) {
-		return;
-	} else {
-		if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) {
-			need_stop = true;
-		} else {
-			need_stop = false;
-		}
-		status = st;
-	}
-
-	if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_PENDING) {
-		wait_seconds = 0;
-	}
-	if(global_download_list.reconnect_needed()) {
-		boost::thread t(download_container::do_reconnect, &global_download_list);
-	}
-}
-
+#ifndef IS_PLUGIN
 plugin_output download::get_hostinfo() {
 	plugin_input inp;
 	plugin_output outp;
@@ -279,7 +262,7 @@ plugin_output download::get_hostinfo() {
 	dlclose(l_handle);
 	return outp;
 }
-
+#endif
 
 bool operator<(const download& x, const download& y) {
 	return x.id < y.id;

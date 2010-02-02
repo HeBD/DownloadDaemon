@@ -285,7 +285,7 @@ void target_dl_add(std::string &data, tkSock *sock) {
 			}
 
 		}
-		download dl(url, global_download_list.get_next_id());
+		download dl(url);
 		dl.comment = comment;
 		std::string logstr("Adding download: ");
 		logstr += dl.serialize();

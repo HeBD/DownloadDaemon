@@ -40,14 +40,13 @@ class download {
 public:
 	/** Normal constructor
 	* @param url Download URL
-	* @param next_id The ID this download should get
 	*/
-	download(const std::string &dl_url, int next_id);
+	download(const std::string &dl_url);
 
 	/** Constructor from a serialized download from file
 	* @param serializedDL Serialized Download string
 	*/
-	download(std::string &serializedDL);
+	//download(std::string &serializedDL);
 
 	/** Copy constructor because of CURL* handles
 	* @param dl Download object to copy

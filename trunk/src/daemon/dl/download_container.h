@@ -25,20 +25,22 @@ enum { LIST_SUCCESS = -20, LIST_PERMISSION, LIST_ID, LIST_PROPERTY };
 
 class download_container {
 public:
+	/** simple constructor
+	*/
+	download_container() {}
+
+	#ifndef IS_PLUGIN
 	/** Constructor taking a filename from which the list should be read
 	*	@param filename Path to the dlist file
 	*/
 	download_container(const char* filename);
-
-	/** simple constructor
-	*/
-	download_container() {}
 
 	/** Read the download list from the dlist file
 	*	@param filename Path to the dlist file
 	*	@returns true on success
 	*/
 	int from_file(const char* filename);
+	#endif
 
 	/** Check if download list is empty
 	*	@returns True if empty
@@ -74,21 +76,18 @@ public:
 	*/
 	int deactivate(int id);
 
-	/** deletes a download by id
-	*	@param id ID of the download to be deleted
-	*/
-	void del(int id);
-
+	#ifndef IS_PLUGIN
 	/** Gets the next downloadable item in the global download list (filters stuff like inactives, wrong time, etc)
  	*	@returns ID of the next download that can be downloaded or LIST_ID if there is none, LIST_SUCCESS
  	*/
 	int get_next_downloadable(bool do_lock = true);
+	#endif
 
 	/** Adds a new download to the list
 	*	@param dl Download object to add
 	*	@returns LIST_SUCCESS, LIST_PERMISSION
 	*/
-	int add_download(const download &dl);
+	int add_download(download &dl);
 
 
 	/** Functions to set download element variables
@@ -109,12 +108,14 @@ public:
 	void* get_pointer_property(int id, pointer_property prop);
 	double get_int_property(int id, property prop);
 
+	#ifndef IS_PLUGIN
 	/** Prepares a download (calls the plugin, etc)
 	*	@param dl Download id to prepare
 	*	@param poutp plugin_output structure, will be filled in by the plugin
 	*	@returns LIST_ID, LIST_SUCCESS
 	*/
 	int prepare_download(int dl, plugin_output &poutp);
+	#endif
 
 	/** Returns info about a plugin
 	*	@param dl Download toget info from
@@ -128,6 +129,7 @@ public:
 	*/
 	std::string get_host(int dl);
 
+	#ifndef IS_PLUGIN
 	/** Every download with status DOWNLOAD_WAITING and wait seconds > 0 will decrease wait seconds by one. If 0 is reached, the status will be set to DOWNLOAD_PENDING
 	*/
 	void decrease_waits();
@@ -140,12 +142,14 @@ public:
 	*	@returns the list
 	*/
 	std::string create_client_list();
+	#endif
 
 	/** Gets the lowest unused ID that should be used for the next download
 	*	@returns ID
 	*/
 	int get_next_id();
 
+	#ifndef IS_PLUGIN
 	/** Stops a download and sets its status
 	*	@param id Download to stop
 	*	@returns LIST_SUCCESS, LIST_ID, LIST_PERMISSION
@@ -160,7 +164,8 @@ public:
 	/** Does the real work when reconnecting
 	*	@param dlist basically a this-pointer, needed because it's static
 	*/
-	static void do_reconnect(download_container *dlist);
+	void do_reconnect();
+	#endif
 
 	/** Checks if the given link already exists in the list
 	*	@param url The url to check for
@@ -188,7 +193,7 @@ public:
 	*	@param pos position where to insert
 	*	@param dl download list to insert
 	*/
-	void insert_downloads(int pos, const download_container &dl);
+	void insert_downloads(int pos, download_container &dl);
 
 	std::string list_file;
 
@@ -215,6 +220,8 @@ private:
 	*	@returns success status
 	*/
 	int remove_download(int id);
+
+	void set_dl_status(download_container::iterator it, download_status st);
 
 
 
