@@ -8,12 +8,24 @@
 
 class reconnect {
 public:
+	/** initializes the reconnect-object. this does not execute a reconnect yet
+	 *	@param path_p path to the reconnect-script
+	 *	@param host_p IP-address of the router
+	 *	@param user_p username needed to log into the router
+	 *	@param pass_p password for router login
+	 */
 	reconnect(const std::string &path_p, const std::string &host_p, const std::string &user_p, const std::string &pass_p);
 
 	~reconnect();
 
+	/** get your current public ip-address by querying http://www.whatismyip.com/automation/n09230945.asp
+	 *	@returns the ip-address
+	 */
 	static std::string get_current_ip();
 
+	/** executes the reconnect specified in the constructor
+	 *	@returns true on success, false if we still have the same IP
+	 */
 	bool do_reconnect();
 
 private:
