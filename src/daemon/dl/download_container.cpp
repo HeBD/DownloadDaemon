@@ -901,14 +901,13 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 	}
 
 	for(download_container::iterator it = dl.download_list.begin(); it != dl.download_list.end(); ++it) {
-		it->id = get_next_id();
-		download_list.insert(insert_it, *it);
+		it->id = this->get_next_id();
+
+		insert_it = download_list.insert(insert_it, *it);
 		++insert_it;
 	}
 
-	#ifndef IS_PLUGIN
-		dump_to_file();
-	#endif
+	dump_to_file();
 }
 
 
