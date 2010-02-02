@@ -7,6 +7,7 @@
 	- the new youtube plugin can now also download playlists (using the new decrypter-api)
    [susanne]
 	- replaced added column with time left column at ddclient-wx
+	- replaced ddclient-wx screenshots due to gui change
 
 2010-01-31
    [adrian]

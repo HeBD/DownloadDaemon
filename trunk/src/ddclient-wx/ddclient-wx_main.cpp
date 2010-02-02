@@ -575,7 +575,7 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 
 			if(splitted_line[6] == "0" || splitted_line[6] == "1"){ // download size unknown
 				stream_buffer << "0.00% - ";
-				time_left = "?";
+				time_left = "";
 
 				if(splitted_line[5] == "0" || splitted_line[5] == "1") // nothing downloaded yet
 					stream_buffer << "0.00 MB/ 0.00 MB";
@@ -591,7 +591,7 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 						time_left = time_buffer.str();
 						cut_time(time_left);
 					}else
-						time_left = "?";
+						time_left = "";
 
 				}else{ // download size known and something downloaded
 					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[5].c_str()) / (float)atol(splitted_line[6].c_str()) * 100 << "% - ";
@@ -603,7 +603,7 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 						time_left = time_buffer.str();
 						cut_time(time_left);
 					}else
-						time_left = "?";
+						time_left = "";
 				}
 			}
 			status_text = stream_buffer.str();
