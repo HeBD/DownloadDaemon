@@ -1,3 +1,8 @@
+2010-02-03
+   [adrian]
+	- experimental support for in-memory container (faster, no HD-usage, but lost on restart)
+	- plugins can now call every function DD can call without any problem.. hopefully
+
 2010-02-02
    [adrian]
 	- extended host-plugin api. You can now replace the current download by a list of

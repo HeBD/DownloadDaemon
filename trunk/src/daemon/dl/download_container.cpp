@@ -19,12 +19,11 @@
 
 #include "download_container.h"
 #include "download.h"
-#include "../../lib/cfgfile/cfgfile.h"
-#include "../tools/helperfunctions.h"
-#include "../reconnect/reconnect_parser.h"
-#ifdef IS_PLUGIN
-	#include <iostream>
-#else
+
+#ifndef IS_PLUGIN
+	#include "../../lib/cfgfile/cfgfile.h"
+	#include "../tools/helperfunctions.h"
+	#include "../reconnect/reconnect_parser.h"
 	#include "../global.h"
 #endif
 using namespace std;
@@ -33,7 +32,6 @@ using namespace std;
 download_container::download_container(const char* filename) {
 	from_file(filename);
 }
-
 
 int download_container::from_file(const char* filename) {
 	boost::mutex::scoped_lock lock(download_mutex);
@@ -45,6 +43,7 @@ int download_container::from_file(const char* filename) {
 		dl.from_serialized(line);
 		download_list.push_back(dl);
 	}
+
 	if(!dlist.good()) {
 		dlist.close();
 		return LIST_PERMISSION;
@@ -64,10 +63,7 @@ int download_container::add_download(download &dl) {
 	dl.id = get_next_id();
 	download_list.push_back(dl);
 
-	if(!dump_to_file()) {
-		download_list.pop_back();
-		return LIST_PERMISSION;
-	}
+	dump_to_file();
 	return LIST_SUCCESS;
 }
 
@@ -111,10 +107,7 @@ int download_container::move_up(int id) {
 		++second;
 
 	iter_swap(first, second);
-	if(!dump_to_file()) {
-		iter_swap(second, first);
-		return LIST_PERMISSION;
-	}
+	dump_to_file();
 	return LIST_SUCCESS;
 }
 
@@ -152,10 +145,7 @@ int download_container::move_down(int id) {
 		++second;
 
 	iter_swap(first, second);
-	if(!dump_to_file()) {
-		iter_swap(second, first);
-		return LIST_PERMISSION;
-	}
+	dump_to_file();
 	return LIST_SUCCESS;
 }
 
@@ -168,13 +158,9 @@ int download_container::activate(int id) {
 		return LIST_PROPERTY;
 	} else {
 		set_dl_status(it, DOWNLOAD_PENDING);
-		if(!dump_to_file()) {
-			set_dl_status(it, DOWNLOAD_INACTIVE);
-			return LIST_PERMISSION;
-		} else {
-			return LIST_SUCCESS;
-		}
+		dump_to_file();
 	}
+	return LIST_SUCCESS;
 }
 
 int download_container::deactivate(int id) {
@@ -183,7 +169,6 @@ int download_container::deactivate(int id) {
 	if(it == download_list.end()) {
 		return LIST_ID;
 	} else {
-		download_status old_status = it->get_status();
 		if(it->get_status() == DOWNLOAD_INACTIVE) {
 			return LIST_PROPERTY;
 		}
@@ -191,13 +176,9 @@ int download_container::deactivate(int id) {
 		set_dl_status(it, DOWNLOAD_INACTIVE);
 
 		it->wait_seconds = 0;
-		if(!dump_to_file()) {
-			set_dl_status(it, old_status);
-			return LIST_PERMISSION;
-		} else {
-			return LIST_SUCCESS;
-		}
+		dump_to_file();
 	}
+	return LIST_SUCCESS;
 }
 
 #ifndef IS_PLUGIN
@@ -295,7 +276,9 @@ int download_container::get_next_downloadable(bool do_lock) {
 	}
 	return LIST_ID;
 }
+
 #endif // IS_PLUGIN
+
 int download_container::set_string_property(int id, string_property prop, std::string value) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
@@ -306,39 +289,19 @@ int download_container::set_string_property(int id, string_property prop, std::s
 	switch(prop) {
 		case DL_URL:
 			dl->url = value;
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				dl->url = old_val;
-				return LIST_PERMISSION;
-			}
-			#endif
+			dump_to_file();
 		break;
 		case DL_COMMENT:
 			dl->comment = value;
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				dl->comment = old_val;
-				return LIST_PERMISSION;
-			}
-			#endif
+			dump_to_file();
 		break;
 		case DL_ADD_DATE:
 			dl->add_date = value;
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				dl->add_date = old_val;
-				return LIST_PERMISSION;
-			}
-			#endif
+			dump_to_file();
 		break;
 		case DL_OUTPUT_FILE:
 			dl->output_file = value;
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				dl->output_file = old_val;
-				return LIST_PERMISSION;
-			}
-			#endif
+			dump_to_file();
 		break;
 	}
 	return LIST_SUCCESS;
@@ -350,73 +313,34 @@ int download_container::set_int_property(int id, property prop, double value) {
 	if(dl == download_list.end()) {
 		return LIST_ID;
 	}
-	#ifndef IS_PLUGIN
-	int old_val = value;
-	#endif
+
 	switch(prop) {
 		case  DL_ID:
 			dl->id = value;
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				dl->id = old_val;
-				return LIST_PERMISSION;
-			}
-			#endif
-		break;
+			dump_to_file();
 		case DL_DOWNLOADED_BYTES:
 			dl->downloaded_bytes = value;
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				dl->downloaded_bytes = old_val;
-				return LIST_PERMISSION;
-			}
-			#endif
+			dump_to_file();
 		break;
 		case DL_SIZE:
 			dl->size = value;
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				dl->size = old_val;
-				return LIST_PERMISSION;
-			}
-			#endif
+			dump_to_file();
 		break;
 		case DL_WAIT_SECONDS:
 			dl->wait_seconds = value;
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				dl->wait_seconds = old_val;
-				return LIST_PERMISSION;
-			}
-			#endif
+			dump_to_file();
 		break;
 		case DL_PLUGIN_STATUS:
 			dl->error = plugin_status(value);
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				dl->error = plugin_status(old_val);
-				return LIST_PERMISSION;
-			}
-			#endif
+			dump_to_file();
 		break;
 		case DL_STATUS:
 			set_dl_status(dl, download_status(value));
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				set_dl_status(dl, download_status(old_val));
-				return LIST_PERMISSION;
-			}
-			#endif
-
+			dump_to_file();
 		break;
 		case DL_IS_RUNNING:
 			dl->is_running = value;
-			#ifndef IS_PLUGIN
-			if(!dump_to_file()) {
-				dl->error = plugin_status(old_val);
-				return LIST_PERMISSION;
-			}
-			#endif
+			dump_to_file();
 		break;
 		case DL_SPEED:
 			dl->speed = value;
@@ -471,11 +395,7 @@ double download_container::get_int_property(int id, property prop) {
 			return dl->error;
 		break;
 		case DL_STATUS:
-			#ifndef IS_PLGUIN
-				return dl->get_status();
-			#else
-				return dl->status;
-			#endif
+			return dl->get_status();
 		break;
 		case DL_IS_RUNNING:
 			return dl->is_running;
@@ -793,7 +713,6 @@ int download_container::get_next_id() {
 	return ++max_id;
 }
 
-#ifndef IS_PLUGIN
 int download_container::stop_download(int id) {
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end() || it->get_status() == DOWNLOAD_DELETED) {
@@ -805,7 +724,6 @@ int download_container::stop_download(int id) {
 		return LIST_SUCCESS;
 	}
 }
-#endif
 
 download_container::iterator download_container::get_download_by_id(int id) {
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
@@ -817,9 +735,9 @@ download_container::iterator download_container::get_download_by_id(int id) {
 }
 
 bool download_container::dump_to_file() {
-	#ifndef IS_PLUGIN
+	// in-memory download container
 	if(list_file == "") {
-		return false;
+		return true;
 	}
 
 	fstream dlfile(list_file.c_str(), ios::trunc | ios::out);
@@ -830,7 +748,7 @@ bool download_container::dump_to_file() {
 		dlfile << it->serialize();
 	}
 	dlfile.close();
-	#endif
+
 	return true;
 }
 
@@ -852,10 +770,7 @@ int download_container::remove_download(int id) {
 	}
 	download tmpdl = *it;
 	download_list.erase(it);
-	if(!dump_to_file()) {
-		download_list.push_back(tmpdl);
-		return LIST_PERMISSION;
-	}
+	dump_to_file();
 	return LIST_SUCCESS;
 }
 

@@ -15,16 +15,19 @@
 
 #include "download.h"
 #include "download_container.h"
+#ifndef IS_PLUGIN
 #include "../../lib/cfgfile/cfgfile.h"
 #include "../tools/curl_callbacks.h"
 #include "../tools/helperfunctions.h"
+#include "../global.h"
+#endif
 
 #include <string>
 #include <ctime>
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
-#include "../global.h"
+
 using namespace std;
 
 download::download(const std::string& dl_url)
