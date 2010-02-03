@@ -5,9 +5,9 @@ find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
 IF(Boost_FOUND AND CURL_FOUND)
 	INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRs})
 	
-	ADD_LIBRARY(rapidshare.com SHARED rapidshare_com.cpp)
-	ADD_LIBRARY(uploaded.to SHARED uploaded_to.cpp)
-	ADD_LIBRARY(youtube.com SHARED youtube_com.cpp)
+	ADD_LIBRARY(rapidshare.com MODULE rapidshare_com.cpp)
+	ADD_LIBRARY(uploaded.to MODULE uploaded_to.cpp)
+	ADD_LIBRARY(youtube.com MODULE youtube_com.cpp)
 
 	TARGET_LINK_LIBRARIES(rapidshare.com ${CURL_LIBRARIES} ${Boost_LIBRARIES})
 	TARGET_LINK_LIBRARIES(uploaded.to ${CURL_LIBRARIES} ${Boost_LIBRARIES})

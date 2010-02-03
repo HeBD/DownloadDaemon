@@ -156,13 +156,13 @@ public:
 	*/
 	int get_next_id();
 
-	#ifndef IS_PLUGIN
 	/** Stops a download and sets its status
 	*	@param id Download to stop
 	*	@returns LIST_SUCCESS, LIST_ID, LIST_PERMISSION
 	*/
 	int stop_download(int id);
 
+	#ifndef IS_PLUGIN
 	/** Checks if a reconnect is currently needed
 	*	@returns true if yes
 	*/
