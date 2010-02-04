@@ -6,9 +6,9 @@ This guide is seperated in 5 parts:
 5: Doing a user-only installation (which does not require root privileges for execution)
 
 1:	To build DownloadDaemon, you need to have libcurl (libcurl-dev) and libboost-thread (at least version 1.36.0) installed.
-	DownloadDaemon only runs on Unix-systems (Linux tested). However, you can run it under Windows by using Cygwin (you need cygwin
-	1.7 or later).
-	To build ddconsole, you don't have to meet any special dependencies
+	DownloadDaemon only runs on Unix-systems (Linux tested). However, by using Cygwin, a POSIX-emulation environment for Windows,
+	you can also run DownloadDaemon under Windows. For instructions on how to do it, check out the DownloadDaemon Wiki.
+	To build ddconsole, you don't have to meet any special dependencies, except for a compiler and the c++ standard library
 	To build ddclient-wx, you need to have libboost-thread (at least version 1.36.0) and wxWidgets development packages installed
 	You also need cmake in order to build any of the packages
 
@@ -18,9 +18,6 @@ This guide is seperated in 5 parts:
 	sudo make install
 	for an in-source-tree build, which should be enough in most cases.
 	If you want to build in another place, simply execute cmake <path to extracted package> instead of cmake .
-	The easyest way to build all programs (server and client) is by changing to the build directory and running
-	"cmake ..", then "make" and "make install"(as root). This will install the daemon with all plugins and 
-	all available clients (except for the web-based php client, you need to do that manually).
 	If you are installing the Daemon, you have to add a user and a group called "downloadd" to restrict permissions
 	when executing. Therefore execute these commands:
 	sudo addgroup --system downloadd
@@ -55,23 +52,29 @@ This guide is seperated in 5 parts:
 
 
 4:	Since there is no general way to install programs on NAS', the ARM package only contains a packed structure
-	which needs to be rebuild on the filesystem. Usually the embedded Linux distribution is installed on a ROM.
+	which needs to be rebuild on the NAS filesystem. Usually the embedded Linux distribution is installed on a ROM.
 	Therefore any changes you make to it will be lost after a reboot. The only good solution I found is not copying
 	the data from the archive into the filesystem, but instead just copy it to the hard disk which was put in the NAS.
 	Then you write a small shell script that links all the files into the filesystem. This script must then be executed
-	after each reboot (If you need some help on installing the Package on your NAS, you can always contact me to get support
-	(On the sourceforge site, there is a support ticket system).
-	Another problem is, that many NAS do not have the required libraries (libcurl, libstdc++, libboost_thread-mt) installed.
+	after each reboot (If you need some help on installing the Package on your NAS, you can always contact me to get support.
+	Just go to our Forums and ask (https://sourceforge.net/projects/downloaddaemon/forums/forum/1007820).
+	Another problem is, that many NAS do not have the required libraries (libcurl, libstdc++, libboost_thread) installed.
 	To solve this problem, you can Download the downloaddaemon_arm_libs package, which includes the files. They should work for
 	most NAS', since many of them run similar glibc versions. However, it does not neccessarily have to work for all of them.
 	Be VERY!!! careful when linking the libraries into the filesystem. Only link libraries in that your NAS doesn't have by default.
-	If you overwrite existing libraries, this may cause undefined system behaviour (but can be fixed with a reboot).
+	If you overwrite existing libraries, this may cause undefined system behaviour (but in most cases can be fixed with a reboot).
 	If it doesn't work, you are probably out of luck. The only way would then be cross-compiling them yourself. good luck!
-	The shell script will basically look like this:
+	The shell script will basically look like this or similar:
 	#include /bin/bash
 	ln -s /mnt/<path to files>/usr/bin/* /usr/bin/*
 	ln -s /mnt/<path to files>/etc/downloaddaemon /etc/downloaddaemon
 	ln -s /mnt/<path to files>/usr/share/downloaddaemon /usr/share/downloaddaemon
+	addgroup downloadd
+	adduser -h /etc/downloaddaemon -G downloadd -S -D -s /bin/false downloadd
+	chmod -R a+rw /etc/downloaddaemon /<path to the folder where downloads should be placed>
+	chown downloadd:downloadd /etc/downloaddaemon/dlist
+	DownloadDaemon -d
+
 
 5:	First, do a normal installation as described above. When done, do the
 	following steps:
