@@ -140,13 +140,7 @@ void download_thread(int download) {
 				return;
 			}
 
-			while(global_download_list.get_int_property(download, DL_WAIT_SECONDS) > 0) {
-				if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE || global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
-					break;
-				}
-				sleep(1);
-				global_download_list.set_int_property(download, DL_WAIT_SECONDS, global_download_list.get_int_property(download, DL_WAIT_SECONDS) - 1);
-			}
+			sleep(global_download_list.get_int_property(download, DL_WAIT_SECONDS));
 		}
 		if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED || global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE) {
 			global_download_list.set_int_property(download, DL_WAIT_SECONDS, 0);

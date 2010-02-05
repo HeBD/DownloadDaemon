@@ -35,6 +35,10 @@
 
 using namespace std;
 
+#ifndef DD_CONF_DIR
+	#define DD_CONF_DIR "/etc/downloaddaemon/"
+#endif
+
 // GLOBAL VARIABLE DECLARATION:
 // The downloadcontainer is just needed everywhere in the program, so let's make it global
 download_container global_download_list;
@@ -189,22 +193,10 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 	chdir(program_root.c_str());
 
-	string home_dd_dir(get_env_var("HOME"));
-	home_dd_dir += "/.downloaddaemon/";
-	string dd_conf_path("/etc/downloaddaemon/downloaddaemon.conf");
-	string premium_conf_path("/etc/downloaddaemon/premium_accounts.conf");
-	string router_conf_path("/etc/downloaddaemon/routerinfo.conf");
-	#ifndef __CYGWIN__
-	if(check_home_for_cfg && stat(string(home_dd_dir + "downloaddaemon.conf").c_str(), &st) == 0) {
-		dd_conf_path = home_dd_dir + "downloaddaemon.conf";
-	}
-	if(check_home_for_cfg && stat(string(home_dd_dir + "premium_accounts.conf").c_str(), &st) == 0) {
-		premium_conf_path = home_dd_dir + "premium_accounts.conf";
-	}
-	if(check_home_for_cfg && stat(string(home_dd_dir + "routerinfo.conf").c_str(), &st) == 0) {
-		router_conf_path = home_dd_dir + "routerinfo.conf";
-	}
-    #endif
+	string dd_conf_path(DD_CONF_DIR "/downloaddaemon.conf");
+	string premium_conf_path(DD_CONF_DIR "/premium_accounts.conf");
+	string router_conf_path(DD_CONF_DIR "/routerinfo.conf");
+
 
 	// check again - will fail if the conf file does not exist at all
 	if(stat(dd_conf_path.c_str(), &st) != 0) {

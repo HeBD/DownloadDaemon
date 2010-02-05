@@ -1,3 +1,10 @@
+2010-02-05
+   [adrian]
+	- added support for captcha-reading for hosters using gocr (including a wrapper to make it safe and comfortable)
+	- added netload plugin (does not yet work.. needs some checking)
+	- made downloaddaemon configuration movable. Specifie -DDD_CONF_DIR=<desired path> to let DownloadDaemon
+	  get its configuration files from there instead of /etc/downloaddaemon
+
 2010-02-04
    [adrian]
 	- updated installation instructions

@@ -19,6 +19,7 @@
 
 #include "download_container.h"
 #include "download.h"
+#include "../plugins/captcha.h"
 
 #ifndef IS_PLUGIN
 	#include "../../lib/cfgfile/cfgfile.h"
@@ -618,8 +619,8 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 
 	dlerror();	// Clear any existing error
 
-	plugin_status (*plugin_exec_func)(download_container&, int, plugin_input&, plugin_output&);
-	plugin_exec_func = (plugin_status (*)(download_container&, int, plugin_input&, plugin_output&))dlsym(handle, "plugin_exec_wrapper");
+	plugin_status (*plugin_exec_func)(download_container&, int, plugin_input&, plugin_output&, int, std::string);
+	plugin_exec_func = (plugin_status (*)(download_container&, int, plugin_input&, plugin_output&, int, std::string))dlsym(handle, "plugin_exec_wrapper");
 
 	char *error;
 	if ((error = dlerror()) != NULL)  {
@@ -635,7 +636,10 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	plugin_mutex.lock();
 	plugin_status retval;
 	try {
-		retval = plugin_exec_func(*this, dl, pinp, poutp);
+		retval = plugin_exec_func(*this, dl, pinp, poutp, atoi(global_config.get_cfg_value("captcha_retrys").c_str()), global_config.get_cfg_value("gocr_binary"));
+	} catch(captcha_exception &e) {
+		log_string("Failed to resolve after " + global_config.get_cfg_value("captcha_retrys") + " retrys. Giving up (" + host + ")", LOG_ERR);
+		retval = PLUGIN_ERROR;
 	} catch(...) {
 		retval = PLUGIN_ERROR;
 	}
@@ -654,21 +658,22 @@ plugin_output download_container::get_hostinfo(int dl) {
 	return it->get_hostinfo();
 }
 
+#endif
 std::string download_container::get_host(int dl) {
 	boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator it = get_download_by_id(dl);
 	return it->get_host();
 }
+#ifndef IS_PLUGIN
 
 void download_container::decrease_waits() {
 	boost::mutex::scoped_lock lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(it->wait_seconds > 0 && it->get_status() != DOWNLOAD_RUNNING) {
+		if(it->wait_seconds > 0) {
 			--(it->wait_seconds);
+			if(it->get_status() == DOWNLOAD_INACTIVE) it->wait_seconds = 0;
 		} else if(it->wait_seconds == 0 && it->get_status() == DOWNLOAD_WAITING) {
 			set_dl_status(it, DOWNLOAD_PENDING);
-		} else if(it->wait_seconds > 0 && it->get_status() == DOWNLOAD_INACTIVE) {
-			it->wait_seconds = 0;
 		}
 	}
 }
@@ -843,7 +848,7 @@ void download_container::set_dl_status(download_container::iterator it, download
 		it->status = st;
 	}
 
-	if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_PENDING) {
+	if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_PENDING || st == DOWNLOAD_DELETED) {
 		it->wait_seconds = 0;
 	}
 	#ifndef IS_PLUGIN
