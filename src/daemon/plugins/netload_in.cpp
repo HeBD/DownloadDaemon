@@ -1,0 +1,140 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "plugin_helpers.h"
+#include <curl/curl.h>
+#include <cstdlib>
+#include <iostream>
+using namespace std;
+
+size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
+	std::string *blubb = (std::string*)userp;
+	blubb->append((char*)buffer, nmemb);
+	return nmemb;
+}
+
+plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
+	CURL* handle = get_handle();
+	string result;
+	bool done = false;
+	// so we can never get in an infinite loop..
+	int while_tries = 0;
+	while(!done || while_tries > 100) {
+		++while_tries;
+		curl_easy_setopt(handle, CURLOPT_URL, get_url());
+		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
+		curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
+		curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
+		result.clear();
+		int res = curl_easy_perform(handle);
+		if(res != 0) {
+			return PLUGIN_ERROR;
+		}
+
+		if(result.find("dl_first_filename") == string::npos) {
+			return PLUGIN_FILE_NOT_FOUND;
+		}
+
+		string captcha_url;
+		try {
+			size_t n = result.find("<div class=\"Free_dl\"><a href=\"") + 30;
+			string url = "http://netload.in/" + result.substr(n, result.find("\">", n) - n);
+			replace_html_special_chars(url);
+			curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+			result.clear();
+			res = curl_easy_perform(handle);
+			if(res != 0) {
+				return PLUGIN_ERROR;
+			}
+
+			n = result.find("share/includes/captcha.php?t=");
+			captcha_url = "http://netload.in/" + result.substr(n, result.find("\"", n) - n);
+
+			n = result.find("<div id=\"downloadDiv\">");
+			n = result.find("action=\"", n) + 8;
+			url = "http://netload.in/" + result.substr(n, result.find("\">", n) - n);
+			string post_data;
+			n = result.find("file_id", n);
+			n = result.find("value=\"", n) + 7;
+			post_data = "file_id=" + result.substr(n, result.find("\"", n) - n);
+
+
+			curl_easy_setopt(handle, CURLOPT_URL, captcha_url.c_str());
+			result.clear();
+			res = curl_easy_perform(handle);
+			if(res != 0) {
+				return PLUGIN_ERROR;
+			}
+
+			captcha cap(result);
+			std::string captcha_text = cap.process_image("-m 2 -a 50 -C 0-9", "png", true);
+			post_data += "captcha_check=" + captcha_text.substr(0, 4);
+			if(captcha_text.length() < 4) continue;
+
+			curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+			curl_easy_setopt(handle, CURLOPT_POST, 1);
+			curl_easy_setopt(handle, CURLOPT_POSTFIELDS, post_data.c_str());
+			result.clear();
+			res = curl_easy_perform(handle);
+
+			if(res != 0) {
+				return PLUGIN_ERROR;
+			}
+
+			if(result.find("You may forgot the security code or it might be wrong") != string::npos) {
+				ofstream ofs("file.html");
+				ofs << result;
+				continue;
+			}
+
+			if(result.find("This file is currently unavailable") != string::npos) {
+				return PLUGIN_FILE_NOT_FOUND;
+			}
+
+			if((n = result.find("You could download your next file in")) != string::npos) {
+				n = result.find("countdown(", n) + 10;
+				int wait_secs = atoi(result.substr(n, result.find(",", n) - n).c_str()) / 100;
+				set_wait_time(wait_secs);
+				return PLUGIN_LIMIT_REACHED;
+			}
+
+			n = result.find("the download is started automatically");
+			n = result.find("href=\"", n);
+			if(n == string::npos) continue;
+			n += 6;
+			outp.download_url = result.substr(n, result.find("\"", n) - n);
+
+			n = result.find("<h2>download: ") + 14;
+			outp.download_filename = result.substr(n, result.find("</h2>", n) - n);
+			done = true;
+
+		} catch(std::exception &e) {
+			return PLUGIN_ERROR;
+		}
+
+	}
+
+
+	return PLUGIN_SUCCESS;
+}
+
+
+extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
+	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+		outp.allows_resumption = true;
+		outp.allows_multiple = true;
+	} else {
+		outp.allows_resumption = false;
+		outp.allows_multiple = false;
+	}
+	outp.offers_premium = false; // no login support yet
+}
