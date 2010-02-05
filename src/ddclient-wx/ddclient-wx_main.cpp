@@ -568,7 +568,7 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 			stringstream stream_buffer, time_buffer;
 			stream_buffer << "Running";
 
-			if(splitted_line[9] != "0" || splitted_line[9] != "-1") // download speed known
+			if(splitted_line[9] != "0" && splitted_line[9] != "-1") // download speed known
 				stream_buffer << "@" << setprecision(1) << fixed << (float)atol(splitted_line[9].c_str()) / 1024 << " kb/s";
 
 			stream_buffer << ": ";
@@ -586,8 +586,8 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 				if(splitted_line[5] == "0" || splitted_line[5] == "1"){ // nothing downloaded yet
 					stream_buffer << "0.00% - 0.00 MB/ " << fixed << (float)atol(splitted_line[6].c_str()) / 1048576 << " MB";
 
-					if(splitted_line[9] != "0" || splitted_line[9] != "-1"){ // download speed known => calc time left
-						time_buffer << (atol(splitted_line[6].c_str()) / atol(splitted_line[9].c_str()));
+					if(splitted_line[9] != "0" && splitted_line[9] != "-1"){ // download speed known => calc time left
+						time_buffer << (int)(atol(splitted_line[6].c_str()) / atol(splitted_line[9].c_str()));
 						time_left = time_buffer.str();
 						cut_time(time_left);
 					}else
@@ -598,8 +598,8 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[5].c_str()) / 1048576 << " MB/ ";
 					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[6].c_str()) / 1048576 << " MB";
 
-					if(splitted_line[9] != "0" || splitted_line[9] != "-1"){ // download speed known => calc time left
-						time_buffer << ((atol(splitted_line[6].c_str()) - atol(splitted_line[5].c_str())) / atol(splitted_line[9].c_str()));
+					if(splitted_line[9] != "0" && splitted_line[9] != "-1"){ // download speed known => calc time left
+						time_buffer << (int)((atol(splitted_line[6].c_str()) - atol(splitted_line[5].c_str())) / atol(splitted_line[9].c_str()));
 						time_left = time_buffer.str();
 						cut_time(time_left);
 					}else
