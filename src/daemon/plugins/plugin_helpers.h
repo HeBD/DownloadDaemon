@@ -15,6 +15,7 @@
 
 #include "../dl/download.h"
 #include "../dl/download_container.h"
+#include "captcha.h"
 #include <boost/bind.hpp>
 
 
@@ -112,11 +113,19 @@ std::string convert_to_string(PARAM p1);
 download_container *list;
 int dlid;
 plugin_status plugin_exec(plugin_input &pinp, plugin_output &poutp);
+int max_retrys;
+int retry_count;
+std::string gocr;
+std::string host;
 
 /** This function is just a wrapper for defining globals and calling your plugin */
-extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, plugin_input& pinp, plugin_output& poutp) {
+extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, plugin_input& pinp, plugin_output& poutp, int max_captcha_retrys, std::string gocr_path) {
 	list = &dlc;
 	dlid = id;
+	max_retrys = max_captcha_retrys;
+	gocr = gocr_path;
+	host = dlc.get_host(id);
+	retry_count = 0;
 	return plugin_exec(pinp, poutp);
 }
 
@@ -186,5 +195,6 @@ std::string convert_to_string(PARAM p1) {
 // I know, this looks ugly, but it does the job and seems to be okay in this case
 #include "../dl/download_container.cpp"
 #include "../dl/download.cpp"
+#include "captcha.cpp"
 
 #endif // PLUGIN_HELPERS_H_INCLUDED

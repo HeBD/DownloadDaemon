@@ -184,6 +184,12 @@
 		<Unit filename="src/daemon/mgmt/mgmt_thread.h">
 			<Option target="Daemon" />
 		</Unit>
+		<Unit filename="src/daemon/plugins/captcha.cpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="src/daemon/plugins/captcha.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="src/daemon/plugins/plugin_helpers.h">
 			<Option target="rapidshare_com" />
 			<Option target="uploaded_to" />
