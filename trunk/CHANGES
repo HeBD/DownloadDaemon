@@ -4,6 +4,8 @@
 	- added netload plugin (does not yet work.. needs some checking)
 	- made downloaddaemon configuration movable. Specifie -DDD_CONF_DIR=<desired path> to let DownloadDaemon
 	  get its configuration files from there instead of /etc/downloaddaemon
+   [susanne]
+	- fixed some download time left calculation errors at ddclient-wx
 
 2010-02-04
    [adrian]
