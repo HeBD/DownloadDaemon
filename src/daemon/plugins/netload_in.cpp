@@ -27,7 +27,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	bool done = false;
 	// so we can never get in an infinite loop..
 	int while_tries = 0;
-	while(!done || while_tries > 100) {
+	while(!done && while_tries < 100) {
 		++while_tries;
 		curl_easy_setopt(handle, CURLOPT_URL, get_url());
 		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
@@ -46,7 +46,19 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 		string captcha_url;
 		try {
-			size_t n = result.find("<div class=\"Free_dl\"><a href=\"") + 30;
+			size_t n = result.find("<div class=\"dl_first_filename\">") + 31;
+			outp.download_filename = result.substr(n, result.find("<span style=\"color:", n) - n);
+			trim_string(outp.download_filename);
+			replace_html_special_chars(outp.download_filename);
+			if((n = result.find("<a class=\"download_fast_link\" href=\"")) != string::npos) {
+				// yay for happy hour!
+				n += 36;
+				outp.download_url = "http://netload.in/" + result.substr(n, result.find("\"", n) - n);
+				replace_html_special_chars(outp.download_url);
+				return PLUGIN_SUCCESS;
+			}
+
+			n = result.find("<div class=\"Free_dl\"><a href=\"") + 30;
 			string url = "http://netload.in/" + result.substr(n, result.find("\">", n) - n);
 			replace_html_special_chars(url);
 			curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
@@ -113,8 +125,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			n += 6;
 			outp.download_url = result.substr(n, result.find("\"", n) - n);
 
-			n = result.find("<h2>download: ") + 14;
-			outp.download_filename = result.substr(n, result.find("</h2>", n) - n);
 			done = true;
 
 		} catch(std::exception &e) {
