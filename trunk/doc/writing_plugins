@@ -2,10 +2,9 @@ This is a shourt introduction about how to write new Plugins for the downloader 
 Generally a plugin can only be written in C++ (C might be supported soon).
 Plugins are basically shared libraries which are loaded on runtime to execute some funtions.
 Good examples can be found for the rapidshare.com and uploaded.to plugins in src/daemon/plugins.
+For an example of captcha-decoding, check the netload.in plugin.
 A plugin always has to be named after its hoster, plus the ".so" file extension and "lib" file prefix for shared libraries.
 so for rapidshare.com, you will get a plugin-library called "librapidshare.com.so".
-Maybe in a far future, i will include some captcha-decode-helper program or something, but right now, 
-this is not offered and you have to look for yourself.
 Anyhow, all work should be done by the plugin except for the final step of downloading the file. 
 The main program will do that.
 Now let's start!
@@ -44,20 +43,37 @@ curl handle returned by get_handle(). If the authentication method is just a sim
 If the server does not return a 401 answer if the credentials are wrong, you need to do manual validity checks and return PLUGIN_AUTH_FAIL if the
 credentials are wrong.
 
-When compiling the plugin, you have to define IS_PLUGIN (compiler option for g++: -DIS_PLUGIN) and also compile the src/daemon/dl/download_container.cpp file
-which is required by the functions below.
+plugin_helpers.h implements a few more functions you might need. Check out that header file, the beginning are just a bunch of declarations with
+inline-documentation. Check it out over there.
 
-Most of them should be pretty self-explanatory. So this shouldn't be a problem. Statuses for premium accounts will come soon (auth fail, etc).
 
-plugin_helpers.h also defines the following functions you will probably need in order to make your plugin work: 
-void set_wait_time(int seconds) -- Sets the wait time that will be displayed to the user. If you have something like 
-				   [do plugin work] [wait x seconds] [do plugin work] [start download], you need to count down the seconds manually (so just make a loop
-				   that sleeps a second and adjusts the wait time. When your plugin is more like
-				   [do plugin work] [wait x seconds] [start download], you can just set the wait time and exit your plugin function.
-				   DownloadDaemon will then count down for you.
-int get_wait_time()		   returns the currently set wait time
-const char* get_url()		   returns the URL your plugin has to handle
-CURL* get_handle() 		   returns the curl handle that will be used for downloading later. You can set auth-credentials or cookies here.
+In some rare cases, it might be possible that the plugin has to check if the downloaded file is valid (e.g. if parsing is always the same and only
+the resulting downloaded file will either be the desired file or some error-page in html. In such cases you can recheck if the downloaded file is valid.
+To do so, you have to 
+#define PLUGIN_WANTS_POST_PROCESSING
+BEFORE including plugin_helpers.h!
+then you can define a function with this prototype:
+	void post_process_download(plugin_input &inp)
+For an example, check the netload.in plugin, which does exactly that.
+
+
+Decoding captchas:
+DownloadDaemon uses gocr to decode captchas. This, however, is optional. If gocr is not installed, captcha-decoding will not work.
+To make your plugin decode captchas, you can use the full set of gocr functionality.
+First, you have to download the captcha file from the hoster and save it in a std::string variable (NOT to a file).
+then create an opject of type "captcha". the constructor only takes one argument: the captcha-string.
+the next step is decoding the captcha. call the "process_image" method of your captcha object with the following prototype:
+std::string process_image(std::string gocr_options, std::string img_type, bool use_db = false, bool keep_whitespaces = false)
+This method returns the result from gocr.
+The first parameter sets the options for gocr (could be someting like "-m 2 -a 20 -C 0-9").
+The second option is the file-type of the image. Just pass the file-ending it usually has ("png", "jpg", "gif", etc).
+For complicated captchas, usually gocr-databases are used. If you don't know how to create such a database, ask google.
+You just put that database files in share/downloaddaemon/plugins/captchadb/<host>.
+The last parameter is for stripping out all whitespaces of the resulting string, so if gocr detects "123 4", the function will return "1234" instead.
+
+You don't have to take care of the captcha-max-retry configuration. If you try to decode more captchas as specified in the configuration, the captcha-class will
+throw an exception to exit the plugin. This means you may not put the captcha decoding process in a try{} catch(...)! This is not allowed! (or if you do so, you have to exit
+the plugin manually).
 
 If you need more functionality to support your specific hoster, please write me, Adrian Batzill (see AUTHORS file) an email. I will then implement it.
 

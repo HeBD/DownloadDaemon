@@ -1,3 +1,8 @@
+2010-02-07
+   [adrian]
+	- netload.in plugin is now ready to use for free download
+	- extended plugin api to allow post-processing of downloaded files
+
 2010-02-05
    [adrian]
 	- added support for captcha-reading for hosters using gocr (including a wrapper to make it safe and comfortable)
