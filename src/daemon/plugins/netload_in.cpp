@@ -9,10 +9,13 @@
  * GNU General Public License for more details.
  */
 
+#define PLUGIN_WANTS_POST_PROCESSING
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
 #include <iostream>
+#include <sys/types.h>
+#include <sys/stat.h>
 using namespace std;
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
@@ -37,7 +40,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		result.clear();
 		int res = curl_easy_perform(handle);
 		if(res != 0) {
-			return PLUGIN_ERROR;
+			return PLUGIN_CONNECTION_ERROR;
 		}
 
 		if(result.find("dl_first_filename") == string::npos) {
@@ -51,10 +54,14 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			trim_string(outp.download_filename);
 			replace_html_special_chars(outp.download_filename);
 			if((n = result.find("<a class=\"download_fast_link\" href=\"")) != string::npos) {
-				// yay for happy hour!
+				// as of the beginning of feb 2010, netload somehow doesn't want captchas
+				// any more. the code below is just because... if they change it again.
 				n += 36;
 				outp.download_url = "http://netload.in/" + result.substr(n, result.find("\"", n) - n);
 				replace_html_special_chars(outp.download_url);
+				// have to find a way to extend the plugin api so we can check the file
+				// after downloading it and change the status if the downloaded file is
+				// a html page with an error
 				return PLUGIN_SUCCESS;
 			}
 
@@ -147,4 +154,34 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 		outp.allows_multiple = false;
 	}
 	outp.offers_premium = false; // no login support yet
+}
+
+
+void post_process_download(plugin_input &inp) {
+	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+		return;
+	} else {
+		string filename = dl_list->get_string_property(dlid, DL_OUTPUT_FILE);
+		struct stat st;
+		if(stat(filename.c_str(), &st) != 0) {
+			return;
+		}
+		if(st.st_size > 1024 * 1024 /* 1 mb */ ) {
+			return;
+		}
+		ifstream ifs(filename.c_str());
+		string tmp;
+		size_t n = 0;
+		while(getline(ifs, tmp)) {
+			if((n = tmp.find("You could download your next file in")) != string::npos) {
+				n = tmp.find("countdown(", n) + 10;
+				int wait_secs = atoi(tmp.substr(n, tmp.find(",", n) - n).c_str()) / 100;
+				set_wait_time(wait_secs);
+				dl_list->set_int_property(dlid, DL_STATUS, DOWNLOAD_WAITING);
+				dl_list->set_int_property(dlid, DL_PLUGIN_STATUS, PLUGIN_SERVER_OVERLOADED);
+				break;
+			}
+		}
+
+	}
 }

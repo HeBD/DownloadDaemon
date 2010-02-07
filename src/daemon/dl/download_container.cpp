@@ -835,6 +835,64 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 	dump_to_file();
 }
 
+#ifndef IS_PLUGIN
+void download_container::post_process_download(int id) {
+	boost::mutex::scoped_lock lock(download_mutex);
+	download_container::iterator it = get_download_by_id(id);
+	plugin_input pinp;
+
+	std::string host(it->get_host());
+	std::string plugindir = global_config.get_cfg_value("plugin_dir");
+	correct_path(plugindir);
+	plugindir += '/';
+	if(host == "") {
+		return;
+	}
+
+	struct stat st;
+	if(stat(plugindir.c_str(), &st) != 0) {
+		return;
+	}
+
+	std::string pluginfile(plugindir + "lib" + host + ".so");
+	if(stat(pluginfile.c_str(), &st) != 0) {
+		return;
+	}
+
+	// Load the plugin function needed
+	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
+	if (!handle) {
+		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
+		return;
+	}
+
+	dlerror();	// Clear any existing error
+
+	void (*post_process_func)(download_container& dlc, int id, plugin_input& pinp);
+	post_process_func = (void (*)(download_container& dlc, int id, plugin_input& pinp))dlsym(handle, "post_process_dl_init");
+
+	char *error;
+	if ((error = dlerror()) != NULL)  {
+		return;
+	}
+
+	pinp.premium_user = global_premium_config.get_cfg_value(it->get_host() + "_user");
+	pinp.premium_password = global_premium_config.get_cfg_value(it->get_host() + "_password");
+	trim_string(pinp.premium_user);
+	trim_string(pinp.premium_password);
+	lock.unlock();
+	plugin_mutex.lock();
+	try {
+		post_process_func(*this, id, pinp);
+	} catch(...) {}
+
+	dlclose(handle);
+	plugin_mutex.unlock();
+	// lock, followed by scoped unlock. otherwise lock will be called 2 times
+	lock.lock();
+	dump_to_file();
+}
+#endif
 
 void download_container::set_dl_status(download_container::iterator it, download_status st) {
 	if(it->status == DOWNLOAD_DELETED) {
