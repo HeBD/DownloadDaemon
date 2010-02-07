@@ -110,7 +110,7 @@ std::string convert_to_string(PARAM p1);
 /////////////////////// IMPLEMENTATION ////////////////////////
 
 
-download_container *list;
+download_container *dl_list;
 int dlid;
 plugin_status plugin_exec(plugin_input &pinp, plugin_output &poutp);
 int max_retrys;
@@ -120,7 +120,7 @@ std::string host;
 
 /** This function is just a wrapper for defining globals and calling your plugin */
 extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, plugin_input& pinp, plugin_output& poutp, int max_captcha_retrys, std::string gocr_path) {
-	list = &dlc;
+	dl_list = &dlc;
 	dlid = id;
 	max_retrys = max_captcha_retrys;
 	gocr = gocr_path;
@@ -129,33 +129,43 @@ extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, pl
 	return plugin_exec(pinp, poutp);
 }
 
+#ifdef PLUGIN_WANTS_POST_PROCESSING
+void post_process_download(plugin_input&);
+extern "C" void post_process_dl_init(download_container& dlc, int id, plugin_input& pinp) {
+	dl_list = &dlc;
+	dlid = id;
+	host = dlc.get_host(id);
+	post_process_download(pinp);
+}
+#endif
+
 void set_wait_time(int seconds) {
-	list->set_int_property(dlid, DL_WAIT_SECONDS, seconds);
+	dl_list->set_int_property(dlid, DL_WAIT_SECONDS, seconds);
 }
 
 int get_wait_time() {
-	return list->get_int_property(dlid, DL_WAIT_SECONDS);
+	return dl_list->get_int_property(dlid, DL_WAIT_SECONDS);
 }
 
 const char* get_url() {
-	return list->get_string_property(dlid, DL_URL).c_str();
+	return dl_list->get_string_property(dlid, DL_URL).c_str();
 }
 
 void set_url(const char* url) {
-	list->set_string_property(dlid, DL_URL, url);
+	dl_list->set_string_property(dlid, DL_URL, url);
 }
 
 download_container* get_dl_container() {
-	return list;
+	return dl_list;
 }
 
 CURL* get_handle() {
-	return list->get_pointer_property(dlid, DL_HANDLE);
+	return dl_list->get_pointer_property(dlid, DL_HANDLE);
 }
 
 void replace_this_download(download_container &lst) {
-	list->insert_downloads(list->get_list_position(dlid), lst);
-	list->set_int_property(dlid, DL_STATUS, DOWNLOAD_DELETED);
+	dl_list->insert_downloads(dl_list->get_list_position(dlid), lst);
+	dl_list->set_int_property(dlid, DL_STATUS, DOWNLOAD_DELETED);
 }
 
 void trim_string(std::string &str) {

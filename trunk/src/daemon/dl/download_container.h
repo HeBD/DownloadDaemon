@@ -202,6 +202,11 @@ public:
 	*/
 	void insert_downloads(int pos, download_container &dl);
 
+	/** post-processes a finished download by calling the plugin and do what it says
+	*	@param id ID of the download
+	*/
+	void post_process_download(int id);
+
 	std::string list_file;
 
 private:

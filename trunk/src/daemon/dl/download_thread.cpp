@@ -288,6 +288,7 @@ void download_thread(int download) {
 				} else {
 					global_download_list.set_string_property(download, DL_OUTPUT_FILE, final_filename);
 				}
+				global_download_list.post_process_download(download);
 				return;
 			case CURLE_OPERATION_TIMEDOUT:
 			case CURLE_COULDNT_RESOLVE_HOST:
