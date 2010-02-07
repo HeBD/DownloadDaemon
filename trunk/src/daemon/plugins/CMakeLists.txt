@@ -13,7 +13,7 @@ IF(Boost_FOUND AND CURL_FOUND)
 	TARGET_LINK_LIBRARIES(rapidshare.com ${CURL_LIBRARIES} ${Boost_LIBRARIES})
 	TARGET_LINK_LIBRARIES(uploaded.to ${CURL_LIBRARIES} ${Boost_LIBRARIES})
 	TARGET_LINK_LIBRARIES(youtube.com ${CURL_LIBRARIES} ${Boost_LIBRARIES})
-	TARGET_LINK_LIBRARIES(netload.in ${CURL_LIBRARIES ${Boost_LIBRARIES})
+	TARGET_LINK_LIBRARIES(netload.in ${CURL_LIBRARIES} ${Boost_LIBRARIES})
 	set_target_properties(rapidshare.com uploaded.to youtube.com netload.in PROPERTIES PREFIX lib SUFFIX .so)
 	# !!!! add new plugins here !!!!
 
