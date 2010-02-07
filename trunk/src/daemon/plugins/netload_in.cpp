@@ -54,8 +54,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			trim_string(outp.download_filename);
 			replace_html_special_chars(outp.download_filename);
 			if((n = result.find("<a class=\"download_fast_link\" href=\"")) != string::npos) {
-				// as of the beginning of feb 2010, netload somehow doesn't want captchas
-				// any more. the code below is just because... if they change it again.
+				// in swizerland, you don't have to enter a captcha or something like that.
+				// it's as easy as this if you download from there. No idea why.
 				n += 36;
 				outp.download_url = "http://netload.in/" + result.substr(n, result.find("\"", n) - n);
 				replace_html_special_chars(outp.download_url);
