@@ -59,9 +59,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 				n += 36;
 				outp.download_url = "http://netload.in/" + result.substr(n, result.find("\"", n) - n);
 				replace_html_special_chars(outp.download_url);
-				// have to find a way to extend the plugin api so we can check the file
-				// after downloading it and change the status if the downloaded file is
-				// a html page with an error
 				return PLUGIN_SUCCESS;
 			}
 
@@ -95,8 +92,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			}
 
 			captcha cap(result);
-			std::string captcha_text = cap.process_image("-m 2 -a 50 -C 0-9", "png", true);
-			post_data += "captcha_check=" + captcha_text.substr(0, 4);
+			std::string captcha_text = cap.process_image("-m 2 -a 20 -C 0-9", "png", true);
+			post_data += "&captcha_check=" + captcha_text.substr(0, 4) + "&start=";
 			if(captcha_text.length() < 4) continue;
 
 			curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
@@ -104,14 +101,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			curl_easy_setopt(handle, CURLOPT_POSTFIELDS, post_data.c_str());
 			result.clear();
 			res = curl_easy_perform(handle);
+			curl_easy_setopt(handle, CURLOPT_POST, 0);
 
 			if(res != 0) {
 				return PLUGIN_ERROR;
 			}
 
 			if(result.find("You may forgot the security code or it might be wrong") != string::npos) {
-				ofstream ofs("file.html");
-				ofs << result;
 				continue;
 			}
 
@@ -128,10 +124,12 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 			n = result.find("the download is started automatically");
 			n = result.find("href=\"", n);
+
 			if(n == string::npos) continue;
 			n += 6;
 			outp.download_url = result.substr(n, result.find("\"", n) - n);
 
+			set_wait_time(20);
 			done = true;
 
 		} catch(std::exception &e) {
