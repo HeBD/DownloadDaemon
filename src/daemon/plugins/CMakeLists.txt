@@ -8,11 +8,13 @@ IF(Boost_FOUND AND CURL_FOUND)
 	ADD_LIBRARY(rapidshare.com MODULE rapidshare_com.cpp)
 	ADD_LIBRARY(uploaded.to MODULE uploaded_to.cpp)
 	ADD_LIBRARY(youtube.com MODULE youtube_com.cpp)
+	ADD_LIBRARY(netload.in MODULE netload_in.cpp
 
 	TARGET_LINK_LIBRARIES(rapidshare.com ${CURL_LIBRARIES} ${Boost_LIBRARIES})
 	TARGET_LINK_LIBRARIES(uploaded.to ${CURL_LIBRARIES} ${Boost_LIBRARIES})
 	TARGET_LINK_LIBRARIES(youtube.com ${CURL_LIBRARIES} ${Boost_LIBRARIES})
-	set_target_properties(rapidshare.com uploaded.to youtube.com PROPERTIES PREFIX lib SUFFIX .so)
+	TARGET_LINK_LIBRARIES(netload.in ${CURL_LIBRARIES ${Boost_LIBRARIES})
+	set_target_properties(rapidshare.com uploaded.to youtube.com netload.in PROPERTIES PREFIX lib SUFFIX .so)
 	# !!!! add new plugins here !!!!
 
 
@@ -20,6 +22,7 @@ IF(Boost_FOUND AND CURL_FOUND)
 	install(TARGETS rapidshare.com DESTINATION share/downloaddaemon/plugins)
 	install(TARGETS uploaded.to DESTINATION share/downloaddaemon/plugins)
 	install(TARGETS youtube.com DESTINATION share/downloaddaemon/plugins)
+	install(TARGETS netload.in DESTINATION share/downloaddaemon/plugins)	
 ENDIF(Boost_FOUND AND CURL_FOUND)
 
 
