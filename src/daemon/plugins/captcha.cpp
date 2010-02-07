@@ -6,10 +6,14 @@
 using namespace std;
 
 std::string captcha::process_image(std::string gocr_options, std::string img_type, bool use_db, bool keep_whitespaces) {
+	captcha_exception e;
 	if(retry_count > max_retrys) {
-		captcha_exception e;
 		throw e;
 	}
+	if(gocr.empty()) {
+		throw e;
+	}
+
 	++retry_count;
 	string img_fn = "/tmp/captcha_" + host + "." + img_type;
 	ofstream ofs(img_fn.c_str());
@@ -30,6 +34,8 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 	char cap_res_string[256];
 	fgets(cap_res_string, 256, cap_result);
 	pclose(cap_result);
+
+	remove(img_fn.c_str());
 
 	string final = cap_res_string;
 	if(!keep_whitespaces) {
