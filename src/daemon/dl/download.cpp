@@ -132,9 +132,6 @@ void download::operator=(const download& dl) {
 }
 
 download::~download() {
-	if(is_init) {
-		curl_easy_cleanup(handle);
-	}
 }
 
 std::string download::serialize() {
