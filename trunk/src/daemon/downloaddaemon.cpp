@@ -64,8 +64,8 @@ int main(int argc, char* argv[], char* env[]) {
 			std::cerr << "Never run DownloadDaemon as root!" << endl;
 			std::cerr << "In order to run DownloadDaemon, please execute these commands as root:" << endl;
 			std::cerr << "   addgroup --system " DAEMON_USER << endl;
-			std::cerr << "   adduser --system --ingroup " DAEMON_USER " --home /etc/downloaddaemon " DAEMON_USER << endl;
-			std::cerr << "   chown -R " DAEMON_USER ":" DAEMON_USER " /etc/downloaddaemon /var/downloads" << endl;
+			std::cerr << "   adduser --system --ingroup " DAEMON_USER " --home " DD_CONF_DIR " " DAEMON_USER << endl;
+			std::cerr << "   chown -R " DAEMON_USER ":" DAEMON_USER " " DD_CONF_DIR " /var/downloads" << endl;
 			std::cerr << "then rerun DownloadDaemon." << endl;
 			exit(0);
 		}
@@ -222,7 +222,7 @@ int main(int argc, char* argv[], char* env[]) {
 
 		cerr << "Unable to open config file!" << endl;
 		cerr << "You probably don't have enough permissions to write the configuration file. executing \"chown -R "
-			 << unam << ":downloadd /etc/downloaddaemon /var/downloads\" might help" << endl;
+			 << unam << ":downloadd " DD_CONF_DIR " /var/downloads\" might help" << endl;
 		exit(-1);
 	}
 	if(!global_router_config) {
