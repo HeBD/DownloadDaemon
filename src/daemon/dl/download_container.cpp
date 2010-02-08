@@ -257,7 +257,7 @@ int download_container::get_next_downloadable(bool do_lock) {
 	}
 
 	for(iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(it->get_status() == DOWNLOAD_PENDING && it->wait_seconds == 0) {
+		if(it->get_status() == DOWNLOAD_PENDING && it->wait_seconds == 0 && !it->is_running) {
 			std::string current_host(it->get_host());
 			bool can_attach = true;
 			for(download_container::iterator it2 = download_list.begin(); it2 != download_list.end(); ++it2) {
@@ -625,6 +625,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	char *error;
 	if ((error = dlerror()) != NULL)  {
 		log_string(std::string("Unable to execute plugin: ") + error, LOG_ERR);
+		dlclose(handle);
 		return PLUGIN_ERROR;
 	}
 
@@ -638,7 +639,8 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	try {
 		retval = plugin_exec_func(*this, dl, pinp, poutp, atoi(global_config.get_cfg_value("captcha_retrys").c_str()), global_config.get_cfg_value("gocr_binary"));
 	} catch(captcha_exception &e) {
-		log_string("Failed to resolve after " + global_config.get_cfg_value("captcha_retrys") + " retrys. Giving up (" + host + ")", LOG_ERR);
+		log_string("Failed to decrypt captcha after " + global_config.get_cfg_value("captcha_retrys") + " retrys. Giving up (" + host + ")", LOG_ERR);
+		set_dl_status(dlit, DOWNLOAD_INACTIVE);
 		retval = PLUGIN_ERROR;
 	} catch(...) {
 		retval = PLUGIN_ERROR;
@@ -719,6 +721,7 @@ int download_container::get_next_id() {
 }
 
 int download_container::stop_download(int id) {
+    boost::mutex::scoped_lock lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end() || it->get_status() == DOWNLOAD_DELETED) {
 		return LIST_ID;
@@ -802,6 +805,7 @@ void download_container::cleanup_handle(int id) {
 	download_container::iterator it = get_download_by_id(id);
 	if(it->is_init)
 		curl_easy_cleanup(it->handle);
+    it->handle = NULL;
 	it->is_init = false;
 }
 #endif
@@ -873,6 +877,7 @@ void download_container::post_process_download(int id) {
 
 	char *error;
 	if ((error = dlerror()) != NULL)  {
+	    dlclose(handle);
 		return;
 	}
 
@@ -900,8 +905,6 @@ void download_container::set_dl_status(download_container::iterator it, download
 	} else {
 		if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) {
 			it->need_stop = true;
-		} else {
-			it->need_stop = false;
 		}
 		it->status = st;
 	}

@@ -138,7 +138,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 	}
 
-
 	return PLUGIN_SUCCESS;
 }
 

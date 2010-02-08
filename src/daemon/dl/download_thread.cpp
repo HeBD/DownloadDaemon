@@ -59,9 +59,11 @@ void download_thread_wrapper(int download) {
 void download_thread(int download) {
 	plugin_output plug_outp;
 	int success = global_download_list.prepare_download(download, plug_outp);
-	if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED) {
+	if(global_download_list.get_int_property(download, DL_NEED_STOP) == DOWNLOAD_DELETED) {
+	    global_download_list.set_int_property(download, DL_NEED_STOP, false);
 		return;
 	}
+
 	std::string url = plug_outp.download_url;
 	if(url[url.size() - 1] == '/' && url.find("ftp://") == 0 && global_config.get_cfg_value("recursive_ftp_download") != "0") {
 		recursive_parser parser(url);
@@ -140,11 +142,14 @@ void download_thread(int download) {
 				return;
 			}
 
-			sleep(global_download_list.get_int_property(download, DL_WAIT_SECONDS));
-		}
-		if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_DELETED || global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE) {
-			global_download_list.set_int_property(download, DL_WAIT_SECONDS, 0);
-			return;
+            int to_sleep(global_download_list.get_int_property(download, DL_WAIT_SECONDS));
+            for(int i = 0; i < to_sleep; ++i) {
+                sleep(1);
+                if(global_download_list.get_int_property(download, DL_NEED_STOP)) {
+                    global_download_list.set_int_property(download, DL_NEED_STOP, false);
+                    return;
+                }
+            }
 		}
 
 		std::string output_filename;
