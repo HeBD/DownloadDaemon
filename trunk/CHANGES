@@ -5,6 +5,7 @@
 	- removed setting for plugin_dir in favour of security
 	- reject a download folder beginning with /etc
 	- fixed some wait-on-error timers
+	- fixed crash when moving running downloads up or down
 
 2010-02-07
    [adrian]
