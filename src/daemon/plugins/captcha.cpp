@@ -26,7 +26,6 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 	to_exec += " " + img_fn + " 2> /dev/null";
 	FILE* cap_result = popen(to_exec.c_str(), "r");
 	if(cap_result == NULL) {
-		pclose(cap_result);
 		captcha_exception e;
 		throw e;
 	}

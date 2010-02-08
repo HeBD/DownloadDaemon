@@ -124,6 +124,7 @@ echo "$replace" > changelog
 replace=$(<control)
 replace="${replace/'Section: unknown'/Section: net}"
 replace="${replace/'Homepage: <insert the upstream URL, if relevant>'/Homepage: http://downloaddaemon.sourceforge.net/
+Recommends: gocr
 Suggests: ddclient-wx, ddconsole}"
 replace="${replace/'Description: <insert up to 60 chars description>'/Description: $SYN_DD}"
 replace="${replace/'Build-Depends: debhelper (>= 7), cmake'/Build-Depends: $BUILDDEP_DD}"
