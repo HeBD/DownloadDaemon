@@ -1,3 +1,8 @@
+2010-02-08
+   [adrian]
+	- automatic captcha decoding and netload.in plugin now also work on windows
+	- fixed some race conditions
+
 2010-02-07
    [adrian]
 	- netload.in plugin is now ready to use for free download

@@ -102,14 +102,21 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 	// need to chmod seperately because the permissions set in open() are affected by the umask. chmod() isn't
 	fchmod(fdlock, 0777);
+	#else
+	string p_tmp = getenv("PATH");
+    p_tmp += ";.";
+	setenv("PATH", p_tmp.c_str(), 1);
+	p_tmp = getenv("PATH");
 	#endif
+
 
 	struct stat st;
 
 	// getting working dir
 	std::string argv0 = argv[0];
 	program_root = argv0;
-	if(argv0[0] != '/' && argv0.find('/') != string::npos) {
+
+	if(argv0[0] != '/' && argv0[0] != '\\' && (argv0.find('/') != string::npos || argv0.find('\\') != string::npos)) {
 		// Relative path.. sux, but is okay.
 		char* c_old_wd = getcwd(0, 0);
 		std::string wd = c_old_wd;
@@ -124,7 +131,7 @@ int main(int argc, char* argv[], char* env[]) {
 		}
 		program_root = real_path;
 		free(real_path);
-	} else if(argv0.find('/') == string::npos && !argv0.empty()) {
+	} else if(argv0.find('/') == string::npos && argv0.find('\\') == string::npos && !argv0.empty()) {
 		// It's in $PATH... let's go!
 		std::string env_path(get_env_var("PATH"));
 
@@ -132,7 +139,7 @@ int main(int argc, char* argv[], char* env[]) {
 		size_t curr_pos = 0, last_pos = 0;
 		bool found = false;
 
-		while((curr_pos = env_path.find_first_of(":", curr_pos)) != string::npos) {
+		while((curr_pos = env_path.find_first_of(":;", curr_pos)) != string::npos) {
 			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
 			curr_path += '/';
 			curr_path += argv[0];
@@ -153,11 +160,8 @@ int main(int argc, char* argv[], char* env[]) {
 				found = true;
 			}
 		}
-		#ifdef __CYGWIN__
-            found = true;
-		#endif
+
 		if(found) {
-		    #ifndef __CYGWIN__
 			// successfully located the file..
 			// resolve symlinks, etc
 			char* real_path = realpath(curr_path.c_str(), 0);
@@ -168,7 +172,6 @@ int main(int argc, char* argv[], char* env[]) {
 				program_root = real_path;
 				free(real_path);
 			}
-			#endif
 		} else {
 			cerr << "Unable to locate executable!" << endl;
 			exit(-1);
@@ -184,12 +187,14 @@ int main(int argc, char* argv[], char* env[]) {
 
 	if(stat(program_root.c_str(), &st) != 0) {
 	    #ifdef __CYGWIN__
-            program_root = "/share/downloaddaemon/";
+            if(program_root.find("/usr/share/") != string::npos) {
+                program_root = "/share/downloaddaemon/";
+            }
         #else
-		cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
-		cerr << "We were looking in: " << program_root << endl;
-		exit(-1);
-		#endif
+            cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
+            cerr << "We were looking in: " << program_root << endl;
+            exit(-1);
+        #endif
 	}
 	chdir(program_root.c_str());
 
