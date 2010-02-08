@@ -89,11 +89,6 @@ void download_thread(int download) {
 			log_string(std::string("Invalid host for download ID: ") + int_to_string(download), LOG_WARNING);
 			return;
 		break;
-		case PLUGIN_INVALID_PATH:
-			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
-			log_string("Could not locate plugin folder!", LOG_ERR);
-			exit(-1);
-		break;
 		case PLUGIN_AUTH_FAIL:
 			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
 			wait = atol(global_config.get_cfg_value("auth_fail_wait").c_str());
@@ -117,8 +112,13 @@ void download_thread(int download) {
 		case PLUGIN_CONNECTION_ERROR:
 		case PLUGIN_CONNECTION_LOST:
 			log_string(std::string("Plugin failed to connect for ID:") + int_to_string(download), LOG_WARNING);
-			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
-			global_download_list.set_int_property(download, DL_WAIT_SECONDS, 10);
+			wait = atol(global_config.get_cfg_value("connection_lost_wait").c_str());
+			if(wait == 0) {
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+			} else {
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+				global_download_list.set_int_property(download, DL_WAIT_SECONDS, wait);
+			}
 			return;
 		case PLUGIN_FILE_NOT_FOUND:
 			log_string(std::string("File could not be found on the server for ID: ") + int_to_string(download), LOG_WARNING);
@@ -126,7 +126,13 @@ void download_thread(int download) {
 			return;
 		case PLUGIN_ERROR:
 			log_string("An error occured on download ID: " + int_to_string(download), LOG_WARNING);
-			global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+			wait = atol(global_config.get_cfg_value("plugin_fail_wait").c_str());
+			if(wait == 0) {
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+			} else {
+				global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+				global_download_list.set_int_property(download, DL_WAIT_SECONDS, wait);
+			}
 			return;
 	}
 

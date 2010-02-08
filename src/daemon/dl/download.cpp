@@ -167,8 +167,6 @@ const char* download::get_error_str() {
 			return "PLUGIN_SUCCESS";
 		case PLUGIN_INVALID_HOST:
 			return "Invalid hostname";
-		case PLUGIN_INVALID_PATH:
-			return "Invalid plugin path";
 		case PLUGIN_CONNECTION_LOST:
 			return "Connection lost";
 		case PLUGIN_FILE_NOT_FOUND:
@@ -217,7 +215,7 @@ plugin_output download::get_hostinfo() {
 	outp.offers_premium = false;
 
 	std::string host(get_host());
-	std::string plugindir = global_config.get_cfg_value("plugin_dir");
+	std::string plugindir = program_root + "/plugins/";
 	correct_path(plugindir);
 	if(host == "") {
 		return outp;

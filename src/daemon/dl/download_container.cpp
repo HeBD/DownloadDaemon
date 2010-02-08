@@ -584,20 +584,17 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	download_container::iterator dlit = get_download_by_id(dl);
 
 	std::string host(dlit->get_host());
-	std::string plugindir = global_config.get_cfg_value("plugin_dir");
+	std::string plugindir = program_root + "/plugins/";
 	correct_path(plugindir);
 	plugindir += '/';
 	if(host == "") {
 		return PLUGIN_INVALID_HOST;
 	}
 
-	struct stat st;
-	if(stat(plugindir.c_str(), &st) != 0) {
-		return PLUGIN_INVALID_PATH;
-	}
-
 	std::string pluginfile(plugindir + "lib" + host + ".so");
 	bool use_generic = false;
+
+	struct stat st;
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;
 	}
@@ -846,7 +843,7 @@ void download_container::post_process_download(int id) {
 	plugin_input pinp;
 
 	std::string host(it->get_host());
-	std::string plugindir = global_config.get_cfg_value("plugin_dir");
+	std::string plugindir = program_root + "/plugins/";
 	correct_path(plugindir);
 	plugindir += '/';
 	if(host == "") {

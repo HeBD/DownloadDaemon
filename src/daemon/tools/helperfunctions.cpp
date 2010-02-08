@@ -173,24 +173,15 @@ bool variable_is_valid(std::string &variable) {
 }
 
 bool proceed_variable(const std::string &variable, std::string value) {
-	if(variable == "plugin_dir") {
+	if(variable == "download_folder") {
 		correct_path(value);
-		std::string df = global_config.get_cfg_value("download_folder");
-		correct_path(df);
-		if(value == df) {
-			return false;
-		}
-		return true;
-	} else if(variable == "download_folder") {
-		correct_path(value);
-		std::string pd = global_config.get_cfg_value("plugin_dir");
+		std::string pd = program_root + "/plugins/";
 		correct_path(pd);
 		std::string rcp = program_root + "/reconnect/";
 		correct_path(rcp);
-		if(pd == value || value == rcp) {
+		if(value == pd || value == rcp || value.find("/etc") == 0) {
 			return false;
 		}
-		return true;
 	}
 
 	return true;

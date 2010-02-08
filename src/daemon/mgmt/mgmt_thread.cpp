@@ -764,7 +764,7 @@ void target_premium_list(std::string &data, tkSock *sock) {
 	struct dirent *ep;
 	vector<std::string> content;
 	std::string current;
-	std::string path = global_config.get_cfg_value("plugin_dir");
+	std::string path = program_root + "/plugins/";
 	correct_path(path);
 	path += '/';
 	dp = opendir (path.c_str());
