@@ -91,6 +91,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	curl_easy_setopt(prepare_handle, CURLOPT_POST, 1);
 	curl_easy_setopt(prepare_handle, CURLOPT_POSTFIELDS, "dl.start=\"Free\"");
 	curl_easy_perform(prepare_handle);
+	curl_easy_cleanup(prepare_handle);
 
 	if(resultstr.find("Or try again in about") != std::string::npos) {
 		pos = resultstr.find("Or try again in about");
@@ -127,6 +128,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		}
 
 		outp.download_url = resultstr.substr(pos, end - pos);
+		CURL* handle = get_handle();
+		curl_easy_setopt(handle, CURLOPT_POST, 1);
+		curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "mirror=on&x=66&y=61");
 		return PLUGIN_SUCCESS;
 	}
 }

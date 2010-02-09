@@ -98,7 +98,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 			curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
 			curl_easy_setopt(handle, CURLOPT_POST, 1);
-			curl_easy_setopt(handle, CURLOPT_POSTFIELDS, post_data.c_str());
+			curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, post_data.c_str());
 			result.clear();
 			res = curl_easy_perform(handle);
 			curl_easy_setopt(handle, CURLOPT_POST, 0);
