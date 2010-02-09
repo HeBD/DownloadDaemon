@@ -2,6 +2,9 @@
    [adrian]
 	- brought rapidshare.com free download plugin up to date (new page layout)
 	- fixed small memory leak in uploaded.to and rapidshare.com plugin
+   [susanne]
+	- bugfix for time left column at ddclient-wx
+
 
 2010-02-08
    [adrian]
