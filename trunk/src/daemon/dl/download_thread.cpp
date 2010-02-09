@@ -46,11 +46,15 @@ void start_next_download() {
 
 /** Does basic work before download_thread is called and after it has finished */
 void download_thread_wrapper(int download) {
+	global_download_list.set_int_property(download, DL_NEED_STOP, false);
 	global_download_list.init_handle(download);
 	download_thread(download);
 	global_download_list.cleanup_handle(download);
+	global_download_list.set_int_property(download, DL_NEED_STOP, false);
 	global_download_list.set_int_property(download, DL_IS_RUNNING, false);
-
+	if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_RUNNING) {
+		global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+	}
 }
 
 /** This function does the magic of downloading a file, calling the right plugin, etc.
@@ -59,8 +63,7 @@ void download_thread_wrapper(int download) {
 void download_thread(int download) {
 	plugin_output plug_outp;
 	int success = global_download_list.prepare_download(download, plug_outp);
-	if(global_download_list.get_int_property(download, DL_NEED_STOP) == DOWNLOAD_DELETED) {
-	    global_download_list.set_int_property(download, DL_NEED_STOP, false);
+	if(global_download_list.get_int_property(download, DL_NEED_STOP)) {
 		return;
 	}
 
@@ -152,7 +155,6 @@ void download_thread(int download) {
             for(int i = 0; i < to_sleep; ++i) {
                 sleep(1);
                 if(global_download_list.get_int_property(download, DL_NEED_STOP)) {
-                    global_download_list.set_int_property(download, DL_NEED_STOP, false);
                     return;
                 }
             }
@@ -303,19 +305,18 @@ void download_thread(int download) {
 				return;
 			case CURLE_OPERATION_TIMEDOUT:
 			case CURLE_COULDNT_RESOLVE_HOST:
-				if(global_download_list.get_int_property(download, DL_STATUS) == DOWNLOAD_INACTIVE) {
-					log_string(std::string("Stopped download ID: ") + int_to_string(download), LOG_WARNING);
-				} else if(global_download_list.get_int_property(download, DL_STATUS) != DOWNLOAD_DELETED) {
-					log_string(std::string("Connection lost for download ID: ") + int_to_string(download), LOG_WARNING);
-					global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_CONNECTION_LOST);
-					wait = atol(global_config.get_cfg_value("connection_lost_wait").c_str());
-					if(wait == 0) {
-						global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
-					} else {
-						global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
-						global_download_list.set_int_property(download, DL_WAIT_SECONDS, wait);
-					}
+				log_string(std::string("Connection lost for download ID: ") + int_to_string(download), LOG_WARNING);
+				global_download_list.set_int_property(download, DL_PLUGIN_STATUS, PLUGIN_CONNECTION_LOST);
+				wait = atol(global_config.get_cfg_value("connection_lost_wait").c_str());
+				if(wait == 0) {
+					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_INACTIVE);
+				} else {
+					global_download_list.set_int_property(download, DL_STATUS, DOWNLOAD_PENDING);
+					global_download_list.set_int_property(download, DL_WAIT_SECONDS, wait);
 				}
+				return;
+			case CURLE_ABORTED_BY_CALLBACK:
+				log_string(std::string("Stopped download ID: ") + int_to_string(download), LOG_WARNING);
 				return;
 			case CURLE_BAD_DOWNLOAD_RESUME:
 				// if download resumption fails, retry without resumption
