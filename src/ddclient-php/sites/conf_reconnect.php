@@ -81,7 +81,7 @@ if($buf == '1' || $buf == 'true') {
 	recv_all($socket, $model);
 	send_all($socket, 'DDP ROUTER LIST');
 	recv_all($socket, $buf);
-	$model_list = explode('\n', $buf);
+	$model_list = explode("\n", $buf);
 	
 	$content .= 'Router Model: ';
 	$content .= '<select name="router_model">';

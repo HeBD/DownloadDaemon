@@ -25,7 +25,7 @@ if($connect != 'SUCCESS') {
 $buf = '';
 send_all($socket, 'DDP PREMIUM LIST');
 recv_all($socket, $buf);
-$host_list = explode('\n', $buf);
+$host_list = explode("\n", $buf);
 $user_list = '';
 
 $content .= 'Host: ';

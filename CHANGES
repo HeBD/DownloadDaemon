@@ -3,6 +3,8 @@
 	- brought rapidshare.com free download plugin up to date (new page layout)
 	- fixed small memory leak in uploaded.to and rapidshare.com plugin
 	- again improved captcha-decoding pocedure (mainly for windows)
+	- fixed many bugs and many many improvements here and there in DownloadDaemon
+	- fixed ddclient-php screwing up the router and hoster list
    [susanne]
 	- bugfix for time left column at ddclient-wx
 
