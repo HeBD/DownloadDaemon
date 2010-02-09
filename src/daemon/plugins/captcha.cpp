@@ -22,7 +22,7 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 	ofs.close();
 	string to_exec = gocr + " " + gocr_options;
 	if(use_db) {
-		to_exec += " -p " + program_root + "/plugins/captchadb/" + host;
+		to_exec += " -p " + share_directory + "/plugins/captchadb/" + host;
         #ifdef __CYGWIN__
         to_exec += "\\\\";
         #else
