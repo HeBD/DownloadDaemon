@@ -622,13 +622,14 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 		}
 
 	}else if(splitted_line[4] == "DOWNLOAD_PENDING"){
+		time_left = "";
+
 		if(splitted_line[8] == "PLUGIN_SUCCESS"){
 			status_text = "Download Pending.";
 
 		}else{ //error occured
 			color = "RED";
 			status_text = "Error: " + splitted_line[8];
-			time_left = "";
 		}
 
 	}else if(splitted_line[4] == "DOWNLOAD_WAITING"){
