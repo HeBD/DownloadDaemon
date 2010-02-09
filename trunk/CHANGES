@@ -5,6 +5,7 @@
 	- again improved captcha-decoding pocedure (mainly for windows)
 	- fixed many bugs and many many improvements here and there in DownloadDaemon
 	- fixed ddclient-php screwing up the router and hoster list
+	- use asynchroneous count-down sleep to make it more accurate
    [susanne]
 	- bugfix for time left column at ddclient-wx
 

@@ -265,8 +265,9 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 
 	// tick download counters, start new downloads, etc each second
+	boost::thread once_per_sec_thread(do_once_per_second);
 	while(true) {
-		do_once_per_second();
 		sleep(1);
+		once_per_sec_mutex.unlock();
 	}
 }

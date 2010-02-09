@@ -12,8 +12,11 @@
 #ifndef GLOBAL_MANAGEMENT_H_
 #define GLOBAL_MANAGEMENT_H_
 
+extern boost::shared_mutex once_per_sec_mutex;
+
 /** Put things that need to be done once per second here
 */
 void do_once_per_second();
+
 
 #endif /*GLOBAL_MANAGEMENT_H_*/
