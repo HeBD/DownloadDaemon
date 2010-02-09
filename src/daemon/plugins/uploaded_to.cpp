@@ -30,6 +30,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
 	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
 	int success = curl_easy_perform(handle);
+	curl_easy_cleanup(handle);
 
 	if(success != 0) {
 		return PLUGIN_CONNECTION_ERROR;
