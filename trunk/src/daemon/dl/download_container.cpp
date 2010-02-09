@@ -616,8 +616,8 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 
 	dlerror();	// Clear any existing error
 
-	plugin_status (*plugin_exec_func)(download_container&, int, plugin_input&, plugin_output&, int, std::string);
-	plugin_exec_func = (plugin_status (*)(download_container&, int, plugin_input&, plugin_output&, int, std::string))dlsym(handle, "plugin_exec_wrapper");
+	plugin_status (*plugin_exec_func)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string);
+	plugin_exec_func = (plugin_status (*)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string))dlsym(handle, "plugin_exec_wrapper");
 
 	char *error;
 	if ((error = dlerror()) != NULL)  {
@@ -634,7 +634,8 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	plugin_mutex.lock();
 	plugin_status retval;
 	try {
-		retval = plugin_exec_func(*this, dl, pinp, poutp, atoi(global_config.get_cfg_value("captcha_retrys").c_str()), global_config.get_cfg_value("gocr_binary"));
+		retval = plugin_exec_func(*this, dl, pinp, poutp, atoi(global_config.get_cfg_value("captcha_retrys").c_str()),
+                                  global_config.get_cfg_value("gocr_binary"), program_root);
 	} catch(captcha_exception &e) {
 		log_string("Failed to decrypt captcha after " + global_config.get_cfg_value("captcha_retrys") + " retrys. Giving up (" + host + ")", LOG_ERR);
 		set_dl_status(dlit, DOWNLOAD_INACTIVE);

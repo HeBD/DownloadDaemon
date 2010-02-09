@@ -117,15 +117,18 @@ int max_retrys;
 int retry_count;
 std::string gocr;
 std::string host;
+std::string program_root;
 
 /** This function is just a wrapper for defining globals and calling your plugin */
-extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, plugin_input& pinp, plugin_output& poutp, int max_captcha_retrys, std::string gocr_path) {
+extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, plugin_input& pinp, plugin_output& poutp,
+                                             int max_captcha_retrys, std::string gocr_path, std::string root_dir) {
 	dl_list = &dlc;
 	dlid = id;
 	max_retrys = max_captcha_retrys;
 	gocr = gocr_path;
 	host = dlc.get_host(id);
 	retry_count = 0;
+	program_root = root_dir;
 	return plugin_exec(pinp, poutp);
 }
 

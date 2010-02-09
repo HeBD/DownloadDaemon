@@ -22,7 +22,7 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 	ofs.close();
 	string to_exec = gocr + " " + gocr_options;
 	if(use_db) {
-		to_exec += " -p plugins/captchadb/" + host;
+		to_exec += " -p " + program_root + "/plugins/captchadb/" + host;
         #ifdef __CYGWIN__
         to_exec += "\\\\";
         #else
@@ -37,6 +37,7 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 	}
 
 	char cap_res_string[256];
+	memset(cap_res_string, 0, 256);
 	fgets(cap_res_string, 256, cap_result);
 
 	pclose(cap_result);
@@ -46,7 +47,7 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 	if(!keep_whitespaces) {
 		for(size_t i = 0; i < final.size(); ++i) {
 			if(isspace(final[i])) {
-				final.erase(i);
+				final.erase(i, 1);
 				--i;
 			}
 		}
