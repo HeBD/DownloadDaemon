@@ -18,13 +18,13 @@ case "$1" in
 	DownloadDaemon -d
 	;;
   stop)
-	killall DownloadDaemon
+	killall DownloadDaemon 2> /dev/null
 	;;
   reload|force-reload)
        echo "Unsupported option"
        ;;
   restart)
-	killall DownloadDaemon
+	killall DownloadDaemon 2> /dev/null
 	DownloadDaemon -d
 	;;
   status)
