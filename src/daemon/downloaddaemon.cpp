@@ -104,9 +104,8 @@ int main(int argc, char* argv[], char* env[]) {
 	fchmod(fdlock, 0777);
 	#else
 	string p_tmp = getenv("PATH");
-    p_tmp += ";.";
+    p_tmp += ":/bin:.";
 	setenv("PATH", p_tmp.c_str(), 1);
-	p_tmp = getenv("PATH");
 	#endif
 
 
