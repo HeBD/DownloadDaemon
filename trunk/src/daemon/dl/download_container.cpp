@@ -598,6 +598,7 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 	bool use_generic = false;
 
 	struct stat st;
+
 	if(stat(pluginfile.c_str(), &st) != 0) {
 		use_generic = true;
 	}
