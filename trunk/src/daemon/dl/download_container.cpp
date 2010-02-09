@@ -803,6 +803,7 @@ void download_container::cleanup_handle(int id) {
 	if(it->is_init)
 		curl_easy_cleanup(it->handle);
     it->handle = NULL;
+    it->need_stop = false;
 	it->is_init = false;
 }
 #endif
