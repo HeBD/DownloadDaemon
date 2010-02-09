@@ -128,8 +128,8 @@ public:
 	int speed;
 	bool can_resume;
 private:
-	CURL* handle;
-	bool is_init;
+	mutable CURL* handle;
+	mutable bool is_init;
 
 };
 

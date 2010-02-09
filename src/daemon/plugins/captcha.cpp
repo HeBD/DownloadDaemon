@@ -1,8 +1,8 @@
 #include "captcha.h"
 
 #include <string>
-#include <iostream>
 #include <fstream>
+#include <cstring>
 using namespace std;
 
 std::string captcha::process_image(std::string gocr_options, std::string img_type, bool use_db, bool keep_whitespaces) {

@@ -110,7 +110,6 @@ void download::from_serialized(std::string& serializedDL) {
 
 download::download(const download& dl) {
 	operator=(dl);
-	need_stop = false;
 }
 
 void download::operator=(const download& dl) {
@@ -126,9 +125,15 @@ void download::operator=(const download& dl) {
 	status = dl.status;
 	is_running = dl.is_running;
 	speed = 0;
+	can_resume = dl.can_resume;
+	need_stop = dl.need_stop;
+
+	// handle and is_init are muteable members. on copy, ownership of the handle is taken to the new download object
+	// instead of really copying. This is required to make moving downloads up and down in the download list possible.
 	handle = dl.handle;
 	is_init = dl.is_init;
-	can_resume = dl.can_resume;
+	dl.handle = NULL;
+	dl.is_init = false;
 }
 
 download::~download() {

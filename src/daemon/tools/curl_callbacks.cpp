@@ -31,9 +31,7 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	// careful! this is a POINTER to an iterator!
 	int id = *(int*)clientp;
 	CURL* curr_handle = global_download_list.get_pointer_property(id, DL_HANDLE);
-	if(global_download_list.get_int_property(id, DL_NEED_STOP)) {
-		curl_easy_setopt(curr_handle, CURLOPT_TIMEOUT, 1);
-	}
+
 	global_download_list.set_int_property(id, DL_SIZE, dltotal);
 	std::string output_file;
 	try {
@@ -57,5 +55,9 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 		global_download_list.set_int_property(id, DL_DOWNLOADED_BYTES, st.st_size);
 	}
 
+	if(global_download_list.get_int_property(id, DL_NEED_STOP)) {
+		// break up the download
+		return -1;
+	}
 	return 0;
 }

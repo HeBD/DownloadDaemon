@@ -350,6 +350,9 @@ int download_container::set_int_property(int id, property prop, double value) {
 		case DL_CAN_RESUME:
 			dl->can_resume = value;
 		break;
+		case DL_NEED_STOP:
+			dl->need_stop = value;
+		break;
 		default:
 			return LIST_PROPERTY;
 		break;
@@ -804,7 +807,6 @@ void download_container::cleanup_handle(int id) {
 	if(it->is_init)
 		curl_easy_cleanup(it->handle);
     it->handle = NULL;
-    it->need_stop = false;
 	it->is_init = false;
 }
 #endif
