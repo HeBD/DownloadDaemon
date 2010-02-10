@@ -24,8 +24,8 @@ IF(Boost_FOUND AND CURL_FOUND)
 
 
 	install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../../share/downloaddaemon/plugins/captchadb/ DESTINATION share/downloaddaemon/plugins/captchadb)
-	install(CODE "EXEC_PROGRAM(\"rm -rf ${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/.svn\")")
-	install(CODE "EXEC_PROGRAM(\"tar xfvj ${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/*.tar.bz2 -C ${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/ \")")
+	install(CODE "EXEC_PROGRAM(\"rm -rf \$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/.svn\")")
+	install(CODE "EXEC_PROGRAM(\"tar xfvj \$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/*.tar.bz2 -C \$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/ \")")
 ENDIF(Boost_FOUND AND CURL_FOUND)
 
 
