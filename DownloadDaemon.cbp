@@ -330,6 +330,14 @@
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
+		<Unit filename="src/lib/language/language.cpp">
+			<Option target="ddclient-wx_unix" />
+			<Option target="ddclient-wx_win" />
+		</Unit>
+		<Unit filename="src/lib/language/language.h">
+			<Option target="ddclient-wx_unix" />
+			<Option target="ddclient-wx_win" />
+		</Unit>
 		<Unit filename="src/lib/netpptk/netpptk.cpp">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />

@@ -27,7 +27,9 @@ END_EVENT_TABLE()
 
 
 delete_dialog::delete_dialog(int *answer, std::string id, wxWindow *parent):
-	wxDialog(parent, -1, wxString(wxT("Delete File"))){
+	wxDialog(parent, -1, wxEmptyString){
+	myframe *p = (myframe *)parent;
+	SetTitle(p->tsl("Delete File"));
 
 	this->answer = answer;
 
@@ -35,14 +37,15 @@ delete_dialog::delete_dialog(int *answer, std::string id, wxWindow *parent):
 	overall_sizer = new wxBoxSizer(wxVERTICAL);
 	button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	std::string question = "Do you want to delete the downloaded File for Download ID " + id +"?";
-	question_text = new wxStaticText(this, -1, wxString(question.c_str(), wxConvUTF8));
 
-	yes_all_button = new wxButton(this, id_yes_all, wxT("Yes all"));
+	question_text = new wxStaticText(this, -1, p->tsl("Do you want to delete the downloaded File for Download ID")
+									+ wxT(" ") +  wxString(id.c_str(), wxConvUTF8) + wxT("?"));
+
+	yes_all_button = new wxButton(this, id_yes_all, p->tsl("Always yes"));
 	yes_button = new wxButton(this, wxID_YES);
 	yes_button->SetDefault();
 	no_button = new wxButton(this, wxID_NO);
-	no_all_button = new wxButton(this, id_no_all, wxT("No all"));
+	no_all_button = new wxButton(this, id_no_all, p->tsl("Always no"));
 
 
 	// filling sizers

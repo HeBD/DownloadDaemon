@@ -20,10 +20,11 @@ BEGIN_EVENT_TABLE(connect_dialog, wxDialog)
 END_EVENT_TABLE()
 
 
-connect_dialog::connect_dialog(wxString config_dir, wxWindow *parent):
-	wxDialog(parent, -1, wxString(wxT("Connect to Host"))){
+connect_dialog::connect_dialog(wxString config_dir, wxWindow *parent) :
+	wxDialog(parent, -1, wxEmptyString){
 
 	this->config_dir = config_dir;
+	myframe *p = (myframe *)parent;
 
 	// read saved data if it exists
 	string file_name = string(config_dir.mb_str()) + "save.dat";
@@ -36,23 +37,30 @@ connect_dialog::connect_dialog(wxString config_dir, wxWindow *parent):
 	}
 	ifs.close();
 
-	if(strcmp(last_data.host, "") == 0){ // data wasn't read from file
+	if(strcmp(last_data.host, "") == 0){ // data wasn't read from file => default
 		snprintf(last_data.host, 256, "127.0.0.1");
 		last_data.port = 56789;
 		last_data.pass[0] = '\0';
+		snprintf(last_data.lang, 128, "English");
 	}
+
+	if(last_data.lang[0] != '\0') // older versions of save.dat won't have lang, so we have to check
+		p->set_language(last_data.lang); // set program language
+
+	SetTitle(p->tsl("Connect to Host"));
 
 	// create elements
 	dialog_sizer = new wxBoxSizer(wxVERTICAL);
 	text_sizer = new wxBoxSizer(wxHORIZONTAL);
-	outer_input_sizer = new wxStaticBoxSizer(wxHORIZONTAL,this,wxT("Data"));
-	input_sizer = new wxFlexGridSizer(3, 2, 10, 10);
+	outer_input_sizer = new wxStaticBoxSizer(wxHORIZONTAL,this,p->tsl("Data"));
+	input_sizer = new wxFlexGridSizer(5, 2, 10, 10);
 	button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	message_text = new wxStaticText(this, -1, wxT("Please insert Host Data"));
-	host_text = new wxStaticText(this, -1, wxT("IP/URL"));
-	port_text = new wxStaticText(this, -1, wxT("Port"));
-	pass_text = new wxStaticText(this, -1, wxT("Password"));
+	message_text = new wxStaticText(this, -1, p->tsl("Please insert Host Data"));
+	host_text = new wxStaticText(this, -1, p->tsl("IP/URL"));
+	port_text = new wxStaticText(this, -1, p->tsl("Port"));
+	pass_text = new wxStaticText(this, -1, p->tsl("Password"));
+	lang_text = new wxStaticText(this, -1, p->tsl("Language"));
 
 	host_input = new wxTextCtrl(this, -1, wxString(last_data.host, wxConvUTF8), wxDefaultPosition, wxSize(300, 25));
 	host_input->SetSelection(-1, -1);
@@ -60,7 +68,21 @@ connect_dialog::connect_dialog(wxString config_dir, wxWindow *parent):
 	port_input = new wxTextCtrl(this, -1, wxString::Format(wxT("%i"),last_data.port), wxDefaultPosition, wxSize(50, 25));
 	pass_input = new wxTextCtrl(this, -1, wxString(last_data.pass, wxConvUTF8), wxDefaultPosition, wxSize(150, 25), wxTE_PASSWORD);
 
-	save_data_check = new wxCheckBox(this, -1, wxT("Save Data"));
+	// create wxChoice lang_choice
+	wxArrayString lang_choice_text;
+	int selection;
+	lang_choice_text.Add(wxT("English"));
+	lang_choice_text.Add(wxT("Deutsch"));
+
+	if(strcmp(last_data.lang, "Deutsch") == 0)
+		selection = 1;
+	else // English is default
+		selection = 0;
+
+	lang_choice = new wxChoice(this, -1, wxDefaultPosition, wxSize(100, 30), lang_choice_text);
+	lang_choice->SetSelection(selection);
+
+	save_data_check = new wxCheckBox(this, -1, p->tsl("Save Data"));
 	save_data_check->SetValue(true);
 
 	connect_button = new wxButton(this, wxID_OK);
@@ -77,6 +99,8 @@ connect_dialog::connect_dialog(wxString config_dir, wxWindow *parent):
 	input_sizer->Add(port_input, 0, wxALIGN_LEFT);
 	input_sizer->Add(pass_text, 0, wxALIGN_LEFT);
 	input_sizer->Add(pass_input, 0, wxALIGN_LEFT);
+	input_sizer->Add(lang_text, 0, wxALIGN_LEFT);
+	input_sizer->Add(lang_choice, 0, wxALIGN_LEFT);
 	input_sizer->Add(save_data_check, 0, wxALIGN_LEFT);
 
 	button_sizer->Add(connect_button, 1, wxALL, 20);
@@ -101,6 +125,20 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 	std::string host = std::string(host_input->GetValue().mb_str());
 	int port = wxAtoi(port_input->GetValue());
 	std::string pass = std::string(pass_input->GetValue().mb_str());
+
+	string lang("English");
+	int selection = lang_choice->GetCurrentSelection();
+
+	switch (selection){
+		case 0: 	lang = "English";
+					break;
+		case 1: 	lang = "Deutsch";
+					break;
+		default:	break;
+	}
+
+	myframe *p = ((myframe *) GetParent());
+	p->set_language(lang);
 
 	tkSock *mysock = new tkSock();
 	bool connection = false, error_occured = false;
@@ -146,8 +184,9 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 				mysock->recv(snd);
 
 			}else{ // encryption not permitted
-				wxMessageDialog dialog(this, wxT("Encrypted authentication not supported by server.\nDo you want to try unsecure plain-text authentication?"),
-									   wxT("No Encryption"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+				wxMessageDialog dialog(this, p->tsl("Encrypted authentication not supported by server.")
+										+ wxT("/n") + p->tsl("Do you want to try unsecure plain-text authentication?"),
+										p->tsl("No Encryption"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
 				int del = dialog.ShowModal();
 
 				if(del == wxID_YES){ // user clicked yes
@@ -161,7 +200,7 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 						mysock->send(pass);
 						mysock->recv(snd);
 					}else{
-						wxMessageBox(wxT("Unknown Error while Authentication."), wxT("Authentification Error"));
+						wxMessageBox(p->tsl("Unknown Error while Authentication."), p->tsl("Authentification Error"));
 						error_occured = true;
 					}
 				}else{
@@ -174,19 +213,19 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 				// nothing to do here if you reach this
 
 			}else if(snd.find("102") == 0 && connection){
-				wxMessageBox(wxT("Wrong Password, Authentification failed."), wxT("Authentification Error"));
+				wxMessageBox(p->tsl("Wrong Password, Authentification failed."), p->tsl("Authentification Error"));
 				error_occured = true;
 
 			}else if(snd.find("99") == 0 && connection){
-				wxMessageBox(wxT("No connection established."), wxT("Authentification Error"));
+				wxMessageBox(p->tsl("No connection established."), p->tsl("Authentification Error"));
 				error_occured = true;
 
 			}else{
-				wxMessageBox(wxT("Unknown Error while Authentication."), wxT("Authentification Error"));
+				wxMessageBox(p->tsl("Unknown Error while Authentication."), p->tsl("Authentification Error"));
 				error_occured = true;
 			}
 		}else{
-			wxMessageBox(wxT("Unknown Error while Authentication."), wxT("Authentification Error"));
+			wxMessageBox(p->tsl("Unknown Error while Authentication."), p->tsl("Authentification Error"));
 			error_occured = true;
 		}
 
@@ -219,6 +258,7 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 				snprintf(last_data.host, 256, "%s", host.c_str());
 				last_data.port = port;
 				snprintf(last_data.pass, 256, "%s", pass.c_str());
+				snprintf(last_data.lang, 128, "%s", lang.c_str());
 
 				if(ofs.good()){ // file successfully opened
 
@@ -234,7 +274,8 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 		}
 
 	}else{ // connection failed due to host (IP/URL or port)
-		wxMessageBox(wxT("\nConnection failed (wrong IP/URL or port).\t\t\nPlease try again."), wxT("Connection failed"));
+		wxMessageBox(wxT("\n") + p->tsl("Connection failed (wrong IP/URL or Port).") + wxT("\t\t\n")
+					+ p->tsl("Please try again."), p->tsl("Connection failed"));
 		delete mysock;
 	}
 	// the dialog doesn't close with an error (so you don't have to type everything again), you have to get an connection or press cancel to do so

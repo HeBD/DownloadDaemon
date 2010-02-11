@@ -29,7 +29,10 @@ END_EVENT_TABLE()
 
 
 configure_dialog::configure_dialog(wxWindow *parent):
-	wxDialog(parent, -1, wxString(wxT("Configure DownloadDaemon"))){
+	wxDialog(parent, -1, wxEmptyString){
+
+	myframe *p = (myframe *)parent;
+	SetTitle(p->tsl("Configure DownloadDaemon"));
 
 	notebook = new wxNotebook(this, -1);
 
@@ -39,11 +42,11 @@ configure_dialog::configure_dialog(wxWindow *parent):
 	create_log_panel();
 	create_reconnect_panel();
 
-	notebook->AddPage(general_panel, wxT("General"), true);
-	notebook->AddPage(download_panel, wxT("Download"), false);
-	notebook->AddPage(pass_panel, wxT("Password"), false);
-	notebook->AddPage(log_panel, wxT("Logging"), false);
-	notebook->AddPage(reconnect_panel, wxT("Reconnect"), false);
+	notebook->AddPage(general_panel, p->tsl("General"), true);
+	notebook->AddPage(download_panel, p->tsl("Download"), false);
+	notebook->AddPage(pass_panel, p->tsl("Password"), false);
+	notebook->AddPage(log_panel, p->tsl("Logging"), false);
+	notebook->AddPage(reconnect_panel, p->tsl("Reconnect"), false);
 
 	Layout();
 	notebook->Fit();
@@ -53,21 +56,23 @@ configure_dialog::configure_dialog(wxWindow *parent):
 
 
 void configure_dialog::create_general_panel(){
+	myframe *p = (myframe *)GetParent();
+
 	// creating elements
 	general_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_general_sizer = new wxBoxSizer(wxVERTICAL);
-	outer_premium_sizer = new wxStaticBoxSizer(wxVERTICAL, general_panel, wxT("Premium Account"));
-	outer_general_sizer = new wxStaticBoxSizer(wxVERTICAL, general_panel, wxT("General Options"));
+	outer_premium_sizer = new wxStaticBoxSizer(wxVERTICAL, general_panel, p->tsl("Premium Account"));
+	outer_general_sizer = new wxStaticBoxSizer(wxVERTICAL, general_panel, p->tsl("General Options"));
 	premium_sizer = new wxFlexGridSizer(4, 2, 10, 10);
 	general_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	premium_host_text = new wxStaticText(general_panel, -1, wxT("Host"));
-	premium_user_text = new wxStaticText(general_panel, -1, wxT("Username"));
-	premium_pass_text = new wxStaticText(general_panel, -1, wxT("Password"));
+	premium_host_text = new wxStaticText(general_panel, -1, p->tsl("Host"));
+	premium_user_text = new wxStaticText(general_panel, -1, p->tsl("Username"));
+	premium_pass_text = new wxStaticText(general_panel, -1, p->tsl("Password"));
 
-	premium_user_input = new wxTextCtrl(general_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25));
-	premium_pass_input = new wxTextCtrl(general_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
+	premium_user_input = new wxTextCtrl(general_panel, -1, wxEmptyString, wxDefaultPosition, wxSize(200, 25));
+	premium_pass_input = new wxTextCtrl(general_panel, -1, wxEmptyString, wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
 
 
 	// fill premium_host_choice
@@ -75,7 +80,7 @@ void configure_dialog::create_general_panel(){
 	size_t lineend = 1;
 	string line = "", host_list;
 
-	host.Add(wxT(""));
+	host.Add(wxEmptyString);
 	premium_host_list.clear();
 	premium_host_list.push_back("");
 
@@ -84,7 +89,7 @@ void configure_dialog::create_general_panel(){
 	tkSock *mysock = myparent->get_connection_attributes();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+		wxMessageBox(p->tsl("Please connect before configurating DownloadDaemon."), p->tsl("No Connection to Downloaddaemon"));
 
 	}else{ // we have a connection
 		boost::mutex *mx = myparent->get_mutex();
@@ -121,14 +126,14 @@ void configure_dialog::create_general_panel(){
 	if(get_var("overwrite_files") == wxT("1"))
 		enable = true;
 
-	overwrite_check = new wxCheckBox(general_panel, -1, wxT("overwrite existing Files"));
+	overwrite_check = new wxCheckBox(general_panel, -1, p->tsl("overwrite existing Files"));
 	overwrite_check->SetValue(enable);
 
 	enable = false;
 	if(get_var("refuse_existing_links") == wxT("1"))
 		enable = true;
 
-	refuse_existing_check = new wxCheckBox(general_panel, -1, wxT("refuse existing Links"));
+	refuse_existing_check = new wxCheckBox(general_panel, -1, p->tsl("refuse existing Links"));
 	refuse_existing_check->SetValue(enable);
 
 	premium_button = new wxButton(general_panel, wxID_OK);
@@ -162,24 +167,29 @@ void configure_dialog::create_general_panel(){
 
 
 void configure_dialog::create_download_panel(){
+	myframe *p = (myframe *)GetParent();
+
 	// creating elements
 	download_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_download_sizer = new wxBoxSizer(wxVERTICAL);
-	outer_time_sizer = new wxStaticBoxSizer(wxVERTICAL, download_panel, wxT("Download Time"));
-	outer_save_dir_sizer = new wxStaticBoxSizer(wxVERTICAL, download_panel, wxT("Download Folder"));
-	outer_count_sizer = new wxStaticBoxSizer(wxVERTICAL, download_panel, wxT("Additional Download Options"));
+	outer_time_sizer = new wxStaticBoxSizer(wxVERTICAL, download_panel, p->tsl("Download Time"));
+	outer_save_dir_sizer = new wxStaticBoxSizer(wxVERTICAL, download_panel, p->tsl("Download Folder"));
+	outer_count_sizer = new wxStaticBoxSizer(wxVERTICAL, download_panel, p->tsl("Additional Download Options"));
 	time_sizer = new wxFlexGridSizer(1, 4, 10, 10);
 	count_sizer = new wxFlexGridSizer(1, 4, 10, 10);
 	download_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	exp_time_text = new wxStaticText(download_panel, -1, wxT("You can force DownloadDaemon to only download at specific times by entering a start and\nend time in the format hours:minutes.\nLeave these fields empty if you want to allow DownloadDaemon to download permanently."));
-	start_time_text = new wxStaticText(download_panel, -1, wxT("Start Time"));
-	end_time_text = new wxStaticText(download_panel, -1, wxT("End Time"));
-	save_dir_text = new wxStaticText(download_panel, -1, wxT("This option specifies where finished downloads should be safed on the server."));
-	exp_count_text = new wxStaticText(download_panel, -1, wxT("Here you can specify how many downloads may run at the same time and regulate the\ndownload speed for each download (overall max speed is download number * max speed)."));
-	count_text = new wxStaticText(download_panel, -1, wxT("Simultaneous Downoads"));
-	speed_text = new wxStaticText(download_panel, -1, wxT("Maximal Speed in kb/s"));
+	exp_time_text = new wxStaticText(download_panel, -1, p->tsl("You can force DownloadDaemon to only download at specific times by entering a start and")
+									+ wxT("\n") + p->tsl("end time in the format hours:minutes.")
+									+ wxT("\n") + p->tsl("Leave these fields empty if you want to allow DownloadDaemon to download permanently."));
+	start_time_text = new wxStaticText(download_panel, -1, p->tsl("Start Time"));
+	end_time_text = new wxStaticText(download_panel, -1, p->tsl("End Time"));
+	save_dir_text = new wxStaticText(download_panel, -1, p->tsl("This option specifies where finished downloads should be safed on the server."));
+	exp_count_text = new wxStaticText(download_panel, -1, p->tsl("Here you can specify how many downloads may run at the same time and regulate the")
+									+ wxT("\n") + p->tsl("download speed for each download (overall max speed is download number * max speed)."));
+	count_text = new wxStaticText(download_panel, -1, p->tsl("Simultaneous Downloads"));
+	speed_text = new wxStaticText(download_panel, -1, p->tsl("Maximal Speed in kb/s"));
 
 	start_time_input = new wxTextCtrl(download_panel,-1, get_var("download_timing_start"), wxDefaultPosition, wxSize(100, 25));
 	start_time_input->SetFocus();
@@ -222,19 +232,21 @@ void configure_dialog::create_download_panel(){
 
 
 void configure_dialog::create_pass_panel(){
+	myframe *p = (myframe *)GetParent();
+
 	// creating elements
 	pass_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_pass_sizer = new wxBoxSizer(wxVERTICAL);
-	outer_pass_sizer = new wxStaticBoxSizer(wxHORIZONTAL, pass_panel, wxT("Change Password"));
+	outer_pass_sizer = new wxStaticBoxSizer(wxHORIZONTAL, pass_panel, p->tsl("Change Password"));
 	pass_sizer = new wxFlexGridSizer(3, 2, 10, 10);
 	pass_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	old_pass_text = new wxStaticText(pass_panel, -1, wxT("Old Password"));
-	new_pass_text = new wxStaticText(pass_panel, -1, wxT("New Password"));
+	old_pass_text = new wxStaticText(pass_panel, -1, p->tsl("Old Password"));
+	new_pass_text = new wxStaticText(pass_panel, -1, p->tsl("New Password"));
 
-	old_pass_input = new wxTextCtrl(pass_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
-	new_pass_input = new wxTextCtrl(pass_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
+	old_pass_input = new wxTextCtrl(pass_panel, -1, wxEmptyString, wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
+	new_pass_input = new wxTextCtrl(pass_panel, -1, wxEmptyString, wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
 
 	pass_button = new wxButton(pass_panel, wxID_SAVE);
 	pass_cancel_button = new wxButton(pass_panel, wxID_CANCEL);
@@ -257,16 +269,19 @@ void configure_dialog::create_pass_panel(){
 
 
 void configure_dialog::create_log_panel(){
+	myframe *p = (myframe *)GetParent();
+
 	// creating elements
 	log_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_log_sizer = new wxBoxSizer(wxVERTICAL);
-	outer_log_activity_sizer = new wxStaticBoxSizer(wxVERTICAL, log_panel, wxT("Logging Activity"));
-	outer_log_output_sizer = new wxStaticBoxSizer(wxVERTICAL, log_panel, wxT("Log Procedure"));
+	outer_log_activity_sizer = new wxStaticBoxSizer(wxVERTICAL, log_panel, p->tsl("Logging Activity"));
+	outer_log_output_sizer = new wxStaticBoxSizer(wxVERTICAL, log_panel, p->tsl("Log Procedure"));
 	log_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	log_activity_text = new wxStaticText(log_panel, -1, wxT("This option specifies DownloadDaemons logging activity."));
-	log_output_text = new wxStaticText(log_panel, -1, wxT("This option specifies how logging should be done (Standard output, Standard error\noutput, Syslog-daemon)."));
+	log_activity_text = new wxStaticText(log_panel, -1, p->tsl("This option specifies DownloadDaemons logging activity."));
+	log_output_text = new wxStaticText(log_panel, -1, p->tsl("This option specifies how logging should be done (Standard output, Standard error")
+															+ wxT("\n") + p->tsl("output, Syslog-daemon)."));
 
 	// wxChoice log_output
 	wxString old_output = get_var("log_procedure");
@@ -280,9 +295,9 @@ void configure_dialog::create_log_panel(){
 		selection = 2;
 
 	wxArrayString output;
-	output.Add(wxT("stdout - Standard output"));
-	output.Add(wxT("stderr - Standard error output"));
-	output.Add(wxT("syslog - Syslog-daemon"));
+	output.Add(p->tsl("stdout - Standard output"));
+	output.Add(p->tsl("stderr - Standard error output"));
+	output.Add(p->tsl("syslog - Syslog-daemon"));
 	log_output_choice = new wxChoice(log_panel, -1, wxDefaultPosition, wxSize(250, 30), output);
 	log_output_choice->SetSelection(selection);
 
@@ -300,10 +315,10 @@ void configure_dialog::create_log_panel(){
 		selection = 3;
 
 	wxArrayString activity;
-	activity.Add(wxT("Debug"));
-	activity.Add(wxT("Warning"));
-	activity.Add(wxT("Severe"));
-	activity.Add(wxT("Off"));
+	activity.Add(p->tsl("Debug"));
+	activity.Add(p->tsl("Warning"));
+	activity.Add(p->tsl("Severe"));
+	activity.Add(p->tsl("Off"));
 	log_activity_choice = new wxChoice(log_panel, -1, wxDefaultPosition, wxSize(100, 30), activity);
 	log_activity_choice->SetSelection(selection);
 
@@ -328,12 +343,14 @@ void configure_dialog::create_log_panel(){
 
 
 void configure_dialog::create_reconnect_panel(){
+	myframe *p = (myframe *)GetParent();
+
 	// creating elements
 	reconnect_panel = new wxPanel(notebook, -1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	overall_reconnect_sizer = new wxBoxSizer(wxVERTICAL);
-	outer_policy_sizer = new wxStaticBoxSizer(wxVERTICAL, reconnect_panel, wxT("Policy"));
-	outer_router_sizer = new wxStaticBoxSizer(wxHORIZONTAL, reconnect_panel, wxT("Router Data"));
+	outer_policy_sizer = new wxStaticBoxSizer(wxVERTICAL, reconnect_panel, p->tsl("Policy"));
+	outer_router_sizer = new wxStaticBoxSizer(wxHORIZONTAL, reconnect_panel, p->tsl("Router Data"));
 	router_sizer = new wxFlexGridSizer(4, 2, 10, 10);
 	policy_sizer = new wxFlexGridSizer(1, 2, 10, 10);
 	reconnect_button_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -343,22 +360,22 @@ void configure_dialog::create_reconnect_panel(){
 	if(get_var("enable_reconnect") == wxT("1"))
 		enable = true;
 
-	enable_reconnecting_check = new wxCheckBox(reconnect_panel, id_enable_reconnect_check, wxT("enable reconnecting"));
+	enable_reconnecting_check = new wxCheckBox(reconnect_panel, id_enable_reconnect_check, p->tsl("enable reconnecting"));
 	enable_reconnecting_check->SetValue(enable);
 
-	policy_text = new wxStaticText(reconnect_panel, -1, wxT("Reconnect Policy"));
-	router_model_text = new wxStaticText(reconnect_panel, -1, wxT("Model"));
-	router_ip_text = new wxStaticText(reconnect_panel, -1, wxT("IP"));
-	router_user_text = new wxStaticText(reconnect_panel, -1, wxT("Username"));
-	router_pass_text = new wxStaticText(reconnect_panel, -1, wxT("Password"));
+	policy_text = new wxStaticText(reconnect_panel, -1, p->tsl("Reconnect Policy"));
+	router_model_text = new wxStaticText(reconnect_panel, -1, p->tsl("Model"));
+	router_ip_text = new wxStaticText(reconnect_panel, -1, p->tsl("IP"));
+	router_user_text = new wxStaticText(reconnect_panel, -1, p->tsl("Username"));
+	router_pass_text = new wxStaticText(reconnect_panel, -1, p->tsl("Password"));
 
-	router_ip_input = new wxTextCtrl(reconnect_panel, -1,  wxT(""), wxDefaultPosition, wxSize(200, 25));
-	router_user_input = new wxTextCtrl(reconnect_panel, -1,  wxT(""), wxDefaultPosition, wxSize(200, 25));
-	router_pass_input = new wxTextCtrl(reconnect_panel, -1, wxT(""), wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
+	router_ip_input = new wxTextCtrl(reconnect_panel, -1,  wxEmptyString, wxDefaultPosition, wxSize(200, 25));
+	router_user_input = new wxTextCtrl(reconnect_panel, -1,  wxEmptyString, wxDefaultPosition, wxSize(200, 25));
+	router_pass_input = new wxTextCtrl(reconnect_panel, -1, wxEmptyString, wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
 
 	// wxChoice policy
 	wxArrayString policy;
-	policy_choice = new wxChoice(reconnect_panel, -1, wxDefaultPosition, wxSize(100, 30), policy);
+	policy_choice = new wxChoice(reconnect_panel, -1, wxDefaultPosition, wxSize(150, 30), policy);
 	policy_choice->SetSelection(-1);
 
 	// wxChoice router_model
@@ -402,6 +419,8 @@ void configure_dialog::create_reconnect_panel(){
 
 
 void configure_dialog::enable_reconnect_panel(){
+	myframe *p = (myframe *)GetParent();
+
 
 	// fill router_model_choice
 	router_model_choice->Clear();
@@ -411,7 +430,7 @@ void configure_dialog::enable_reconnect_panel(){
 	int selection = 0, i = 1;
 
 	old_model = (get_var("router_model", ROUTER_T)).mb_str();
-	model.Add(wxT(""));
+	model.Add(wxEmptyString);
 	router_model_list.clear();
 	router_model_list.push_back("");
 
@@ -420,7 +439,7 @@ void configure_dialog::enable_reconnect_panel(){
 	tkSock *mysock = myparent->get_connection_attributes();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+		wxMessageBox(p->tsl("Please connect before configurating DownloadDaemon."), p->tsl("No Connection to Downloaddaemon"));
 
 	}else{ // we have a connection
 		boost::mutex *mx = myparent->get_mutex();
@@ -461,10 +480,10 @@ void configure_dialog::enable_reconnect_panel(){
 	policy_choice->Clear();
 	wxArrayString policy;
 
-	policy.Add(wxT("Hard"));
-	policy.Add(wxT("Continue"));
-	policy.Add(wxT("Soft"));
-	policy.Add(wxT("Pussy"));
+	policy.Add(p->tsl("Hard"));
+	policy.Add(p->tsl("Continue"));
+	policy.Add(p->tsl("Soft"));
+	policy.Add(p->tsl("Pussy"));
 
 	policy_choice->Append(policy);
 
@@ -511,6 +530,7 @@ void configure_dialog::disable_reconnect_panel(){
 
 
 wxString configure_dialog::get_var(const string &var, var_type typ){
+	myframe *p = (myframe *)GetParent();
 	string answer;
 
 	// check connection
@@ -518,7 +538,7 @@ wxString configure_dialog::get_var(const string &var, var_type typ){
 	tkSock *mysock = myparent->get_connection_attributes();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+		wxMessageBox(p->tsl("Please connect before configurating DownloadDaemon."), p->tsl("No Connection to Downloaddaemon"));
 
 	}else{ // we have a connection
 		boost::mutex *mx = myparent->get_mutex();
@@ -541,6 +561,7 @@ wxString configure_dialog::get_var(const string &var, var_type typ){
 
 // event handle methods
 void configure_dialog::on_apply(wxCommandEvent &event){
+	myframe *p = (myframe *)GetParent();
 
 	// getting user input
 	bool overwrite = overwrite_check->GetValue();
@@ -609,7 +630,7 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 	tkSock *mysock = myparent->get_connection_attributes();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+		wxMessageBox(p->tsl("Please connect before configurating DownloadDaemon."), p->tsl("No Connection to Downloaddaemon"));
 
 	}else{ // we have a connection
 		string answer;
@@ -655,7 +676,7 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 		mysock->recv(answer);
 
 		if(answer.find("102") == 0) // 102 AUTHENTICATION	<-- Authentication failed
-			wxMessageBox(wxT("Failed to change Log Output."), wxT("Password Error"));
+			wxMessageBox(p->tsl("Failed to change Log Procedure."), p->tsl("Password Error"));
 
 		// log activity
 		mysock->send("DDP VAR SET log_level = " + activity_level);
@@ -700,6 +721,7 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 
 
 void configure_dialog::on_pass_change(wxCommandEvent &event){
+	myframe *p = (myframe *)GetParent();
 
 	// getting user input
 	string old_pass = string(old_pass_input->GetValue().mb_str());
@@ -710,7 +732,7 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 	tkSock *mysock = myparent->get_connection_attributes();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+		wxMessageBox(p->tsl("Please connect before configurating DownloadDaemon."), p->tsl("No Connection to Downloaddaemon"));
 
 	}else{ // we have a connection
 		string answer;
@@ -723,7 +745,7 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 		mysock->recv(answer);
 
 		if(answer.find("102") == 0) // 102 AUTHENTICATION	<-- Authentication failed
-			wxMessageBox(wxT("Failed to reset the Password."), wxT("Password Error"));
+			wxMessageBox(p->tsl("Failed to change the Password."), p->tsl("Password Error"));
 
 		mx->unlock();
 	}
@@ -733,6 +755,8 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 
 
 void configure_dialog::on_premium_change(wxCommandEvent &event){
+	myframe *p = (myframe *)GetParent();
+
 	int selection = premium_host_choice->GetCurrentSelection();
 
 	if(selection != 0){ // selected a valid host
@@ -745,7 +769,7 @@ void configure_dialog::on_premium_change(wxCommandEvent &event){
 		tkSock *mysock = myparent->get_connection_attributes();
 
 		if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-			wxMessageBox(wxT("Please connect before configurating the DownloadDaemon Server."), wxT("No Connection to Server"));
+			wxMessageBox(p->tsl("Please connect before configurating DownloadDaemon."), p->tsl("No Connection to Downloaddaemon"));
 
 		}else{ // we have a connection
 			string answer;

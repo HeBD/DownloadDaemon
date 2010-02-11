@@ -21,6 +21,7 @@
 #include <wx/sizer.h>
 #include <wx/textctrl.h>
 #include <wx/checkbox.h>
+#include <wx/choice.h>
 
 #include "../lib/netpptk/netpptk.h"
 #if defined(__WXMSW__)
@@ -45,9 +46,11 @@ class connect_dialog : public wxDialog{
 		wxStaticText *host_text;
 		wxStaticText *port_text;
 		wxStaticText *pass_text;
+		wxStaticText *lang_text;
 		wxTextCtrl *host_input;
 		wxTextCtrl *port_input;
 		wxTextCtrl *pass_input;
+		wxChoice *lang_choice;
 		wxButton *connect_button;
 		wxButton *cancel_button;
 		wxCheckBox *save_data_check;

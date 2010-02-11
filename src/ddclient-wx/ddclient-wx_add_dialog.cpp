@@ -20,25 +20,27 @@ END_EVENT_TABLE()
 
 
 add_dialog::add_dialog(wxWindow *parent):
-	wxDialog(parent, -1, wxString(wxT("Add Downloads"))){
+	wxDialog(parent, -1, wxEmptyString){
+	myframe *p = (myframe *)parent;
+	SetTitle(p->tsl("Add Downloads"));
 
 	// create elements
 	dialog_sizer = new wxBoxSizer(wxVERTICAL);
-	outer_add_one_sizer = new wxStaticBoxSizer(wxVERTICAL,this,wxT("single Download"));
-	outer_add_many_sizer = new wxStaticBoxSizer(wxVERTICAL,this,wxT("many Downloads"));
+	outer_add_one_sizer = new wxStaticBoxSizer(wxVERTICAL,this,p->tsl("single Download"));
+	outer_add_many_sizer = new wxStaticBoxSizer(wxVERTICAL,this,p->tsl("many Downloads"));
 	inner_add_one_sizer = new wxFlexGridSizer(2, 2, 10, 10);
 	button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	add_one_text = new wxStaticText(this, -1, wxT("Add single Download (no Title necessary)"));
-	add_many_text = new wxStaticText(this, -1, wxT("\nAdd many Downloads (one per Line, no Title necessary)"));
-	title_text = new wxStaticText(this, -1, wxT("Title"));
-	url_text = new wxStaticText(this, -1, wxT("URL"));
-	add_many_inner_text = new wxStaticText(this, -1, wxT("Separate URL and Title like this: http://something.aa/bb|a fancy Title"));
+	add_one_text = new wxStaticText(this, -1, p->tsl("Add single Download (no Title necessary)"));
+	add_many_text = new wxStaticText(this, -1, wxT("\n") + p->tsl("Add many Downloads (one per Line, no Title necessary)"));
+	title_text = new wxStaticText(this, -1, p->tsl("Title"));
+	url_text = new wxStaticText(this, -1, p->tsl("URL"));
+	add_many_inner_text = new wxStaticText(this, -1, p->tsl("Separate URL and Title like this: http://something.aa/bb|a fancy Title"));
 
-	title_input = new wxTextCtrl(this,-1,wxT(""), wxDefaultPosition, wxSize(410, 25));
-	url_input = new wxTextCtrl(this,-1,wxT(""), wxDefaultPosition, wxSize(410, 25));
+	title_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(410, 25));
+	url_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(410, 25));
 	url_input->SetFocus();
-	many_input = new wxTextCtrl(this,-1,wxT(""), wxDefaultPosition, wxSize(410, 100), wxTE_MULTILINE);
+	many_input = new wxTextCtrl(this,-1,wxEmptyString, wxDefaultPosition, wxSize(410, 100), wxTE_MULTILINE);
 
 	add_button = new wxButton(this, wxID_ADD);
 	add_button->SetDefault();
@@ -73,6 +75,7 @@ add_dialog::add_dialog(wxWindow *parent):
 
 // event handle methods
 void add_dialog::on_add(wxCommandEvent &event){
+	myframe *p = (myframe *)GetParent();
 
 	// extracting the data
 	string title = string((title_input->GetValue()).mb_str());
@@ -92,7 +95,7 @@ void add_dialog::on_add(wxCommandEvent &event){
 	tkSock *mysock = myparent->get_connection_attributes();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == "") // if there is no active connection
-		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
+		wxMessageBox(p->tsl("Please connect before adding Downloads."), p->tsl("No Connection to Server"));
 
 	else{ // send data to server
 
@@ -147,7 +150,7 @@ void add_dialog::on_add(wxCommandEvent &event){
 		mx->unlock();
 
 		if(error_occured)
-			wxMessageBox(wxT("At least one inserted URL was invalid."), wxT("Invalid URL"));
+			wxMessageBox(p->tsl("At least one inserted URL was invalid."), p->tsl("Invalid URL"));
 	}
 
 	Destroy();

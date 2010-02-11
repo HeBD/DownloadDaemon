@@ -6,6 +6,7 @@
 	- added german language file for ddclient-php
    [susanne]
 	- created class to translate strings by using language files
+	- implemented translation at ddclient-wx (currently only with German language file, others will follow)
 
 ----- 2010-01-10 - VERSION 0.8 RELEASED
 
