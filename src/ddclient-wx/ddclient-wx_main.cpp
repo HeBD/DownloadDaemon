@@ -151,6 +151,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	Layout();
 	Fit();
 
+	lang.set_working_dir(std::string(working_dir.mb_str()) + "lang/");
 	mysock = new tkSock();
 
 	// connect if logindata was saved
