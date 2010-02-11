@@ -2,6 +2,8 @@
    [adrian]
 	- fixed ddclient-php not running correctly if it was installed to the web-server root
 	- updated jdownloader router extractor
+	- mostly translatable configuration in ddclient-php
+	- added german language file for ddclient-php
    [susanne]
 	- created class to translate strings by using language files
 
