@@ -94,13 +94,13 @@ void add_dialog::on_add(wxCommandEvent &event){
 	myframe *myparent = (myframe *) GetParent();
 	tkSock *mysock = myparent->get_connection_attributes();
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == "") // if there is no active connection
+	boost::mutex *mx = myparent->get_mutex();
+	mx->lock();
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		mx->unlock();
 		wxMessageBox(p->tsl("Please connect before adding Downloads."), p->tsl("No Connection to Server"));
-
-	else{ // send data to server
-
-		boost::mutex *mx = myparent->get_mutex();
-		mx->lock();
+	}else{ // send data to server
 
 		vector<string> splitted_line;
 		string line, snd, answer, many;

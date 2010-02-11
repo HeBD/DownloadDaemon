@@ -629,14 +629,14 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 	myframe *myparent = (myframe *) GetParent();
 	tkSock *mysock = myparent->get_connection_attributes();
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(p->tsl("Please connect before configurating DownloadDaemon."), p->tsl("No Connection to Downloaddaemon"));
+	boost::mutex *mx = myparent->get_mutex();
+	mx->lock();
 
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		mx->unlock();
+		wxMessageBox(p->tsl("Please connect before configurating DownloadDaemon."), p->tsl("No Connection to Downloaddaemon"));
 	}else{ // we have a connection
 		string answer;
-
-		boost::mutex *mx = myparent->get_mutex();
-		mx->lock();
 
 		// overwrite files
 		if(overwrite)
@@ -731,14 +731,15 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 	myframe *myparent = (myframe *) GetParent();
 	tkSock *mysock = myparent->get_connection_attributes();
 
+	boost::mutex *mx = myparent->get_mutex();
+	mx->lock();
+
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		mx->unlock();
 		wxMessageBox(p->tsl("Please connect before configurating DownloadDaemon."), p->tsl("No Connection to Downloaddaemon"));
 
 	}else{ // we have a connection
 		string answer;
-
-		boost::mutex *mx = myparent->get_mutex();
-		mx->lock();
 
 		// password
 		mysock->send("DDP VAR SET mgmt_password = " + old_pass + " ; " + new_pass);
@@ -768,14 +769,15 @@ void configure_dialog::on_premium_change(wxCommandEvent &event){
 		myframe *myparent = (myframe *) GetParent();
 		tkSock *mysock = myparent->get_connection_attributes();
 
+		boost::mutex *mx = myparent->get_mutex();
+		mx->lock();
+
 		if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+			mx->unlock();
 			wxMessageBox(p->tsl("Please connect before configurating DownloadDaemon."), p->tsl("No Connection to Downloaddaemon"));
 
 		}else{ // we have a connection
 			string answer;
-
-			boost::mutex *mx = myparent->get_mutex();
-			mx->lock();
 
 			// host, user and password together
 			mysock->send("DDP PREMIUM SET " + premium_host + " " + premium_user + " ; " + premium_pass);
@@ -783,7 +785,6 @@ void configure_dialog::on_premium_change(wxCommandEvent &event){
 
 			mx->unlock();
 		}
-
 	}
 }
 
