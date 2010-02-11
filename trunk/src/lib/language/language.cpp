@@ -17,11 +17,13 @@ language::language() : lang("English"){
 
 
 void language::set_working_dir(std::string working_dir){
+	boost::mutex::scoped_lock lock(mx);
 	this->working_dir = working_dir;
 }
 
 
 bool language::set_language(std::string lang){
+	boost::mutex::scoped_lock lock(mx);
 	texts.clear();
 
 	// einlesen der datei
@@ -30,6 +32,7 @@ bool language::set_language(std::string lang){
 
 		if(working_dir == "")
 			return false;
+
 
 		std::string file_name = working_dir + lang;
 		std::ifstream ifs(file_name.c_str(), std::fstream::in); // open file
@@ -56,6 +59,7 @@ bool language::set_language(std::string lang){
 			ifs.close(); // close file
 		}else // error at opening
 			return false;
+
 	}
 
 	this->lang = lang;
@@ -64,11 +68,14 @@ bool language::set_language(std::string lang){
 
 
 std::string language::operator[](std::string index){
+	boost::mutex::scoped_lock lock(mx);
+
 	if(lang == "English") // default language is English
 		return index;
 
 	if(texts.find(index) == texts.end()) // if index can't be found return index
 		return index;
+
 	else
 		return texts[index];
 }

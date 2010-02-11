@@ -27,7 +27,7 @@ END_EVENT_TABLE()
 
 
 delete_dialog::delete_dialog(int *answer, std::string id, wxWindow *parent):
-	wxDialog(parent, -1, wxEmptyString){
+	wxDialog(parent, -1, wxString(wxEmptyString)){
 	myframe *p = (myframe *)parent;
 	SetTitle(p->tsl("Delete File"));
 

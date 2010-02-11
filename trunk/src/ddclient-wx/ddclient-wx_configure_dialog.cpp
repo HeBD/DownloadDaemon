@@ -29,7 +29,7 @@ END_EVENT_TABLE()
 
 
 configure_dialog::configure_dialog(wxWindow *parent):
-	wxDialog(parent, -1, wxEmptyString){
+	wxDialog(parent, -1, wxString(wxEmptyString)){
 
 	myframe *p = (myframe *)parent;
 	SetTitle(p->tsl("Configure DownloadDaemon"));
@@ -745,10 +745,10 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 		mysock->send("DDP VAR SET mgmt_password = " + old_pass + " ; " + new_pass);
 		mysock->recv(answer);
 
+		mx->unlock();
+
 		if(answer.find("102") == 0) // 102 AUTHENTICATION	<-- Authentication failed
 			wxMessageBox(p->tsl("Failed to change the Password."), p->tsl("Password Error"));
-
-		mx->unlock();
 	}
 
 	Destroy();

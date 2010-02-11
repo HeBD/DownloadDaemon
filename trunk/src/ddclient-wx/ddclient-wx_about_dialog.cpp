@@ -41,7 +41,7 @@ wxString wxbuildinfo(){
 
 
 about_dialog::about_dialog(wxString working_dir, wxWindow *parent):
-	wxDialog(parent, -1, wxEmptyString){
+	wxDialog(parent, -1, wxString(wxEmptyString)){
 
 	this->working_dir = working_dir;
 	myframe *p = (myframe *)parent;
@@ -54,7 +54,8 @@ about_dialog::about_dialog(wxString working_dir, wxWindow *parent):
 
 	name_text = new wxStaticText(this, -1, p->tsl("DownloadDaemon Client-wx"));
 	build_text = new wxStaticText(this, -1, wxbuildinfo());
-	website_text = new wxHyperlinkCtrl(this, -1, p->tsl("Project Website"), wxT("http://downloaddaemon.sourceforge.net/"), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxHL_ALIGN_LEFT|wxHL_CONTEXTMENU);
+	website_text = new wxHyperlinkCtrl(this, -1, p->tsl("Project Website"), wxT("http://downloaddaemon.sourceforge.net/"), wxDefaultPosition, wxDefaultSize,
+										wxBORDER_NONE|wxHL_ALIGN_LEFT|wxHL_CONTEXTMENU);
 	website_text->SetNormalColour(wxT("NAVY"));
 	website_text->SetHoverColour(wxT("MEDIUM SLATE BLUE"));
 

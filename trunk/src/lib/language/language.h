@@ -15,6 +15,7 @@
 #include <map>
 #include <fstream>
 #include <string>
+#include <boost/thread.hpp>
 
 
 /** Language Class, translates a string to a given language */
@@ -46,6 +47,7 @@ class language{
 		std::map<std::string, std::string> texts;
 		std::string lang;
 		std::string working_dir;
+		boost::mutex mx;
 };
 
 #endif // DDCLIENT_WX_LANGUAGE_H
