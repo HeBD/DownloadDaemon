@@ -7,6 +7,7 @@
    [susanne]
 	- created class to translate strings by using language files
 	- implemented translation at ddclient-wx (currently only with German language file, others will follow)
+	- bugfix: removed race condition where ddclient-wx killed itself when dd was killed
 
 ----- 2010-01-10 - VERSION 0.8 RELEASED
 

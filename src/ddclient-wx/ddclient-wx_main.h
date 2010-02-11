@@ -38,6 +38,7 @@
 #include <wx/file.h>
 #include <wx/clipbrd.h>
 #include <wx/dataobj.h>
+#include <wx/statusbr.h>
 
 #include "ddclient-wx_connect_dialog.h"
 #include "ddclient-wx_about_dialog.h"
@@ -52,7 +53,7 @@
 #endif
 
 using namespace std;
-
+#include <wx/statusbr.h>
 
 /** Main Class: the Frame */
 class myframe : public wxFrame{
@@ -119,6 +120,7 @@ class myframe : public wxFrame{
 		wxToolBar *toolbar;
 		wxToolBarToolBase *download_activate;
 		wxToolBarToolBase *download_deactivate;
+		wxStatusBar *status_bar;
 
 		// elements for content
 		wxPanel *panel_downloads;
