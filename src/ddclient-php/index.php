@@ -24,8 +24,15 @@ if(isset($_GET['site']) && file_exists('sites/'.$_GET['site'].'.php') && $logged
 	$site = 'login';
 }
 
+$site_url = "";
+if(!isset($_SERVER['HTTPS']) || strtolower($_SERVER['HTTPS']) == "off") {
+	$site_url = "http://";
+} else {
+	$site_url = "https://";
+}
+
 $tpl_vars = array(
-	'T_SITE_URL' => substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], "/")+1),
+	'T_SITE_URL' => $site_url . $_SERVER['HTTP_HOST'] . substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], "/")+1),
 	'T_DEFAULT_LANG' => LANG,
 	'L_DD' => $LANG['DD'],
 	'L_Manager' => $LANG['Manager'],

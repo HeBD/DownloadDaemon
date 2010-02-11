@@ -75,8 +75,21 @@ int main(int argc, char* argv[]) {
 		replace_all(curr_router_name, "<", " ");
 		replace_all(curr_router_name, ">", " ");
 		replace_all(curr_router_name, "|", " ");
+		replace_all(curr_router_name, "@", " ");
+		replace_all(curr_router_name, "\n", " ");
+		replace_all(curr_router_name, "\r", " ");
+		replace_all(curr_router_name, "'", " ");
+		replace_all(curr_router_name, "\"", " ");
+		replace_all(curr_router_name, ";", " ");
+
+		while((curr_router_name.size() > 0) && (curr_router_name[0] == '-')) {
+			curr_router_name = curr_router_name.substr(1);
+		}
 
 		trim_string(curr_router_name);
+		if(curr_router_name.empty()) {
+			continue;
+		}
 
 		ofstream out(string("scripts/" + curr_router_name).c_str());
 		out << curr_script;

@@ -1,6 +1,11 @@
 2010-02-11
+   [adrian]
+	- fixed ddclient-php not running correctly if it was installed to the web-server root
+	- updated jdownloader router extractor
    [susanne]
 	- created class to translate strings by using language files
+
+----- 2010-01-10 - VERSION 0.8 RELEASED
 
 2010-02-09
    [adrian]

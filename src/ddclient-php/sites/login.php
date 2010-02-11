@@ -2,7 +2,11 @@
 $err_message = '';
 if(isset($_POST['submit'])) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, 0);
-	$day = 86400 + time();
+	$day = 0;
+	if(isset($_POST['stayli'])) {
+		$day = time() + 99999999999;
+	}
+
 	$host = $_POST['host'];
 	$port = $_POST['port'];
 	$pwd = $_POST['passwd'];
@@ -10,7 +14,7 @@ if(isset($_POST['submit'])) {
 		$pwd = " ";
 	}
 	if(isset($_POST['encrypt'])) {
-		$enc = $_PORT['encrypt'];
+		$enc = $_POST['encrypt'];
 	}else{
 		$enc = 0;
 	}
@@ -43,6 +47,7 @@ $tpl_vars['L_Host'] = $LANG['Host'];
 $tpl_vars['L_Port'] = $LANG['Port'];
 $tpl_vars['L_Password'] = $LANG['Password'];
 $tpl_vars['L_Encrypt'] = $LANG['Encrypt'];
+$tpl_vars['L_Stay_li'] = $LANG['Stay_li'];
 $tpl_vars['C_DEFAULT_HOST'] = DEFAULT_HOST;
 $tpl_vars['C_DEFAULT_PORT'] = DEFAULT_PORT;
 $tpl_vars['err_message'] = $err_message;
