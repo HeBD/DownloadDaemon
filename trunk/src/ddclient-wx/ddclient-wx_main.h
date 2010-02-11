@@ -145,6 +145,7 @@ class myframe : public wxFrame{
 
 		void add_bars();
 		void add_components();
+		void update_components();
 		void update_list();
 		void get_content();
 		void cut_time(string &time_left);

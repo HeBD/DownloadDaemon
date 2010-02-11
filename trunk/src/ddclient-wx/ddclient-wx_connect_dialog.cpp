@@ -138,7 +138,7 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 	}
 
 	myframe *p = ((myframe *) GetParent());
-	p->set_language(lang);
+	p->set_language(lang); // kills the client << whatever reason for
 
 	tkSock *mysock = new tkSock();
 	bool connection = false, error_occured = false;
