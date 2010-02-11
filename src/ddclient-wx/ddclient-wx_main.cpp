@@ -428,12 +428,8 @@ void myframe::add_bars(){
 
 
 void myframe::add_components(){
-
-	if(panel_downloads != NULL)
-		delete panel_downloads;
-
 	panel_downloads = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-	sizer_downloads = new wxBoxSizer(wxHORIZONTAL); // lines/rows, colums, vgap, hgap
+	sizer_downloads = new wxBoxSizer(wxHORIZONTAL);
 	panel_downloads->SetSizer(sizer_downloads);
 
 	// all download lists
@@ -448,6 +444,38 @@ void myframe::add_components(){
 	list->InsertColumn(4, tsl("Status"), wxLIST_AUTOSIZE_USEHEADER, 150);
 
 	mx.lock();
+	content.clear(); // delete old content to force reload of list
+	mx.unlock();
+}
+
+
+void myframe::update_components(){
+	mx.lock();
+
+	if(list != NULL){
+
+		// change column widths on resize
+		int width = GetClientSize().GetWidth();
+		width -= 160; // minus width of fix sized columns
+
+		#if defined(__WXMSW__)
+			width -= 10;
+		#endif // defined(__WXMSW__)
+
+		list->DeleteColumn(4);
+		list->DeleteColumn(3);
+		list->DeleteColumn(2);
+		list->DeleteColumn(1);
+		list->DeleteColumn(0);
+
+		list->InsertColumn(0, tsl("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
+		list->InsertColumn(1, tsl("Title"), wxLIST_AUTOSIZE_USEHEADER, width*0.25);
+		list->InsertColumn(2, tsl("URL"), wxLIST_AUTOSIZE_USEHEADER, width*0.3);
+		list->InsertColumn(3, tsl("Time left"), wxLIST_AUTOSIZE_USEHEADER, 100);
+		list->InsertColumn(4, tsl("Status"), wxLIST_AUTOSIZE_USEHEADER, width*0.45);
+
+ 	}
+
 	content.clear(); // delete old content to force reload of list
 	mx.unlock();
 }
@@ -1422,6 +1450,7 @@ void myframe::on_copy_url(wxCommandEvent &event){
 	Refresh();
 
  	if(list != NULL){
+		mx.lock();
 
 		// change column widths on resize
 		int width = GetClientSize().GetWidth();
@@ -1434,6 +1463,8 @@ void myframe::on_copy_url(wxCommandEvent &event){
 		list->SetColumnWidth(1, width*0.25);  // only column 1, 2 and 4, because 0 and 3 have fix sizes
 		list->SetColumnWidth(2, width*0.3);
 		list->SetColumnWidth(4, width*0.45);
+
+		mx.unlock();
  	}
  }
 
@@ -1497,7 +1528,7 @@ void myframe::set_language(std::string lang_to_set){
 	lang.set_language(lang_to_set);
 
 	add_bars(); // these functions need a language to be set => recall
-	add_components();
+	update_components();
 	Layout();
 	Fit();
 }
