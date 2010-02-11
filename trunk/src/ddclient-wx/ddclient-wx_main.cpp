@@ -145,13 +145,8 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	CenterOnScreen();
 	SetIcon(wxIcon(wxT("img/logoDD.png")));
 
-	add_bars();
-	add_components();
-
-	Layout();
-	Fit();
-
 	lang.set_working_dir(std::string(working_dir.mb_str()) + "lang/");
+
 	mysock = new tkSock();
 
 	// connect if logindata was saved
@@ -162,6 +157,12 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 		login_data last_data =  { "", 0, ""};
 
 		ifs.read((char *) &last_data, sizeof(login_data));
+
+		if(last_data.lang[0] != '\0') // older versions of save.dat won't have lang, so we have to check
+			lang.set_language(last_data.lang); // set program language
+
+		add_bars(); // these two functions need a language to be set => that's why it's called here and not sooner
+		add_components();
 
 		// try to connect with the data read from file
 		tkSock *mysock_tmp = new tkSock();
@@ -208,8 +209,9 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 					mysock_tmp->recv(snd);
 
 				}else{ // encryption not permitted
-					wxMessageDialog dialog(this, wxT("Encrypted authentication not supported by server. \nDo you want to try unsecure plain-text authentication?"),
-										   wxT("Auto Connection: No Encryption Supported"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+					wxMessageDialog dialog(this, tsl("Encrypted authentication not supported by server.")
+											+ wxT("/n") + tsl("Do you want to try unsecure plain-text authentication?"),
+										   tsl("Auto Connection: No Encryption Supported"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
 					int del = dialog.ShowModal();
 
 					if(del == wxID_YES){ // user clicked yes
@@ -269,7 +271,16 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 		}else{ // connection failed due to host (IP/URL or port)
 			delete mysock_tmp;
 		}
+	}else{
+		add_bars();
+		add_components();
 	}
+
+
+
+	Layout();
+	Fit();
+
 	boost::thread(boost::bind(&myframe::update_list, this));
 }
 
@@ -285,8 +296,8 @@ myframe::~myframe(){
 
 void myframe::update_status(wxString server){
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please reconnect."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please reconnect."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -318,7 +329,8 @@ void myframe::update_status(wxString server){
 
 		toolbar->Realize();
 
-		wxString status_text = wxT("Connected to ");
+		wxString status_text = tsl("Connected to");
+		status_text += wxT(" ");
 		status_text += server;
 		SetStatusText(status_text, 1);
 
@@ -334,59 +346,70 @@ void myframe::add_bars(){
 
 	file_menu = new wxMenu(wxT(""));
 
-	file_menu->Append(id_toolbar_connect, wxT("&Connect..\tAlt-C"), wxT("Connect"));
-	file_menu->Append(id_toolbar_configure, wxT("&Configure..\tAlt-P"), wxT("Configure"));
-	file_menu->Append(id_toolbar_download_activate, wxT("&Activate Downloading\tF2"), wxT("Activate Downloading"));
-	file_menu->Append(id_toolbar_download_deactivate, wxT("&Deactivate Downloading\tF3"), wxT("Deactivate Downloading"));
+	file_menu->Append(id_toolbar_connect, wxT("&") + tsl("Connect") + wxT("..\tAlt-C"), tsl("Connect"));
+	file_menu->Append(id_toolbar_configure, wxT("&") + tsl("Configure") + wxT("..\tAlt-P"), tsl("Configure"));
+	file_menu->Append(id_toolbar_download_activate, wxT("&") + tsl("Activate Downloading") + wxT("\tF2"), tsl("Activate Downloading"));
+	file_menu->Append(id_toolbar_download_deactivate, wxT("&") + tsl("Deactivate Downloading") + wxT("\tF3"), tsl("Deactivate Downloading"));
 	file_menu->Enable(id_toolbar_download_activate, false); // those two are not enabled from the start
 	file_menu->Enable(id_toolbar_download_deactivate, false);
 	file_menu->AppendSeparator();
 
-	file_menu->Append(id_toolbar_activate, wxT("&Activate Download\tAlt-A"), wxT("Activate Download"));
-	file_menu->Append(id_toolbar_deactivate, wxT("&Deactivate Download\tAlt-D"), wxT("Deactivate Download"));
+	file_menu->Append(id_toolbar_activate, wxT("&") + tsl("Activate Download") + wxT("\tAlt-A"), tsl("Activate Download"));
+	file_menu->Append(id_toolbar_deactivate, wxT("&") + tsl("Deactivate Download") + wxT("\tAlt-D"), tsl("Deactivate Download"));
 	file_menu->AppendSeparator();
 
-	file_menu->Append(id_toolbar_add, wxT("&Add Download..\tAlt-I"), wxT("Add Download"));
-	file_menu->Append(id_toolbar_delete, wxT("&Delete Download\tDEL"), wxT("Delete Download"));
-	file_menu->Append(id_toolbar_delete_finished, wxT("&Delete finished Downloads\tCtrl-DEL"), wxT("Delete finished Downloads"));
+	file_menu->Append(id_toolbar_add, wxT("&") + tsl("Add Download") + wxT("..\tAlt-I"), tsl("Add Download"));
+	file_menu->Append(id_toolbar_delete, wxT("&") + tsl("Delete Download") + wxT("\tDEL"), tsl("Delete Download"));
+	file_menu->Append(id_toolbar_delete_finished, wxT("&") + tsl("Delete finished Downloads") + wxT("\tCtrl-DEL"), tsl("Delete finished Downloads"));
 	file_menu->AppendSeparator();
 
-	file_menu->Append(id_menu_select_all_lines, wxT("&Select all\tCtrl-A"), wxT("Select all"));
-	file_menu->Append(id_toolbar_copy_url, wxT("&Copy URL\tCtrl-C"), wxT("Copy URL"));
+	file_menu->Append(id_menu_select_all_lines, wxT("&") + tsl("Select all") + wxT("\tCtrl-A"), tsl("Select all"));
+	file_menu->Append(id_toolbar_copy_url, wxT("&") + tsl("Copy URL") + wxT("\tCtrl-C"), tsl("Copy URL"));
 	file_menu->AppendSeparator();
 
-	file_menu->Append(wxID_EXIT, wxT("&Quit\tAlt-F4"), wxT("Quit"));
-	menu->Append(file_menu, wxT("&File"));
+	file_menu->Append(wxID_EXIT, wxT("&") + tsl("Quit") + wxT("\tAlt-F4"), tsl("Quit"));
+	menu->Append(file_menu, wxT("&") + tsl("File"));
 
 	help_menu = new wxMenu(_T(""));
-	help_menu->Append(id_menu_about, wxT("&About..\tF1"), wxT("About"));
-	menu->Append(help_menu, wxT("&Help"));
+	help_menu->Append(id_menu_about, wxT("&") + tsl("About") + wxT("..\tF1"), tsl("About"));
+	menu->Append(help_menu, wxT("&") + tsl("Help"));
 
 
 	// toolbar with icons
 	toolbar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL|wxTB_FLAT);
 
-	toolbar->AddTool(id_toolbar_connect, wxT("Connect"), wxBitmap(working_dir + wxT("img/1_connect.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Connect to a DownloadDaemon Server"), wxT("Connect to a DownloadDaemon Server"));
+	toolbar->AddTool(id_toolbar_connect, tsl("Connect"), wxBitmap(working_dir + wxT("img/1_connect.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL,
+					tsl("Connect to a DownloadDaemon Server"), tsl("Connect to a DownloadDaemon Server"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_add, wxT("Add"), wxBitmap(working_dir + wxT("img/2_add.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Add a new Download"), wxT("Add a new Download"));
-	toolbar->AddTool(id_toolbar_delete, wxT("Delete"), wxBitmap(working_dir + wxT("img/3_delete.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Delete the selected Download"), wxT("Delete the selected Download"));
-	toolbar->AddTool(id_toolbar_delete_finished, wxT("Delete Finished"), wxBitmap(working_dir + wxT("img/10_delete_finished.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Delete all finished Downloads"), wxT("Delete all finished Downloads"));
+	toolbar->AddTool(id_toolbar_add, tsl("Add"), wxBitmap(working_dir + wxT("img/2_add.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL,
+					tsl("Add a new Download"), tsl("Add a new Download"));
+	toolbar->AddTool(id_toolbar_delete, tsl("Delete"), wxBitmap(working_dir + wxT("img/3_delete.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL,
+					tsl("Delete the selected Download"), tsl("Delete the selected Download"));
+	toolbar->AddTool(id_toolbar_delete_finished, tsl("Delete Finished Downloads"), wxBitmap(working_dir + wxT("img/10_delete_finished.png"), wxBITMAP_TYPE_PNG), wxNullBitmap,
+					wxITEM_NORMAL, tsl("Delete all finished Downloads"), tsl("Delete all finished Downloads"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_activate, wxT("Activate"), wxBitmap(working_dir + wxT("img/5_start.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Activate the selected Download"), wxT("Activate the selected Download"));
-	toolbar->AddTool(id_toolbar_deactivate, wxT("Deactivate"), wxBitmap(working_dir + wxT("img/4_stop.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate the selected Download"), wxT("Deactivate the selected Download"));
+	toolbar->AddTool(id_toolbar_activate, tsl("Activate"), wxBitmap(working_dir + wxT("img/5_start.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL,
+					tsl("Activate the selected Download"), tsl("Activate the selected Download"));
+	toolbar->AddTool(id_toolbar_deactivate, tsl("Deactivate"), wxBitmap(working_dir + wxT("img/4_stop.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL,
+					tsl("Deactivate the selected Download"), tsl("Deactivate the selected Download"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_priority_up, wxT("Increase Priority"), wxBitmap(working_dir + wxT("img/6_up.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Increase Priority of the selected Download"), wxT("Increase Priority of the selected Download"));
-	toolbar->AddTool(id_toolbar_priority_down, wxT("Decrease Priority"), wxBitmap(working_dir + wxT("img/7_down.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Decrease Priority of the selected Download"), wxT("Decrease Priority of the selected Download"));
+	toolbar->AddTool(id_toolbar_priority_up, tsl("Increase Priority"), wxBitmap(working_dir + wxT("img/6_up.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL,
+					tsl("Increase Priority of the selected Download"), tsl("Increase Priority of the selected Download"));
+	toolbar->AddTool(id_toolbar_priority_down, tsl("Decrease Priority"), wxBitmap(working_dir + wxT("img/7_down.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL,
+					tsl("Decrease Priority of the selected Download"), tsl("Decrease Priority of the selected Download"));
 	toolbar->AddSeparator();
 
-	toolbar->AddTool(id_toolbar_configure, wxT("Configure"), wxBitmap(working_dir + wxT("img/8_configure.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Configure DownloadDaemon Server"), wxT("Configure DownloadDaemon Server"));
+	toolbar->AddTool(id_toolbar_configure, tsl("Configure"), wxBitmap(working_dir + wxT("img/8_configure.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL,
+					tsl("Configure DownloadDaemon Server"), tsl("Configure DownloadDaemon Server"));
 	toolbar->AddSeparator();
 
-	download_activate = toolbar->AddTool(id_toolbar_download_activate, wxT("Activate Downloading"), wxBitmap(working_dir + wxT("img/9_activate.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Activate Downloading"), wxT("Activate Downloading"));
-	download_deactivate = toolbar->AddTool(id_toolbar_download_deactivate, wxT("Deactivate Downloading"), wxBitmap(working_dir + wxT("img/9_deactivate.png"), wxBITMAP_TYPE_PNG), wxNullBitmap, wxITEM_NORMAL, wxT("Deactivate Downloading"), wxT("Deactivate Downloading"));
+	download_activate = toolbar->AddTool(id_toolbar_download_activate, tsl("Activate Downloading"), wxBitmap(working_dir + wxT("img/9_activate.png"), wxBITMAP_TYPE_PNG),
+										wxNullBitmap, wxITEM_NORMAL, tsl("Activate Downloading"), tsl("Activate Downloading"));
+	download_deactivate = toolbar->AddTool(id_toolbar_download_deactivate, tsl("Deactivate Downloading"), wxBitmap(working_dir + wxT("img/9_deactivate.png"), wxBITMAP_TYPE_PNG),
+											wxNullBitmap, wxITEM_NORMAL, tsl("Deactivate Downloading"), tsl("Deactivate Downloading"));
 
 	toolbar->Realize();
 
@@ -398,8 +421,8 @@ void myframe::add_bars(){
 
 	// statusbar
 	CreateStatusBar(2);
-	SetStatusText(wxT("DownloadDaemon Client-wx"),0);
-	SetStatusText(wxT("Not connected"),1);
+	SetStatusText(tsl("DownloadDaemon Client-wx"),0);
+	SetStatusText(tsl("Not connected"),1);
 }
 
 
@@ -415,18 +438,18 @@ void myframe::add_components(){
 
 
 	// columns
-	list->InsertColumn(0, wxT("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
-	list->InsertColumn(1, wxT("Title"), wxLIST_AUTOSIZE_USEHEADER, 76);
-	list->InsertColumn(2, wxT("URL"), wxLIST_AUTOSIZE_USEHEADER, 170);
-	list->InsertColumn(3, wxT("Time left"), wxLIST_AUTOSIZE_USEHEADER, 100);
-	list->InsertColumn(4, wxT("Status"), wxLIST_AUTOSIZE_USEHEADER, 150);
+	list->InsertColumn(0, tsl("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
+	list->InsertColumn(1, tsl("Title"), wxLIST_AUTOSIZE_USEHEADER, 76);
+	list->InsertColumn(2, tsl("URL"), wxLIST_AUTOSIZE_USEHEADER, 170);
+	list->InsertColumn(3, tsl("Time left"), wxLIST_AUTOSIZE_USEHEADER, 100);
+	list->InsertColumn(4, tsl("Status"), wxLIST_AUTOSIZE_USEHEADER, 150);
 }
 
 
 void myframe::update_list(){
 	while(true){ // for boost::thread
 		if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){
-			SetStatusText(wxT("Not connected"), 1);
+			SetStatusText(tsl("Not connected"), 1);
 
 			// make sure mysock doesn't crash the programm
 			mx.lock();
@@ -448,7 +471,7 @@ void myframe::update_list(){
 void myframe::get_content(){
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){
-		SetStatusText(wxT("Not connected"),1);
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -555,19 +578,19 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 		color = "LIME GREEN";
 
 		if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] == "PLUGIN_SUCCESS"){ // waiting time > 0
-			status_text = "Download running. Waiting.";
+			status_text = lang["Download running. Waiting."];
 			time_left =  splitted_line[7];
 			cut_time(time_left);
 
 		}else if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] != "PLUGIN_SUCCESS") {
 			color = "RED";
-			status_text = "Error: " + splitted_line[8] + " Retrying soon.";
+			status_text = lang["Error"] + ": " + splitted_line[8] + " " + lang["Retrying soon."];
 			time_left =  splitted_line[7];
 			cut_time(time_left);
 
 		}else{ // no waiting time
 			stringstream stream_buffer, time_buffer;
-			stream_buffer << "Running";
+			stream_buffer << lang["Running"];
 
 			if(splitted_line[9] != "0" && splitted_line[9] != "-1") // download speed known
 				stream_buffer << "@" << setprecision(1) << fixed << (float)atol(splitted_line[9].c_str()) / 1024 << " kb/s";
@@ -613,12 +636,12 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 	}else if(splitted_line[4] == "DOWNLOAD_INACTIVE"){
 		if(splitted_line[8] == "PLUGIN_SUCCESS"){
 			color = "YELLOW";
-			status_text = "Download Inactive.";
+			status_text = lang["Download Inactive."];
 			time_left = "";
 
 		}else{ // error occured
 			color = "RED";
-			status_text = "Inactive. Error: " + splitted_line[8];
+			status_text = lang["Inactive. Error"] + ": " + splitted_line[8];
 			time_left = "";
 		}
 
@@ -626,7 +649,7 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 		time_left = "";
 
 		if(splitted_line[8] == "PLUGIN_SUCCESS"){
-			status_text = "Download Pending.";
+			status_text = lang["Download Pending."];
 
 		}else{ //error occured
 			color = "RED";
@@ -635,21 +658,21 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 
 	}else if(splitted_line[4] == "DOWNLOAD_WAITING"){
 		color = "YELLOW";
-		status_text = "Have to wait.";
+		status_text = lang["Have to wait."];
 		time_left = splitted_line[7];
 		cut_time(time_left);
 
 	}else if(splitted_line[4] == "DOWNLOAD_FINISHED"){
 		color = "GREEN";
-		status_text = "Download Finished.";
+		status_text = lang["Download Finished."];
 		time_left = "";
 
 	}else if(splitted_line[4] == "DOWNLOAD_RECONNECTING") {
 		color = "YELLOW";
-		status_text = "Reconnecting...";
+		status_text = lang["Reconnecting..."];
 		time_left = "";
 	}else{ // default, column 4 has unknown input
-		status_text = "Status not detected.";
+		status_text = lang["Status not detected."];
 		time_left = "";
 	}
 
@@ -708,6 +731,11 @@ void myframe::deselect_lines(){
 		else // found a selected one
 			list->SetItemState(item_index, 0, wxLIST_STATE_SELECTED);
 	  }
+}
+
+
+wxString myframe::tsl(string text){
+	return wxString(lang[text].c_str(), wxConvUTF8);
 }
 
 
@@ -833,8 +861,8 @@ void myframe::on_select_all_lines(wxCommandEvent &event){
 
 void myframe::on_add(wxCommandEvent &event){
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before adding Downloads."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please connect before adding Downloads."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -857,8 +885,8 @@ void myframe::on_delete(wxCommandEvent &event){
 	bool error_occured = false;
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before deleting Downloads."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please connect before deleting Downloads."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -875,7 +903,8 @@ void myframe::on_delete(wxCommandEvent &event){
 		if(!selected_lines.empty()){
 
 			// make sure user wants to delete downloads
-			wxMessageDialog dialog(this, wxT("Do you really want to delete\nthe selected Download(s)?"), wxT("Delete Downloads"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+			wxMessageDialog dialog(this, tsl("Do you really want to delete") + wxT("\n") + tsl("the selected Download(s)?"), tsl("Delete Downloads"),
+									wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
 			int del = dialog.ShowModal();
 
 			if(del == wxID_YES){ // user clicked yes to delete
@@ -905,8 +934,8 @@ void myframe::on_delete(wxCommandEvent &event){
 							mysock->recv(answer);
 
 							if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
-								string message = "Error occured at deleting File from ID " + id;
-								wxMessageBox(wxString(message.c_str(), wxConvUTF8), wxT("Error"));
+								string message = lang["Error occured at deleting File from ID"] + " " + id;
+								wxMessageBox(wxString(message.c_str(), wxConvUTF8), tsl("Error"));
 							}
 
 						}
@@ -920,13 +949,13 @@ void myframe::on_delete(wxCommandEvent &event){
 				}
 			}
 		}else
-			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
+			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
 		deselect_lines();
 		mx.unlock();
 
 		if(error_occured)
-			wxMessageBox(wxT("Error occured at deleting Download(s)."), wxT("Error"));
+			wxMessageBox(tsl("Error occured at deleting Download(s)."), tsl("Error"));
 
 		get_content();
 	}
@@ -941,8 +970,8 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 	bool error_occured = false;
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before deleting Downloads."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please connect before deleting Downloads."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -964,7 +993,8 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 		if(!finished_ids.empty()){
 
 			// make sure user wants to delete downloads
-			wxMessageDialog dialog(this, wxT("Do you really want to delete\nall finished Download(s)?"), wxT("Delete Downloads"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+			wxMessageDialog dialog(this, tsl("Do you really want to delete") + wxT("\n") + tsl("all finished Download(s)?"), tsl("Delete Downloads"),
+									wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
 			int del = dialog.ShowModal();
 
 			if(del == wxID_YES){ // user clicked yes to delete
@@ -994,8 +1024,8 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 							mysock->recv(answer);
 
 							if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
-								string message = "Error occured at deleting File from ID " + *it;
-								wxMessageBox(wxString(message.c_str(), wxConvUTF8), wxT("Error"));
+								string message = lang["Error occured at deleting File from ID"] + " " + *it;
+								wxMessageBox(wxString(message.c_str(), wxConvUTF8), tsl("Error"));
 							}
 
 						}
@@ -1014,7 +1044,7 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 		mx.unlock();
 
 		if(error_occured)
-			wxMessageBox(wxT("Error occured at deleting Download(s)."), wxT("Error"));
+			wxMessageBox(tsl("Error occured at deleting Download(s)."), tsl("Error"));
 
 		get_content();
 	}
@@ -1027,8 +1057,8 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 	bool error_occured = false;
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before deleting Files."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please connect before deleting Files."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -1045,7 +1075,7 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 		if(!selected_lines.empty()){
 
 			// make sure user wants to delete downloads
-			wxMessageDialog dialog(this, wxT("Do you really want to delete\nthe selected File(s)?"), wxT("Delete Files"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+			wxMessageDialog dialog(this, tsl("Do you really want to delete") + wxT("/n") + tsl("the selected File(s)?"), tsl("Delete Files"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
 			int del = dialog.ShowModal();
 
 			if(del == wxID_YES){ // user clicked yes to delete
@@ -1066,21 +1096,21 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 						mysock->recv(answer);
 
 						if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
-							string message = "Error occured at deleting File from ID " + id;
-							wxMessageBox(wxString(message.c_str(), wxConvUTF8), wxT("Error"));
+							string message = lang["Error occured at deleting File from ID"] + " " + id;
+							wxMessageBox(wxString(message.c_str(), wxConvUTF8), tsl("Error"));
 						}
 
 					}
 				}
 			}
 		}else
-			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
+			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
 		deselect_lines();
 		mx.unlock();
 
 		if(error_occured)
-			wxMessageBox(wxT("Error occured at deleting Files(s)."), wxT("Error"));
+			wxMessageBox(tsl("Error occured at deleting Files(s)."), tsl("Error"));
 
 		get_content();
 	}
@@ -1092,8 +1122,8 @@ void myframe::on_activate(wxCommandEvent &event){
 	string id, answer;
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before activating Downloads."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please connect before activating Downloads."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -1117,7 +1147,7 @@ void myframe::on_activate(wxCommandEvent &event){
 			}
 
 		}else
-			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
+			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
 		mx.unlock();
 		get_content();
@@ -1130,7 +1160,7 @@ void myframe::on_deactivate(wxCommandEvent &event){
 	string id, answer;
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before deactivating Downloads."), wxT("No Connection to Server"));
+		wxMessageBox(tsl("Please connect before deactivating Downloads."), tsl("No Connection to Server"));
 
 	}else{ // we have a connection
 
@@ -1147,7 +1177,7 @@ void myframe::on_deactivate(wxCommandEvent &event){
 			}
 
 		}else
-			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
+			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
 		mx.unlock();
 		get_content();
@@ -1160,8 +1190,8 @@ void myframe::on_deactivate(wxCommandEvent &event){
 	string id, answer;
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before increasing Priority."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please connect before increasing Priority."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -1192,7 +1222,7 @@ void myframe::on_deactivate(wxCommandEvent &event){
 			}
 
 		}else
-			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
+			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
 		deselect_lines();
 		mx.unlock();
@@ -1206,8 +1236,8 @@ void myframe::on_priority_down(wxCommandEvent &event){
 	string id, answer;
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before decreasing Priority."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please connect before decreasing Priority."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -1238,7 +1268,7 @@ void myframe::on_priority_down(wxCommandEvent &event){
 			}
 
 		}else
-			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
+			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
 		deselect_lines();
 		mx.unlock();
@@ -1249,7 +1279,7 @@ void myframe::on_priority_down(wxCommandEvent &event){
 
 void myframe::on_configure(wxCommandEvent &event){
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before configurating\nDownloadDaemon Server."), wxT("No Connection to Server"));
+		wxMessageBox(tsl("Please connect before configurating DownloadDaemon."),tsl("No Connection to Server"));
 		SetStatusText(wxT("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
@@ -1269,8 +1299,8 @@ void myframe::on_configure(wxCommandEvent &event){
 
 void myframe::on_download_activate(wxCommandEvent &event){
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before activate Downloading."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please connect before activate Downloading."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -1304,8 +1334,8 @@ void myframe::on_download_activate(wxCommandEvent &event){
 
 void myframe::on_download_deactivate(wxCommandEvent &event){
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before deactivate Downloading."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please connect before deactivate Downloading."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -1343,8 +1373,8 @@ void myframe::on_copy_url(wxCommandEvent &event){
 	wxString clipboard_data = wxT("");
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(wxT("Please connect before copying URLs."), wxT("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
+		wxMessageBox(tsl("Please connect before copying URLs."), tsl("No Connection to Server"));
+		SetStatusText(tsl("Not connected"),1);
 
 		// make sure mysock doesn't crash the programm
 		mx.lock();
@@ -1370,9 +1400,9 @@ void myframe::on_copy_url(wxCommandEvent &event){
 				wxTheClipboard->SetData(new wxTextDataObject(clipboard_data));
 				wxTheClipboard->Close();
 			}else
-				wxMessageBox(wxT("Couldn't write into clipboard."), wxT("Clipboard Error"));
+				wxMessageBox(tsl("Couldn't write into clipboard."), tsl("Clipboard Error"));
 		}else
-			wxMessageBox(wxT("At least one Row should be selected."), wxT("Error"));
+			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
 		mx.unlock();
 
@@ -1426,13 +1456,13 @@ void myframe::on_reload(wxEvent &event){
 void myframe::on_right_click(wxContextMenuEvent &event){
 	wxMenu popup_menu;
 
-	popup_menu.Append(id_toolbar_activate, wxT("&Activate Download\tAlt-A"), wxT("Activate Download"));
-	popup_menu.Append(id_toolbar_deactivate, wxT("&Deactivate Download\tAlt-D"), wxT("Deactivate Download"));
+	popup_menu.Append(id_toolbar_activate, wxT("&") + tsl("Activate Download") + wxT("\tAlt-A"), tsl("Activate Download"));
+	popup_menu.Append(id_toolbar_deactivate, wxT("&") + tsl("Deactivate Download") + wxT("\tAlt-D"), tsl("Deactivate Download"));
 	popup_menu.AppendSeparator();
 
-	popup_menu.Append(id_toolbar_delete, wxT("&Delete Download\tDEL"), wxT("Delete Download"));
-	popup_menu.Append(id_menu_delete_file, wxT("&Delete File\tCtrl-F"), wxT("Delete File"));
-	popup_menu.Append(id_toolbar_copy_url, wxT("&Copy URL\tCtrl-C"), wxT("Copy URL"));
+	popup_menu.Append(id_toolbar_delete, wxT("&") + tsl("Delete Download") + wxT("\tDEL"), tsl("Delete Download"));
+	popup_menu.Append(id_menu_delete_file, wxT("&") + tsl("Delete File") + wxT("\tCtrl-F"), tsl("Delete File"));
+	popup_menu.Append(id_toolbar_copy_url, wxT("&") + tsl("Copy URL") + wxT("\tCtrl-C"), tsl("Copy URL"));
 	popup_menu.AppendSeparator();
 
 	PopupMenu(&popup_menu);
@@ -1453,4 +1483,9 @@ tkSock *myframe::get_connection_attributes(){
 
 boost::mutex *myframe::get_mutex(){
 	return &mx;
+}
+
+
+void myframe::set_language(std::string lang_to_set){
+	lang.set_language(lang_to_set);
 }

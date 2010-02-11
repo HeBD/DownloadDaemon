@@ -86,6 +86,17 @@ class myframe : public wxFrame{
 		*/
 		boost::mutex *get_mutex();
 
+		/** Setter for Language
+		*	@param lang_to_set Language
+		*/
+		void set_language(std::string lang_to_set);
+
+		/** Translates a string and changes it into a wxString
+		*	@param text string to translate
+		*	@returns translated wxString
+		*/
+		wxString tsl(string text);
+
 	private:
 
 		vector<vector<string> > content;
@@ -175,6 +186,7 @@ struct login_data{
 	char host[256];
 	int port;
 	char pass[256];
+	char lang[128];
 };
 
 #endif // DDCLIENT_WX_MAIN_H

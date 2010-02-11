@@ -19,6 +19,8 @@
 #include <wx/sizer.h>
 #include <wx/string.h>
 
+#include "ddclient-wx_main.h"
+
 
 /** Delete Dialog Class. Shows a Dialog which asks the User if a File should be deleted. */
 class delete_dialog: public wxDialog{

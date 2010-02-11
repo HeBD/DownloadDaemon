@@ -12,7 +12,7 @@
 #include "language.h"
 
 
-language::language() : lang("english"){
+language::language() : lang("English"){
 }
 
 
@@ -25,7 +25,7 @@ bool language::set_language(std::string lang){
 	texts.clear();
 
 	// einlesen der datei
-	if(lang != "english"){ // default language is english
+	if(lang != "English"){ // default language is english
 		size_t found;
 
 		if(working_dir == "")
@@ -45,7 +45,7 @@ bool language::set_language(std::string lang){
 
 				found = english.find("->"); // english and language string are separated by ->
 
-				if (found != std::string::npos){ // split line in english and language string and insert it
+				if (found != std::string::npos && english[0] != '#'){ // split line in english and language string and insert it
 					lang_string = english.substr(found+2);
 					english = english.substr(0, found);
 
@@ -64,7 +64,7 @@ bool language::set_language(std::string lang){
 
 
 std::string language::operator[](std::string index){
-	if(lang == "english") // default language is english
+	if(lang == "English") // default language is English
 		return index;
 
 	if(texts.find(index) == texts.end()) // if index can't be found return index

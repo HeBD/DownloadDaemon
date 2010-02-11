@@ -23,6 +23,7 @@
 #include <wx/hyperlink.h>
 
 #include "ddclient-wx_picture.h"
+#include "ddclient-wx_main.h"
 
 
 /** About Dialog Class. Shows a Dialog with Information about the Program. */
