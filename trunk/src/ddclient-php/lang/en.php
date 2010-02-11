@@ -18,6 +18,7 @@ $LANG = array(
 	'Port' => 'Port',
 	'Password' => 'Password',
 	'Encrypt' => 'Force Encryption',
+	'Stay_li' => 'Stay logged in',
 
 // Add Downloads
 	'Title' => 'Title',
