@@ -20,7 +20,7 @@ END_EVENT_TABLE()
 
 
 add_dialog::add_dialog(wxWindow *parent):
-	wxDialog(parent, -1, wxEmptyString){
+	wxDialog(parent, -1, wxString(wxEmptyString)){
 	myframe *p = (myframe *)parent;
 	SetTitle(p->tsl("Add Downloads"));
 

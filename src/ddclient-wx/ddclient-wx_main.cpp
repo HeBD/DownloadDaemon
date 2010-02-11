@@ -293,17 +293,17 @@ myframe::~myframe(){
 
 void myframe::update_status(wxString server){
 	mx.lock();
+
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		// make sure mysock doesn't crash the program
+		if(mysock != NULL)
+			delete mysock;
+		mysock = NULL;
+
 		if(server != wxT("")){
 			wxMessageBox(tsl("Please reconnect."), tsl("No Connection to Server"));
 			SetStatusText(tsl("Not connected"),1);
 		}
-		// make sure mysock doesn't crash the program
-
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
 
 	}else{
 		string answer;
@@ -333,11 +333,12 @@ void myframe::update_status(wxString server){
 			status_text += server;
 			SetStatusText(status_text, 1);
 		}
-		mx.unlock();
 	}
+	mx.unlock();
 }
 
 void myframe::add_bars(){
+	mx.lock(); // locked because menu, statusbar and toolbar are touched by other functions too
 
 	menu = new wxMenuBar();
 	SetMenuBar(NULL); // deleting old menu bar if existing
@@ -417,10 +418,11 @@ void myframe::add_bars(){
 
 	SetToolBar(toolbar);
 
-
 	// statusbar
 	CreateStatusBar(2);
 	SetStatusText(tsl("DownloadDaemon Client-wx"),0);
+	mx.unlock();
+
 	update_status(wxT(""));
 }
 
@@ -445,7 +447,9 @@ void myframe::add_components(){
 	list->InsertColumn(3, tsl("Time left"), wxLIST_AUTOSIZE_USEHEADER, 100);
 	list->InsertColumn(4, tsl("Status"), wxLIST_AUTOSIZE_USEHEADER, 150);
 
+	mx.lock();
 	content.clear(); // delete old content to force reload of list
+	mx.unlock();
 }
 
 
@@ -454,13 +458,11 @@ void myframe::update_list(){
 		mx.lock();
 
 		if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){
-			SetStatusText(tsl("Not connected"), 1);
-
 			// make sure mysock doesn't crash the program
-
 			if(mysock != NULL)
 				delete mysock;
 			mysock = NULL;
+			SetStatusText(tsl("Not connected"), 1);
 			mx.unlock();
 
 			sleep(2);
@@ -480,12 +482,12 @@ void myframe::get_content(){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
+
 		mx.unlock();
 
 	}else{
@@ -869,14 +871,15 @@ void myframe::on_add(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before adding Downloads."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before adding Downloads."), tsl("No Connection to Server"));
+
 
 	}else{
 		mx.unlock();
@@ -897,15 +900,14 @@ void myframe::on_delete(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before deleting Downloads."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
-
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before deleting Downloads."), tsl("No Connection to Server"));
 
 	}else{ // we have a connection
 
@@ -982,14 +984,14 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before deleting Downloads."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before deleting Downloads."), tsl("No Connection to Server"));
 
 	}else{ // we have a connection
 
@@ -1068,14 +1070,14 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before deleting Files."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before deleting Files."), tsl("No Connection to Server"));
 
 	}else{ // we have a connection
 
@@ -1132,14 +1134,14 @@ void myframe::on_activate(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before activating Downloads."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before activating Downloads."), tsl("No Connection to Server"));
 
 	}else{ // we have a connection
 
@@ -1199,14 +1201,14 @@ void myframe::on_deactivate(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before increasing Priority."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before increasing Priority."), tsl("No Connection to Server"));
 
 	}else{ // we have a connection
 
@@ -1245,14 +1247,14 @@ void myframe::on_priority_down(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before decreasing Priority."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before decreasing Priority."), tsl("No Connection to Server"));
 
 	}else{ // we have a connection
 
@@ -1288,15 +1290,14 @@ void myframe::on_configure(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before configurating DownloadDaemon."),tsl("No Connection to Server"));
-		SetStatusText(wxT("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
-
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(wxT("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before configurating DownloadDaemon."),tsl("No Connection to Server"));
 
 	}else{
 		mx.unlock();
@@ -1311,14 +1312,14 @@ void myframe::on_download_activate(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before activate Downloading."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before activate Downloading."), tsl("No Connection to Server"));
 
 	}else{
 		string answer;
@@ -1345,14 +1346,14 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before deactivate Downloading."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before deactivate Downloading."), tsl("No Connection to Server"));
 
 	}else{
 		string answer;
@@ -1383,14 +1384,14 @@ void myframe::on_copy_url(wxCommandEvent &event){
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please connect before copying URLs."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
 		// make sure mysock doesn't crash the program
 		if(mysock != NULL)
 			delete mysock;
 		mysock = NULL;
+		SetStatusText(tsl("Not connected"),1);
 		mx.unlock();
+
+		wxMessageBox(tsl("Please connect before copying URLs."), tsl("No Connection to Server"));
 
 	}else{ // we have a connection
 
@@ -1412,7 +1413,6 @@ void myframe::on_copy_url(wxCommandEvent &event){
 			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
 		mx.unlock();
-
 	}
  }
 

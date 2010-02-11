@@ -21,7 +21,7 @@ END_EVENT_TABLE()
 
 
 connect_dialog::connect_dialog(wxString config_dir, wxWindow *parent) :
-	wxDialog(parent, -1, wxEmptyString){
+	wxDialog(parent, -1, wxString(wxEmptyString)){
 
 	this->config_dir = config_dir;
 	myframe *p = (myframe *)parent;
@@ -246,6 +246,7 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 
 			myparent->set_connection_attributes(mysock, pass);
 			mx->unlock();
+			//p->set_language(lang);
 			myparent->update_status(host_input->GetValue());
 
 			// write login_data to a file
