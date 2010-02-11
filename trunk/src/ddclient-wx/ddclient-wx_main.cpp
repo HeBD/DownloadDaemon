@@ -413,10 +413,11 @@ void myframe::add_bars(){
 	SetToolBar(toolbar);
 
 	// statusbar
-	CreateStatusBar(2);
-	SetStatusText(tsl("DownloadDaemon Client-wx"),0);
-	SetStatusText(tsl("Not connected"), 1);
-
+	status_bar = new wxStatusBar(this);
+	status_bar->SetFieldsCount(2);
+	status_bar->SetStatusText(tsl("DownloadDaemon Client-wx"), 0);
+	status_bar->SetStatusText(tsl("Not connected"), 1);
+	SetStatusBar(status_bar);
 	update_status(wxT(""));
 }
 
@@ -569,7 +570,6 @@ void myframe::update_list(){
 			if(mysock != NULL)
 				delete mysock;
 			mysock = NULL;
-			SetStatusText(tsl("Not connected"), 1);
 			mx.unlock();
 
 			sleep(2);
@@ -1539,6 +1539,10 @@ void myframe::on_copy_url(wxCommandEvent &event){
 void myframe::on_reload(wxEvent &event){
 
 	mx.lock();
+
+	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+		status_bar->SetStatusText(tsl("Not connected"), 1);
+	}
 
 	compare_vectorvector();
 	content.clear();
