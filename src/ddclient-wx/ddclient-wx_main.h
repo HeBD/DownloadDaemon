@@ -144,6 +144,7 @@ class myframe : public wxFrame{
 		static const long id_right_click;
 
 		void add_bars();
+		void update_bars();
 		void add_components();
 		void update_components();
 		void update_list();

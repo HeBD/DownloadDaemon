@@ -138,7 +138,7 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 	}
 
 	myframe *p = ((myframe *) GetParent());
-	p->set_language(lang); // kills the client << whatever reason for
+	p->set_language(lang);
 
 	tkSock *mysock = new tkSock();
 	bool connection = false, error_occured = false;
@@ -246,7 +246,6 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 
 			myparent->set_connection_attributes(mysock, pass);
 			mx->unlock();
-			//p->set_language(lang);
 			myparent->update_status(host_input->GetValue());
 
 			// write login_data to a file
