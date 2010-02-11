@@ -40,6 +40,22 @@ $LANG = array(
 
 //Config
 	'Change_PWD' => 'Change Password',
+	'Old_PWD' => 'Old Password:',
+	'New_PWD' => 'New Password:',
+	'RT_PWD' => 'Retype Password:',
+	'en_di' => 'Enable / Disable',
+	'gen_conf' => 'General Configuration',
+	'start_end_desc' => 'You can force DownloadDaemon to only download at specific times. Therefore you can specifie a start time and 
+			     an end time in the format hours:minutes.<br /> Leave this fields empty if you want to allow DownloadDaemon to download permanently.',
+	'st_time' => 'Start Time:',
+	'end_time' => 'End Time:',
+	'dl_dir_desc' => 'This option specifies where finished downloads should be safed on the server.',
+	'dl_dir' => 'Download directory:',
+	'simul_dl_desc' => 'Here you can specify how many downloads may run at the same time.',
+	'simul_dl' => 'Simultaneous downloads:',
+	'log_level_desc' => 'This option specifies DownloadDaemons logging activity.',
+	'log_level' => 'Logging activity:',
+	'max_speed_desc' => 'Max. download speed (will only be used for Downloads that are not yet running).',
 
 // Errors
 	'ERR_COOKIE' => 'Cookies missing. If you have cookies disabled on your machine, please enable them. Else, try to log on again by clicking <a href="index.php">here</a>',

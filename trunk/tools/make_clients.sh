@@ -37,7 +37,7 @@ PATHS_DDCLIENTWX=("src/" "src/lib/" "src/lib/" "share/" "share/" "share/" "share
 FILES_DDCONSOLE=("../src/ddconsole" "../src/lib/netpptk" "../src/lib/crypt" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
 PATHS_DDCONSOLE=("src/" "src/lib/" "src/lib/")
 
-FILES_DDCLIENTPHP=("src/ddclient-php" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+FILES_DDCLIENTPHP=("../src/ddclient-php" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
 PATHS_DDCLIENTPHP=("")
 
 
