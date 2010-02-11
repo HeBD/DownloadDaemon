@@ -69,6 +69,8 @@ END_EVENT_TABLE()
 
 myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxWindowID id):
 	wxFrame(parent, id, title){
+	// make sure the pointer is marked as NULL
+	panel_downloads = NULL;
 
 	// getting working dir
 	working_dir = parameter;
@@ -145,6 +147,11 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 	CenterOnScreen();
 	SetIcon(wxIcon(wxT("img/logoDD.png")));
 
+	add_bars();
+	add_components();
+	Layout();
+	Fit();
+
 	lang.set_working_dir(std::string(working_dir.mb_str()) + "lang/");
 
 	mysock = new tkSock();
@@ -159,10 +166,8 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 		ifs.read((char *) &last_data, sizeof(login_data));
 
 		if(last_data.lang[0] != '\0') // older versions of save.dat won't have lang, so we have to check
-			lang.set_language(last_data.lang); // set program language
+			set_language(last_data.lang); // set program language
 
-		add_bars(); // these two functions need a language to be set => that's why it's called here and not sooner
-		add_components();
 
 		// try to connect with the data read from file
 		tkSock *mysock_tmp = new tkSock();
@@ -271,15 +276,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 		}else{ // connection failed due to host (IP/URL or port)
 			delete mysock_tmp;
 		}
-	}else{
-		add_bars();
-		add_components();
 	}
-
-
-
-	Layout();
-	Fit();
 
 	boost::thread(boost::bind(&myframe::update_list, this));
 }
@@ -296,9 +293,10 @@ myframe::~myframe(){
 
 void myframe::update_status(wxString server){
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		wxMessageBox(tsl("Please reconnect."), tsl("No Connection to Server"));
-		SetStatusText(tsl("Not connected"),1);
-
+		if(server != wxT("")){
+			wxMessageBox(tsl("Please reconnect."), tsl("No Connection to Server"));
+			SetStatusText(tsl("Not connected"),1);
+		}
 		// make sure mysock doesn't crash the programm
 		mx.lock();
 		if(mysock != NULL)
@@ -329,19 +327,20 @@ void myframe::update_status(wxString server){
 
 		toolbar->Realize();
 
-		wxString status_text = tsl("Connected to");
-		status_text += wxT(" ");
-		status_text += server;
-		SetStatusText(status_text, 1);
-
+		if(server != wxT("")){ // sometimes the function is called to update the toolbar, not the status text => server is empty
+			wxString status_text = tsl("Connected to");
+			status_text += wxT(" ");
+			status_text += server;
+			SetStatusText(status_text, 1);
+		}
 		mx.unlock();
 	}
 }
 
 void myframe::add_bars(){
 
-	// menubar
 	menu = new wxMenuBar();
+	SetMenuBar(NULL); // deleting old menu bar if existing
 	SetMenuBar(menu);
 
 	file_menu = new wxMenu(wxT(""));
@@ -422,11 +421,15 @@ void myframe::add_bars(){
 	// statusbar
 	CreateStatusBar(2);
 	SetStatusText(tsl("DownloadDaemon Client-wx"),0);
-	SetStatusText(tsl("Not connected"),1);
+	update_status(wxT(""));
 }
 
 
 void myframe::add_components(){
+
+	if(panel_downloads != NULL)
+		delete panel_downloads;
+
 
 	panel_downloads = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 	sizer_downloads = new wxBoxSizer(wxHORIZONTAL); // lines/rows, colums, vgap, hgap
@@ -436,13 +439,14 @@ void myframe::add_components(){
 	list = new wxListCtrl(panel_downloads, wxID_ANY, wxPoint(120, -46), wxSize(0,0), wxLC_REPORT);
 	sizer_downloads->Add(list , 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 
-
 	// columns
 	list->InsertColumn(0, tsl("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
 	list->InsertColumn(1, tsl("Title"), wxLIST_AUTOSIZE_USEHEADER, 76);
 	list->InsertColumn(2, tsl("URL"), wxLIST_AUTOSIZE_USEHEADER, 170);
 	list->InsertColumn(3, tsl("Time left"), wxLIST_AUTOSIZE_USEHEADER, 100);
 	list->InsertColumn(4, tsl("Status"), wxLIST_AUTOSIZE_USEHEADER, 150);
+
+	content.clear(); // delete old content to force reload of list
 }
 
 
@@ -1488,4 +1492,9 @@ boost::mutex *myframe::get_mutex(){
 
 void myframe::set_language(std::string lang_to_set){
 	lang.set_language(lang_to_set);
+
+	add_bars(); // these functions need a language to be set => recall
+	add_components();
+	Layout();
+	Fit();
 }
