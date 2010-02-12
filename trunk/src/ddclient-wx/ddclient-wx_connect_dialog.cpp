@@ -44,9 +44,6 @@ connect_dialog::connect_dialog(wxString config_dir, wxWindow *parent) :
 		snprintf(last_data.lang, 128, "English");
 	}
 
-	if(last_data.lang[0] != '\0') // older versions of save.dat won't have lang, so we have to check
-		p->set_language(last_data.lang); // set program language
-
 	SetTitle(p->tsl("Connect to Host"));
 
 	// create elements

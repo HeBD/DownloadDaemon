@@ -423,7 +423,7 @@ void myframe::add_bars(){
 
 
 void myframe::update_bars(){
-	mx.lock();
+	//mx.lock();
 
 	// update menu entrys
 	file_menu->SetLabel(id_toolbar_connect, wxT("&") + tsl("Connect") + wxT("..\tAlt-C"));
@@ -505,7 +505,7 @@ void myframe::update_bars(){
 	toolbar->RemoveTool(id_toolbar_download_activate); // these two toolbar icons are created for later use
 	toolbar->RemoveTool(id_toolbar_download_deactivate);
 
-	mx.unlock();
+	//mx.unlock();
 	update_status(wxT(""));
 
 }
@@ -530,7 +530,6 @@ void myframe::add_components(){
 
 
 void myframe::update_components(){
-	mx.lock();
 
 	if(list != NULL){
 
@@ -556,6 +555,7 @@ void myframe::update_components(){
 
  	}
 
+	mx.lock();
 	content.clear(); // delete old content to force reload of list
 	mx.unlock();
 }
@@ -967,6 +967,7 @@ void myframe::on_select_all_lines(wxCommandEvent &event){
 
 
  void myframe::on_connect(wxCommandEvent &event){
+ 	status_bar->SetStatusText(tsl("DownloadDaemon Client-wx"), 0); // program should do that automatically, but doesn't somehow...
 	connect_dialog dialog(config_dir, this);
 	dialog.ShowModal();
 	get_content();
