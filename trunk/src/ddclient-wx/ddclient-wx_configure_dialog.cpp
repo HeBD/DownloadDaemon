@@ -182,14 +182,14 @@ void configure_dialog::create_download_panel(){
 	count_sizer = new wxFlexGridSizer(1, 4, 10, 10);
 	download_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	exp_time_text = new wxStaticText(download_panel, -1, p->tsl("You can force DownloadDaemon to only download at specific times by entering a start and")
-									+ wxT("\n") + p->tsl("end time in the format hours:minutes.")
-									+ wxT("\n") + p->tsl("Leave these fields empty if you want to allow DownloadDaemon to download permanently."));
+	exp_time_text = new wxStaticText(download_panel, -1, p->tsl("You can force DownloadDaemon to only download at specific times by entering a start and"
+									"\nend time in the format hours:minutes."
+									"\nLeave these fields empty if you want to allow DownloadDaemon to download permanently."));
 	start_time_text = new wxStaticText(download_panel, -1, p->tsl("Start Time"));
 	end_time_text = new wxStaticText(download_panel, -1, p->tsl("End Time"));
 	save_dir_text = new wxStaticText(download_panel, -1, p->tsl("This option specifies where finished downloads should be safed on the server."));
-	exp_count_text = new wxStaticText(download_panel, -1, p->tsl("Here you can specify how many downloads may run at the same time and regulate the")
-									+ wxT("\n") + p->tsl("download speed for each download (overall max speed is download number * max speed)."));
+	exp_count_text = new wxStaticText(download_panel, -1, p->tsl("Here you can specify how many downloads may run at the same time and regulate the"
+									"\ndownload speed for each download (overall max speed is download number * max speed)."));
 	count_text = new wxStaticText(download_panel, -1, p->tsl("Simultaneous Downloads"));
 	speed_text = new wxStaticText(download_panel, -1, p->tsl("Maximal Speed in kb/s"));
 
@@ -282,8 +282,8 @@ void configure_dialog::create_log_panel(){
 	log_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
 	log_activity_text = new wxStaticText(log_panel, -1, p->tsl("This option specifies DownloadDaemons logging activity."));
-	log_output_text = new wxStaticText(log_panel, -1, p->tsl("This option specifies how logging should be done (Standard output, Standard error")
-															+ wxT("\n") + p->tsl("output, Syslog-daemon)."));
+	log_output_text = new wxStaticText(log_panel, -1, p->tsl("This option specifies how logging should be done (Standard output, Standard error"
+															"\noutput, Syslog-daemon)."));
 
 	// wxChoice log_output
 	wxString old_output = get_var("log_procedure");
