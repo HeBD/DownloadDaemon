@@ -42,6 +42,13 @@ class language{
 		*/
 		std::string operator[](std::string index);
 
+		/** Repaces all occurences of old in str with new_s
+		*	@param str string to search in
+		*	@param old string to replace
+		*	@param new_s replacement
+		*/
+		static void replace_all(std::string& str, const std::string& old, const std::string& new_s);
+
 	private:
 
 		std::map<std::string, std::string> texts;

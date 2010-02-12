@@ -38,21 +38,23 @@ bool language::set_language(std::string lang){
 		std::ifstream ifs(file_name.c_str(), std::fstream::in); // open file
 
 		if(ifs.good()){ // file successfully opened
-			char line[512];
+			std::string line;
 
 			while((!ifs.eof())){ // loop through lines
-				ifs.getline(line, 512);
+				getline(ifs, line);
 
-				std::string english(line);
+				replace_all(line, "\\n", "\n");
+				replace_all(line, "\\t", "\t");
+
 				std::string lang_string;
 
-				found = english.find("->"); // english and language string are separated by ->
+				found = line.find("->"); // english and language string are separated by ->
 
-				if (found != std::string::npos && english[0] != '#'){ // split line in english and language string and insert it
-					lang_string = english.substr(found+2);
-					english = english.substr(0, found);
+				if (found != std::string::npos && line[0] != '#'){ // split line in english and language string and insert it
+					lang_string = line.substr(found+2);
+					line = line.substr(0, found);
 
-					texts.insert(std::pair<std::string, std::string>(english, lang_string));
+					texts.insert(std::pair<std::string, std::string>(line, lang_string));
 				}
 			}
 
@@ -78,4 +80,12 @@ std::string language::operator[](std::string index){
 
 	else
 		return texts[index];
+}
+
+
+void language::replace_all(std::string& str, const std::string& old, const std::string& new_s) {
+	size_t n;
+	while((n = str.find(old)) != std::string::npos) {
+		str.replace(n, old.length(), new_s);
+	}
 }

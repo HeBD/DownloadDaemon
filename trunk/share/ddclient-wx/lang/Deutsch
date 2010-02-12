@@ -75,8 +75,7 @@ Hard->Hart
 Continue->Fortführen
 Soft->Weich
 Pussy->Paranoid
-#BAD STRING KILLS THE CLIENT
-#HARD cancels all downloads if a reconnect is needed\nCONTINUE only cancels downloads that can be continued after the reconnect\nSOFT will wait until all other downloads are finished\nPUSSY will only reconnect if there is no other choice \n\t(no other download can be started without a reconnect)->HART beendet alle Downloads wenn ein Reconnect nötig ist\nFORTFÜHREN beendet nur Downloads, die nach dem Reconnect fortgesetzt werden können\nWEICH wartet bis alle laufenden Downloads fertig sind\nPARANOID reconnectet nur, wenn sonst nichts mehr geht
+HARD cancels all downloads if a reconnect is needed\nCONTINUE only cancels downloads that can be continued after the reconnect\nSOFT will wait until all other downloads are finished\nPUSSY will only reconnect if there is no other choice \n\t(no other download can be started without a reconnect)->HART beendet alle Downloads wenn ein Reconnect nötig ist\nFORTFÜHREN beendet nur Downloads, die nach dem Reconnect fortgesetzt werden können\nWEICH wartet bis alle laufenden Downloads fertig sind\nPARANOID reconnectet nur, wenn sonst nichts mehr geht
 
 
 Failed to change Log Procedure.->Ändern der Log Prozedur fehlgeschlagen.
