@@ -541,11 +541,12 @@ void myframe::update_components(){
 			width -= 10;
 		#endif // defined(__WXMSW__)
 
-		list->DeleteColumn(4);
+		/*list->DeleteColumn(4);
 		list->DeleteColumn(3);
 		list->DeleteColumn(2);
 		list->DeleteColumn(1);
-		list->DeleteColumn(0);
+		list->DeleteColumn(0);*/
+		list->ClearAll();
 
 		list->InsertColumn(0, tsl("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
 		list->InsertColumn(1, tsl("Title"), wxLIST_AUTOSIZE_USEHEADER, width*0.25);
