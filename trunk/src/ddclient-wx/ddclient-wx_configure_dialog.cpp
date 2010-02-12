@@ -15,6 +15,7 @@
 // IDs
 const long configure_dialog::id_premium_host_choice = wxNewId();
 const long configure_dialog::id_enable_reconnect_check = wxNewId();
+const long configure_dialog::id_help_button = wxNewId();
 
 
 // event table
@@ -23,6 +24,7 @@ BEGIN_EVENT_TABLE(configure_dialog, wxDialog)
 	EVT_BUTTON(wxID_SAVE, configure_dialog::on_pass_change)
 	EVT_BUTTON(wxID_OK, configure_dialog::on_premium_change)
 	EVT_BUTTON(wxID_CANCEL, configure_dialog::on_cancel)
+	EVT_BUTTON(id_help_button, configure_dialog::on_help)
 	EVT_CHOICE(configure_dialog::id_premium_host_choice, configure_dialog::on_select_premium_host)
 	EVT_CHECKBOX(configure_dialog::id_enable_reconnect_check, configure_dialog::on_checkbox_change)
 END_EVENT_TABLE()
@@ -352,7 +354,7 @@ void configure_dialog::create_reconnect_panel(){
 	outer_policy_sizer = new wxStaticBoxSizer(wxVERTICAL, reconnect_panel, p->tsl("Policy"));
 	outer_router_sizer = new wxStaticBoxSizer(wxHORIZONTAL, reconnect_panel, p->tsl("Router Data"));
 	router_sizer = new wxFlexGridSizer(4, 2, 10, 10);
-	policy_sizer = new wxFlexGridSizer(1, 2, 10, 10);
+	policy_sizer = new wxFlexGridSizer(1, 3, 10, 10);
 	reconnect_button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
 	// is reconnecting enabled?
@@ -382,12 +384,14 @@ void configure_dialog::create_reconnect_panel(){
 	wxArrayString model;
 	router_model_choice = new wxChoice(reconnect_panel, -1, wxDefaultPosition, wxSize(200, 30), model);
 
+	help_button = new wxButton(reconnect_panel, id_help_button, wxT("?"), wxDefaultPosition, wxSize(30, 30));
 	reconnect_button = new wxButton(reconnect_panel, wxID_APPLY);
 	reconnect_cancel_button = new wxButton(reconnect_panel, wxID_CANCEL);
 
 	// filling sizers
 	policy_sizer->Add(policy_text, 0, wxALIGN_LEFT);
 	policy_sizer->Add(policy_choice, 0, wxALIGN_LEFT);
+	policy_sizer->Add(help_button, 0, wxALIGN_LEFT);
 
 	router_sizer->Add(router_model_text, 0, wxALIGN_LEFT);
 	router_sizer->Add(router_model_choice, 0, wxALIGN_LEFT);
@@ -791,6 +795,18 @@ void configure_dialog::on_premium_change(wxCommandEvent &event){
 
 void configure_dialog::on_cancel(wxCommandEvent &event){
 	Destroy();
+}
+
+
+void configure_dialog::on_help(wxCommandEvent &event){
+	myframe *p = (myframe *) GetParent();
+
+	string help("HARD cancels all downloads if a reconnect is needed\n"
+				"CONTINUE only cancels downloads that can be continued after the reconnect\n"
+				"SOFT will wait until all other downloads are finished\n"
+				"PUSSY will only reconnect if there is no other choice \n\t(no other download can be started without a reconnect)");
+
+	wxMessageBox(p->tsl(help), p->tsl("Help"));
 }
 
 

@@ -132,6 +132,7 @@ class configure_dialog : public wxDialog{
 		wxTextCtrl *router_ip_input;
 		wxTextCtrl *router_user_input;
 		wxTextCtrl *router_pass_input;
+		wxButton *help_button;
 		wxButton *reconnect_button;
 		wxButton *reconnect_cancel_button;
 
@@ -154,12 +155,14 @@ class configure_dialog : public wxDialog{
 		// element IDs
 		static const long id_premium_host_choice;
 		static const long id_enable_reconnect_check;
+		static const long id_help_button;
 
 		// event handle methods
 		void on_apply(wxCommandEvent &event);
 		void on_pass_change(wxCommandEvent &event);
 		void on_premium_change(wxCommandEvent &event);
 		void on_cancel(wxCommandEvent &event);
+		void on_help(wxCommandEvent &event);
 		void on_select_premium_host(wxCommandEvent &event);
 		void on_checkbox_change(wxCommandEvent &event);
 
