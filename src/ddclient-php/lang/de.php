@@ -18,6 +18,7 @@ $LANG = array(
 	'Port' => 'Port',
 	'Password' => 'Passwort',
 	'Encrypt' => 'Verschl&uuml;sselung erzwingen',
+	'Stay_li' => 'Angemeldet bleiben',
 
 // Add Downloads
 	'Title' => 'Titel',
