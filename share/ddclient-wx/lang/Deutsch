@@ -4,7 +4,6 @@
 # - comment lines begin with #
 # - syntax is english->other language
 # - one entry per line
-# - \n can't be part of a line to translate, so some are a parted in several ones
 # - dublicates or empty lines don't disturb the program
 
 #about dialog
@@ -41,14 +40,11 @@ refuse existing Links->existierende Links nicht akzeptieren
 Download Time->Download Zeitraum
 Download Folder->Download Ordner
 Additional Download Options->Zusätzliche Download Optionen
-You can force DownloadDaemon to only download at specific times by entering a start and->Wenn man eine Start- und Endzeit im Format Stunden:Minuten angibt läd DownloadDaemon nur
-end time in the format hours:minutes.->zu diesen Zeiten herunter.
-Leave these fields empty if you want to allow DownloadDaemon to download permanently.->Lassen Sie diese Felder leer, wenn DownloadDaemon immer herunterladen soll.
+You can force DownloadDaemon to only download at specific times by entering a start and\nend time in the format hours:minutes.\nLeave these fields empty if you want to allow DownloadDaemon to download permanently.->Wenn man eine Start- und Endzeit im Format Stunden:Minuten angibt läd DownloadDaemon nur\nzu diesen Zeiten herunter.\nLassen Sie diese Felder leer, wenn DownloadDaemon immer herunterladen soll.
 Start Time->Startzeit
 End Time->Endzeit
 This option specifies where finished downloads should be safed on the server.->Diese Option spezifiziert wo Downloads auf dem Server gespeichert werden sollen.
-Here you can specify how many downloads may run at the same time and regulate the->Hier kann man festlegen wieviele Downloads gleichzeitig laufen dürfen und die Download
-download speed for each download (overall max speed is download number * max speed).->Geschwindigkeit für jeden Download (Gesamtgeschwindigkeit = Anzahl * Geschwindigkeit).
+Here you can specify how many downloads may run at the same time and regulate the\ndownload speed for each download (overall max speed is download number * max speed).->Hier kann man festlegen wieviele Downloads gleichzeitig laufen dürfen und die Download\nGeschwindigkeit für jeden Download (Gesamtgeschwindigkeit = Anzahl * Geschwindigkeit).
 Simultaneous Downloads->Gleichzeitige Downloads
 Maximal Speed in kb/s->Maximale Geschwindigkeit in kb/s
 
@@ -59,8 +55,7 @@ New Password->Neues Passwort
 Logging Activity->Log Modus
 Log Procedure->Log Prozedur
 This option specifies DownloadDaemons logging activity.->Diese Option legt den Logmodus fest.
-This option specifies how logging should be done (Standard output, Standard error->Diese Option legt wie das Loggen gemacht werden soll (Standard Ausagabe, Standard
-output, Syslog-daemon).-> Fehlerausgabe, Syslog-daemon).
+This option specifies how logging should be done (Standard output, Standard error\noutput, Syslog-daemon).->Diese Option legt wie das Loggen gemacht werden soll (Standard Ausgabe, Standard\nFehlerausgabe, Syslog-daemon).
 stdout - Standard output->stdout - Standard Ausgabe
 stderr - Standard error output->stderr - Standard Fehlerausgabe
 Warning->Warnungen
@@ -173,19 +168,16 @@ Authentication failed->Authentifizierung fehlgeschlagen
 Unknown plugin error - please report->Unbekannter Pluginfehler, bitte melden
 
 Please connect before deleting Downloads.->Bitte verbinden Sie bevor Sie Downloads löschen.
-Do you really want to delete->Wollen Sie wirklich die
-the selected Download(s)?->markierten Download(s) löschen?
+Do you really want to delete\nthe selected Download(s)?->Wollen Sie wirklich die\nmarkierten Download(s) löschen?
 Delete Downloads->Lösche Downloads
 Error occured at deleting File from ID->Beim Löschen der Datei von folgender ID ist ein Fehler aufgetreten:
 At least one Row should be selected.->Mindestens eine Zeile sollte markiert sein.
 Error occured at deleting Download(s).->Beim Löschen von Download(s) ist ein Fehler aufgetreten.
 
-Do you really want to delete->Wollen Sie wirklich alle
-all finished Download(s)?->fertigen Downloads löschen?
+Do you really want to delete\nall finished Download(s)?->Wollen Sie wirklich alle\nfertigen Downloads löschen?
 
 Please connect before deleting Files.->Bitte verbinden Sie bevor Sie Dateien löschen.
-Do you really want to delete->Wollen Sie wirklich die
-the selected File(s)?->markierten Dateien löschen?
+Do you really want to delete\nthe selected File(s)?->Wollen Sie wirklich die\nmarkierten Dateien löschen?
 Delete Files->Dateien löschen
 Error occured at deleting Files(s).->Beim Löschen von Datei(en) ist ein Fehler aufgetreten.
 

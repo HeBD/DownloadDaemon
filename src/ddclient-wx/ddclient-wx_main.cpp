@@ -1021,7 +1021,7 @@ void myframe::on_delete(wxCommandEvent &event){
 		if(!selected_lines.empty()){
 
 			// make sure user wants to delete downloads
-			wxMessageDialog dialog(this, tsl("Do you really want to delete") + wxT("\n") + tsl("the selected Download(s)?"), tsl("Delete Downloads"),
+			wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected Download(s)?"), tsl("Delete Downloads"),
 									wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
 			int del = dialog.ShowModal();
 
@@ -1109,7 +1109,7 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 		if(!finished_ids.empty()){
 
 			// make sure user wants to delete downloads
-			wxMessageDialog dialog(this, tsl("Do you really want to delete") + wxT("\n") + tsl("all finished Download(s)?"), tsl("Delete Downloads"),
+			wxMessageDialog dialog(this, tsl("Do you really want to delete\nall finished Download(s)?"), tsl("Delete Downloads"),
 									wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
 			int del = dialog.ShowModal();
 
@@ -1189,7 +1189,7 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 		if(!selected_lines.empty()){
 
 			// make sure user wants to delete downloads
-			wxMessageDialog dialog(this, tsl("Do you really want to delete") + wxT("/n") + tsl("the selected File(s)?"), tsl("Delete Files"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+			wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected File(s)?"), tsl("Delete Files"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
 			int del = dialog.ShowModal();
 
 			if(del == wxID_YES){ // user clicked yes to delete
