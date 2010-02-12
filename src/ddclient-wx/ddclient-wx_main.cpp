@@ -700,7 +700,7 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 
 		}else if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] != "PLUGIN_SUCCESS") {
 			color = "RED";
-			status_text = lang["Error"] + ": " + splitted_line[8] + " " + lang["Retrying soon."];
+			status_text = lang["Error"] + ": " + lang[splitted_line[8]] + " " + lang["Retrying soon."];
 			time_left =  splitted_line[7];
 			cut_time(time_left);
 
@@ -757,7 +757,7 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 
 		}else{ // error occured
 			color = "RED";
-			status_text = lang["Inactive. Error"] + ": " + splitted_line[8];
+			status_text = lang["Inactive. Error"] + ": " + lang[splitted_line[8]];
 			time_left = "";
 		}
 
@@ -769,7 +769,7 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 
 		}else{ //error occured
 			color = "RED";
-			status_text = "Error: " + splitted_line[8];
+			status_text = "Error: " + lang[splitted_line[8]];
 		}
 
 	}else if(splitted_line[4] == "DOWNLOAD_WAITING"){

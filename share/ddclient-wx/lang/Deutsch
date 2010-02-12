@@ -159,6 +159,16 @@ Have to wait.->Muss warten.
 Download Finished.->Download beendet.
 Reconnecting...->Verbinde neu...
 Status not detected.->Status nicht erkannt.
+Invalid hostname->Ungültiger Hostname
+Connection lost->Verbindung unterbrochen
+File not found on server->Datei nicht gefunden
+Unable to write file->Datei konnte nicht geschrieben werden
+Plugin error->Plugin Fehler
+Download limit reached->Downloadlimit erreicht
+Connection failed->Verbindung fehlgeschlagen
+Server overloaded->Server überlastet
+Authentication failed->Authentifizierung fehlgeschlagen
+Unknown plugin error - please report->Unbekannter Pluginfehler, bitte melden
 
 Please connect before deleting Downloads.->Bitte verbinden Sie bevor Sie Downloads löschen.
 Do you really want to delete->Wollen Sie wirklich die
