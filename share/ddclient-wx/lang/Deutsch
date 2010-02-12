@@ -62,7 +62,7 @@ This option specifies DownloadDaemons logging activity.->Diese Option legt den L
 This option specifies how logging should be done (Standard output, Standard error->Diese Option legt wie das Loggen gemacht werden soll (Standard Ausagabe, Standard
 output, Syslog-daemon).-> Fehlerausgabe, Syslog-daemon).
 stdout - Standard output->stdout - Standard Ausgabe
-stderr - Standard error output->stderr Standard Fehlerausgabe
+stderr - Standard error output->stderr - Standard Fehlerausgabe
 Warning->Warnungen
 Severe->Fehler
 Off->Aus
