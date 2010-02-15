@@ -1,11 +1,23 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
 #include "captcha.h"
 
 #include <string>
 #include <fstream>
 #include <cstring>
+#include <iostream>
 using namespace std;
 
-std::string captcha::process_image(std::string gocr_options, std::string img_type, bool use_db, bool keep_whitespaces) {
+std::string captcha::process_image(std::string gocr_options, std::string img_type, int required_chars, bool use_db, bool keep_whitespaces) {
 	captcha_exception e;
 	if(retry_count > max_retrys) {
 		throw e;
@@ -15,7 +27,6 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 		throw e;
 	}
 
-	++retry_count;
 	string img_fn = "/tmp/captcha_" + host + "." + img_type;
 	ofstream ofs(img_fn.c_str());
 	ofs << image;
@@ -41,7 +52,7 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 	fgets(cap_res_string, 256, cap_result);
 
 	pclose(cap_result);
-	remove(img_fn.c_str());
+	//remove(img_fn.c_str());
 
 	string final = cap_res_string;
 	if(!keep_whitespaces) {
@@ -51,6 +62,18 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 				--i;
 			}
 		}
+	}
+
+	if(required_chars == -1) {
+		++retry_count;
+	} else {
+		final = final.substr(0, required_chars);
+		if(final.size() == (size_t)required_chars) {
+			++retry_count;
+		} else {
+			final = "";
+		}
+
 	}
 
 	return final;

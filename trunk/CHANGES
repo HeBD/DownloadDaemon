@@ -1,4 +1,8 @@
 2010-02-15
+   [adrian]
+	- Added experimental support for megaupload.com
+	- improved captcha api
+
    [susanne]
 	- let translation function accept format strings at ddclient-wx
 

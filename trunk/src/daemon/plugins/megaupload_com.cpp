@@ -43,45 +43,36 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			return PLUGIN_CONNECTION_ERROR;
 		}
 
-		if(result.find("dl_first_filename") == string::npos) {
+		if(result.find("Unfortunately, the link you have clicked is not available") != string::npos) {
+			return PLUGIN_FILE_NOT_FOUND;
+		}
+
+		if(result.find("The file that you're trying to download is larger than 1 GB") != string::npos
+			|| result.find("The file you're trying to download is password protected") != string::npos) {
+			return PLUGIN_AUTH_FAIL;
+		}
+
+		if(result.find("We have detected an elevated number of requests from your IP address. You have to wait 2 minutes") != string::npos) {
+			set_wait_time(120);
+			return PLUGIN_SERVER_OVERLOADED;
+		}
+
+		if(result.find("gencap.php") == string::npos) {
 			return PLUGIN_FILE_NOT_FOUND;
 		}
 
 		string captcha_url;
 		try {
-			size_t n = result.find("<div class=\"dl_first_filename\">") + 31;
-			outp.download_filename = result.substr(n, result.find("<span style=\"color:", n) - n);
-			trim_string(outp.download_filename);
-			replace_html_special_chars(outp.download_filename);
-			if((n = result.find("<a class=\"download_fast_link\" href=\"")) != string::npos) {
-				// in swizerland, you don't have to enter a captcha or something like that.
-				// it's as easy as this if you download from there. No idea why.
-				n += 36;
-				outp.download_url = "http://netload.in/" + result.substr(n, result.find("\"", n) - n);
-				replace_html_special_chars(outp.download_url);
-				return PLUGIN_SUCCESS;
-			}
+			size_t n = result.find("<TD width=\"100\" align=\"center\" height=\"40\"><img src=\"");
+			n = result.find("http://", n);
+			captcha_url = result.substr(n, result.find("\"", n) - n);
 
-			n = result.find("<div class=\"Free_dl\"><a href=\"") + 30;
-			string url = "http://netload.in/" + result.substr(n, result.find("\">", n) - n);
-			replace_html_special_chars(url);
-			curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
-			result.clear();
-			res = curl_easy_perform(handle);
-			if(res != 0) {
-				return PLUGIN_ERROR;
-			}
+			n = result.find("name=\"captchacode\" value=\"") + 26;
+			std::string captchacode = result.substr(n, result.find("\"", n) - n);
 
-			n = result.find("share/includes/captcha.php?t=");
-			captcha_url = "http://netload.in/" + result.substr(n, result.find("\"", n) - n);
-
-			n = result.find("<div id=\"downloadDiv\">");
-			n = result.find("action=\"", n) + 8;
-			url = "http://netload.in/" + result.substr(n, result.find("\">", n) - n);
-			string post_data;
-			n = result.find("file_id", n);
+			n = result.find("name=\"megavar\"");
 			n = result.find("value=\"", n) + 7;
-			post_data = "file_id=" + result.substr(n, result.find("\"", n) - n);
+			std::string megavar = result.substr(n, result.find("\"", n) - n);
 
 
 			curl_easy_setopt(handle, CURLOPT_URL, captcha_url.c_str());
@@ -90,47 +81,54 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			if(res != 0) {
 				return PLUGIN_ERROR;
 			}
+			// megaupload uses .gif captchas that don't work with gocr. We use giftopnm to convert it (which is installed with netpbm, which
+			// is a gocr dependency anyway.
+			ofstream captcha_fs("/tmp/tmp_captcha_megaupload.gif");
+			captcha_fs << result;
+			captcha_fs.close();
+			FILE* captcha_as_pnm = popen("giftopnm /tmp/tmp_captcha_megaupload.gif", "r");
 
+			if(captcha_as_pnm == NULL) {
+				captcha_exception e;
+				throw e;
+			}
+			// if the captcha is larger than 10kb.. it's not.
+			result.clear();
+
+			int c;
+			do{
+				c = fgetc(captcha_as_pnm);
+				if(c != EOF) result.push_back(c);
+			} while(c != EOF);
+
+
+			pclose(captcha_as_pnm);
+			remove("/tmp/tmp_captcha_megaupload.gif");
 			captcha cap(result);
-			std::string captcha_text = cap.process_image("-m 2 -a 20 -C 0-9", "png", 4, true);
+			std::string captcha_text = cap.process_image("-C 1-9A-NP-Z", "pnm", 4, true);
 			if(captcha_text.empty()) continue;
-			post_data += "&captcha_check=" + captcha_text + "&start=";
 
-			curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+			std::string post_data = "captchacode=" + captchacode + "&megavar=" + megavar + "&captcha=" + captcha_text;
+
+			curl_easy_setopt(handle, CURLOPT_URL, get_url());
 			curl_easy_setopt(handle, CURLOPT_POST, 1);
 			curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, post_data.c_str());
 			result.clear();
 			res = curl_easy_perform(handle);
 			curl_easy_setopt(handle, CURLOPT_POST, 0);
-
 			if(res != 0) {
 				return PLUGIN_ERROR;
 			}
-
-			if(result.find("You may forgot the security code or it might be wrong") != string::npos) {
+			if(result.find("<input type=\"text\" name=\"captcha\" id=\"captchafield\"") != string::npos) {
+				// captcha wrong.. try again
 				continue;
+			} else {
+				set_wait_time(45);
+				n = result.find("id=\"downloadlink\"><a href=\"") + 27;
+				outp.download_url = result.substr(n, result.find("\"", n) - n);
+				return PLUGIN_SUCCESS;
+
 			}
-
-			if(result.find("This file is currently unavailable") != string::npos) {
-				return PLUGIN_FILE_NOT_FOUND;
-			}
-
-			if((n = result.find("You could download your next file in")) != string::npos) {
-				n = result.find("countdown(", n) + 10;
-				int wait_secs = atoi(result.substr(n, result.find(",", n) - n).c_str()) / 100;
-				set_wait_time(wait_secs);
-				return PLUGIN_LIMIT_REACHED;
-			}
-
-			n = result.find("the download is started automatically");
-			n = result.find("href=\"", n);
-
-			if(n == string::npos) continue;
-			n += 6;
-			outp.download_url = result.substr(n, result.find("\"", n) - n);
-
-			set_wait_time(20);
-			done = true;
 
 		} catch(std::exception &e) {
 			return PLUGIN_ERROR;
@@ -168,17 +166,14 @@ void post_process_download(plugin_input &inp) {
 		}
 		ifstream ifs(filename.c_str());
 		string tmp;
-		size_t n = 0;
-		while(getline(ifs, tmp)) {
-			if((n = tmp.find("You could download your next file in")) != string::npos) {
-				n = tmp.find("countdown(", n) + 10;
-				int wait_secs = atoi(tmp.substr(n, tmp.find(",", n) - n).c_str()) / 100;
-				set_wait_time(wait_secs);
-				dl_list->set_int_property(dlid, DL_STATUS, DOWNLOAD_WAITING);
-				dl_list->set_int_property(dlid, DL_PLUGIN_STATUS, PLUGIN_SERVER_OVERLOADED);
-				break;
-			}
+		getline(ifs, tmp);
+		if(tmp.find("</HEAD><BODY>Download limit exceeded</BODY></HTML>") != string::npos) {
+			set_wait_time(30);
+			dl_list->set_int_property(dlid, DL_STATUS, DOWNLOAD_WAITING);
+			dl_list->set_int_property(dlid, DL_PLUGIN_STATUS, PLUGIN_LIMIT_REACHED);
 		}
+
 
 	}
 }
+
