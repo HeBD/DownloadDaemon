@@ -850,8 +850,30 @@ void myframe::deselect_lines(){
 }
 
 
-wxString myframe::tsl(string text){
-	return wxString(lang[text].c_str(), wxConvUTF8);
+wxString myframe::tsl(string text, ...){
+	string translated = lang[text];
+
+	size_t n;
+	int i = 1;
+	va_list vl;
+	va_start(vl,text);
+	string search("p1");
+
+
+	while((n = translated.find(search)) != string::npos){
+		translated.replace(n-1, 3, va_arg(vl, char *));
+
+		i++;
+		if(i>9) // maximal 9 additional Parameters
+			break;
+
+		stringstream sb;
+		sb << "p" << i;
+		search = sb.str();
+	}
+
+	//return wxString(lang[text].c_str(), wxConvUTF8);
+	return wxString(translated.c_str(), wxConvUTF8);
 }
 
 
@@ -1052,7 +1074,7 @@ void myframe::on_delete(wxCommandEvent &event){
 							mysock->recv(answer);
 
 							if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
-								string message = lang["Error occured at deleting File from ID"] + " " + id;
+								string message = lang["Error occured at deleting File of ID"] + " " + id;
 								wxMessageBox(wxString(message.c_str(), wxConvUTF8), tsl("Error"));
 							}
 
@@ -1140,8 +1162,7 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 							mysock->recv(answer);
 
 							if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
-								string message = lang["Error occured at deleting File from ID"] + " " + *it;
-								wxMessageBox(wxString(message.c_str(), wxConvUTF8), tsl("Error"));
+								wxMessageBox(tsl("Error occured at deleting File of Download %p1.", it->c_str()), tsl("Error"));
 							}
 
 						}

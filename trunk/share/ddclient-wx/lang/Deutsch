@@ -98,7 +98,7 @@ Connection failed->Verbindung fehlgeschlagen
 
 #delete dialog
 Delete File->Datei löschen
-Do you want to delete the downloaded File for Download ID->Wollen Sie die heruntergeladene Datei für folgende ID löschen:
+Do you want to delete the downloaded File for Download %p1?->Wollen Sie die heruntergeladene Datei für Download %p1 löschen?
 Always yes->Immer ja
 Always no->Immer nein
 
@@ -170,7 +170,7 @@ Unknown plugin error - please report->Unbekannter Pluginfehler, bitte melden
 Please connect before deleting Downloads.->Bitte verbinden Sie bevor Sie Downloads löschen.
 Do you really want to delete\nthe selected Download(s)?->Wollen Sie wirklich die\nmarkierten Download(s) löschen?
 Delete Downloads->Lösche Downloads
-Error occured at deleting File from ID->Beim Löschen der Datei von folgender ID ist ein Fehler aufgetreten:
+Error occured at deleting File of Download %p1.->Beim Löschen der Datei von Download %p1 ist ein Fehler aufgetreten.
 At least one Row should be selected.->Mindestens eine Zeile sollte markiert sein.
 Error occured at deleting Download(s).->Beim Löschen von Download(s) ist ein Fehler aufgetreten.
 
