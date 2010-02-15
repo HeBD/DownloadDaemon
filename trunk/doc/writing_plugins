@@ -75,5 +75,13 @@ You don't have to take care of the captcha-max-retry configuration. If you try t
 throw an exception to exit the plugin. This means you may not put the captcha decoding process in a try{} catch(...)! This is not allowed! (or if you do so, you have to exit
 the plugin manually).
 
+POST PROCESSING DOWNLOADED FILES:
+Some hosters give you an error message instead of a file, even if parsing was just as normal. You may post-process downloaded files with your plugin.
+Check the netload.in or the megaupload.com plugin for an example. Basically, you have to #define PLUGIN_WANTS_POST_PROCESSING before including plugin_helpers.h.
+Then you can define a function with this prototype:
+void post_process_download(plugin_input &inp),
+which will be called if the download succeeded.
+
+
 If you need more functionality to support your specific hoster, please write me, Adrian Batzill (see AUTHORS file) an email. I will then implement it.
 
