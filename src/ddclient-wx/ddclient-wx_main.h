@@ -20,6 +20,7 @@
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <fstream>
+#include <cstdarg>
 
 #include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/frame.h>
@@ -96,7 +97,7 @@ class myframe : public wxFrame{
 		*	@param text string to translate
 		*	@returns translated wxString
 		*/
-		wxString tsl(string text);
+		wxString tsl(string text, ...);
 
 	private:
 

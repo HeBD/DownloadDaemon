@@ -38,8 +38,7 @@ delete_dialog::delete_dialog(int *answer, std::string id, wxWindow *parent):
 	button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
 
-	question_text = new wxStaticText(this, -1, p->tsl("Do you want to delete the downloaded File for Download ID")
-									+ wxT(" ") +  wxString(id.c_str(), wxConvUTF8) + wxT("?"));
+	question_text = new wxStaticText(this, -1, p->tsl("Do you want to delete the downloaded File for Download %p1?", id.c_str()));
 
 	yes_all_button = new wxButton(this, id_yes_all, p->tsl("Always yes"));
 	yes_button = new wxButton(this, wxID_YES);

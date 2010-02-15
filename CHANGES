@@ -1,3 +1,7 @@
+2010-02-15
+   [susanne]
+	- let translation function accept format strings at ddclient-wx
+
 2010-02-12
    [susanne]
 	- reduced mutex locks at ddclient-wx
