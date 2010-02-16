@@ -1,8 +1,11 @@
+2010-02-16
+   [susanne]
+	- added search functionality to router model selection at ddclient-wx
+
 2010-02-15
    [adrian]
 	- Added experimental support for megaupload.com
 	- improved captcha api
-
    [susanne]
 	- let translation function accept format strings at ddclient-wx
 

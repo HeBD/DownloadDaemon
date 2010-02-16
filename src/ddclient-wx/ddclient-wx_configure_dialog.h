@@ -23,6 +23,7 @@
 #include <wx/notebook.h>
 #include <wx/choice.h>
 #include <wx/checkbox.h>
+#include <wx/listbox.h>
 
 #include "../lib/netpptk/netpptk.h"
 #if defined(__WXMSW__)
@@ -124,11 +125,14 @@ class configure_dialog : public wxDialog{
 		wxCheckBox *enable_reconnecting_check;
 		wxStaticText *policy_text;
 		wxStaticText *router_model_text;
+		wxStaticText *router_model_blank_text;
 		wxStaticText *router_ip_text;
 		wxStaticText *router_user_text;
 		wxStaticText *router_pass_text;
 		wxChoice *policy_choice;
-		wxChoice *router_model_choice;
+		wxListBox *router_model_box;
+		wxChoice *router_model_choice; // obsolete!
+		wxTextCtrl *router_model_input;
 		wxTextCtrl *router_ip_input;
 		wxTextCtrl *router_user_input;
 		wxTextCtrl *router_pass_input;
@@ -156,6 +160,7 @@ class configure_dialog : public wxDialog{
 		static const long id_premium_host_choice;
 		static const long id_enable_reconnect_check;
 		static const long id_help_button;
+		static const long id_router_model_input;
 
 		// event handle methods
 		void on_apply(wxCommandEvent &event);
@@ -165,6 +170,7 @@ class configure_dialog : public wxDialog{
 		void on_help(wxCommandEvent &event);
 		void on_select_premium_host(wxCommandEvent &event);
 		void on_checkbox_change(wxCommandEvent &event);
+		void on_model_input_change(wxCommandEvent &event);
 
 		DECLARE_EVENT_TABLE()
 };
