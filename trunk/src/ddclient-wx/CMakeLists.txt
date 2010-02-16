@@ -9,14 +9,15 @@ SET(ddclient_wx_SRCS	ddclient-wx_about_dialog.cpp
 			ddclient-wx_connect_dialog.cpp
 			ddclient-wx_main.cpp
 			ddclient-wx_delete_dialog.cpp
-			../lib/netpptk/netpptk.cpp
-			../lib/crypt/md5.cpp)
+			../include/netpptk/netpptk.cpp
+			../include/crypt/md5.cpp
+			../include/language/language.cpp)
 
 find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
 find_package(wxWidgets REQUIRED base core richtext)
 
 IF(Boost_FOUND AND wxWidgets_FOUND)
-	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR} ../include)
 
 	INCLUDE(${wxWidgets_USE_FILE})
 

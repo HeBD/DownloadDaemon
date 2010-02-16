@@ -12,12 +12,21 @@
 #ifndef DOWNLOAD_H_
 #define DOWNLOAD_H_
 
+#include <config.h>
 #include <string>
 #include <fstream>
 // cstdint will exist in c++0x, we use stdint.h (C99) to be compatible with older compilers
 #include <stdint.h>
 #include <curl/curl.h>
+
+#ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
 
 enum download_status { DOWNLOAD_PENDING = 1, DOWNLOAD_INACTIVE, DOWNLOAD_FINISHED, DOWNLOAD_RUNNING, DOWNLOAD_WAITING, DOWNLOAD_DELETED, DOWNLOAD_RECONNECTING };
 enum plugin_status { PLUGIN_SUCCESS = 1, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,

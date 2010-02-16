@@ -16,8 +16,8 @@
 #include <algorithm>
 #include <iomanip>
 #include <cstring>
-#include "../lib/netpptk/netpptk.h"
-#include "../lib/crypt/md5.h"
+#include <netpptk/netpptk.h>
+#include <crypt/md5.h>
 using namespace std;
 
 void trim_string(std::string &str);

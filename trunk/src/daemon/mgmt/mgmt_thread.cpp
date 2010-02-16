@@ -9,6 +9,8 @@
  * GNU General Public License for more details.
  */
 
+#include <config.h>
+
 #include <iostream>
 #include <vector>
 #include <cassert>
@@ -16,6 +18,7 @@
 #include <sstream>
 #include <ctime>
 #include <cstring>
+#include <algorithm>
 
 #include <sys/socket.h>
 #include <net/if.h>
@@ -26,9 +29,9 @@
 
 #include "mgmt_thread.h"
 #include "../dl/download.h"
-#include "../../lib/netpptk/netpptk.h"
-#include "../../lib/cfgfile/cfgfile.h"
-#include "../../lib/crypt/md5.h"
+#include <netpptk/netpptk.h>
+#include <cfgfile/cfgfile.h>
+#include <crypt/md5.h>
 #include "../tools/helperfunctions.h"
 #include "../dl/download_container.h"
 #include "../dl/download_thread.h"

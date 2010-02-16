@@ -10,21 +10,40 @@ SET(daemon_SRCS downloaddaemon.cpp
 		dl/download_thread.cpp 
 		dl/download.cpp 
 		dl/recursive_parser.cpp
-		../lib/netpptk/netpptk.cpp 
-		../lib/cfgfile/cfgfile.cpp
+		../include/netpptk/netpptk.cpp 
+		../include/cfgfile/cfgfile.cpp
 		dl/download_container.cpp
-		 ../lib/crypt/md5.cpp
+		 ../include/crypt/md5.cpp
 		reconnect/reconnect_parser.cpp)
 
 
-find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
+OPTION(USE_STD_THREAD "Use C++0x's std::thread implementation instead of boost::thread library" OFF)
+#OPTION(DD_CONF_DIR "Default DownloadDaemon configuration directory" "/etc/downloaddaemon/")
+SET(DD_CONF_DIR "\"/etc/downloaddaemon/\"")
+SET(${DD_CONF_DIR}_OPTION "ON")
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/include/config.h)
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/ ../include)
+
+
+
 find_package(CURL REQUIRED)
-IF(Boost_FOUND AND CURL_FOUND)
-	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+#IF(Boost_FOUND AND CURL_FOUND)
+IF(CURL_FOUND)
 	INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRs})
-	ADD_EXECUTABLE(DownloadDaemon ${daemon_SRCS})
-	TARGET_LINK_LIBRARIES(DownloadDaemon ${Boost_LIBRARIES} ${CURL_LIBRARIES})
-ENDIF(Boost_FOUND AND CURL_FOUND)
+	IF(NOT USE_STD_THREAD)
+		find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
+		IF(Boost_FOUND)
+			INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+			ADD_EXECUTABLE(DownloadDaemon ${daemon_SRCS})
+			TARGET_LINK_LIBRARIES(DownloadDaemon ${Boost_LIBRARIES} ${CURL_LIBRARIES})
+		ENDIF(Boost_FOUND)
+	ELSE(NOT USE_STD_THREAD)
+		ADD_EXECUTABLE(DownloadDaemon ${daemon_SRCS})
+		SET_TARGET_PROPERTIES(DownloadDaemon PROPERTIES COMPILE_FLAGS -std=c++0x)
+		TARGET_LINK_LIBRARIES(DownloadDaemon ${CURL_LIBRARIES})
+	ENDIF(NOT USE_STD_THREAD)
+ENDIF(CURL_FOUND)
+#ENDIF(Boost_FOUND AND CURL_FOUND)
 
 install(TARGETS DownloadDaemon DESTINATION bin/)
 install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/init.d/downloadd DESTINATION /etc/init.d)

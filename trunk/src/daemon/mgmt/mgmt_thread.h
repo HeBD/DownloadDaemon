@@ -12,10 +12,11 @@
 #ifndef MGMT_THREAD_H_
 #define MGMT_THREAD_H_
 
+#include <config.h>
 #include <vector>
 #include "../dl/download.h"
-#include "../../lib/cfgfile/cfgfile.h"
-#include "../../lib/netpptk/netpptk.h"
+#include <cfgfile/cfgfile.h>
+#include <netpptk/netpptk.h>
 
 
 void mgmt_thread_main();

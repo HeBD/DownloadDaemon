@@ -12,7 +12,16 @@
 #ifndef GLOBAL_MANAGEMENT_H_
 #define GLOBAL_MANAGEMENT_H_
 
-extern boost::shared_mutex once_per_sec_mutex;
+#ifndef USE_STD_THREAD
+#include <boost/thread.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
+
+extern std::mutex once_per_sec_mutex;
 
 /** Put things that need to be done once per second here
 */

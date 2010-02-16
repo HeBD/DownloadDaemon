@@ -1,4 +1,7 @@
 2010-02-16
+   [adrian]
+	- DownloadDaemon now works with c++0x's std::thread which can already replace boost::thread. compile with -DUSE_STD_THREAD=1
+	  to get rid of boost::thread. Only tested with g++ 4.4.1. You need a very recent compiler.
    [susanne]
 	- added search functionality to router model selection at ddclient-wx
 

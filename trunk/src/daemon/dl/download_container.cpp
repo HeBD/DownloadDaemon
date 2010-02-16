@@ -22,7 +22,7 @@
 #include "../plugins/captcha.h"
 
 #ifndef IS_PLUGIN
-	#include "../../lib/cfgfile/cfgfile.h"
+	#include <cfgfile/cfgfile.h>
 	#include "../tools/helperfunctions.h"
 	#include "../reconnect/reconnect_parser.h"
 	#include "../global.h"
@@ -35,7 +35,7 @@ download_container::download_container(const char* filename) {
 }
 
 int download_container::from_file(const char* filename) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	list_file = filename;
 	ifstream dlist(filename);
 	std::string line;
@@ -55,12 +55,12 @@ int download_container::from_file(const char* filename) {
 #endif
 
 int download_container::total_downloads() {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	return download_list.size();
 }
 
 int download_container::add_download(download &dl) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	dl.id = get_next_id();
 	download_list.push_back(dl);
 
@@ -75,7 +75,7 @@ int download_container::add_download(const std::string& url, const std::string& 
 }
 
 int download_container::move_up(int id) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it;
 	int location1 = 0, location2 = 0;
 	for(it = download_list.begin(); it != download_list.end(); ++it) {
@@ -113,7 +113,7 @@ int download_container::move_up(int id) {
 }
 
 int download_container::move_down(int id) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it;
 	int location1 = 0, location2 = 0;
 	for(it = download_list.begin(); it != download_list.end(); ++it) {
@@ -151,7 +151,7 @@ int download_container::move_down(int id) {
 }
 
 int download_container::activate(int id) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end()) {
 		return LIST_ID;
@@ -165,7 +165,7 @@ int download_container::activate(int id) {
 }
 
 int download_container::deactivate(int id) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end()) {
 		return LIST_ID;
@@ -185,7 +185,7 @@ int download_container::deactivate(int id) {
 #ifndef IS_PLUGIN
 
 int download_container::get_next_downloadable(bool do_lock) {
-	boost::mutex::scoped_lock lock(download_mutex, boost::defer_lock);
+	unique_lock<mutex> lock(download_mutex, defer_lock);
 	if(do_lock) {
 		lock.lock();
 	}
@@ -281,7 +281,7 @@ int download_container::get_next_downloadable(bool do_lock) {
 #endif // IS_PLUGIN
 
 int download_container::set_string_property(int id, string_property prop, std::string value) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
 		return LIST_ID;
@@ -309,7 +309,7 @@ int download_container::set_string_property(int id, string_property prop, std::s
 }
 
 int download_container::set_int_property(int id, property prop, double value) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
 		return LIST_ID;
@@ -362,7 +362,7 @@ int download_container::set_int_property(int id, property prop, double value) {
 }
 
 int download_container::set_pointer_property(int id, pointer_property prop, void* value) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
 		return LIST_ID;
@@ -377,7 +377,7 @@ int download_container::set_pointer_property(int id, pointer_property prop, void
 }
 
 double download_container::get_int_property(int id, property prop) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
 		return LIST_ID;
@@ -418,7 +418,7 @@ double download_container::get_int_property(int id, property prop) {
 }
 
 std::string download_container::get_string_property(int id, string_property prop) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
 		stringstream ss;
@@ -440,7 +440,7 @@ std::string download_container::get_string_property(int id, string_property prop
 }
 
 void* download_container::get_pointer_property(int id, pointer_property prop) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) {
 		return 0;
@@ -530,7 +530,7 @@ void download_container::do_reconnect() {
 		return;
 	}
 	is_reconnecting = true;
-	boost::mutex::scoped_lock lock(download_mutex);
+	unique_lock<mutex> lock(download_mutex);
 	std::string router_ip, router_username, router_password, reconnect_plugin;
 
 	router_ip = global_router_config.get_cfg_value("router_ip");
@@ -582,7 +582,7 @@ void download_container::do_reconnect() {
 }
 
 int download_container::prepare_download(int dl, plugin_output &poutp) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	unique_lock<mutex> lock(download_mutex);
 	plugin_input pinp;
 	download_container::iterator dlit = get_download_by_id(dl);
 
@@ -657,21 +657,21 @@ int download_container::prepare_download(int dl, plugin_output &poutp) {
 }
 
 plugin_output download_container::get_hostinfo(int dl) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(dl);
 	return it->get_hostinfo();
 }
 
 #endif
 std::string download_container::get_host(int dl) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(dl);
 	return it->get_host();
 }
 #ifndef IS_PLUGIN
 
 void download_container::decrease_waits() {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->wait_seconds > 0) {
 			--(it->wait_seconds);
@@ -683,7 +683,7 @@ void download_container::decrease_waits() {
 }
 
 void download_container::purge_deleted() {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(it->get_status() == DOWNLOAD_DELETED && it->is_running == false) {
 			remove_download(it->id);
@@ -693,7 +693,7 @@ void download_container::purge_deleted() {
 }
 
 std::string download_container::create_client_list() {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 
 	std::stringstream ss;
 
@@ -723,7 +723,7 @@ int download_container::get_next_id() {
 }
 
 int download_container::stop_download(int id) {
-    boost::mutex::scoped_lock lock(download_mutex);
+    lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end() || it->get_status() == DOWNLOAD_DELETED) {
 		return LIST_ID;
@@ -785,7 +785,7 @@ int download_container::remove_download(int id) {
 }
 
 bool download_container::url_is_in_list(std::string url) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(url == it->url) {
 			return true;
@@ -796,14 +796,14 @@ bool download_container::url_is_in_list(std::string url) {
 
 #ifndef IS_PLUGIN
 void download_container::init_handle(int id) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	it->handle = curl_easy_init();
 	it->is_init = true;
 }
 
 void download_container::cleanup_handle(int id) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it->is_init)
 		curl_easy_cleanup(it->handle);
@@ -813,7 +813,7 @@ void download_container::cleanup_handle(int id) {
 #endif
 
 int download_container::get_list_position(int id) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	int curr_pos = 0;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(id == it->id) {
@@ -825,7 +825,7 @@ int download_container::get_list_position(int id) {
 }
 
 void download_container::insert_downloads(int pos, download_container &dl) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator insert_it = download_list.begin();
 	// set input iterator to correct position
 	for(int i = 0; i < pos; ++i) {
@@ -843,7 +843,7 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 
 #ifndef IS_PLUGIN
 void download_container::post_process_download(int id) {
-	boost::mutex::scoped_lock lock(download_mutex);
+	unique_lock<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	plugin_input pinp;
 
@@ -916,7 +916,8 @@ void download_container::set_dl_status(download_container::iterator it, download
 	}
 	#ifndef IS_PLUGIN
 	if(global_download_list.reconnect_needed()) {
-		boost::thread t(boost::bind(&download_container::do_reconnect, this));
+		thread t(bind(&download_container::do_reconnect, this));
+		t.detach();
 	}
 	#endif
 

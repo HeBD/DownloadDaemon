@@ -10,7 +10,7 @@
  */
 
 #include "ddclient-wx_main.h"
-#include "../lib/crypt/md5.h"
+#include <crypt/md5.h>
 
 #ifdef _WIN32
 	#define sleep(x) Sleep(x * 1000)

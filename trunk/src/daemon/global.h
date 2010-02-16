@@ -12,8 +12,9 @@
 #ifndef GLOBAL_H_
 #define GLOBAL_H_
 
+#include <config.h>
 #include <vector>
-#include "../lib/cfgfile/cfgfile.h"
+#include <cfgfile/cfgfile.h>
 #include "dl/download_container.h"
 
 // The downloadcontainer is just needed everywhere in the program, so let's make it global
