@@ -131,7 +131,6 @@ class configure_dialog : public wxDialog{
 		wxStaticText *router_pass_text;
 		wxChoice *policy_choice;
 		wxListBox *router_model_box;
-		wxChoice *router_model_choice; // obsolete!
 		wxTextCtrl *router_model_input;
 		wxTextCtrl *router_ip_input;
 		wxTextCtrl *router_user_input;
