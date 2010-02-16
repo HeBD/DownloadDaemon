@@ -16,7 +16,7 @@
 const long configure_dialog::id_premium_host_choice = wxNewId();
 const long configure_dialog::id_enable_reconnect_check = wxNewId();
 const long configure_dialog::id_help_button = wxNewId();
-
+const long configure_dialog::id_router_model_input = wxNewId();
 
 // event table
 BEGIN_EVENT_TABLE(configure_dialog, wxDialog)
@@ -27,6 +27,7 @@ BEGIN_EVENT_TABLE(configure_dialog, wxDialog)
 	EVT_BUTTON(id_help_button, configure_dialog::on_help)
 	EVT_CHOICE(configure_dialog::id_premium_host_choice, configure_dialog::on_select_premium_host)
 	EVT_CHECKBOX(configure_dialog::id_enable_reconnect_check, configure_dialog::on_checkbox_change)
+	EVT_TEXT(configure_dialog::id_router_model_input, configure_dialog::on_model_input_change)
 END_EVENT_TABLE()
 
 
@@ -367,22 +368,22 @@ void configure_dialog::create_reconnect_panel(){
 
 	policy_text = new wxStaticText(reconnect_panel, -1, p->tsl("Reconnect Policy"));
 	router_model_text = new wxStaticText(reconnect_panel, -1, p->tsl("Model"));
+	router_model_blank_text = new wxStaticText(reconnect_panel, -1, wxT(""));
 	router_ip_text = new wxStaticText(reconnect_panel, -1, p->tsl("IP"));
 	router_user_text = new wxStaticText(reconnect_panel, -1, p->tsl("Username"));
 	router_pass_text = new wxStaticText(reconnect_panel, -1, p->tsl("Password"));
 
-	router_ip_input = new wxTextCtrl(reconnect_panel, -1,  wxEmptyString, wxDefaultPosition, wxSize(200, 25));
-	router_user_input = new wxTextCtrl(reconnect_panel, -1,  wxEmptyString, wxDefaultPosition, wxSize(200, 25));
+	router_model_input = new wxTextCtrl(reconnect_panel, id_router_model_input, wxEmptyString, wxDefaultPosition, wxSize(200, 25));
+	router_ip_input = new wxTextCtrl(reconnect_panel, -1, wxEmptyString, wxDefaultPosition, wxSize(200, 25));
+	router_user_input = new wxTextCtrl(reconnect_panel, -1, wxEmptyString, wxDefaultPosition, wxSize(200, 25));
 	router_pass_input = new wxTextCtrl(reconnect_panel, -1, wxEmptyString, wxDefaultPosition, wxSize(200, 25), wxTE_PASSWORD);
+
+	router_model_box = new wxListBox(reconnect_panel, -1, wxDefaultPosition, wxSize(400, 100));
 
 	// wxChoice policy
 	wxArrayString policy;
 	policy_choice = new wxChoice(reconnect_panel, -1, wxDefaultPosition, wxSize(150, 30), policy);
 	policy_choice->SetSelection(-1);
-
-	// wxChoice router_model
-	wxArrayString model;
-	router_model_choice = new wxChoice(reconnect_panel, -1, wxDefaultPosition, wxSize(200, 30), model);
 
 	help_button = new wxButton(reconnect_panel, id_help_button, wxT("?"), wxDefaultPosition, wxSize(30, 30));
 	reconnect_button = new wxButton(reconnect_panel, wxID_APPLY);
@@ -394,7 +395,9 @@ void configure_dialog::create_reconnect_panel(){
 	policy_sizer->Add(help_button, 0, wxALIGN_LEFT);
 
 	router_sizer->Add(router_model_text, 0, wxALIGN_LEFT);
-	router_sizer->Add(router_model_choice, 0, wxALIGN_LEFT);
+	router_sizer->Add(router_model_input, 0, wxALIGN_LEFT);
+	router_sizer->Add(router_model_blank_text, 0, wxALIGN_LEFT);
+	router_sizer->Add(router_model_box, 0, wxALIGN_LEFT);
 	router_sizer->Add(router_ip_text, 0, wxALIGN_LEFT);
 	router_sizer->Add(router_ip_input, 0, wxALIGN_LEFT);
 	router_sizer->Add(router_user_text, 0, wxALIGN_LEFT);
@@ -427,7 +430,7 @@ void configure_dialog::enable_reconnect_panel(){
 
 
 	// fill router_model_choice
-	router_model_choice->Clear();
+	router_model_box->Clear();
 	wxArrayString model;
 	size_t lineend = 1;
 	string line = "", model_list, old_model;
@@ -476,8 +479,8 @@ void configure_dialog::enable_reconnect_panel(){
 		i++;
 
 	}
-	router_model_choice->Append(model);
-	router_model_choice->SetSelection(selection);
+	router_model_box->Append(model);
+	router_model_box->SetSelection(selection);
 
 
 	// fill policy_choice
@@ -519,7 +522,8 @@ void configure_dialog::enable_reconnect_panel(){
 	router_pass_input->Enable(true);
 	router_user_input->Enable(true);
 	policy_choice->Enable(true);
-	router_model_choice->Enable(true);
+	router_model_input->Enable(true);
+	router_model_box->Enable(true);
 }
 
 
@@ -529,7 +533,8 @@ void configure_dialog::disable_reconnect_panel(){
 	router_pass_input->Enable(false);
 	router_user_input->Enable(false);
 	policy_choice->Enable(false);
-	router_model_choice->Enable(false);
+	router_model_input->Enable(false);
+	router_model_box->Enable(false);
 }
 
 
@@ -620,8 +625,7 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 						break;
 		}
 
-		selection = router_model_choice->GetCurrentSelection();
-		router_model =  router_model_list.at(selection);
+		router_model = wxString(router_model_box->GetStringSelection()).mb_str();
 
 		router_ip = string(router_ip_input->GetValue().mb_str());
 		router_user = string(router_user_input->GetValue().mb_str());
@@ -830,4 +834,28 @@ void configure_dialog::on_checkbox_change(wxCommandEvent &event){
 		enable_reconnect_panel();
 	else
 		disable_reconnect_panel();
+}
+
+
+void configure_dialog::on_model_input_change(wxCommandEvent &event){
+	router_model_box->Clear();
+	wxArrayString model;
+
+	string search_input = string(router_model_input->GetValue().mb_str());
+
+	for(size_t i=0; i<search_input.length(); i++) // lower everything for case insensitivity
+		search_input[i] = tolower(search_input[i]);
+
+	vector<string>::iterator it;
+	for(it = router_model_list.begin(); it != router_model_list.end(); it++){
+		string lower = *it;
+
+		for(size_t i=0; i<lower.length(); i++) // lower everything for case insensitivity
+			lower[i] = tolower(lower[i]);
+
+		if(lower.find(search_input) != string::npos)
+			model.Add(wxString(it->c_str(), wxConvUTF8));
+	}
+
+	router_model_box->Append(model);
 }

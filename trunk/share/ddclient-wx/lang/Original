@@ -1,10 +1,11 @@
-# Downloaddaemon Client-wx Language file: German/Deutsch
+# Downloaddaemon Client-wx Language file: none (original for translators)
 #
 # Note: 
 # - comment lines begin with #
 # - syntax is english->other language
 # - one entry per line
 # - duplicates or empty lines don't disturb the program
+# - %p1 should be ignored by translators, it's used by the program
 
 #about dialog
 About...->Über...
@@ -40,11 +41,11 @@ refuse existing Links->existierende Links nicht akzeptieren
 Download Time->Download Zeitraum
 Download Folder->Download Ordner
 Additional Download Options->Zusätzliche Download Optionen
-You can force DownloadDaemon to only download at specific times by entering a start and\nend time in the format hours:minutes.\nLeave these fields empty if you want to allow DownloadDaemon to download permanently.->Wenn man eine Start- und Endzeit im Format Stunden:Minuten angibt läd DownloadDaemon nur\nzu diesen Zeiten herunter.\nLassen Sie diese Felder leer, wenn DownloadDaemon immer herunterladen soll.
+You can force DownloadDaemon to only download at specific times by entering a start and end time in the format hours:minutes. Leave these fields empty if you want to allow DownloadDaemon to download permanently.->Wenn man eine Start- und Endzeit im Format Stunden:Minuten angibt läd DownloadDaemon nur zu diesen Zeiten herunter. Lassen Sie diese Felder leer, wenn DownloadDaemon immer herunterladen soll.
 Start Time->Startzeit
 End Time->Endzeit
 This option specifies where finished downloads should be safed on the server.->Diese Option spezifiziert wo Downloads auf dem Server gespeichert werden sollen.
-Here you can specify how many downloads may run at the same time and regulate the\ndownload speed for each download (overall max speed is download number * max speed).->Hier kann man festlegen wieviele Downloads gleichzeitig laufen dürfen und die Download\nGeschwindigkeit für jeden Download (Gesamtgeschwindigkeit = Anzahl * Geschwindigkeit).
+Here you can specify how many downloads may run at the same time and regulate the download speed for each download (overall max speed is download number * max speed).->Hier kann man festlegen wieviele Downloads gleichzeitig laufen dürfen und die Download Geschwindigkeit für jeden Download (Gesamtgeschwindigkeit = Anzahl * Geschwindigkeit).
 Simultaneous Downloads->Gleichzeitige Downloads
 Maximal Speed in kb/s->Maximale Geschwindigkeit in kb/s
 
@@ -55,7 +56,7 @@ New Password->Neues Passwort
 Logging Activity->Log Modus
 Log Procedure->Log Prozedur
 This option specifies DownloadDaemons logging activity.->Diese Option legt den Logmodus fest.
-This option specifies how logging should be done (Standard output, Standard error\noutput, Syslog-daemon).->Diese Option legt wie das Loggen gemacht werden soll (Standard Ausgabe, Standard\nFehlerausgabe, Syslog-daemon).
+This option specifies how logging should be done (Standard output, Standard error output, Syslog-daemon).->Diese Option legt wie das Loggen gemacht werden soll (Standard Ausgabe, Standard Fehlerausgabe, Syslog-daemon).
 stdout - Standard output->stdout - Standard Ausgabe
 stderr - Standard error output->stderr - Standard Fehlerausgabe
 Warning->Warnungen
@@ -70,7 +71,7 @@ Hard->Hart
 Continue->Fortführen
 Soft->Weich
 Pussy->Paranoid
-HARD cancels all downloads if a reconnect is needed\nCONTINUE only cancels downloads that can be continued after the reconnect\nSOFT will wait until all other downloads are finished\nPUSSY will only reconnect if there is no other choice \n\t(no other download can be started without a reconnect)->HART beendet alle Downloads wenn ein Reconnect nötig ist\nFORTFÜHREN beendet nur Downloads, die nach dem Reconnect fortgesetzt werden können\nWEICH wartet bis alle laufenden Downloads fertig sind\nPARANOID reconnectet nur, wenn sonst nichts mehr geht
+HARD cancels all downloads if a reconnect is needed CONTINUE only cancels downloads that can be continued after the reconnect SOFT will wait until all other downloads are finished PUSSY will only reconnect if there is no other choice (no other download can be started without a reconnect)->HART beendet alle Downloads wenn ein Reconnect nötig ist FORTFÜHREN beendet nur Downloads, die nach dem Reconnect fortgesetzt werden können WEICH wartet bis alle laufenden Downloads fertig sind PARANOID reconnectet nur, wenn sonst nichts mehr geht
 
 
 Failed to change Log Procedure.->Ändern der Log Prozedur fehlgeschlagen.
@@ -168,16 +169,16 @@ Authentication failed->Authentifizierung fehlgeschlagen
 Unknown plugin error - please report->Unbekannter Pluginfehler, bitte melden
 
 Please connect before deleting Downloads.->Bitte verbinden Sie bevor Sie Downloads löschen.
-Do you really want to delete\nthe selected Download(s)?->Wollen Sie wirklich die\nmarkierten Download(s) löschen?
+Do you really want to delete the selected Download(s)?->Wollen Sie wirklich die markierten Download(s) löschen?
 Delete Downloads->Lösche Downloads
 Error occured at deleting File of Download %p1.->Beim Löschen der Datei von Download %p1 ist ein Fehler aufgetreten.
 At least one Row should be selected.->Mindestens eine Zeile sollte markiert sein.
 Error occured at deleting Download(s).->Beim Löschen von Download(s) ist ein Fehler aufgetreten.
 
-Do you really want to delete\nall finished Download(s)?->Wollen Sie wirklich alle\nfertigen Downloads löschen?
+Do you really want to delete all finished Download(s)?->Wollen Sie wirklich alle fertigen Downloads löschen?
 
 Please connect before deleting Files.->Bitte verbinden Sie bevor Sie Dateien löschen.
-Do you really want to delete\nthe selected File(s)?->Wollen Sie wirklich die\nmarkierten Dateien löschen?
+Do you really want to delete the selected File(s)?->Wollen Sie wirklich die markierten Dateien löschen?
 Delete Files->Dateien löschen
 Error occured at deleting Files(s).->Beim Löschen von Datei(en) ist ein Fehler aufgetreten.
 
