@@ -31,11 +31,11 @@ DESC_DDCONSOLE="with ddclient you can easily manage your
 
 # specify all files/directorys (array) and the path's where they should go to (basically a cp -r FILES_XXX[i] PATHS_XXX[i] is done)
 # the .svn folders are removed automatically. Folders are created automatically before copying
-FILES_DDCLIENTWX=("../src/ddclient-wx" "../src/lib/netpptk" "../src/lib/crypt" "../share/applications" "../share/ddclient-wx" "../share/doc" "../share/pixmaps" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
-PATHS_DDCLIENTWX=("src/" "src/lib/" "src/lib/" "share/" "share/" "share/" "share/" )
+FILES_DDCLIENTWX=("../src/ddclient-wx" "../src/include/netpptk" "../src/include/crypt" "../src/include/language" "../src/include/config.h" "../share/applications" "../share/ddclient-wx" "../share/doc" "../share/pixmaps" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DDCLIENTWX=("src/" "src/include/" "src/include/" "src/include/" "src/include/" "share/" "share/" "share/" "share/" )
 
-FILES_DDCONSOLE=("../src/ddconsole" "../src/lib/netpptk" "../src/lib/crypt" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
-PATHS_DDCONSOLE=("src/" "src/lib/" "src/lib/")
+FILES_DDCONSOLE=("../src/ddconsole" "../src/include/netpptk" "../src/include/crypt" "../src/include/config.h" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DDCONSOLE=("src/" "src/include/" "src/include/" "src/include/")
 
 FILES_DDCLIENTPHP=("../src/ddclient-php" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
 PATHS_DDCLIENTPHP=("")
