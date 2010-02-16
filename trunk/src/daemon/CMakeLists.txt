@@ -18,10 +18,9 @@ SET(daemon_SRCS downloaddaemon.cpp
 
 
 OPTION(USE_STD_THREAD "Use C++0x's std::thread implementation instead of boost::thread library" OFF)
-#OPTION(DD_CONF_DIR "Default DownloadDaemon configuration directory" "/etc/downloaddaemon/")
 SET(DD_CONF_DIR "\"/etc/downloaddaemon/\"")
 SET(${DD_CONF_DIR}_OPTION "ON")
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/include/config.h)
+CONFIGURE_FILE(config.h.cmake ${CMAKE_BINARY_DIR}/include/config.h)
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/ ../include)
 
 

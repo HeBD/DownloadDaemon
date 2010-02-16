@@ -20,11 +20,11 @@
 					<Add option="-Wall" />
 					<Add option="-ansi" />
 					<Add option="-g" />
-					<Add option="-std=c++0x" />
-					<Add option="-DUSE_STD_THREAD" />
+					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
+					<Add library="boost_thread-mt" />
 				</Linker>
 			</Target>
 			<Target title="DDConsole">
@@ -38,6 +38,7 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-DNO_BOOST_THREAD" />
+					<Add directory="src/include" />
 				</Compiler>
 			</Target>
 			<Target title="ddclient-wx_unix">
@@ -50,6 +51,7 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="`wx-config --cflags`" />
+					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>
 					<Add option="`wx-config --libs`" />
