@@ -10,7 +10,7 @@
  */
 
 #include "ddclient-wx_connect_dialog.h"
-#include "../lib/crypt/md5.h"
+#include <crypt/md5.h>
 
 
 // event table

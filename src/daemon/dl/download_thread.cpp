@@ -9,19 +9,28 @@
  * GNU General Public License for more details.
  */
 
-#include <string>
+
+#include <config.h>
+#ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
+
 #include <vector>
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
 
+#include <string>
 #include <curl/curl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "../../lib/cfgfile/cfgfile.h"
+#include <cfgfile/cfgfile.h>
 #include "download_thread.h"
 #include "download_container.h"
 #include "../tools/helperfunctions.h"
@@ -39,7 +48,8 @@ void start_next_download() {
 	} else {
 		global_download_list.set_int_property(downloadable, DL_IS_RUNNING, true);
 		global_download_list.set_int_property(downloadable, DL_STATUS, DOWNLOAD_RUNNING);
-		boost::thread t(boost::bind(download_thread_wrapper, downloadable));
+		thread t(bind(download_thread_wrapper, downloadable));
+		t.detach();
 		start_next_download();
 	}
 }

@@ -13,8 +13,16 @@
 #include<fstream>
 #include<string>
 #include<vector>
-#include<boost/thread.hpp>
+#ifndef USE_STD_THREAD
+#include <boost/thread.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
 using namespace std;
+
 
 cfgfile::cfgfile()
 	: comment_token("#"), is_writeable(false), eqtoken('=') {
@@ -49,7 +57,7 @@ void cfgfile::open_cfg_file(const std::string &fp, bool open_writeable) {
 }
 
 std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
-	boost::mutex::scoped_lock lock(mx);
+	unique_lock<mutex> lock(mx);
 	if(!file.is_open() || !file.good()) {
 		lock.unlock();
 		reload_file();

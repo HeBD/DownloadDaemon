@@ -16,10 +16,19 @@
 #include <fstream>
 #include <ctime>
 #include <vector>
+
+#ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
+
 #include <sys/stat.h>
 #include <syslog.h>
-#include "../../lib/cfgfile/cfgfile.h"
+#include <cfgfile/cfgfile.h>
 #include "../dl/download.h"
 #include "../dl/download_container.h"
 #include "../global.h"
@@ -27,7 +36,7 @@ using namespace std;
 
 namespace {
 	// anonymous namespace to make it file-global
-	boost::mutex logfile_mutex;
+	mutex logfile_mutex;
 }
 
 int string_to_int(const std::string str) {
@@ -109,7 +118,7 @@ void log_string(const std::string logstr, int level) {
 	to_log << logstr << '\n';
 	to_syslog << logstr;
 
-	boost::mutex::scoped_lock(logfile_mutex);
+	lock_guard<mutex> lock(logfile_mutex);
 	if(log_procedure == "stdout") {
 		cout << to_log.str() << flush;
 	} else if(log_procedure == "stderr") {

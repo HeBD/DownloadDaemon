@@ -16,13 +16,15 @@
 					<Add option="-Wshadow" />
 					<Add option="-Winit-self" />
 					<Add option="-Wredundant-decls" />
+					<Add option="-std=c++0x" />
 					<Add option="-Wall" />
 					<Add option="-ansi" />
 					<Add option="-g" />
+					<Add option="-std=c++0x" />
+					<Add option="-DUSE_STD_THREAD" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
-					<Add library="boost_thread-mt" />
 				</Linker>
 			</Target>
 			<Target title="DDConsole">
@@ -93,9 +95,11 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-pedantic" />
+					<Add option="-std=c++0x" />
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
+					<Add option="-DHAVE_STD_THREAD" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -108,9 +112,11 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-pedantic" />
+					<Add option="-std=c++0x" />
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
+					<Add option="-DHAVE_STD_THREAD" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -123,9 +129,11 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-pedantic" />
+					<Add option="-std=c++0x" />
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
+					<Add option="-DHAVE_STD_THREAD" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -138,9 +146,11 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-pedantic" />
+					<Add option="-std=c++0x" />
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
+					<Add option="-DHAVE_STD_THREAD" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -153,9 +163,11 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-pedantic" />
+					<Add option="-std=c++0x" />
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
+					<Add option="-DHAVE_STD_THREAD" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -331,39 +343,39 @@
 		<Unit filename="src/ddconsole/ddconsole.cpp">
 			<Option target="DDConsole" />
 		</Unit>
-		<Unit filename="src/lib/cfgfile/cfgfile.cpp">
+		<Unit filename="src/include/cfgfile/cfgfile.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/lib/cfgfile/cfgfile.h">
+		<Unit filename="src/include/cfgfile/cfgfile.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/lib/crypt/md5.cpp">
-			<Option target="Daemon" />
-			<Option target="DDConsole" />
-			<Option target="ddclient-wx_win" />
-			<Option target="ddclient-wx_unix" />
-		</Unit>
-		<Unit filename="src/lib/crypt/md5.h">
+		<Unit filename="src/include/crypt/md5.cpp">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/lib/language/language.cpp">
-			<Option target="ddclient-wx_unix" />
-			<Option target="ddclient-wx_win" />
-		</Unit>
-		<Unit filename="src/lib/language/language.h">
-			<Option target="ddclient-wx_unix" />
-			<Option target="ddclient-wx_win" />
-		</Unit>
-		<Unit filename="src/lib/netpptk/netpptk.cpp">
+		<Unit filename="src/include/crypt/md5.h">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/lib/netpptk/netpptk.h">
+		<Unit filename="src/include/language/language.cpp">
+			<Option target="ddclient-wx_unix" />
+			<Option target="ddclient-wx_win" />
+		</Unit>
+		<Unit filename="src/include/language/language.h">
+			<Option target="ddclient-wx_unix" />
+			<Option target="ddclient-wx_win" />
+		</Unit>
+		<Unit filename="src/include/netpptk/netpptk.cpp">
+			<Option target="Daemon" />
+			<Option target="DDConsole" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
+		</Unit>
+		<Unit filename="src/include/netpptk/netpptk.h">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />
 			<Option target="ddclient-wx_win" />

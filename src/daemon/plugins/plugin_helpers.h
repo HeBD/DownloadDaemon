@@ -13,11 +13,10 @@
 #define PLUGIN_HELPERS_H_INCLUDED
 #define IS_PLUGIN
 
+#include <sstream>
 #include "../dl/download.h"
 #include "../dl/download_container.h"
 #include "captcha.h"
-#include <boost/bind.hpp>
-
 
 /*
 The following types are imported from download.h and may be/have to be used for writing plugins:

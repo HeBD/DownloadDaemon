@@ -12,10 +12,19 @@
 #ifndef DOWNLOAD_CONTAINER_H_INCLUDED
 #define DOWNLOAD_CONTAINER_H_INCLUDED
 
+#include <config.h>
 #include "download.h"
 #include <string>
-#include <vector>
+#include <list>
+
+#ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
 
 enum property { DL_ID = 0, DL_DOWNLOADED_BYTES, DL_SIZE, DL_WAIT_SECONDS, DL_PLUGIN_STATUS, DL_STATUS,
 				DL_IS_RUNNING, DL_NEED_STOP, DL_SPEED, DL_CAN_RESUME };
@@ -239,8 +248,8 @@ private:
 
 
 	std::list<download> download_list;
-	boost::mutex download_mutex;
-	boost::mutex plugin_mutex; // makes sure that you don't call the same plugin multiple times at the same time
+	std::mutex download_mutex;
+	std::mutex plugin_mutex; // makes sure that you don't call the same plugin multiple times at the same time
 				   // because it would bring thread-safety problems
 	bool is_reconnecting;
 };

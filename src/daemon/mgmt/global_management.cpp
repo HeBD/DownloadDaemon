@@ -18,7 +18,7 @@
 #include "../dl/download_container.h"
 #include "../dl/download_thread.h"
 #include "../tools/helperfunctions.h"
-#include "../../lib/cfgfile/cfgfile.h"
+#include <cfgfile/cfgfile.h>
 #include "global_management.h"
 #include "../global.h"
 
@@ -26,7 +26,7 @@
 #include <sys/stat.h>
 using namespace std;
 
-boost::shared_mutex once_per_sec_mutex;
+std::mutex once_per_sec_mutex;
 
 void do_once_per_second() {
 	while(true) {

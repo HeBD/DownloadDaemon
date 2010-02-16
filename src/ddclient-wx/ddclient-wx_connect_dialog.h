@@ -23,7 +23,7 @@
 #include <wx/checkbox.h>
 #include <wx/choice.h>
 
-#include "../lib/netpptk/netpptk.h"
+#include <netpptk/netpptk.h>
 #if defined(__WXMSW__)
 	#include <wx/msw/winundef.h> // because of conflicting wxWidgets and windows.h
 #endif

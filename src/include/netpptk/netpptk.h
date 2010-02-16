@@ -12,10 +12,18 @@
 #ifndef NETPPTK_H_
 #define NETPPTK_H_
 
+#include <config.h>
 #include <string>
 
 #ifndef NO_BOOST_THREAD
-	#include <boost/thread.hpp>
+	#ifndef USE_STD_THREAD
+		#include <boost/thread.hpp>
+		namespace std {
+			using namespace boost;
+		}
+	#else
+		#include <thread>
+	#endif
 #endif
 
 #ifdef _WIN32
@@ -131,7 +139,7 @@ private:
 	static int m_instanceCount;
 	unsigned int m_open_connections;
 	#ifndef NO_BOOST_THREAD
-	boost::thread* auto_accept_thread;
+	std::thread* auto_accept_thread;
 	#endif
 	bool stop_threads;
 	std::string append_header(std::string data);

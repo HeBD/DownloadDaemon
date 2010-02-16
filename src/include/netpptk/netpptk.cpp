@@ -14,11 +14,6 @@
 #include <cstring>
 #include <vector>
 
-#ifndef NO_BOOST_THREAD
-	#include <boost/bind.hpp>
-	#include <boost/thread.hpp>
-#endif
-
 #ifdef _WIN32
     #define WINVER 0x0501
 	#include <windows.h>
@@ -207,7 +202,7 @@ bool tkSock::accept (tkSock& new_socket) {
 
 #ifndef NO_BOOST_THREAD
 void tkSock::auto_accept (void (*handle) (tkSock*)) {
-	auto_accept_thread = new boost::thread(boost::bind(&tkSock::auto_accept_threadfunc, this, handle));
+	auto_accept_thread = new std::thread(std::bind(&tkSock::auto_accept_threadfunc, this, handle));
 }
 
 void tkSock::auto_accept_threadfunc(void (*handle) (tkSock*)) {
@@ -233,7 +228,8 @@ void tkSock::auto_accept_threadfunc(void (*handle) (tkSock*)) {
 				delete tmpsock;
 				break;
 			}
-			boost::thread connection_handle(boost::bind(&tkSock::handle_wrapper, this, tmpsock, handle));
+			std::thread connection_handle(std::bind(&tkSock::handle_wrapper, this, tmpsock, handle));
+			connection_handle.detach();
 		} else {
 			sleep(1);
 		}

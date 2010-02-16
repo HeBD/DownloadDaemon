@@ -16,7 +16,7 @@
 #include "download.h"
 #include "download_container.h"
 #ifndef IS_PLUGIN
-#include "../../lib/cfgfile/cfgfile.h"
+#include <cfgfile/cfgfile.h>
 #include "../tools/curl_callbacks.h"
 #include "../tools/helperfunctions.h"
 #include "../global.h"
@@ -132,8 +132,6 @@ void download::operator=(const download& dl) {
 	// instead of really copying. This is required to make moving downloads up and down in the download list possible.
 	handle = dl.handle;
 	is_init = dl.is_init;
-	dl.handle = NULL;
-	dl.is_init = false;
 }
 
 download::~download() {

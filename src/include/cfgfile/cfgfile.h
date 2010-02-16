@@ -12,9 +12,19 @@
 #ifndef CFGFILE_H_
 #define CFGFILE_H_
 
+#include <config.h>
 #include <fstream>
 #include <string>
+
+#ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
+
 
 class cfgfile {
 public:
@@ -109,7 +119,7 @@ private:
 	std::string comment_token;
 	bool is_writeable;
 	char eqtoken;
-	boost::mutex mx;
+	std::mutex mx;
 
 };
 

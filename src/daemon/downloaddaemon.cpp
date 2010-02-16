@@ -9,21 +9,29 @@
  * GNU General Public License for more details.
  */
 
-#include "../lib/cfgfile/cfgfile.h"
+#include <config.h>
+#include <cfgfile/cfgfile.h>
 #include "mgmt/mgmt_thread.h"
 #include "dl/download.h"
 #include "dl/download_thread.h"
 #include "mgmt/global_management.h"
 #include "tools/helperfunctions.h"
 
+#ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
 
 #include <iostream>
 #include <vector>
 #include <string>
 #include <climits>
 #include <cstdlib>
+#include <sstream>
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -261,11 +269,13 @@ int main(int argc, char* argv[], char* env[]) {
 	{
 		// putting it in it's own scope will detach the thread right after creation
 		// older boost::thread versions don't have the detach() method but they detach() in the destructor
-		boost::thread mgmt_thread(mgmt_thread_main);
+		thread mgmt_thread(mgmt_thread_main);
+		mgmt_thread.detach();
 	}
 
 	// tick download counters, start new downloads, etc each second
-	boost::thread once_per_sec_thread(do_once_per_second);
+	thread once_per_sec_thread(do_once_per_second);
+	once_per_sec_thread.detach();
 	while(true) {
 		sleep(1);
 		once_per_sec_mutex.unlock();

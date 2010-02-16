@@ -47,8 +47,8 @@
 #include "ddclient-wx_configure_dialog.h"
 #include "ddclient-wx_delete_dialog.h"
 
-#include "../lib/language/language.h"
-#include "../lib/netpptk/netpptk.h"
+#include <language/language.h>
+#include <netpptk/netpptk.h>
 #if defined(__WXMSW__)
 	#include <wx/msw/winundef.h> // Because of conflicting wxWidgets and windows.h
 #endif
