@@ -21,8 +21,52 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-	CURL* handle = curl_easy_init();
+	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+		std::string result;
+		CURL* handle = get_handle();
+		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
+		string url = get_url();
+		url = url.substr(0, url.find("?"));
+		url += "?setlang=en";
+		curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
+		curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
+		if(curl_easy_perform(handle)) {
+			return PLUGIN_CONNECTION_ERROR;
+		}
+
+		std::string filename;
+		size_t pos = result.find("Filename:");
+		pos = result.find("<b>", pos) + 3;
+		filename = result.substr(pos, result.find("</b>", pos) - pos);
+		trim_string(filename);
+		std::string filetype;
+		pos = result.find("Filetype:");
+		pos = result.find("<td>", pos) + 4;
+		filetype = result.substr(pos, result.find("</td>", pos) - pos);
+		trim_string(filetype);
+		filename += filetype;
+		outp.download_filename = filename;
+
+		std::string post_data = "email=" + inp.premium_user + "&password=" + inp.premium_password;
+		curl_easy_setopt(handle, CURLOPT_URL, "http://uploaded.to/login?setlang=en");
+		curl_easy_setopt(handle, CURLOPT_POST, 1);
+		curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, post_data.c_str());
+		curl_easy_perform(handle);
+		curl_easy_setopt(handle, CURLOPT_POST, 0);
+		curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "");
+		if(result.find("Login failed") == string::npos) {
+			return PLUGIN_AUTH_FAIL;
+		}
+		outp.download_url = url;
+		return PLUGIN_SUCCESS;
+	}
+
+
+	CURL* handle = get_handle();
 	std::string resultstr;
+	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
 	curl_easy_setopt(handle, CURLOPT_URL, get_url());
@@ -30,7 +74,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
 	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
 	int success = curl_easy_perform(handle);
-	curl_easy_cleanup(handle);
 
 	if(success != 0) {
 		return PLUGIN_CONNECTION_ERROR;
@@ -89,5 +132,5 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 		outp.allows_resumption = false;
 		outp.allows_multiple = false;
 	}
-	outp.offers_premium = false;
+	outp.offers_premium = true;
 }

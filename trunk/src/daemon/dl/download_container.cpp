@@ -911,7 +911,7 @@ void download_container::set_dl_status(download_container::iterator it, download
 		it->status = st;
 	}
 
-	if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_PENDING || st == DOWNLOAD_DELETED) {
+	if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) {
 		it->wait_seconds = 0;
 	}
 	#ifndef IS_PLUGIN

@@ -1,4 +1,8 @@
 2010-02-17
+   [adrian]
+	- fixed error-timeouts (again...)
+	- added experimental support for uploaded.to premium. It's untested, so please test it!
+	- fixed translation bugs in ddclient-php
    [susanne]
 	- cleaned includes out of header files where not needed at ddclient-wx
 
