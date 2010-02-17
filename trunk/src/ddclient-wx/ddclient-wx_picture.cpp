@@ -10,6 +10,8 @@
  */
 
 #include "ddclient-wx_picture.h"
+#include <wx/dcclient.h>
+
 
 BEGIN_EVENT_TABLE (picture, wxPanel)
 	EVT_PAINT(picture::OnPaint)

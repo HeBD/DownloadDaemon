@@ -12,18 +12,14 @@
 #ifndef DDCLIENT_WX_ABOUT_DIALOG_H
 #define DDCLIENT_WX_ABOUT_DIALOG_H
 
+#include "ddclient-wx_picture.h"
+
 #include <wx/dialog.h>
 #include <wx/panel.h>
-#include <wx/bitmap.h>
-#include <wx/image.h>
 #include <wx/stattext.h>
 #include <wx/button.h>
 #include <wx/sizer.h>
-#include <wx/string.h>
 #include <wx/hyperlink.h>
-
-#include "ddclient-wx_picture.h"
-#include "ddclient-wx_main.h"
 
 
 /** About Dialog Class. Shows a Dialog with Information about the Program. */

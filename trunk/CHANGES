@@ -1,3 +1,7 @@
+2010-02-17
+   [susanne]
+	- cleaned includes out of header files where not needed at ddclient-wx
+
 2010-02-16
    [adrian]
 	- DownloadDaemon now works with c++0x's std::thread which can already replace boost::thread. compile with -DUSE_STD_THREAD=1

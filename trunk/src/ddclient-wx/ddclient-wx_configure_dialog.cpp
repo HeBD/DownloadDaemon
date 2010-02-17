@@ -10,6 +10,9 @@
  */
 
 #include "ddclient-wx_configure_dialog.h"
+#include "ddclient-wx_main.h"
+
+#include <netpptk/netpptk.h>
 
 
 // IDs

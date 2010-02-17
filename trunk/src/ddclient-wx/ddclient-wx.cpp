@@ -12,6 +12,9 @@
 #include "ddclient-wx_main.h"
 #include "ddclient-wx.h"
 
+#include <wx/wxprec.h>
+
+
 IMPLEMENT_APP(myapp);
 
 bool myapp::OnInit(){
@@ -19,9 +22,11 @@ bool myapp::OnInit(){
 
 	if(argc > 0){
 		myframe* frame = new myframe(argv[0], 0, wxT("DownloadDaemon Client-wx"));
+
 		#ifdef _WIN32
-		frame->SetIcon(wxICON(aaaa));
+			frame->SetIcon(wxICON(aaaa));
 		#endif
+
 		frame->Show();
 		SetTopWindow(frame);
 	}

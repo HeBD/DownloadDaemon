@@ -18,11 +18,9 @@
 #include <wx/sizer.h>
 #include <wx/textctrl.h>
 
-#include <netpptk/netpptk.h>
 #if defined(__WXMSW__)
 	#include <wx/msw/winundef.h> // Because of conflicting wxWidgets and windows.h
 #endif
-#include "ddclient-wx_main.h"
 
 
 /** Add Dialog Class. Shows a Dialog to add Downloads. */

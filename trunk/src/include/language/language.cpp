@@ -10,6 +10,7 @@
  */
 
 #include "language.h"
+#include <fstream>
 
 
 language::language() : lang("English"){
@@ -85,6 +86,7 @@ std::string language::operator[](std::string index){
 
 void language::replace_all(std::string& str, const std::string& old, const std::string& new_s){
 	size_t n;
+
 	while((n = str.find(old)) != std::string::npos){
 		str.replace(n, old.length(), new_s);
 	}

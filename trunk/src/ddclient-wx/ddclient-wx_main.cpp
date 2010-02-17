@@ -10,11 +10,39 @@
  */
 
 #include "ddclient-wx_main.h"
+
+#include "ddclient-wx_connect_dialog.h"
+#include "ddclient-wx_about_dialog.h"
+#include "ddclient-wx_add_dialog.h"
+#include "ddclient-wx_configure_dialog.h"
+#include "ddclient-wx_delete_dialog.h"
+
 #include <crypt/md5.h>
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+#include <iomanip>
+#include <cstdlib>
+#include <climits>
+#include <fstream>
+#include <cstdarg>
+
+#include <wx/msgdlg.h> // for wxmessagebox
+#include <wx/stattext.h>
+#include <wx/menu.h>
+#include <wx/artprov.h>
+#include <wx/string.h>
+#include <wx/gdicmn.h> // color database
+#include <wx/string.h>
+#include <wx/filename.h>
+#include <wx/file.h>
+#include <wx/clipbrd.h>
+#include <wx/dataobj.h>
+#include <wx/statusbr.h>
 
 #ifdef _WIN32
 	#define sleep(x) Sleep(x * 1000)
 #endif
+
 
 // IDs
 const long myframe::id_menu_about = wxNewId();

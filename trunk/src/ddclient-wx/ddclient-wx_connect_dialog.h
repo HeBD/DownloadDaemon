@@ -12,9 +12,6 @@
 #ifndef DDCLIENT_WX_CONNECT_DIALOG_H
 #define DDCLIENT_WX_CONNECT_DIALOG_H
 
-#include <fstream>
-
-#include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/dialog.h>
 #include <wx/stattext.h>
 #include <wx/button.h>
@@ -23,11 +20,9 @@
 #include <wx/checkbox.h>
 #include <wx/choice.h>
 
-#include <netpptk/netpptk.h>
 #if defined(__WXMSW__)
 	#include <wx/msw/winundef.h> // because of conflicting wxWidgets and windows.h
 #endif
-#include "ddclient-wx_main.h"
 
 
 /** Connection Dialog Class. Shows a Dialog to connect to a DownloadDaemon Server. */

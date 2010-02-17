@@ -13,7 +13,6 @@
 #define DDCLIENT_WX_LANGUAGE_H
 
 #include <map>
-#include <fstream>
 #include <string>
 #include <boost/thread.hpp>
 

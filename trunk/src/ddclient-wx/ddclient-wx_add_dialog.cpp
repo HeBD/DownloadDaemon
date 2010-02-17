@@ -10,6 +10,10 @@
  */
 
 #include "ddclient-wx_add_dialog.h"
+#include "ddclient-wx_main.h"
+
+#include <netpptk/netpptk.h>
+#include <wx/msgdlg.h> // for wxmessagebox
 
 
 // event table
