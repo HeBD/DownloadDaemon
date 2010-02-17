@@ -723,7 +723,7 @@ int download_container::get_next_id() {
 }
 
 int download_container::stop_download(int id) {
-    lock_guard<mutex> lock(download_mutex);
+	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end() || it->get_status() == DOWNLOAD_DELETED) {
 		return LIST_ID;
@@ -807,7 +807,7 @@ void download_container::cleanup_handle(int id) {
 	download_container::iterator it = get_download_by_id(id);
 	if(it->is_init)
 		curl_easy_cleanup(it->handle);
-    it->handle = NULL;
+	it->handle = NULL;
 	it->is_init = false;
 }
 #endif
@@ -879,7 +879,7 @@ void download_container::post_process_download(int id) {
 
 	char *error;
 	if ((error = dlerror()) != NULL)  {
-	    dlclose(handle);
+		dlclose(handle);
 		return;
 	}
 

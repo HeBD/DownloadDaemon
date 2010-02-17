@@ -290,13 +290,13 @@ std::string filename_from_url(const std::string &url) {
 
 /** Functor to compare 2 chars case-insensitive, used as lexicographical_compare callback */
 struct lt_nocase : public std::binary_function<char, char, bool> {
-   bool operator()(char x, char y) const {
-     return toupper(static_cast<unsigned char>(x)) < toupper(static_cast<unsigned char>(y));
-   }
+	bool operator()(char x, char y) const {
+		return toupper(static_cast<unsigned char>(x)) < toupper(static_cast<unsigned char>(y));
+	}
 };
 
 
 bool CompareNoCase( const std::string& s1, const std::string& s2 ) {
-    return std::lexicographical_compare( s1.begin(), s1.end(), s2.begin(), s2.end(), lt_nocase());
+	return std::lexicographical_compare( s1.begin(), s1.end(), s2.begin(), s2.end(), lt_nocase());
 }
 

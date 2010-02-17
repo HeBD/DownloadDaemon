@@ -15,7 +15,7 @@
 #include <vector>
 
 #ifdef _WIN32
-    #define WINVER 0x0501
+	#define WINVER 0x0501
 	#include <windows.h>
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
