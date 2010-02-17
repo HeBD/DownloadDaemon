@@ -15,7 +15,6 @@
 #include <wx/panel.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
-#include <wx/dcclient.h>
 
 
 /** Picture Class. Paints a PNG Image. */

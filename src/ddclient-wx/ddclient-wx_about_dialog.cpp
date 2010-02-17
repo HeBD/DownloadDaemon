@@ -10,6 +10,11 @@
  */
 
 #include "ddclient-wx_about_dialog.h"
+#include "ddclient-wx_main.h"
+
+#include <wx/bitmap.h>
+#include <wx/image.h>
+#include <wx/string.h>
 
 
 // event table

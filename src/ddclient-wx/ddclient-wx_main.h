@@ -12,49 +12,23 @@
 #ifndef DDCLIENT_WX_MAIN_H
 #define DDCLIENT_WX_MAIN_H
 
-
 #include <vector>
-#include <iomanip>
-#include <cstdlib>
-#include <climits>
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <fstream>
-#include <cstdarg>
+#include <language/language.h>
+#include <netpptk/netpptk.h>
 
-#include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/frame.h>
 #include <wx/panel.h>
 #include <wx/notebook.h>
-#include <wx/stattext.h>
-#include <wx/menu.h>
 #include <wx/toolbar.h>
-#include <wx/artprov.h>
 #include <wx/sizer.h>
 #include <wx/listctrl.h>
-#include <wx/string.h>
-#include <wx/gdicmn.h> // color database
-#include <wx/string.h>
-#include <wx/filename.h>
-#include <wx/file.h>
-#include <wx/clipbrd.h>
-#include <wx/dataobj.h>
-#include <wx/statusbr.h>
 
-#include "ddclient-wx_connect_dialog.h"
-#include "ddclient-wx_about_dialog.h"
-#include "ddclient-wx_add_dialog.h"
-#include "ddclient-wx_configure_dialog.h"
-#include "ddclient-wx_delete_dialog.h"
-
-#include <language/language.h>
-#include <netpptk/netpptk.h>
 #if defined(__WXMSW__)
-	#include <wx/msw/winundef.h> // Because of conflicting wxWidgets and windows.h
+	#include <wx/msw/winundef.h> // because of conflicting wxWidgets and windows.h
 #endif
 
 using namespace std;
-#include <wx/statusbr.h>
+
 
 /** Main Class: the Frame */
 class myframe : public wxFrame{

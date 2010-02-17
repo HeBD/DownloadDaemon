@@ -12,8 +12,6 @@
 #ifndef DDCLIENT_WX_APP_H
 #define DDCLIENT_WX_APP_H
 
-#include <wx/wxprec.h>
-
 #ifdef __BORLANDC__
 	#pragma hdrstop
 #endif

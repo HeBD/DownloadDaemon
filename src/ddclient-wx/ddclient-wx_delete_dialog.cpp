@@ -10,6 +10,9 @@
  */
 
 #include "ddclient-wx_delete_dialog.h"
+#include "ddclient-wx_main.h"
+
+#include <wx/string.h>
 
 
 // IDs
