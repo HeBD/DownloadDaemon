@@ -112,7 +112,7 @@ int main(int argc, char* argv[], char* env[]) {
 	fchmod(fdlock, 0777);
 	#else
 	string p_tmp = getenv("PATH");
-    p_tmp += ":/bin:.";
+	p_tmp += ":/bin:.";
 	setenv("PATH", p_tmp.c_str(), 1);
 	#endif
 
@@ -193,15 +193,15 @@ int main(int argc, char* argv[], char* env[]) {
 	program_root.append("/share/downloaddaemon/");
 
 	if(stat(program_root.c_str(), &st) != 0) {
-	    #ifdef __CYGWIN__
-            if(program_root.find("/usr/share/") != string::npos) {
-                program_root = "/share/downloaddaemon/";
-            }
-        #else
-            cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
-            cerr << "We were looking in: " << program_root << endl;
-            exit(-1);
-        #endif
+		#ifdef __CYGWIN__
+			if(program_root.find("/usr/share/") != string::npos) {
+				program_root = "/share/downloaddaemon/";
+			}
+		#else
+			cerr << "Unable to locate program data (should be in bindir/../share/downloaddaemon)" << endl;
+			cerr << "We were looking in: " << program_root << endl;
+			exit(-1);
+		#endif
 	}
 	chdir(program_root.c_str());
 

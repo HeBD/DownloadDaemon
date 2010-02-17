@@ -34,11 +34,11 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 	string to_exec = gocr + " " + gocr_options;
 	if(use_db) {
 		to_exec += " -p " + share_directory + "/plugins/captchadb/" + host;
-        #ifdef __CYGWIN__
-        to_exec += "\\\\";
-        #else
-        to_exec += "/";
-        #endif
+		#ifdef __CYGWIN__
+		to_exec += "\\\\";
+		#else
+		to_exec += "/";
+		#endif
 	}
 	to_exec += " " + img_fn + " 2> /dev/null";
 	FILE* cap_result = popen(to_exec.c_str(), "r");

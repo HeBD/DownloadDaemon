@@ -161,13 +161,13 @@ void download_thread(int download) {
 				return;
 			}
 
-            int to_sleep(global_download_list.get_int_property(download, DL_WAIT_SECONDS));
-            for(int i = 0; i < to_sleep; ++i) {
-                sleep(1);
-                if(global_download_list.get_int_property(download, DL_NEED_STOP)) {
-                    return;
-                }
-            }
+			int to_sleep(global_download_list.get_int_property(download, DL_WAIT_SECONDS));
+			for(int i = 0; i < to_sleep; ++i) {
+				sleep(1);
+				if(global_download_list.get_int_property(download, DL_NEED_STOP)) {
+					return;
+				}
+			}
 		}
 
 		std::string output_filename;
