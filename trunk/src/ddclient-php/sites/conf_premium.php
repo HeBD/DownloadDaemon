@@ -44,5 +44,9 @@ $content .= '<input type="submit" name="apply" value="Apply" id="apply" class="s
 
 $tpl_vars['content'] = $content;
 $tpl_vars['err_message'] = $err_message;
+$tpl_vars['L_Conf_general'] = $LANG['Conf_general'];
+$tpl_vars['L_Conf_reconnect'] = $LANG['Conf_reconnect'];
+$tpl_vars['L_Conf_premium'] = $LANG['Conf_premium'];
+
 
 ?>
