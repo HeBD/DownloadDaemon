@@ -5,6 +5,9 @@
 	- updated ddconsole help
 	- updated ddclient-php to be partly ready for the new package-based download list
 	- DownloadDaemon now uses unique download-IDs over packages
+   [susanne]
+	- added lib (downloadc) to simplify communication for clients with daemon (incl new packages support)
+	- downloadc can connect, return an easy to read list and add downloads/packages so far
 
 2010-02-18
    [adrian]

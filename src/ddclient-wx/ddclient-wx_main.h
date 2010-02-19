@@ -15,6 +15,7 @@
 #include <vector>
 #include <language/language.h>
 #include <netpptk/netpptk.h>
+#include <downloadc/downloadc.h>
 
 #include <wx/frame.h>
 #include <wx/panel.h>
