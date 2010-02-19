@@ -28,6 +28,8 @@ $LANG = array(
 	'Add_multi_DL_Desc' => '<p style="margin-left: 110px;">Falls sie einen Kommentar/Titel f&uuml; Downloads setzen wollen, schreiben sie:<br />http://irgendwas.aa/bb|Toller Titel<br /></p>',
 	'SUCC_ADD_SINGLE' => 'Downloads erfolgreich hinzugef&uuml;gt!',
 	'SUCC_ADD_MULTI' => 'Alle Downloads wurden erfolgreich hinzugef&uuml;gt!',
+	'package' => 'Paket',
+	'sel_or_type' => 'W&auml;hlen oder eingeben',
 
 // Manage
 	'ID' => 'ID',
@@ -68,5 +70,6 @@ $LANG = array(
 	'ERR_DL_DEL' => 'Unable to delete this download.',
 	'ERR_FILE_DEL' => 'Unable to delete this file.',
 	'ERR_DL_UP' => 'The Download could not be moved.',
+	'ERR_PKG_OR_DL_NAM' => 'Invalid package name or Download title.',
 )
 ?>

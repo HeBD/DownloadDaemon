@@ -60,16 +60,19 @@ if($connect != 'SUCCESS') {
 	send_all($socket, "DDP DL LIST");
 	recv_all($socket, $list);
 
-	$download_count = substr_count($list, "\n");
 	$download_index[] = array();
 	$download_index = explode("\n", $list);
 
 	$exp_dls[] = array();
-	for($i = 0; $i < $download_count; $i++) {
+	for($i = 0; $i < count($download_index); $i++) {
 		$exp_dls[$i] = explode ( '|'  , $download_index[$i] );
 	}
 
-	for($i = 0; $i < $download_count; $i++) {
+	for($i = 0; $i < count($exp_dls); $i++) {
+		if($exp_dls[$i][0] == "") continue;
+		if($exp_dls[$i][0] == "PACKAGE") {
+			continue;
+		}
 		
 		//Alternating <tr> Colors
 		if($i%2 == 0) {
