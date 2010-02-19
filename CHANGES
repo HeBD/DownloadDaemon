@@ -1,3 +1,14 @@
+2010-02-19
+   [adrian]
+	- the download-list is now not a simple list any more, but is seperated into packages.
+	  THIS BREAKS CLIENT COMPATIBILITY! THE CLIENTS HAVE TO BE UPDATED (except for ddconsole)
+	- updated ddconsole help
+
+2010-02-18
+   [adrian]
+	- fixed downloading of https:// urls
+	- download_container now keeps download* instead of download and manages the memory
+
 2010-02-17
    [adrian]
 	- fixed error-timeouts (again...)

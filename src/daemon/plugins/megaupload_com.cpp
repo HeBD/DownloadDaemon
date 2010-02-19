@@ -156,7 +156,7 @@ void post_process_download(plugin_input &inp) {
 	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
 		return;
 	} else {
-		string filename = dl_list->get_string_property(dlid, DL_OUTPUT_FILE);
+		string filename = dl_list->get_output_file(dlid);
 		struct stat st;
 		if(stat(filename.c_str(), &st) != 0) {
 			return;
@@ -169,8 +169,8 @@ void post_process_download(plugin_input &inp) {
 		getline(ifs, tmp);
 		if(tmp.find("</HEAD><BODY>Download limit exceeded</BODY></HTML>") != string::npos) {
 			set_wait_time(30);
-			dl_list->set_int_property(dlid, DL_STATUS, DOWNLOAD_WAITING);
-			dl_list->set_int_property(dlid, DL_PLUGIN_STATUS, PLUGIN_LIMIT_REACHED);
+			dl_list->set_status(dlid, DOWNLOAD_WAITING);
+			dl_list->set_error(dlid, PLUGIN_LIMIT_REACHED);
 		}
 
 

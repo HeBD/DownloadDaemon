@@ -12,7 +12,7 @@ public:
 	recursive_parser(std::string url);
 
 	/** checks out the folder recursively and adds all downloads to global_download_list */
-	void add_to_list();
+	void add_to_list(int container);
 
 	/** callback for curl, needs to be static */
 	static size_t to_string_callback(void *buffer, size_t size, size_t nmemb, void *userp);
@@ -21,7 +21,7 @@ private:
 	/** does the real work
 	*   @param url URL to the folder to parse (don't use member so we can call recursively
 	*/
-	void deep_parse(std::string url);
+	void deep_parse(std::string url, int container);
 
 	/** parses the list returned from a curl-download on a ftp folder
 	*   @param list the list as it's returned from curl

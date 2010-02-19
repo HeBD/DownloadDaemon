@@ -209,6 +209,12 @@
 		<Unit filename="src/daemon/dl/download_thread.h">
 			<Option target="Daemon" />
 		</Unit>
+		<Unit filename="src/daemon/dl/package_container.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/dl/package_container.h">
+			<Option target="Daemon" />
+		</Unit>
 		<Unit filename="src/daemon/dl/recursive_parser.cpp">
 			<Option target="Daemon" />
 		</Unit>

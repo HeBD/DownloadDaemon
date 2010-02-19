@@ -9,11 +9,11 @@ using namespace std;
 recursive_parser::recursive_parser(std::string url) : folder_url(url) {
 }
 
-void recursive_parser::add_to_list() {
-	deep_parse(folder_url);
+void recursive_parser::add_to_list(int container) {
+	deep_parse(folder_url, container);
 }
 
-void recursive_parser::deep_parse(std::string url) {
+void recursive_parser::deep_parse(std::string url, int container) {
 	std::string list;
 	CURL* handle = curl_easy_init();
 	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
@@ -26,10 +26,10 @@ void recursive_parser::deep_parse(std::string url) {
 	std::vector<std::string> urls = parse_list(list);
 	for(std::vector<std::string>::iterator it = urls.begin(); it != urls.end(); ++it) {
 		if((*it)[it->size() - 1] == '/') {
-			deep_parse(url + *it);
+			deep_parse(url + *it, container);
 		} else {
-			download dl(url + *it);
-			global_download_list.add_download(dl);
+			download* dl = new download(url + *it);
+			global_download_list.add_dl_to_pkg(dl, container);
 		}
 	}
 }
