@@ -45,10 +45,10 @@ After specifing the target, at least one whitespace needs to follow, so now we g
 
 the third parameter is a command about what to do with the target.
 
-For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "UP", "DOWN", "ACTIVATE", "DEACTIVATE". the id field has the form <package id>.<download id>.
-	LIST will return the current list of downloads in the following format: id|date added|title|url|status|downloaded bytes|
-	     file size|wait seconds|error message|download speed
-	     followed by a newline. If there is a | in the title, it will be escaped as \|.
+For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "UP", "DOWN", "ACTIVATE", "DEACTIVATE".
+	LIST will return the current list of downloads in the following format:
+	     PACKAGE|<pkg_id>|<pkg_title>
+	     id|date added|title|url|status|downloaded bytes|file size|wait seconds|error message|download speed
 	ADD <package ID> <url> <comment> will add a download. the ADD command needs to be followed by at least one whitespace, followed by the download url.
 	    if a title for the download should be set, it should be added after another whitespace. If the same link is already in the list
 	    and the config file forbids adding the same links twice, you will receive a 108 VARIABLE
