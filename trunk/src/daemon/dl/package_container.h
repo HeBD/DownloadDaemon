@@ -102,7 +102,9 @@ class package_container {
 
 	int pkg_that_contains_download(int download_id);
 
-	private:
+	bool pkg_exists(int id);
+
+private:
 	typedef std::vector<download_container*>::iterator iterator;
 
 	iterator package_by_id(int pkg_id);
