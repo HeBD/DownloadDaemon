@@ -314,7 +314,7 @@ void target_dl_add(std::string &data, tkSock *sock) {
 
 		if(global_download_list.add_dl_to_pkg(dl, package) != LIST_SUCCESS) {
 			log_string("Tried to add a download to a non-existant package", LOG_WARNING);
-			*sock << "108 VARIABLE";
+			*sock << "104 ID";
 		} else {
 			*sock << "100 SUCCESS";
 		}
@@ -325,66 +325,81 @@ void target_dl_add(std::string &data, tkSock *sock) {
 }
 
 void target_dl_del(std::string &data, tkSock *sock) {
-	size_t n = data.find('.');
-	if(n == string::npos || data.size() <= n + 1) {
-		*sock << "108 VARIABLE";
+	if(data.empty()) {
+		*sock << "104 ID";
 		return;
 	}
 	dlindex id;
-	id.first = atoi(data.substr(0, n).c_str());
-	id.second = atoi(data.substr(n + 1).c_str());
+	id.second = atoi(data.c_str());
+	id.first = global_download_list.pkg_that_contains_download(id.second);
+	if(id.first == LIST_ID) {
+		*sock << "104 ID";
+		return;
+	}
 	global_download_list.set_status(id, DOWNLOAD_DELETED);
 	*sock << "100 SUCCESS";
 }
 
 void target_dl_stop(std::string &data, tkSock *sock) {
-	size_t n = data.find('.');
-	if(n == string::npos || data.size() <= n + 1) {
-		*sock << "108 VARIABLE";
+	if(data.empty()) {
+		*sock << "104 ID";
 		return;
 	}
 	dlindex id;
-	id.first = atoi(data.substr(0, n).c_str());
-	id.second = atoi(data.substr(n + 1).c_str());
+	id.second = atoi(data.c_str());
+	id.first = global_download_list.pkg_that_contains_download(id.second);
+	if(id.first == LIST_ID) {
+		*sock << "104 ID";
+		return;
+	}
 	global_download_list.set_need_stop(id, true);
 	*sock << "100 SUCCESS";
 }
 
 void target_dl_up(std::string &data, tkSock *sock) {
-	size_t n = data.find('.');
-	if(n == string::npos || data.size() <= n + 1) {
-		*sock << "108 VARIABLE";
+	if(data.empty()) {
+		*sock << "104 ID";
 		return;
 	}
 	dlindex id;
-	id.first = atoi(data.substr(0, n).c_str());
-	id.second = atoi(data.substr(n + 1).c_str());
+	id.second = atoi(data.c_str());
+	id.first = global_download_list.pkg_that_contains_download(id.second);
+	if(id.first == LIST_ID) {
+		*sock << "104 ID";
+		return;
+	}
 	global_download_list.move_dl(id, package_container::DIRECTION_UP);
 	*sock << "100 SUCCESS";
 }
 
 void target_dl_down(std::string &data, tkSock *sock) {
-	size_t n = data.find('.');
-	if(n == string::npos || data.size() <= n + 1) {
-		*sock << "108 VARIABLE";
+	if(data.empty()) {
+		*sock << "104 ID";
 		return;
 	}
 	dlindex id;
-	id.first = atoi(data.substr(0, n).c_str());
-	id.second = atoi(data.substr(n + 1).c_str());
+	id.second = atoi(data.c_str());
+	id.first = global_download_list.pkg_that_contains_download(id.second);
+	if(id.first == LIST_ID) {
+		*sock << "104 ID";
+		return;
+	}
 	global_download_list.move_dl(id, package_container::DIRECTION_DOWN);
 	*sock << "100 SUCCESS";
 }
 
 void target_dl_activate(std::string &data, tkSock *sock) {
-	size_t n = data.find('.');
-	if(n == string::npos || data.size() <= n + 1) {
-		*sock << "108 VARIABLE";
+	if(data.empty()) {
+		*sock << "104 ID";
 		return;
 	}
 	dlindex id;
-	id.first = atoi(data.substr(0, n).c_str());
-	id.second = atoi(data.substr(n + 1).c_str());
+	id.second = atoi(data.c_str());
+	id.first = global_download_list.pkg_that_contains_download(id.second);
+	if(id.first == LIST_ID) {
+		*sock << "104 ID";
+		return;
+	}
 	if(global_download_list.get_status(id) == DOWNLOAD_INACTIVE) {
 		global_download_list.set_status(id, DOWNLOAD_PENDING);
 		*sock << "100 SUCCESS";
@@ -394,14 +409,17 @@ void target_dl_activate(std::string &data, tkSock *sock) {
 }
 
 void target_dl_deactivate(std::string &data, tkSock *sock) {
-	size_t n = data.find('.');
-	if(n == string::npos || data.size() <= n + 1) {
-		*sock << "108 VARIABLE";
+	if(data.empty()) {
+		*sock << "104 ID";
 		return;
 	}
 	dlindex id;
-	id.first = atoi(data.substr(0, n).c_str());
-	id.second = atoi(data.substr(n + 1).c_str());
+	id.second = atoi(data.c_str());
+	id.first = global_download_list.pkg_that_contains_download(id.second);
+	if(id.first == LIST_ID) {
+		*sock << "104 ID";
+		return;
+	}
 	if(global_download_list.get_status(id) == DOWNLOAD_INACTIVE) {
 		*sock << "107 DEACTIVATE";
 	} else {
@@ -583,13 +601,17 @@ void target_file(std::string &data, tkSock *sock) {
 }
 
 void target_file_del(std::string &data, tkSock *sock) {
-	size_t n = data.find('.');
-	if(n == string::npos || data.size() <= n + 1) {
-		*sock << "108 VARIABLE";
+	if(data.empty()) {
+		*sock << "104 ID";
+		return;
 	}
 	dlindex id;
-	id.first = atoi(data.substr(0, n).c_str());
-	id.second = atoi(data.substr(n + 1).c_str());
+	id.second = atoi(data.c_str());
+	id.first = global_download_list.pkg_that_contains_download(id.second);
+	if(id.first == LIST_ID) {
+		*sock << "104 ID";
+		return;
+	}
 	std::string fn = global_download_list.get_output_file(id);
 	struct stat st;
 	if(fn.empty() || stat(fn.c_str(), &st) != 0) {
@@ -608,13 +630,17 @@ void target_file_del(std::string &data, tkSock *sock) {
 }
 
 void target_file_getpath(std::string &data, tkSock *sock) {
-	size_t n = data.find('.');
-	if(n == string::npos || data.size() <= n + 1) {
-		*sock << "108 VARIABLE";
+	if(data.empty()) {
+		*sock << "104 ID";
+		return;
 	}
 	dlindex id;
-	id.first = atoi(data.substr(0, n).c_str());
-	id.second = atoi(data.substr(n + 1).c_str());
+	id.second = atoi(data.c_str());
+	id.first = global_download_list.pkg_that_contains_download(id.second);
+	if(id.first == LIST_ID) {
+		*sock << "104 ID";
+		return;
+	}
 	std::string output_file = global_download_list.get_output_file(id);
 	struct stat st;
 	if(stat(output_file.c_str(), &st) != 0) {
@@ -625,13 +651,17 @@ void target_file_getpath(std::string &data, tkSock *sock) {
 }
 
 void target_file_getsize(std::string &data, tkSock *sock) {
-	size_t n = data.find('.');
-	if(n == string::npos || data.size() <= n + 1) {
-		*sock << "108 VARIABLE";
+	if(data.empty()) {
+		*sock << "104 ID";
+		return;
 	}
 	dlindex id;
-	id.first = atoi(data.substr(0, n).c_str());
-	id.second = atoi(data.substr(n + 1).c_str());
+	id.second = atoi(data.c_str());
+	id.first = global_download_list.pkg_that_contains_download(id.second);
+	if(id.first == LIST_ID) {
+		*sock << "104 ID";
+		return;
+	}
 	std::string output_file = global_download_list.get_output_file(id);
 
 	struct stat st;

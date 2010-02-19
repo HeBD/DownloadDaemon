@@ -35,17 +35,7 @@ download_container::download_container(int id, std::string container_name) : is_
 download_container::download_container(const download_container &cnt) : download_list(cnt.download_list), is_reconnecting(false), container_id(cnt.container_id), name(cnt.name) {}
 
 download_container::~download_container() {
-	unique_lock<mutex> lock(download_mutex);
-	// try hardly to remove all downloads.. usually the object is empty by now anyway. This is just needed for program-exit (to make valgrind happy)
-	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		set_dl_status(it, DOWNLOAD_DELETED);
-	}
-	while(download_list.size() > 0) {
-		lock.unlock();
-		purge_deleted();
-		usleep(20);
-		lock.lock();
-	}
+	// download-containers may only be destroyed after the ownage of the pointers is moved to another object.
 }
 
 
@@ -54,18 +44,20 @@ int download_container::total_downloads() {
 	return download_list.size();
 }
 
-int download_container::add_download(download *dl) {
+int download_container::add_download(download *dl, int dl_id) {
 	lock_guard<mutex> lock(download_mutex);
-	dl->id = get_next_id();
+	dl->id = dl_id;
 	download_list.push_back(dl);
 	return LIST_SUCCESS;
 }
 
+#ifdef IS_PLUGIN
 int download_container::add_download(const std::string& url, const std::string& title) {
 	download* dl = new download(url);
 	dl->comment = title;
-	return add_download(dl);
+	return add_download(dl, -1);
 }
+#endif
 
 int download_container::move_up(int id) {
 	lock_guard<mutex> lock(download_mutex);
@@ -246,7 +238,7 @@ int download_container::get_next_downloadable(bool do_lock) {
 	}
 
 	for(iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->get_status() == DOWNLOAD_PENDING && (*it)->wait_seconds == 0 && !(*it)->is_running) {
+		if((*it)->get_status() == DOWNLOAD_PENDING && (*it)->wait_seconds == 0 && !(*it)->is_running && (*it)->id >= 0) {
 			std::string current_host((*it)->get_host());
 			bool can_attach = true;
 			for(download_container::iterator it2 = download_list.begin(); it2 != download_list.end(); ++it2) {
@@ -501,26 +493,15 @@ std::string download_container::create_client_list() {
 	std::stringstream ss;
 
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->get_status() == DOWNLOAD_DELETED) {
+		if((*it)->get_status() == DOWNLOAD_DELETED || (*it)->id < 0) {
 			continue;
 		}
 		ss << (*it)->id << '|' << (*it)->add_date << '|';
 		std::string comment = (*it)->comment;
-		replace_all(comment, "|", "\\|");
 		ss << comment << '|' << (*it)->url << '|' << (*it)->get_status_str() << '|' << (*it)->downloaded_bytes << '|' << (*it)->size
 		   << '|' << (*it)->wait_seconds << '|' << (*it)->get_error_str() << '|' << (*it)->speed << '\n';
 	}
 	return ss.str();
-}
-
-int download_container::get_next_id() {
-	int max_id = -1;
-	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->id > max_id) {
-			max_id = (*it)->id;
-		}
-	}
-	return ++max_id;
 }
 
 int download_container::stop_download(int id) {
@@ -612,12 +593,13 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 	for(int i = 0; i < pos; ++i) {
 		++insert_it;
 	}
-
+	dl.download_mutex.lock();
 	for(download_container::iterator it = dl.download_list.begin(); it != dl.download_list.end(); ++it) {
+		(*it)->id = -1; // -1 means that they have to be assigned later
 		insert_it = download_list.insert(insert_it, *it);
-		(*insert_it)->id = get_next_id();
 		++insert_it;
 	}
+	dl.download_mutex.unlock();
 
 }
 
