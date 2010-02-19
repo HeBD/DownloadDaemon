@@ -129,6 +129,8 @@ void connection_handler(tkSock *sock) {
 		*sock << "100 SUCCESS";
 	}
 	while(*sock) {
+		// dump after each command
+		global_download_list.dump_to_file();
 		if(sock->recv(data) == 0) {
 			*sock << "101 PROTOCOL";
 			break;
@@ -150,6 +152,14 @@ void connection_handler(tkSock *sock) {
 			}
 			trim_string(data);
 			target_dl(data, sock);
+		} else if(data.find("PKG") == 0) {
+			data = data.substr(3);
+			if(data.length() == 0 || !isspace(data[0])) {
+				*sock << "101 PROTOCOL";
+				continue;
+			}
+			trim_string(data);
+			target_pkg(data, sock);
 		} else if(data.find("VAR") == 0) {
 			data = data.substr(3);
 			if(data.length() == 0 || !isspace(data[0])) {
@@ -268,14 +278,21 @@ void target_dl_list(std::string &data, tkSock *sock) {
 }
 
 void target_dl_add(std::string &data, tkSock *sock) {
+	int package;
 	std::string url;
 	std::string comment;
-	if(data.find(' ') == std::string::npos) {
-		url = data;
+	if(data.find_first_of(" |\n\r") != string::npos) {
+		*sock << "108 VARIABLE";
+		return;
 	} else {
-		url = data.substr(0, data.find(' '));
-		comment = data.substr(data.find(' '), std::string::npos);
-		replace_all(comment, "|", "\\|");
+		package = atoi(data.substr(0, data.find(' ')).c_str());
+		data = data.substr(data.find(' '));
+		trim_string(data);
+		size_t n = data.find(' ');
+		url = data.substr(0, n);
+		if(n != string::npos)
+			comment = data.substr(n);
+		trim_string(data);
 		trim_string(url);
 		trim_string(comment);
 	}
@@ -288,15 +305,16 @@ void target_dl_add(std::string &data, tkSock *sock) {
 			}
 
 		}
-		download dl(url);
-		dl.comment = comment;
+		download* dl = new download(url);
+		dl->comment = comment;
 		std::string logstr("Adding download: ");
-		logstr += dl.serialize();
+		logstr += dl->serialize();
 		logstr.erase(logstr.length() - 1);
 		log_string(logstr, LOG_DEBUG);
-		if(global_download_list.add_download(dl) != LIST_SUCCESS) {
-			log_string("No permission to write download list file", LOG_ERR);
-			*sock << "110 PERMISSION";
+
+		if(global_download_list.add_dl_to_pkg(dl, package) != LIST_SUCCESS) {
+			log_string("Tried to add a download to a non-existant package", LOG_WARNING);
+			*sock << "108 VARIABLE";
 		} else {
 			*sock << "100 SUCCESS";
 		}
@@ -307,114 +325,146 @@ void target_dl_add(std::string &data, tkSock *sock) {
 }
 
 void target_dl_del(std::string &data, tkSock *sock) {
-	switch(global_download_list.set_int_property(string_to_int(data), DL_STATUS, DOWNLOAD_DELETED)) {
-		case LIST_PERMISSION:
-			log_string("Failed to remove download ID: " + data, LOG_ERR);
-			*sock << "110 PERMISSION";
-		break;
-		case LIST_SUCCESS:
-			log_string("Removing download ID: " + data, LOG_DEBUG);
-			*sock << "100 SUCCESS";
-		break;
-		default:
-			log_string("Failed to remove download ID: " + data, LOG_ERR);
-			*sock << "104 ID";
-		break;
+	size_t n = data.find('.');
+	if(n == string::npos || data.size() <= n + 1) {
+		*sock << "108 VARIABLE";
+		return;
 	}
+	dlindex id;
+	id.first = atoi(data.substr(0, n).c_str());
+	id.second = atoi(data.substr(n + 1).c_str());
+	global_download_list.set_status(id, DOWNLOAD_DELETED);
+	*sock << "100 SUCCESS";
 }
 
 void target_dl_stop(std::string &data, tkSock *sock) {
-	switch(global_download_list.stop_download(atoi(data.c_str()))) {
-		case LIST_PERMISSION:
-			log_string(std::string("Failed to stop download ID: ") + data, LOG_ERR);
-			*sock << "110 PERMISSION";
-		break;
-		case LIST_SUCCESS:
-			log_string(std::string("Stopped download ID: ") + data, LOG_DEBUG);
-			*sock << "100 SUCCESS";
-		break;
-		default:
-			log_string("Failed to remove download ID: " + data, LOG_ERR);
-			*sock << "104 ID";
-		break;
+	size_t n = data.find('.');
+	if(n == string::npos || data.size() <= n + 1) {
+		*sock << "108 VARIABLE";
+		return;
 	}
+	dlindex id;
+	id.first = atoi(data.substr(0, n).c_str());
+	id.second = atoi(data.substr(n + 1).c_str());
+	global_download_list.set_need_stop(id, true);
+	*sock << "100 SUCCESS";
 }
 
 void target_dl_up(std::string &data, tkSock *sock) {
-	switch (global_download_list.move_up(atoi(data.c_str()))) {
-		case LIST_SUCCESS:
-			log_string(std::string("Moved download ID: ") + data + " upwards", LOG_DEBUG);
-			*sock << "100 SUCCESS"; break;
-		case LIST_ID:
-			log_string(std::string("Failed to move download ID: ") + data + " upwards", LOG_ERR);
-			*sock << "104 ID"; break;
-		case LIST_PERMISSION:
-			log_string(std::string("Failed to move download ID: ") + data + " upwards", LOG_ERR);
-			*sock << "110 PERMISSION"; break;
+	size_t n = data.find('.');
+	if(n == string::npos || data.size() <= n + 1) {
+		*sock << "108 VARIABLE";
+		return;
 	}
+	dlindex id;
+	id.first = atoi(data.substr(0, n).c_str());
+	id.second = atoi(data.substr(n + 1).c_str());
+	global_download_list.move_dl(id, package_container::DIRECTION_UP);
+	*sock << "100 SUCCESS";
 }
 
 void target_dl_down(std::string &data, tkSock *sock) {
-	switch (global_download_list.move_down(atoi(data.c_str()))) {
-		case LIST_SUCCESS:
-			log_string(std::string("Moved download ID: ") + data + " downwards", LOG_DEBUG);
-			*sock << "100 SUCCESS";
-		break;
-		case LIST_ID:
-			log_string(std::string("Failed to move download ID: ") + data + " downwards", LOG_ERR);
-			*sock << "104 ID";
-		break;
-		case LIST_PERMISSION:
-			log_string(std::string("Failed to move download ID: ") + data + " downwards", LOG_ERR);
-			*sock << "110 PERMISSION";
-		break;
+	size_t n = data.find('.');
+	if(n == string::npos || data.size() <= n + 1) {
+		*sock << "108 VARIABLE";
+		return;
 	}
+	dlindex id;
+	id.first = atoi(data.substr(0, n).c_str());
+	id.second = atoi(data.substr(n + 1).c_str());
+	global_download_list.move_dl(id, package_container::DIRECTION_DOWN);
+	*sock << "100 SUCCESS";
 }
 
 void target_dl_activate(std::string &data, tkSock *sock) {
-	switch(global_download_list.activate(atoi(data.c_str()))) {
-		case LIST_ID:
-			*sock << "104 ID";
-			log_string(std::string("Failed to activate download ID: ") + data, LOG_ERR);
-		break;
-		case LIST_PERMISSION:
-			log_string(std::string("Failed to activate download ID: ") + data, LOG_ERR);
-			*sock << "110 PERMISSION";
-		break;
-		case LIST_SUCCESS:
-			log_string(std::string("Activated download ID: ") + data, LOG_DEBUG);
-			*sock << "100 SUCCESS";
-		break;
-		default:
-			*sock << "106 ACTIVATE";
-			log_string(std::string("Failed to activate download ID: ") + data, LOG_WARNING);
-		break;
-
+	size_t n = data.find('.');
+	if(n == string::npos || data.size() <= n + 1) {
+		*sock << "108 VARIABLE";
+		return;
+	}
+	dlindex id;
+	id.first = atoi(data.substr(0, n).c_str());
+	id.second = atoi(data.substr(n + 1).c_str());
+	if(global_download_list.get_status(id) == DOWNLOAD_INACTIVE) {
+		global_download_list.set_status(id, DOWNLOAD_PENDING);
+		*sock << "100 SUCCESS";
+	} else {
+		*sock << "106 ACTIVATE";
 	}
 }
 
 void target_dl_deactivate(std::string &data, tkSock *sock) {
-	switch(global_download_list.deactivate(atoi(data.c_str()))) {
-		case LIST_ID:
-			*sock << "104 ID";
-			log_string(std::string("Failed to deactivate download ID: ") + data, LOG_ERR);
-		break;
-		case LIST_PERMISSION:
-			log_string(std::string("Failed to deactivate download ID: ") + data, LOG_ERR);
-			*sock << "110 PERMISSION";
-		break;
-		case LIST_SUCCESS:
-			log_string(std::string("Deactivated download ID: ") + data, LOG_DEBUG);
-			// Reset error messages
-			global_download_list.set_int_property(atoi(data.c_str()), DL_PLUGIN_STATUS, PLUGIN_SUCCESS);
-			*sock << "100 SUCCESS";
-		break;
-		default:
-			*sock << "107 DEACTIVATE";
-			log_string(std::string("Failed to deactivate download ID: ") + data, LOG_WARNING);
-		break;
-
+	size_t n = data.find('.');
+	if(n == string::npos || data.size() <= n + 1) {
+		*sock << "108 VARIABLE";
+		return;
 	}
+	dlindex id;
+	id.first = atoi(data.substr(0, n).c_str());
+	id.second = atoi(data.substr(n + 1).c_str());
+	if(global_download_list.get_status(id) == DOWNLOAD_INACTIVE) {
+		*sock << "107 DEACTIVATE";
+	} else {
+		global_download_list.set_status(id, DOWNLOAD_INACTIVE);
+		global_download_list.set_wait(id, 0);
+		*sock << "100 SUCCESS";
+	}
+}
+
+void target_pkg(std::string &data, tkSock *sock) {
+	if(data.find("ADD") == 0) {
+		data = data.substr(3);
+		trim_string(data);
+		target_pkg_add(data, sock);
+	} else if(data.find("DEL") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_del(data, sock);
+	} else if(data.find("UP") == 0) {
+		data = data.substr(2);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_up(data, sock);
+	} else if(data.find("DOWN") == 0) {
+		data = data.substr(4);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_down(data, sock);
+	}
+}
+
+void target_pkg_add(std::string &data, tkSock *sock) {
+	if(data.find_first_of(" |\n\r") != string::npos) {
+		*sock << "108 VARIABLE";
+		return;
+	}
+	global_download_list.add_package(data);
+	*sock << "100 SUCCESS";
+}
+
+void target_pkg_del(std::string &data, tkSock *sock) {
+	global_download_list.del_package(atoi(data.c_str()));
+	*sock << "100 SUCCESS";
+}
+
+void target_pkg_up(std::string &data, tkSock *sock) {
+	global_download_list.move_pkg(atoi(data.c_str()), package_container::DIRECTION_UP);
+	*sock << "100 SUCCESS";
+}
+
+void target_pkg_down(std::string &data, tkSock *sock) {
+	global_download_list.move_pkg(atoi(data.c_str()), package_container::DIRECTION_DOWN);
+	*sock << "100 SUCCESS";
 }
 
 void target_var(std::string &data, tkSock *sock) {
@@ -449,7 +499,7 @@ void target_var_get(std::string &data, tkSock *sock) {
 }
 
 void target_var_set(std::string &data, tkSock *sock) {
-	if(!data.find('=')) {
+	if(data.find('=') == string::npos || data.find_first_of("\n\r") != string::npos) {
 		*sock << "101 PROTOCOL";
 		return;
 	}
@@ -534,40 +584,39 @@ void target_file(std::string &data, tkSock *sock) {
 }
 
 void target_file_del(std::string &data, tkSock *sock) {
-	std::string output_file;
-	try {
-		output_file = global_download_list.get_string_property(atoi(data.c_str()), DL_OUTPUT_FILE);
-	} catch(download_exception &e) {
-		log_string(std::string("Failed to delete file ID: ") + data, LOG_WARNING);
-		*sock << "104 ID";
-		return;
+	size_t n = data.find('.');
+	if(n == string::npos || data.size() <= n + 1) {
+		*sock << "108 VARIABLE";
 	}
-
-	if(output_file == "" || global_download_list.get_int_property(atoi(data.c_str()), DL_STATUS) == DOWNLOAD_RUNNING) {
-		log_string(std::string("Failed to delete file ID: ") + data, LOG_WARNING);
+	dlindex id;
+	id.first = atoi(data.substr(0, n).c_str());
+	id.second = atoi(data.substr(n + 1).c_str());
+	std::string fn = global_download_list.get_output_file(id);
+	struct stat st;
+	if(fn.empty() || stat(fn.c_str(), &st) != 0) {
 		*sock << "109 FILE";
 		return;
 	}
 
-	if(remove(output_file.c_str()) == 0) {
+	if(remove(fn.c_str()) != 0) {
+		log_string(std::string("Failed to delete file ID: ") + data, LOG_WARNING);
+		*sock << "110 PERMISSION";
+	} else {
 		log_string(std::string("Deleted file ID: ") + data, LOG_DEBUG);
 		*sock << "100 SUCCESS";
-		global_download_list.set_string_property(atoi(data.c_str()), DL_OUTPUT_FILE, "");
-	} else {
-		*sock << "109 FILE";
+		global_download_list.set_output_file(id, "");
 	}
 }
 
 void target_file_getpath(std::string &data, tkSock *sock) {
-	std::string output_file;
-	try {
-		output_file = global_download_list.get_string_property(atoi(data.c_str()), DL_OUTPUT_FILE);
-	} catch(download_exception &e) {
-		log_string(std::string("Failed to get path of file ID: ") + data, LOG_WARNING);
-		*sock << "";
-		return;
+	size_t n = data.find('.');
+	if(n == string::npos || data.size() <= n + 1) {
+		*sock << "108 VARIABLE";
 	}
-
+	dlindex id;
+	id.first = atoi(data.substr(0, n).c_str());
+	id.second = atoi(data.substr(n + 1).c_str());
+	std::string output_file = global_download_list.get_output_file(id);
 	struct stat st;
 	if(stat(output_file.c_str(), &st) != 0) {
 		*sock << "";
@@ -577,14 +626,14 @@ void target_file_getpath(std::string &data, tkSock *sock) {
 }
 
 void target_file_getsize(std::string &data, tkSock *sock) {
-	std::string output_file;
-	try {
-		output_file = global_download_list.get_string_property(atoi(data.c_str()), DL_OUTPUT_FILE);
-	} catch(download_exception &e) {
-		log_string(std::string("Failed to get size of file ID: ") + data, LOG_WARNING);
-		*sock << "-1";
-		return;
+	size_t n = data.find('.');
+	if(n == string::npos || data.size() <= n + 1) {
+		*sock << "108 VARIABLE";
 	}
+	dlindex id;
+	id.first = atoi(data.substr(0, n).c_str());
+	id.second = atoi(data.substr(n + 1).c_str());
+	std::string output_file = global_download_list.get_output_file(id);
 
 	struct stat st;
 	if(stat(output_file.c_str(), &st) != 0) {

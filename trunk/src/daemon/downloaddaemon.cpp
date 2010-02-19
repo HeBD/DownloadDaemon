@@ -14,6 +14,7 @@
 #include "mgmt/mgmt_thread.h"
 #include "dl/download.h"
 #include "dl/download_thread.h"
+#include "dl/package_container.h"
 #include "mgmt/global_management.h"
 #include "tools/helperfunctions.h"
 
@@ -49,7 +50,7 @@ using namespace std;
 
 // GLOBAL VARIABLE DECLARATION:
 // The downloadcontainer is just needed everywhere in the program, so let's make it global
-download_container global_download_list;
+package_container global_download_list;
 // configuration variables are also used a lot, so global too
 cfgfile global_config;
 cfgfile global_router_config;

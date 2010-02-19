@@ -142,19 +142,19 @@ extern "C" void post_process_dl_init(download_container& dlc, int id, plugin_inp
 #endif
 
 void set_wait_time(int seconds) {
-	dl_list->set_int_property(dlid, DL_WAIT_SECONDS, seconds);
+	dl_list->set_wait(dlid, seconds);
 }
 
 int get_wait_time() {
-	return dl_list->get_int_property(dlid, DL_WAIT_SECONDS);
+	return dl_list->get_wait(dlid);
 }
 
 const char* get_url() {
-	return dl_list->get_string_property(dlid, DL_URL).c_str();
+	return dl_list->get_url(dlid).c_str();
 }
 
 void set_url(const char* url) {
-	dl_list->set_string_property(dlid, DL_URL, url);
+	dl_list->set_url(dlid, url);
 }
 
 download_container* get_dl_container() {
@@ -162,12 +162,12 @@ download_container* get_dl_container() {
 }
 
 CURL* get_handle() {
-	return dl_list->get_pointer_property(dlid, DL_HANDLE);
+	return dl_list->get_handle(dlid);
 }
 
 void replace_this_download(download_container &lst) {
 	dl_list->insert_downloads(dl_list->get_list_position(dlid), lst);
-	dl_list->set_int_property(dlid, DL_STATUS, DOWNLOAD_DELETED);
+	dl_list->set_status(dlid, DOWNLOAD_DELETED);
 }
 
 void trim_string(std::string &str) {

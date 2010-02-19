@@ -28,34 +28,27 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 int report_progress(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
-	// careful! this is a POINTER to an iterator!
-	int id = *(int*)clientp;
-	CURL* curr_handle = global_download_list.get_pointer_property(id, DL_HANDLE);
+	dlindex id = *(dlindex*)clientp;
+	CURL* curr_handle = global_download_list.get_handle(id);
 
-	global_download_list.set_int_property(id, DL_SIZE, dltotal);
+	global_download_list.set_size(id, dltotal);
 	std::string output_file;
-	try {
-		output_file = global_download_list.get_string_property(id, DL_OUTPUT_FILE);
-	} catch(download_exception &e) {
-		log_string("Download ID " + int_to_string(id) + " has been deleted internally while actively downloading. Please report this bug!", LOG_ERR);
-		global_download_list.deactivate(id);
-		return 0;
-	}
+	output_file = global_download_list.get_output_file(id);
 
 	double curr_speed;
 	curl_easy_getinfo(curr_handle, CURLINFO_SPEED_DOWNLOAD, &curr_speed);
 	if(curr_speed == 0) {
-		global_download_list.set_int_property(id, DL_SPEED, -1);
+		global_download_list.set_speed(id, -1);
 	} else {
-		global_download_list.set_int_property(id, DL_SPEED, curr_speed);
+		global_download_list.set_speed(id, curr_speed);
 	}
 
 	struct stat st;
 	if(stat(output_file.c_str(), &st) == 0) {
-		global_download_list.set_int_property(id, DL_DOWNLOADED_BYTES, st.st_size);
+		global_download_list.set_downloaded_bytes(id, st.st_size);
 	}
-
-	if(global_download_list.get_int_property(id, DL_NEED_STOP)) {
+	global_download_list.dump_to_file();
+	if(global_download_list.get_need_stop(id)) {
 		// break up the download
 		return -1;
 	}

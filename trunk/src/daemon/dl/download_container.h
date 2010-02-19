@@ -33,23 +33,21 @@ enum pointer_property { DL_HANDLE = 40 };
 enum { LIST_SUCCESS = -20, LIST_PERMISSION, LIST_ID, LIST_PROPERTY };
 
 class download_container {
+	friend class package_container;
+
 public:
 	/** simple constructor
 	*/
 	download_container() {}
 
-	#ifndef IS_PLUGIN
-	/** Constructor taking a filename from which the list should be read
-	*	@param filename Path to the dlist file
-	*/
-	download_container(const char* filename);
+	download_container(int id, std::string container_name);
 
-	/** Read the download list from the dlist file
-	*	@param filename Path to the dlist file
-	*	@returns true on success
+	/** Copy-constructor, needed because of package_container and the mutex
+	*	@param cnt Container to copy from
 	*/
-	int from_file(const char* filename);
-	#endif
+	download_container(const download_container &cnt);
+
+	~download_container();
 
 	/** Check if download list is empty
 	*	@returns True if empty
@@ -96,7 +94,7 @@ public:
 	*	@param dl Download object to add
 	*	@returns LIST_SUCCESS, LIST_PERMISSION
 	*/
-	int add_download(download &dl);
+	int add_download(download *dl);
 
 	/** Adds a download by strings
 	*	@param url URL of the download
@@ -105,24 +103,46 @@ public:
 	*/
 	int add_download(const std::string& url, const std::string& title = "");
 
+	void set_url(int id, std::string url);
+	std::string get_url(int id);
 
-	/** Functions to set download element variables
-	*	@param id ID of the download to set a variable for
-	*	@param prop Property to set. depending on the function, this can be one of the above enums (property, pointer_property, string_property)
-	*	@param value Value to set the variable to
-	*	@returns LIST_SUCCESS, LIST_PERMISSION, LIST_ID, LIST_PROPERTY
-	*/
-	int set_string_property(int id, string_property prop, std::string value);
-	int set_int_property(int id, property prop, double value);
-	int set_pointer_property(int id, pointer_property prop, void* value);
+	void set_title(int id, std::string title);
+	std::string get_title(int id);
 
-	/** Functions to get download element variables. pointer_property will return a 0-pointer if it fails, int_property will return LIST_PROPERTY and string_property will throw a download_exception
-	*	@param id ID of the download to get a variable from
-	*	@param prop Property to get
-	*/
-	std::string get_string_property(int id, string_property prop);
-	void* get_pointer_property(int id, pointer_property prop);
-	double get_int_property(int id, property prop);
+	void set_add_date(int id, std::string add_date);
+	std::string get_add_date(int id);
+
+	void set_downloaded_bytes(int id, uint64_t bytes);
+	uint64_t get_downloaded_bytes(int id);
+
+	void set_size(int id, uint64_t size);
+	uint64_t get_size(int id);
+
+	void set_wait(int id, int seconds);
+	int get_wait(int id);
+
+	void set_error(int id, plugin_status error);
+	plugin_status get_error(int id);
+
+	void set_output_file(int id, std::string output_file);
+	std::string get_output_file(int id);
+
+	void set_running(int id, bool running);
+	bool get_running(int id);
+
+	void set_need_stop(int id, bool need_stop);
+	bool get_need_stop(int id);
+
+	void set_status(int id, download_status status);
+	download_status get_status(int id);
+
+	void set_speed(int id, int speed);
+	int get_speed(int id);
+
+	void set_can_resume(int id, bool can_resume);
+	bool get_can_resume(int id);
+
+	CURL* get_handle(int id);
 
 	#ifndef IS_PLUGIN
 	/** Prepares a download (calls the plugin, etc)
@@ -130,14 +150,14 @@ public:
 	*	@param poutp plugin_output structure, will be filled in by the plugin
 	*	@returns LIST_ID, LIST_SUCCESS
 	*/
-	int prepare_download(int dl, plugin_output &poutp);
+	//int prepare_downprepare_load(int dl, plugin_output &poutp);
 	#endif
 
 	/** Returns info about a plugin
 	*	@param dl Download toget info from
 	*	@returns the info
 	*/
-	plugin_output get_hostinfo(int dl);
+	//plugin_output get_hostinfo(int dl);
 
 	/** strip the host from the URL
 	*	@param dl Download from which to get the host
@@ -145,7 +165,6 @@ public:
 	*/
 	std::string get_host(int dl);
 
-	#ifndef IS_PLUGIN
 	/** Every download with status DOWNLOAD_WAITING and wait seconds > 0 will decrease wait seconds by one. If 0 is reached, the status will be set to DOWNLOAD_PENDING
 	*/
 	void decrease_waits();
@@ -158,7 +177,6 @@ public:
 	*	@returns the list
 	*/
 	std::string create_client_list();
-	#endif
 
 	/** Gets the lowest unused ID that should be used for the next download
 	*	@returns ID
@@ -171,17 +189,17 @@ public:
 	*/
 	int stop_download(int id);
 
-	#ifndef IS_PLUGIN
+	//#ifndef IS_PLUGIN
 	/** Checks if a reconnect is currently needed
 	*	@returns true if yes
 	*/
-	bool reconnect_needed();
+	//bool reconnect_needed();
 
 	/** Does the real work when reconnecting
 	*	@param dlist basically a this-pointer, needed because it's static
 	*/
-	void do_reconnect();
-	#endif
+	//void do_reconnect();
+	//#endif
 
 	/** Checks if the given link already exists in the list
 	*	@param url The url to check for
@@ -192,12 +210,12 @@ public:
 	/** inits a download-handle
 	*	@param id ID of the download
 	*/
-	void init_handle(int id);
+	//void init_handle(int id);
 
 	/** cleans up the handle for a download
 	*	@param id ID of the download
 	*/
-	void cleanup_handle(int id);
+	//void cleanup_handle(int id);
 
 	/** returns the position in the download-list for a given download ID
 	*	@param id ID of the download to get the position for
@@ -214,12 +232,14 @@ public:
 	/** post-processes a finished download by calling the plugin and do what it says
 	*	@param id ID of the download
 	*/
-	void post_process_download(int id);
+	//void post_process_download(int id);
 
-	std::string list_file;
+	//std::string list_file;
+
+	void wait(int id);
 
 private:
-	typedef std::list<download>::iterator iterator;
+	typedef std::list<download*>::iterator iterator;
 	/** get an iterator to a download by giving an ID
 	*	@param id download ID to search for
 	*	@returns Iterator to this id
@@ -247,21 +267,14 @@ private:
 
 
 
-	std::list<download> download_list;
+	std::list<download*> download_list;
 	std::mutex download_mutex;
 	std::mutex plugin_mutex; // makes sure that you don't call the same plugin multiple times at the same time
 				   // because it would bring thread-safety problems
 	bool is_reconnecting;
+	int container_id;
+	std::string name;
 };
 
-/** Exception class for the download container */
-class download_exception {
-public:
-	download_exception(const char* s) : w(s) {}
-	const char* what() { return w.c_str(); }
-
-private:
-	std::string w;
-};
 
 #endif // DOWNLOAD_CONTAINER_H_INCLUDED

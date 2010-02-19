@@ -14,11 +14,12 @@
 
 #include "download.h"
 #include "download_container.h"
+#include "package_container.h"
 #include <vector>
 
 void start_next_download();
 int get_running_count();
-void download_thread(int id);
-void download_thread_wrapper(int download);
+void download_thread(dlindex id);
+void download_thread_wrapper(dlindex download);
 
 #endif /*DOWNLOAD_THREAD_H_*/

@@ -23,6 +23,7 @@ void mgmt_thread_main();
 
 void connection_handler(tkSock *sock);
 void target_dl(std::string &data, tkSock *sock);
+void target_pkg(std::string &data, tkSock *sock);
 void target_var(std::string &data, tkSock *sock);
 void target_file(std::string &data, tkSock *sock);
 void target_router(std::string &data, tkSock *sock);
@@ -36,6 +37,11 @@ void target_dl_up(std::string &data, tkSock *sock);
 void target_dl_down(std::string &data, tkSock *sock);
 void target_dl_activate(std::string &data, tkSock *sock);
 void target_dl_deactivate(std::string &data, tkSock *sock);
+
+void target_pkg_add(std::string &data, tkSock *sock);
+void target_pkg_del(std::string &data, tkSock *sock);
+void target_pkg_up(std::string &data, tkSock *sock);
+void target_pkg_down(std::string &data, tkSock *sock);
 
 void target_var_get(std::string &data, tkSock *sock);
 void target_var_set(std::string &data, tkSock *sock);

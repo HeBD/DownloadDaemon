@@ -33,6 +33,7 @@ Authentication:
 Every command sent to DownloadDaemon has to start with "DDP", followed by at least one whitespace.
 Also every command can address one of three targets. these targets can be "DL", "VAR", "FILE" and "ROUTER".
 DL stands for downloads and should be used if you want to change something about a download list entry, like changing a title, adding or removing a download, etc..
+PKG stands for Package. It should be used to change the package-structure.
 VAR stands for configuration variables and can be used to configure DownloadDaemon (only the stuff in downloaddaemon.conf).
 FILE stands for doing something with a file that has been downloaded by downloaddaemon (like downloading the file to the local machine or deleting the file on the remote side)
 ROUTER stands for router hardware. DownloadDaemon supports reconnect scripts through router resetting/curl/whatever. 
@@ -44,11 +45,11 @@ After specifing the target, at least one whitespace needs to follow, so now we g
 
 the third parameter is a command about what to do with the target.
 
-For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "UP", "DOWN", "ACTIVATE", "DEACTIVATE".
+For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "UP", "DOWN", "ACTIVATE", "DEACTIVATE". the id field has the form <package id>.<download id>.
 	LIST will return the current list of downloads in the following format: id|date added|title|url|status|downloaded bytes|
 	     file size|wait seconds|error message|download speed
 	     followed by a newline. If there is a | in the title, it will be escaped as \|.
-	ADD <url> <comment> will add a download. the ADD command needs to be followed by at least one whitespace, followed by the download url.
+	ADD <package ID> <url> <comment> will add a download. the ADD command needs to be followed by at least one whitespace, followed by the download url.
 	    if a title for the download should be set, it should be added after another whitespace. If the same link is already in the list
 	    and the config file forbids adding the same links twice, you will receive a 108 VARIABLE
 	DEL <id> will delete a download and needs to be followed by the download ID as it can be viewed from the LIST command
@@ -57,6 +58,12 @@ For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "
 	DOWN <id> will move a download one position downwards and therfore decrease its priority. The command needs to be followed by a download ID
 	ACTIVATE <id> will activate a deactivated download
 	DEACTIVATE <id> will deactivate an active download. Running downloads will be aborted by this command.
+
+For the target PKG, the following commands exist: "ADD", "DEL", "UP", "DOWN".
+	ADD <name> adds an empty package to the list (add downloads to it with the DL ADD command).
+	DEL <id> removes a package and all the downloads inside it
+	UP <id> moves a package up
+	DOWN <id> moves a package down
 
 For the target VAR, the following commands exist: "SET", "GET".
 	SET <var>=<value> will set a configuration variable and needs to be in the format <variable> = <value>. the variable identifier is just the same

@@ -158,7 +158,7 @@ void post_process_download(plugin_input &inp) {
 	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
 		return;
 	} else {
-		string filename = dl_list->get_string_property(dlid, DL_OUTPUT_FILE);
+		string filename = dl_list->get_output_file(dlid);
 		struct stat st;
 		if(stat(filename.c_str(), &st) != 0) {
 			return;
@@ -174,8 +174,8 @@ void post_process_download(plugin_input &inp) {
 				n = tmp.find("countdown(", n) + 10;
 				int wait_secs = atoi(tmp.substr(n, tmp.find(",", n) - n).c_str()) / 100;
 				set_wait_time(wait_secs);
-				dl_list->set_int_property(dlid, DL_STATUS, DOWNLOAD_WAITING);
-				dl_list->set_int_property(dlid, DL_PLUGIN_STATUS, PLUGIN_SERVER_OVERLOADED);
+				dl_list->set_status(dlid, DOWNLOAD_WAITING);
+				dl_list->set_error(dlid, PLUGIN_SERVER_OVERLOADED);
 				break;
 			}
 		}
