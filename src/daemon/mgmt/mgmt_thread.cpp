@@ -281,7 +281,7 @@ void target_dl_add(std::string &data, tkSock *sock) {
 	int package;
 	std::string url;
 	std::string comment;
-	if(data.find_first_of(" |\n\r") != string::npos) {
+	if(data.find_first_of("|\n\r") != string::npos) {
 		*sock << "108 VARIABLE";
 		return;
 	} else {
@@ -445,11 +445,10 @@ void target_pkg(std::string &data, tkSock *sock) {
 
 void target_pkg_add(std::string &data, tkSock *sock) {
 	if(data.find_first_of(" |\n\r") != string::npos) {
-		*sock << "108 VARIABLE";
+		*sock << "-1";
 		return;
 	}
-	global_download_list.add_package(data);
-	*sock << "100 SUCCESS";
+	*sock << int_to_string(global_download_list.add_package(data));
 }
 
 void target_pkg_del(std::string &data, tkSock *sock) {

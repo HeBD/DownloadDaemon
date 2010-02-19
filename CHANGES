@@ -3,6 +3,7 @@
 	- the download-list is now not a simple list any more, but is seperated into packages.
 	  THIS BREAKS CLIENT COMPATIBILITY! THE CLIENTS HAVE TO BE UPDATED (except for ddconsole)
 	- updated ddconsole help
+	- updated ddclient-php to be partly ready for the new package-base download list
 
 2010-02-18
    [adrian]
