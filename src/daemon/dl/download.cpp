@@ -32,7 +32,7 @@ using namespace std;
 
 download::download(const std::string& dl_url)
 	: url(dl_url), id(0), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
-	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true) {
+	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true), handle(NULL) {
 	time_t rawtime;
 	struct tm* timeinfo;
 	time(&rawtime);
@@ -41,7 +41,6 @@ download::download(const std::string& dl_url)
 	strftime(timestr, 20, "%Y-%m-%d %X", timeinfo);
 	add_date = timestr;
 	//add_date.erase(add_date.length() - 1);
-	is_init = false;
 }
 
 //download::download(std::string& serializedDL) {
@@ -103,8 +102,8 @@ void download::from_serialized(std::string& serializedDL) {
 	is_running = false;
 	need_stop = false;
 	speed = 0;
-	is_init = false;
 	can_resume = true;
+	handle = NULL;
 }
 #endif
 
@@ -131,7 +130,6 @@ void download::operator=(const download& dl) {
 	// handle and is_init are muteable members. on copy, ownership of the handle is taken to the new download object
 	// instead of really copying. This is required to make moving downloads up and down in the download list possible.
 	handle = dl.handle;
-	is_init = dl.is_init;
 }
 
 download::~download() {

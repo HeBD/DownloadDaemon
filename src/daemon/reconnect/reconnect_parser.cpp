@@ -22,6 +22,7 @@ std::string reconnect::get_current_ip() {
 	curl_easy_setopt(ip_handle, CURLOPT_WRITEFUNCTION, reconnect::write_data);
 	curl_easy_setopt(ip_handle, CURLOPT_WRITEDATA, &resultstr);
 	curl_easy_perform(ip_handle);
+	curl_easy_cleanup(ip_handle);
 	trim_string(resultstr);
 	return resultstr;
 }

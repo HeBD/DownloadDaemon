@@ -137,7 +137,6 @@ public:
 	int speed;
 	bool can_resume;
 	mutable CURL* handle;
-	mutable bool is_init;
 };
 
 bool operator<(const download& x, const download& y);

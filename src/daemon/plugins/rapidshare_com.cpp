@@ -56,7 +56,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_ERROR;
 	}
 
-	CURL* prepare_handle = curl_easy_init();
+	CURL* prepare_handle = get_handle();
 
 	std::string resultstr;
 	curl_easy_setopt(prepare_handle, CURLOPT_URL, get_url());
@@ -89,9 +89,10 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	curl_easy_setopt(prepare_handle, CURLOPT_LOW_SPEED_TIME, 20);
 	curl_easy_setopt(prepare_handle, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(prepare_handle, CURLOPT_POST, 1);
-	curl_easy_setopt(prepare_handle, CURLOPT_POSTFIELDS, "dl.start=\"Free\"");
+	curl_easy_setopt(prepare_handle, CURLOPT_COPYPOSTFIELDS, "dl.start=\"Free\"");
 	curl_easy_perform(prepare_handle);
-	curl_easy_cleanup(prepare_handle);
+	curl_easy_setopt(prepare_handle, CURLOPT_POST, 0);
+	curl_easy_setopt(prepare_handle, CURLOPT_COPYPOSTFIELDS, "");
 
 	if(resultstr.find("Or try again in about") != std::string::npos) {
 		pos = resultstr.find("Or try again in about");

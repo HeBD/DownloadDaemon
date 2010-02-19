@@ -321,8 +321,8 @@ void package_container::init_handle(dlindex dl) {
 	if(it == packages.end()) return;
 	(*it)->download_mutex.lock();
 	download_container::iterator dlit = (*it)->get_download_by_id(dl.second);
-	(*dlit)->handle = curl_easy_init();
-	(*dlit)->is_init = true;
+	if((*dlit)->handle == NULL)
+		(*dlit)->handle = curl_easy_init();
 	(*it)->download_mutex.unlock();
 	dump_to_file(false);
 }
@@ -333,9 +333,9 @@ void package_container::cleanup_handle(dlindex dl) {
 	if(it == packages.end()) return;
 	(*it)->download_mutex.lock();
 	download_container::iterator dlit = (*it)->get_download_by_id(dl.second);
-	curl_easy_cleanup((*dlit)->handle);
+	if((*dlit)->handle != NULL)
+		curl_easy_cleanup((*dlit)->handle);
 	(*dlit)->handle = NULL;
-	(*dlit)->is_init = false;
 	(*it)->download_mutex.unlock();
 	if(reconnect_needed()) {
 		thread t(&package_container::do_reconnect, this);
