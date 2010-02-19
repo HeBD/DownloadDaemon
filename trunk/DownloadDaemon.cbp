@@ -402,9 +402,6 @@
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="tools/jdownloader-router-converter/jd-router-convert.cpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
 		<Extensions>
 			<envvars />
 			<code_completion />
