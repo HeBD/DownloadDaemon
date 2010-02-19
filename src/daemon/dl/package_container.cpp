@@ -725,6 +725,15 @@ int package_container::pkg_that_contains_download(int download_id) {
 	return LIST_ID;
 }
 
+bool package_container::pkg_exists(int id) {
+	if(id < 0) return false;
+	lock_guard<mutex> lock(mx);
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
+		if((*it)->container_id == id) return true;
+	}
+	return false;
+}
+
 int package_container::get_next_download_id(bool lock_download_mutex) {
 	int max_id = -1;
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {

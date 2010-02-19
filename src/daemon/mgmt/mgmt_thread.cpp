@@ -458,6 +458,16 @@ void target_pkg(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_pkg_down(data, sock);
+	} else if(data.find("EXISTS") == 0) {
+		data = data.substr(6);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_exists(data, sock);
+	} else {
+		*sock << "101 PROTOCOL";
 	}
 }
 
@@ -482,6 +492,10 @@ void target_pkg_up(std::string &data, tkSock *sock) {
 void target_pkg_down(std::string &data, tkSock *sock) {
 	global_download_list.move_pkg(atoi(data.c_str()), package_container::DIRECTION_DOWN);
 	*sock << "100 SUCCESS";
+}
+
+void target_pkg_exists(std::string &data, tkSock *sock) {
+	*sock << int_to_string(global_download_list.pkg_exists(atoi(data.c_str())));
 }
 
 void target_var(std::string &data, tkSock *sock) {

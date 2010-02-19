@@ -42,6 +42,7 @@ void target_pkg_add(std::string &data, tkSock *sock);
 void target_pkg_del(std::string &data, tkSock *sock);
 void target_pkg_up(std::string &data, tkSock *sock);
 void target_pkg_down(std::string &data, tkSock *sock);
+void target_pkg_exists(std::string &data, tkSock *sock);
 
 void target_var_get(std::string &data, tkSock *sock);
 void target_var_set(std::string &data, tkSock *sock);
