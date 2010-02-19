@@ -374,6 +374,14 @@
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
+		<Unit filename="src/include/downloadc/downloadc.cpp">
+			<Option target="ddclient-wx_unix" />
+			<Option target="ddclient-wx_win" />
+		</Unit>
+		<Unit filename="src/include/downloadc/downloadc.h">
+			<Option target="ddclient-wx_unix" />
+			<Option target="ddclient-wx_win" />
+		</Unit>
 		<Unit filename="src/include/language/language.cpp">
 			<Option target="ddclient-wx_unix" />
 			<Option target="ddclient-wx_win" />
