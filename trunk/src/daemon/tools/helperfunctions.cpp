@@ -234,7 +234,12 @@ void correct_path(std::string &path) {
 		path.erase(path.end() - 1);
 	}
 
-	for(std::string::iterator it = path.begin(); it != path.end(); ++it) {
+    std::string::iterator it = path.begin();
+#ifdef __CYGWIN__
+    ++it; // required to make network-paths possible that start with \\ or //
+#endif // __CYGWIN__
+
+	for(; it != path.end(); ++it) {
 		if((*it == '/' || *it == '\\') && (*(it + 1) == '/' || *(it + 1) == '\\')) {
 			path.erase(it);
 		}
