@@ -792,13 +792,22 @@ std::string package_container::get_plugin_file(download_container::iterator dlit
 }
 
 void package_container::correct_invalid_ids() {
+	// sadly there is no other threadsafe way than looping 3 times - first lock, then do, then unlock
+	// the problem is that get_next_download_id accesses ALL packages. so all of them need to be locked.
+	// it can also lock automatically, but then I'd need to unlock before calling it, which might make
+	// the iterators invalid -> no option
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		(*it)->download_mutex.lock();
+	}
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		for(download_container::iterator dlit = (*it)->download_list.begin(); dlit != (*it)->download_list.end(); ++dlit) {
 			if((*dlit)->id == -1) {
 				(*dlit)->id = get_next_download_id(false);
 			}
 		}
+		(*it)->download_mutex.unlock();
+	}
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		(*it)->download_mutex.unlock();
 	}
 }

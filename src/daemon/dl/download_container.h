@@ -147,21 +147,6 @@ public:
 
 	CURL* get_handle(int id);
 
-	#ifndef IS_PLUGIN
-	/** Prepares a download (calls the plugin, etc)
-	*	@param dl Download id to prepare
-	*	@param poutp plugin_output structure, will be filled in by the plugin
-	*	@returns LIST_ID, LIST_SUCCESS
-	*/
-	//int prepare_downprepare_load(int dl, plugin_output &poutp);
-	#endif
-
-	/** Returns info about a plugin
-	*	@param dl Download toget info from
-	*	@returns the info
-	*/
-	//plugin_output get_hostinfo(int dl);
-
 	/** strip the host from the URL
 	*	@param dl Download from which to get the host
 	*	@returns the hostname
@@ -192,33 +177,11 @@ public:
 	*/
 	int stop_download(int id);
 
-	//#ifndef IS_PLUGIN
-	/** Checks if a reconnect is currently needed
-	*	@returns true if yes
-	*/
-	//bool reconnect_needed();
-
-	/** Does the real work when reconnecting
-	*	@param dlist basically a this-pointer, needed because it's static
-	*/
-	//void do_reconnect();
-	//#endif
-
 	/** Checks if the given link already exists in the list
 	*	@param url The url to check for
 	*	@returns true if the link already exists in the list
 	*/
 	bool url_is_in_list(std::string url);
-
-	/** inits a download-handle
-	*	@param id ID of the download
-	*/
-	//void init_handle(int id);
-
-	/** cleans up the handle for a download
-	*	@param id ID of the download
-	*/
-	//void cleanup_handle(int id);
 
 	/** returns the position in the download-list for a given download ID
 	*	@param id ID of the download to get the position for
@@ -232,13 +195,9 @@ public:
 	*/
 	void insert_downloads(int pos, download_container &dl);
 
-	/** post-processes a finished download by calling the plugin and do what it says
-	*	@param id ID of the download
+	/** wait for a download and return if the wait-time is set to something else while waiting
+	*	@param id the Download-id
 	*/
-	//void post_process_download(int id);
-
-	//std::string list_file;
-
 	void wait(int id);
 
 private:
@@ -248,11 +207,6 @@ private:
 	*	@returns Iterator to this id
 	*/
 	download_container::iterator get_download_by_id(int id);
-
-	/** Dumps the download list from RAM to the file
-	*	@returns true on success
-	*/
-	bool dump_to_file();
 
 	/** Returns the amount of running download
 	*	@returns download count
@@ -265,6 +219,10 @@ private:
 	*/
 	int remove_download(int id);
 
+	/** sets the status of a download without locking. For use in locking members
+	*	@param it Iterator to the download
+	*	@param st Status to set
+	*/
 	void set_dl_status(download_container::iterator it, download_status st);
 
 
