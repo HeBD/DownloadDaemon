@@ -454,11 +454,6 @@ CURL* download_container::get_handle(int id) {
 	return (*dl)->handle;
 }
 
-#ifndef IS_PLUGIN
-
-
-#endif
-
 std::string download_container::get_host(int dl) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(dl);
@@ -524,25 +519,6 @@ download_container::iterator download_container::get_download_by_id(int id) {
 	}
 	return download_list.end();
 }
-
-bool download_container::dump_to_file() {
-	// in-memory download container
-	/*if(list_file == "") {
-		return true;
-	}
-
-	fstream dlfile(list_file.c_str(), ios::trunc | ios::out);
-	if(!dlfile.good()) {
-		return false;
-	}
-	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		dlfile << (*it)->serialize();
-	}
-	dlfile.close();
-*/
-	return true;
-}
-
 
 int download_container::running_downloads() {
 	int running_dls = 0;
