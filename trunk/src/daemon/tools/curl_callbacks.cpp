@@ -28,8 +28,8 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 	cache->append((char*)buffer, nmemb);
 	double speed;
 	curl_easy_getinfo(callback_opt->second, CURLINFO_SPEED_DOWNLOAD, &speed);
-	if(speed <= 0 || cache->size() >= speed / 2) {
-		// cache twice per second
+	if(speed <= 0 || cache->size() >= speed / 2 || cache->size() >= 1048576) {
+		// wite twice per sec, if speed is 0, and if the cache is >= 1MB
 		output_file->write(cache->c_str(), cache->size());
 		cache->clear();
 		global_download_list.dump_to_file();
