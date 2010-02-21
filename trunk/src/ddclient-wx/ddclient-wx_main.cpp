@@ -9,14 +9,6 @@
  * GNU General Public License for more details.
  */
 
-#include "ddclient-wx_main.h"
-
-#include "ddclient-wx_connect_dialog.h"
-#include "ddclient-wx_about_dialog.h"
-#include "ddclient-wx_add_dialog.h"
-#include "ddclient-wx_configure_dialog.h"
-#include "ddclient-wx_delete_dialog.h"
-
 #include <crypt/md5.h>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
@@ -25,6 +17,13 @@
 #include <climits>
 #include <fstream>
 #include <cstdarg>
+
+#include "ddclient-wx_main.h"
+#include "ddclient-wx_connect_dialog.h"
+#include "ddclient-wx_about_dialog.h"
+#include "ddclient-wx_add_dialog.h"
+#include "ddclient-wx_configure_dialog.h"
+#include "ddclient-wx_delete_dialog.h"
 
 #include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/stattext.h>

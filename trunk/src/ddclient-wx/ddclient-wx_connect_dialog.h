@@ -20,11 +20,6 @@
 #include <wx/checkbox.h>
 #include <wx/choice.h>
 
-#if defined(__WXMSW__)
-	#include <wx/msw/winundef.h> // because of conflicting wxWidgets and windows.h
-#endif
-
-
 /** Connection Dialog Class. Shows a Dialog to connect to a DownloadDaemon Server. */
 class connect_dialog : public wxDialog{
 	public:

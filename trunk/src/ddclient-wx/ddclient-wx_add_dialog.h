@@ -12,16 +12,12 @@
 #ifndef DDCLIENT_WX_ADD_DIALOG_H
 #define DDCLIENT_WX_ADD_DIALOG_H
 
+
 #include <wx/dialog.h>
 #include <wx/stattext.h>
 #include <wx/button.h>
 #include <wx/sizer.h>
 #include <wx/textctrl.h>
-
-#if defined(__WXMSW__)
-	#include <wx/msw/winundef.h> // Because of conflicting wxWidgets and windows.h
-#endif
-
 
 /** Add Dialog Class. Shows a Dialog to add Downloads. */
 class add_dialog : public wxDialog{

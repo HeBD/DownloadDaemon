@@ -9,11 +9,11 @@
  * GNU General Public License for more details.
  */
 
+
 #include "ddclient-wx_connect_dialog.h"
 #include "ddclient-wx_main.h"
-
 #include <crypt/md5.h>
-#include <netpptk/netpptk.h>
+
 #include <fstream>
 
 #include <wx/msgdlg.h> // for wxmessagebox

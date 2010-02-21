@@ -13,7 +13,6 @@
 #define DDCLIENT_WX_CONFIGURE_DIALOG_H
 
 #include <vector>
-
 #include <wx/panel.h>
 #include <wx/msgdlg.h> // for wxmessagebox
 #include <wx/dialog.h>
@@ -25,10 +24,6 @@
 #include <wx/choice.h>
 #include <wx/checkbox.h>
 #include <wx/listbox.h>
-
-#if defined(__WXMSW__)
-	#include <wx/msw/winundef.h> // because of conflicting wxWidgets and windows.h
-#endif
 
 
 /** Configure Dialog Class. Shows a Dialog to configure to DownloadDaemon Server. */
