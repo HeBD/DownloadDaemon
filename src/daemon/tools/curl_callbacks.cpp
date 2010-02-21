@@ -22,8 +22,18 @@
 using namespace std;
 
 size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
-	fstream* output_file = (fstream*)userp;
-	output_file->write((char*)buffer, nmemb);
+	std::pair<std::pair<fstream*, std::string*>, CURL*>* callback_opt = (std::pair<std::pair<fstream*, std::string*>, CURL*>*)userp;
+	fstream* output_file = callback_opt->first.first;
+	std::string* cache = callback_opt->first.second;
+	cache->append((char*)buffer, nmemb);
+	double speed;
+	curl_easy_getinfo(callback_opt->second, CURLINFO_SPEED_DOWNLOAD, &speed);
+	if(speed <= 0 || cache->size() >= speed / 2) {
+		// cache twice per second
+		output_file->write(cache->c_str(), cache->size());
+		cache->clear();
+		global_download_list.dump_to_file();
+	}
 	return nmemb;
 }
 
@@ -47,7 +57,7 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	if(stat(output_file.c_str(), &st) == 0) {
 		global_download_list.set_downloaded_bytes(id, st.st_size);
 	}
-	global_download_list.dump_to_file();
+
 	if(global_download_list.get_need_stop(id)) {
 		// break up the download
 		return -1;

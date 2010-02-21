@@ -472,7 +472,7 @@ void target_pkg(std::string &data, tkSock *sock) {
 }
 
 void target_pkg_add(std::string &data, tkSock *sock) {
-	if(data.find_first_of(" |\n\r") != string::npos) {
+	if(data.find_first_of("|\n\r") != string::npos) {
 		*sock << "-1";
 		return;
 	}

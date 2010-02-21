@@ -247,7 +247,10 @@ void download_thread(dlindex download) {
 		curl_easy_setopt(handle_copy, CURLOPT_URL, plug_outp.download_url.c_str());
 		// set file-writing function as callback
 		curl_easy_setopt(handle_copy, CURLOPT_WRITEFUNCTION, write_file);
-		curl_easy_setopt(handle_copy, CURLOPT_WRITEDATA, &output_file);
+		std::string cache;
+		std::pair<fstream*, std::string*> callback_opt_left(&output_file, &cache);
+		std::pair<std::pair<fstream*, std::string*>, CURL*> callback_opt(callback_opt_left, handle_copy);
+		curl_easy_setopt(handle_copy, CURLOPT_WRITEDATA, &callback_opt);
 		// show progress
 		curl_easy_setopt(handle_copy, CURLOPT_NOPROGRESS, 0);
 		curl_easy_setopt(handle_copy, CURLOPT_PROGRESSFUNCTION, report_progress);
