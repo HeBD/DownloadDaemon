@@ -12,9 +12,6 @@
 #include "ddclient-wx_configure_dialog.h"
 #include "ddclient-wx_main.h"
 
-#include <netpptk/netpptk.h>
-
-
 // IDs
 const long configure_dialog::id_premium_host_choice = wxNewId();
 const long configure_dialog::id_enable_reconnect_check = wxNewId();

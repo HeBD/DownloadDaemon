@@ -12,10 +12,8 @@
 #ifndef DDCLIENT_WX_MAIN_H
 #define DDCLIENT_WX_MAIN_H
 
+
 #include <vector>
-#include <language/language.h>
-#include <netpptk/netpptk.h>
-#include <downloadc/downloadc.h>
 
 #include <wx/frame.h>
 #include <wx/panel.h>
@@ -24,9 +22,14 @@
 #include <wx/sizer.h>
 #include <wx/listctrl.h>
 
-#if defined(__WXMSW__)
-	#include <wx/msw/winundef.h> // because of conflicting wxWidgets and windows.h
+#include <netpptk/netpptk.h>
+#include <downloadc/downloadc.h>
+#ifdef __WXMSW__
+    #include <wx/msw/winundef.h>
 #endif
+
+#include <language/language.h>
+
 
 using namespace std;
 

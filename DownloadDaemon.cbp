@@ -8,8 +8,8 @@
 		<Build>
 			<Target title="Daemon">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/bin/DownloadDaemon" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj/Debug/" />
+				<Option output="build\bin\DownloadDaemon" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\Debug\" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -20,7 +20,7 @@
 					<Add option="-Wall" />
 					<Add option="-ansi" />
 					<Add option="-g" />
-					<Add directory="src/include/" />
+					<Add directory="src\include\" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -29,7 +29,7 @@
 			</Target>
 			<Target title="DDConsole">
 				<Option platforms="Windows;Unix;" />
-				<Option output="build/bin/ddconsole" prefix_auto="1" extension_auto="1" />
+				<Option output="build\bin\ddconsole" prefix_auto="1" extension_auto="1" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option use_console_runner="0" />
@@ -38,20 +38,20 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-DNO_BOOST_THREAD" />
-					<Add directory="src/include" />
+					<Add directory="src\include" />
 				</Compiler>
 			</Target>
 			<Target title="ddclient-wx_unix">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/bin/ddclient-wx" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="built/" />
+				<Option output="build\bin\ddclient-wx" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="built\" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="`wx-config --cflags`" />
-					<Add directory="src/include/" />
+					<Add directory="src\include\" />
 				</Compiler>
 				<Linker>
 					<Add option="`wx-config --libs`" />
@@ -60,8 +60,8 @@
 			</Target>
 			<Target title="ddclient-wx_win">
 				<Option platforms="Windows;" />
-				<Option output="build/bin/ddclient-wx" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="built/" />
+				<Option output="build\bin\ddclient-wx" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="built\" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -69,30 +69,33 @@
 					<Add option="-Wall" />
 					<Add option="-pipe" />
 					<Add option="-mthreads" />
+					<Add option="-fno-strict-aliasing" />
 					<Add option='[[if (PLATFORM == PLATFORM_MSW &amp;&amp; (GetCompilerFactory().GetCompilerVersionString(_T(&quot;gcc&quot;)) &gt;= _T(&quot;4.0.0&quot;))) print(_T(&quot;-Wno-attributes&quot;));]]' />
 					<Add option="-D__GNUWIN32__" />
 					<Add option="-D__WXMSW__" />
+					<Add option="-DWXMSW" />
 					<Add option="-DWXUSINGDLL" />
 					<Add option="-DwxUSE_UNICODE" />
-					<Add directory="$(#wx)/lib/gcc_dll/mswu" />
-					<Add directory="$(#wx)/contrib/include" />
-					<Add directory="$(#wx)/include" />
+					<Add option="-DNO_BOOST_THREAD" />
+					<Add directory="$(#wx)\lib\gcc_dll\mswu" />
+					<Add directory="$(#wx)\contrib\include" />
+					<Add directory="$(#wx)\include" />
+					<Add directory="src\include" />
 				</Compiler>
 				<ResourceCompiler>
-					<Add directory="$(#wx)/include" />
+					<Add directory="$(#wx)\include" />
 				</ResourceCompiler>
 				<Linker>
 					<Add option="-s" />
 					<Add library="libwxmsw28u.a" />
-					<Add library="boost_thread-mgw34-mt-1_41" />
 					<Add library="ws2_32" />
-					<Add directory="$(#wx)/lib/gcc_dll" />
-					<Add directory="$(#boost)/bin.v2/libs/thread/build/gcc-mingw-3.4.5/release/threading-multi" />
+					<Add library="boost_thread-mgw44-mt-1_42" />
+					<Add directory="$(#wx)\lib\gcc_dll" />
 				</Linker>
 			</Target>
 			<Target title="rapidshare_com">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/share/downloaddaemon/plugins/librapidshare.com.so" prefix_auto="0" extension_auto="0" />
+				<Option output="build\share\downloaddaemon\plugins\librapidshare.com.so" prefix_auto="0" extension_auto="0" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -102,7 +105,7 @@
 					<Add option="-g" />
 					<Add option="-fPIC" />
 					<Add option="-DHAVE_STD_THREAD" />
-					<Add directory="src/include/" />
+					<Add directory="src\include\" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -110,7 +113,7 @@
 			</Target>
 			<Target title="uploaded_to">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/share/downloaddaemon/plugins/libuploaded.to.so" prefix_auto="0" extension_auto="0" />
+				<Option output="build\share\downloaddaemon\plugins\libuploaded.to.so" prefix_auto="0" extension_auto="0" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -120,7 +123,7 @@
 					<Add option="-g" />
 					<Add option="-fPIC" />
 					<Add option="-DHAVE_STD_THREAD" />
-					<Add directory="src/include/" />
+					<Add directory="src\include\" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -128,7 +131,7 @@
 			</Target>
 			<Target title="youtube_com">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/share/downloaddaemon/plugins/libyoutube.com.so" prefix_auto="0" extension_auto="0" />
+				<Option output="build\share\downloaddaemon\plugins\libyoutube.com.so" prefix_auto="0" extension_auto="0" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -138,7 +141,7 @@
 					<Add option="-g" />
 					<Add option="-fPIC" />
 					<Add option="-DHAVE_STD_THREAD" />
-					<Add directory="src/include/" />
+					<Add directory="src\include\" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -146,7 +149,7 @@
 			</Target>
 			<Target title="netload_in">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/share/downloaddaemon/plugins/libnetload.in.so" prefix_auto="0" extension_auto="0" />
+				<Option output="build\share\downloaddaemon\plugins\libnetload.in.so" prefix_auto="0" extension_auto="0" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -156,7 +159,7 @@
 					<Add option="-g" />
 					<Add option="-fPIC" />
 					<Add option="-DHAVE_STD_THREAD" />
-					<Add directory="src/include/" />
+					<Add directory="src\include\" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -164,7 +167,7 @@
 			</Target>
 			<Target title="megaupload_com">
 				<Option platforms="Unix;Mac;" />
-				<Option output="build/share/downloaddaemon/plugins/libmegaupload.com.so" prefix_auto="0" extension_auto="0" />
+				<Option output="build\share\downloaddaemon\plugins\libmegaupload.com.so" prefix_auto="0" extension_auto="0" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -174,7 +177,7 @@
 					<Add option="-g" />
 					<Add option="-fPIC" />
 					<Add option="-DHAVE_STD_THREAD" />
-					<Add directory="src/include/" />
+					<Add directory="src\include\" />
 				</Compiler>
 				<Linker>
 					<Add library="curl" />
@@ -186,217 +189,217 @@
 			<Add option="-fexceptions" />
 		</Compiler>
 		<ResourceCompiler>
-			<Add directory="$(#wx)/lib/gcc_dll/mswu" />
+			<Add directory="$(#wx)\lib\gcc_dll\mswu" />
 		</ResourceCompiler>
-		<Unit filename="src/Doxyfile">
+		<Unit filename="src\Doxyfile">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="src/daemon/dl/download.cpp">
+		<Unit filename="src\daemon\dl\download.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/dl/download.h">
+		<Unit filename="src\daemon\dl\download.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/dl/download_container.cpp">
+		<Unit filename="src\daemon\dl\download_container.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/dl/download_container.h">
+		<Unit filename="src\daemon\dl\download_container.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/dl/download_thread.cpp">
+		<Unit filename="src\daemon\dl\download_thread.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/dl/download_thread.h">
+		<Unit filename="src\daemon\dl\download_thread.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/dl/package_container.cpp">
+		<Unit filename="src\daemon\dl\package_container.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/dl/package_container.h">
+		<Unit filename="src\daemon\dl\package_container.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/dl/recursive_parser.cpp">
+		<Unit filename="src\daemon\dl\recursive_parser.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/dl/recursive_parser.h">
+		<Unit filename="src\daemon\dl\recursive_parser.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/downloaddaemon.cpp">
+		<Unit filename="src\daemon\downloaddaemon.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/global.h">
+		<Unit filename="src\daemon\global.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/mgmt/global_management.cpp">
+		<Unit filename="src\daemon\mgmt\global_management.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/mgmt/global_management.h">
+		<Unit filename="src\daemon\mgmt\global_management.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/mgmt/mgmt_thread.cpp">
+		<Unit filename="src\daemon\mgmt\mgmt_thread.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/mgmt/mgmt_thread.h">
+		<Unit filename="src\daemon\mgmt\mgmt_thread.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/plugins/captcha.cpp">
+		<Unit filename="src\daemon\plugins\captcha.cpp">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="src/daemon/plugins/captcha.h">
+		<Unit filename="src\daemon\plugins\captcha.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="src/daemon/plugins/megaupload_com.cpp">
+		<Unit filename="src\daemon\plugins\megaupload_com.cpp">
 			<Option target="megaupload_com" />
 		</Unit>
-		<Unit filename="src/daemon/plugins/netload_in.cpp">
+		<Unit filename="src\daemon\plugins\netload_in.cpp">
 			<Option target="netload_in" />
 		</Unit>
-		<Unit filename="src/daemon/plugins/plugin_helpers.h">
+		<Unit filename="src\daemon\plugins\plugin_helpers.h">
 			<Option target="rapidshare_com" />
 			<Option target="uploaded_to" />
 			<Option target="youtube_com" />
 			<Option target="netload_in" />
 			<Option target="megaupload_com" />
 		</Unit>
-		<Unit filename="src/daemon/plugins/rapidshare_com.cpp">
+		<Unit filename="src\daemon\plugins\rapidshare_com.cpp">
 			<Option target="rapidshare_com" />
 		</Unit>
-		<Unit filename="src/daemon/plugins/uploaded_to.cpp">
+		<Unit filename="src\daemon\plugins\uploaded_to.cpp">
 			<Option target="uploaded_to" />
 		</Unit>
-		<Unit filename="src/daemon/plugins/youtube_com.cpp">
+		<Unit filename="src\daemon\plugins\youtube_com.cpp">
 			<Option target="youtube_com" />
 		</Unit>
-		<Unit filename="src/daemon/reconnect/reconnect_parser.cpp">
+		<Unit filename="src\daemon\reconnect\reconnect_parser.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/reconnect/reconnect_parser.h">
+		<Unit filename="src\daemon\reconnect\reconnect_parser.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/tools/curl_callbacks.cpp">
+		<Unit filename="src\daemon\tools\curl_callbacks.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/tools/curl_callbacks.h">
+		<Unit filename="src\daemon\tools\curl_callbacks.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/tools/helperfunctions.cpp">
+		<Unit filename="src\daemon\tools\helperfunctions.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/tools/helperfunctions.h">
+		<Unit filename="src\daemon\tools\helperfunctions.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx.cpp">
+		<Unit filename="src\ddclient-wx\ddclient-wx.cpp">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx.h">
+		<Unit filename="src\ddclient-wx\ddclient-wx.h">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_about_dialog.cpp">
+		<Unit filename="src\ddclient-wx\ddclient-wx_about_dialog.cpp">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_about_dialog.h">
+		<Unit filename="src\ddclient-wx\ddclient-wx_about_dialog.h">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_add_dialog.cpp">
+		<Unit filename="src\ddclient-wx\ddclient-wx_add_dialog.cpp">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_add_dialog.h">
+		<Unit filename="src\ddclient-wx\ddclient-wx_add_dialog.h">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_configure_dialog.cpp">
+		<Unit filename="src\ddclient-wx\ddclient-wx_configure_dialog.cpp">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_configure_dialog.h">
+		<Unit filename="src\ddclient-wx\ddclient-wx_configure_dialog.h">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_connect_dialog.cpp">
+		<Unit filename="src\ddclient-wx\ddclient-wx_connect_dialog.cpp">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_connect_dialog.h">
+		<Unit filename="src\ddclient-wx\ddclient-wx_connect_dialog.h">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_delete_dialog.cpp">
+		<Unit filename="src\ddclient-wx\ddclient-wx_delete_dialog.cpp">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_delete_dialog.h">
+		<Unit filename="src\ddclient-wx\ddclient-wx_delete_dialog.h">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_main.cpp">
+		<Unit filename="src\ddclient-wx\ddclient-wx_main.cpp">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_main.h">
+		<Unit filename="src\ddclient-wx\ddclient-wx_main.h">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_picture.cpp">
+		<Unit filename="src\ddclient-wx\ddclient-wx_picture.cpp">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/ddclient-wx_picture.h">
+		<Unit filename="src\ddclient-wx\ddclient-wx_picture.h">
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/ddclient-wx/resource.rc">
+		<Unit filename="src\ddclient-wx\resource.rc">
 			<Option compilerVar="WINDRES" />
 			<Option target="ddclient-wx_win" />
 		</Unit>
-		<Unit filename="src/ddconsole/ddconsole.cpp">
+		<Unit filename="src\ddconsole\ddconsole.cpp">
 			<Option target="DDConsole" />
 		</Unit>
-		<Unit filename="src/include/cfgfile/cfgfile.cpp">
+		<Unit filename="src\include\cfgfile\cfgfile.cpp">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/include/cfgfile/cfgfile.h">
+		<Unit filename="src\include\cfgfile\cfgfile.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/include/crypt/md5.cpp">
-			<Option target="Daemon" />
-			<Option target="DDConsole" />
-			<Option target="ddclient-wx_win" />
-			<Option target="ddclient-wx_unix" />
-		</Unit>
-		<Unit filename="src/include/crypt/md5.h">
+		<Unit filename="src\include\crypt\md5.cpp">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/include/downloadc/downloadc.cpp">
-			<Option target="ddclient-wx_unix" />
-			<Option target="ddclient-wx_win" />
-		</Unit>
-		<Unit filename="src/include/downloadc/downloadc.h">
-			<Option target="ddclient-wx_unix" />
-			<Option target="ddclient-wx_win" />
-		</Unit>
-		<Unit filename="src/include/language/language.cpp">
-			<Option target="ddclient-wx_unix" />
-			<Option target="ddclient-wx_win" />
-		</Unit>
-		<Unit filename="src/include/language/language.h">
-			<Option target="ddclient-wx_unix" />
-			<Option target="ddclient-wx_win" />
-		</Unit>
-		<Unit filename="src/include/netpptk/netpptk.cpp">
+		<Unit filename="src\include\crypt\md5.h">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />
 			<Option target="ddclient-wx_win" />
 			<Option target="ddclient-wx_unix" />
 		</Unit>
-		<Unit filename="src/include/netpptk/netpptk.h">
+		<Unit filename="src\include\downloadc\downloadc.cpp">
+			<Option target="ddclient-wx_unix" />
+			<Option target="ddclient-wx_win" />
+		</Unit>
+		<Unit filename="src\include\downloadc\downloadc.h">
+			<Option target="ddclient-wx_unix" />
+			<Option target="ddclient-wx_win" />
+		</Unit>
+		<Unit filename="src\include\language\language.cpp">
+			<Option target="ddclient-wx_unix" />
+			<Option target="ddclient-wx_win" />
+		</Unit>
+		<Unit filename="src\include\language\language.h">
+			<Option target="ddclient-wx_unix" />
+			<Option target="ddclient-wx_win" />
+		</Unit>
+		<Unit filename="src\include\netpptk\netpptk.cpp">
+			<Option target="Daemon" />
+			<Option target="DDConsole" />
+			<Option target="ddclient-wx_win" />
+			<Option target="ddclient-wx_unix" />
+		</Unit>
+		<Unit filename="src\include\netpptk\netpptk.h">
 			<Option target="Daemon" />
 			<Option target="DDConsole" />
 			<Option target="ddclient-wx_win" />
