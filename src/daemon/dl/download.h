@@ -136,7 +136,8 @@ public:
 	download_status status;
 	int speed;
 	bool can_resume;
-	mutable CURL* handle;
+	CURL* handle;
+	std::string proxy;
 };
 
 bool operator<(const download& x, const download& y);

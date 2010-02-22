@@ -65,6 +65,12 @@ void download_thread_wrapper(dlindex download) {
 	if(global_download_list.get_status(download) == DOWNLOAD_RUNNING) {
 		global_download_list.set_status(download, DOWNLOAD_PENDING);
 	}
+	if(global_download_list.get_status(download) == DOWNLOAD_WAITING
+		&& global_download_list.get_error(download) == PLUGIN_LIMIT_REACHED
+		&& global_download_list.set_next_proxy(download) == 1) {
+				global_download_list.set_status(download, DOWNLOAD_PENDING);
+				global_download_list.set_error(download, PLUGIN_SUCCESS);
+	} // todo: handle connection errors with proxys
 }
 
 /** This function does the magic of downloading a file, calling the right plugin, etc.

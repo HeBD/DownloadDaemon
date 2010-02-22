@@ -197,6 +197,14 @@ class package_container {
 	*/
 	bool pkg_exists(int id);
 
+	/** Sets the next proxy from list to the download
+	*	@param id ID of the download
+	*	@returns 1 If the next proxy has been set
+	*		 	 2 if all proxys have been tried already
+	*			 3 if there are no proxys at all
+	*/
+	int set_next_proxy(dlindex id);
+
 private:
 	typedef std::vector<download_container*>::iterator iterator;
 

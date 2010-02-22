@@ -734,6 +734,12 @@ bool package_container::pkg_exists(int id) {
 	return false;
 }
 
+int package_container::set_next_proxy(dlindex id) {
+	lock_guard<mutex> lock(mx);
+	package_container()::iterator it = package_by_id(id.first);
+	return (*it)->set_next_proxy(id.second);
+}
+
 int package_container::get_next_download_id(bool lock_download_mutex) {
 	int max_id = -1;
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {

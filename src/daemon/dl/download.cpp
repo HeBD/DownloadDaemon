@@ -126,9 +126,6 @@ void download::operator=(const download& dl) {
 	speed = 0;
 	can_resume = dl.can_resume;
 	need_stop = dl.need_stop;
-
-	// handle and is_init are muteable members. on copy, ownership of the handle is taken to the new download object
-	// instead of really copying. This is required to make moving downloads up and down in the download list possible.
 	handle = dl.handle;
 }
 
