@@ -626,10 +626,12 @@ int download_container::set_next_proxy(int id) {
 
 	if(last_proxy.empty()) {
 		(*it)->proxy = proxy_list.substr(0, proxy_list.find(";"));
+		trim_string((*it)->proxy);
 		return 1;
 	} else {
 		if(proxy_list.size() > n + 2) {
-			(*it)->proxy = proxy_list.substr(n + 1, proxy_list.find(";", n + 1));
+			(*it)->proxy = proxy_list.substr(n + 1, proxy_list.find(";", n + 1) - (n + 1));
+			trim_string((*it)->proxy);
 			return 1;
 		}
 	}
