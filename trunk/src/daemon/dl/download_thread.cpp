@@ -59,7 +59,7 @@ void download_thread_wrapper(dlindex download) {
 	global_download_list.set_need_stop(download, false);
 	global_download_list.init_handle(download);
 	download_thread(download);
-	global_download_list.cleanup_handle(download);
+
 	global_download_list.set_need_stop(download, false);
 	global_download_list.set_running(download, false);
 
@@ -74,13 +74,14 @@ void download_thread_wrapper(dlindex download) {
 				global_download_list.set_status(download, DOWNLOAD_PENDING);
 				global_download_list.set_error(download, PLUGIN_SUCCESS);
 				global_download_list.set_wait(download, 0);
-	} else {
-		}if((error == PLUGIN_ERROR || error == PLUGIN_CONNECTION_ERROR || error == PLUGIN_CONNECTION_LOST || error == PLUGIN_INVALID_HOST)
+	} else if((error == PLUGIN_ERROR || error == PLUGIN_CONNECTION_ERROR || error == PLUGIN_CONNECTION_LOST || error == PLUGIN_INVALID_HOST)
 			&& !atoi(global_config.get_cfg_value("assume_proxys_online").c_str()) && global_download_list.set_next_proxy(download) == 1) {
 				global_download_list.set_status(download, DOWNLOAD_PENDING);
 				global_download_list.set_error(download, PLUGIN_SUCCESS);
 				global_download_list.set_wait(download, 0);
-			}
+	}
+
+	global_download_list.cleanup_handle(download);
 }
 
 /** This function does the magic of downloading a file, calling the right plugin, etc.
