@@ -356,6 +356,21 @@ void download_container::set_can_resume(int id, bool can_resume) {
 	(*dl)->can_resume = can_resume;
 }
 
+
+void download_container::set_proxy(int id, std::string proxy) {
+	lock_guard<mutex> lock(download_mutex);
+	download_container::iterator dl = get_download_by_id(id);
+	if(dl == download_list.end()) return;
+	(*dl)->proxy = proxy;
+}
+
+std::string download_container::get_proxy(int id) {
+	lock_guard<mutex> lock(download_mutex);
+	download_container::iterator dl = get_download_by_id(id);
+	if(dl == download_list.end()) return false;
+	return (*dl)->proxy;
+}
+
 bool download_container::get_can_resume(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);

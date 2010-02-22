@@ -217,6 +217,20 @@ void package_container::set_can_resume(dlindex dl, bool can_resume) {
 	(*it)->set_can_resume(dl.second, can_resume);
 }
 
+void package_container::set_proxy(dlindex dl, std::string proxy) {
+	lock_guard<mutex> lock(mx);
+	package_container::iterator it = package_by_id(dl.first);
+	if(it == packages.end()) return;
+	(*it)->set_proxy(dl.second, proxy);
+}
+
+std::string package_container::get_proxy(dlindex dl) {
+	lock_guard<mutex> lock(mx);
+	package_container::iterator it = package_by_id(dl.first);
+	if(it == packages.end()) return false;
+	return (*it)->get_proxy(dl.second);
+}
+
 CURL* package_container::get_handle(dlindex dl) {
 	lock_guard<mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
