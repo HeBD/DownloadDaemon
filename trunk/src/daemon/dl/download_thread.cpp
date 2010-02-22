@@ -286,6 +286,7 @@ void download_thread(dlindex download) {
 		success = curl_easy_perform(handle_copy);
 		// because the callback only safes every half second, there is still an unsafed rest-data:
 		output_file.write(cache.c_str(), cache.size());
+		global_download_list.set_downloaded_bytes(download, global_download_list.get_downloaded_bytes(download) + cache.size());
 
 
 
