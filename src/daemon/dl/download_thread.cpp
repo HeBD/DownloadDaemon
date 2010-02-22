@@ -284,6 +284,8 @@ void download_thread(dlindex download) {
 
 		log_string(std::string("Starting download ID: ") + dlid_log, LOG_DEBUG);
 		success = curl_easy_perform(handle_copy);
+		// because the callback only safes every half second, there is still an unsafed rest-data:
+		output_file.write(cache.c_str(), cache.size());
 
 
 
