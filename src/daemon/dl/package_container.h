@@ -98,6 +98,9 @@ class package_container {
 	void set_can_resume(dlindex dl, bool can_resume);
 	bool get_can_resume(dlindex dl);
 
+	void set_proxy(dlindex dl, std::string proxy);
+	std::string get_proxy(dlindex dl);
+
 	CURL* get_handle(dlindex dl);
 
 	/** inits a download-handle

@@ -285,10 +285,15 @@ void target_dl_add(std::string &data, tkSock *sock) {
 		*sock << "108 VARIABLE";
 		return;
 	} else {
-		package = atoi(data.substr(0, data.find(' ')).c_str());
-		data = data.substr(data.find(' '));
+		size_t n;
+		package = atoi(data.substr(0, n = data.find_first_of(" \t")).c_str());
+		if(n == string::npos) {
+			*sock << "108 VARIABLE";
+			return;
+		}
+		data = data.substr(n);
 		trim_string(data);
-		size_t n = data.find(' ');
+		n = data.find(' ');
 		url = data.substr(0, n);
 		if(n != string::npos)
 			comment = data.substr(n);

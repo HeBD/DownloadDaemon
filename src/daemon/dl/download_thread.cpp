@@ -69,16 +69,18 @@ void download_thread_wrapper(dlindex download) {
 	if(status == DOWNLOAD_RUNNING) {
 		global_download_list.set_status(download, DOWNLOAD_PENDING);
 	}
-	if(status == DOWNLOAD_WAITING && error == PLUGIN_LIMIT_REACHED
-	   && global_download_list.set_next_proxy(download) == 1) {
-				global_download_list.set_status(download, DOWNLOAD_PENDING);
-				global_download_list.set_error(download, PLUGIN_SUCCESS);
-				global_download_list.set_wait(download, 0);
+
+	if(status == DOWNLOAD_WAITING && error == PLUGIN_LIMIT_REACHED && global_download_list.set_next_proxy(download) == 1) {
+		global_download_list.set_status(download, DOWNLOAD_PENDING);
+		global_download_list.set_error(download, PLUGIN_SUCCESS);
+		global_download_list.set_wait(download, 0);
 	} else if((error == PLUGIN_ERROR || error == PLUGIN_CONNECTION_ERROR || error == PLUGIN_CONNECTION_LOST || error == PLUGIN_INVALID_HOST)
-			&& !atoi(global_config.get_cfg_value("assume_proxys_online").c_str()) && global_download_list.set_next_proxy(download) == 1) {
-				global_download_list.set_status(download, DOWNLOAD_PENDING);
-				global_download_list.set_error(download, PLUGIN_SUCCESS);
-				global_download_list.set_wait(download, 0);
+			  && !atoi(global_config.get_cfg_value("assume_proxys_online").c_str()) && global_download_list.set_next_proxy(download) == 1) {
+		global_download_list.set_status(download, DOWNLOAD_PENDING);
+		global_download_list.set_error(download, PLUGIN_SUCCESS);
+		global_download_list.set_wait(download, 0);
+	} else {
+		global_download_list.set_proxy(download, "");
 	}
 
 	global_download_list.cleanup_handle(download);

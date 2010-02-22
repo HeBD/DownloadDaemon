@@ -145,6 +145,9 @@ public:
 	void set_can_resume(int id, bool can_resume);
 	bool get_can_resume(int id);
 
+	void set_proxy(int id, std::string proxy);
+	std::string get_proxy(int id);
+
 	CURL* get_handle(int id);
 
 	/** strip the host from the URL
