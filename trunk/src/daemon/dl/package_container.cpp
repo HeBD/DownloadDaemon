@@ -385,6 +385,20 @@ int package_container::prepare_download(dlindex dl, plugin_output &poutp) {
 	trim_string(pinp.premium_user);
 	trim_string(pinp.premium_password);
 
+	// enable a proxy if neccessary
+	string proxy_str = (*dlit)->proxy;
+	if(!proxy_str.empty()) {
+		log_string("Setting proxy: " + proxy_str + " for " + (*dlit)->url, LOG_DEBUG);
+		size_t n;
+		std::string proxy_ipport;
+		if((n = proxy_str.find("@")) != string::npos &&  proxy_str.size() > n + 1) {
+			curl_easy_setopt((*dlit)->handle, CURLOPT_PROXYUSERPWD, proxy_str.substr(0, n).c_str());
+			curl_easy_setopt((*dlit)->handle, CURLOPT_PROXY, proxy_str.substr(n + 1).c_str());
+		} else {
+			curl_easy_setopt((*dlit)->handle, CURLOPT_PROXY, proxy_str.c_str());
+		}
+	}
+
 	container_lock.unlock();
 	lock.unlock();
 
@@ -736,7 +750,7 @@ bool package_container::pkg_exists(int id) {
 
 int package_container::set_next_proxy(dlindex id) {
 	lock_guard<mutex> lock(mx);
-	package_container()::iterator it = package_by_id(id.first);
+	package_container::iterator it = package_by_id(id.first);
 	return (*it)->set_next_proxy(id.second);
 }
 

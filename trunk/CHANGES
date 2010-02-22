@@ -1,3 +1,7 @@
+2010-02-22
+   [adrian]
+	- DownloadDaemon now supports alternating proxies! set a list of proxys to bypass IP-based download-limits!
+
 2010-02-21
    [adrian]
 	- DownloadDaemon now caches data when downloading fora bout half a second before writing it to file 
