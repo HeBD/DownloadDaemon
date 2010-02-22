@@ -589,6 +589,30 @@ void download_container::wait(int id) {
 
 }
 
+#ifndef IS_PLUGIN
+int download_container::set_next_proxy(int id) {
+	lock_guard<mutex> lock(download_mutex);
+	download_container::iterator it = get_download_by_id(id);
+	std::string last_proxy = (*it)->proxy;
+	std::string proxy_list = global_config.get_cfg_value("proxy_list");
+	size_t n;
+	if(proxy_list.empty()) return 3;
+	if((n = proxy_list.find(last_proxy)) == string::npos || proxy_list.find(";", n) == string::npos) {
+		(*it)->proxy = "";
+		return 2;
+	}
+	n = proxy_list.find(";", n) + 1;
+	if(proxy_list.size() <= n) {
+		(*it)->proxy = "";
+		return 2;
+	} else {
+		(*it)->proxy = proxy_list.substr(n, proxy_list.find(";"));
+		trim_string((*it)->proxy);
+		return 1;
+	}
+}
+#endif
+
 void download_container::set_dl_status(download_container::iterator it, download_status st) {
 	if((*it)->status == DOWNLOAD_DELETED) {
 		return;
