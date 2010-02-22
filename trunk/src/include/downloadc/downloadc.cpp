@@ -10,10 +10,11 @@
  */
 
 #include "downloadc.h"
+
 #include <crypt/md5.h>
+#include <downloadc/client_exception.h>
 #include <sstream>
 
-/// mind TODOs! <=========================================================================================== !
 
 downloadc::downloadc(){
 	mysock = NULL;
@@ -35,7 +36,7 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 	}catch(...){} // no code needed here due to boolean connection
 
 	if(!connection){
-		// TODO: thow exception: connection failed (wrong ip/url or port)
+		throw client_exception("connection failed (wrong ip/url or port)");
 		delete mysock;
 		return;
 	}
@@ -75,7 +76,7 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 			mysock->recv(snd);
 
 		}else if(encrypt){ // encryption not permitted and user really wants it
-			// TODO: thow exception: connection failed (no encryption)
+			throw client_exception("connection failed (no encryption)");
 			delete mysock;
 			return;
 
@@ -86,7 +87,7 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 			}catch(...){} // no code needed here due to boolean connection
 
 			if(!connection){
-				// TODO: thow exception: connection failed (wrong ip/url or port)
+				throw client_exception("connection failed (wrong ip/url or port)");
 				delete mysock;
 				return;
 			}
@@ -99,13 +100,13 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 
 		// check if password was ok
 		if(snd.find("102") == 0 && connection){
-			// TODO: thow exception: connection failed (wrong password)
+			throw client_exception("connection failed (wrong password)");
 			delete mysock;
 			return;
 		}
 
 	}else{
-		// TODO: thow exception: connection failed (unknown error)
+		throw client_exception("connection failed (unknown error)");
 		delete mysock;
 		return;
 	}
@@ -123,6 +124,7 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 }
 
 
+// target DL
 std::vector<package> downloadc::get_list(){
 	check_connection();
 
@@ -177,7 +179,7 @@ std::vector<package> downloadc::get_list(){
 	bool empty_package = true;
 
 	if((*content_it)[0] != "PACKAGE"){
-		// TODO: thow exception: dlist corrupt
+		throw client_exception("dlist corrupt");
 		return pkg;
 	}
 
@@ -192,21 +194,39 @@ std::vector<package> downloadc::get_list(){
 				empty_package = false;
 
 			mypackage.id = atoi((*content_it)[1].c_str());
-			mypackage.name = (*content_it)[2];
-
+			try{
+				mypackage.name = (*content_it).at(2);
+			}catch(...){
+				mypackage.name = "";
+			}
 
 		}else{ // we have a download line
 			download dl;
-			dl.id = atoi((*content_it)[0].c_str());
-			dl.date = (*content_it)[1];
-			dl.title = (*content_it)[2];
-			dl.url = (*content_it)[3];
-			dl.status = (*content_it)[4];
-			dl.downloaded = atol((*content_it)[5].c_str());
-			dl.size = atol((*content_it)[6].c_str());
-			dl.wait = atoi((*content_it)[7].c_str());
-			dl.error = (*content_it)[8];
-			dl.speed = atoi((*content_it)[9].c_str());
+
+			// defaults
+			dl.id = 0;
+			dl.date = "";
+			dl.title = "";
+			dl.url = "";
+			dl.status = "";
+			dl.downloaded = 0;
+			dl.size = 0;
+			dl.wait = 0;
+			dl.error = "";
+			dl.speed = 0;
+
+			try{
+				dl.id = atoi((*content_it).at(0).c_str());
+				dl.date = (*content_it).at(1);
+				dl.title = (*content_it).at(2);
+				dl.url = (*content_it).at(3);
+				dl.status = (*content_it).at(4);
+				dl.downloaded = atol((*content_it).at(5).c_str());
+				dl.size = atol((*content_it).at(6).c_str());
+				dl.wait = atoi((*content_it).at(7).c_str());
+				dl.error = (*content_it).at(8);
+				dl.speed = atoi((*content_it).at(9).c_str());
+			}catch(...){}
 
 			mypackage.dls.push_back(dl);
 		}
@@ -236,7 +256,7 @@ void downloadc::add_download(int package, std::string url, std::string title){
 
 		id = atoi(answer.c_str());
 		if(id == -1){
-			// TODO: thow exception: failed to create package
+			throw client_exception("failed to create package");
 			return;
 		}
 		package = id;
@@ -248,33 +268,510 @@ void downloadc::add_download(int package, std::string url, std::string title){
 	mysock->send("DDP DL ADD " + pkg_exists.str() + " " + url + " " + title);
 	mysock->recv(answer);
 
-	if(answer.find("103") == 0){ // 103 URL <-- Invalid URL
-		// TODO: thow exception: invalid url
+	check_error_code(answer);
+}
+
+
+void downloadc::delete_download(int id, file_delete fdelete){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+	bool error = false;
+
+	// test if there is a file on the server
+	mysock->send("DDP FILE GETPATH " + id_str.str());
+	mysock->recv(answer);
+
+	if(!answer.empty() && (fdelete == dont_know)){ // file exists and user didn't decide to delete
+		throw client_exception("file exists, call again with del_file or dont_delete");
+		return;
+	}
+
+	if(!answer.empty() && (fdelete == del_file)){ // file exists and should be deleted
+		mysock->send("DDP DL DEACTIVATE " + id_str.str());
+		mysock->recv(answer);
+
+		mysock->send("DDP FILE DEL " + id_str.str());
+		mysock->recv(answer);
+
+		if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
+			error = true; // exception will be thrown later so we can still delete the download
+		}
+	}
+
+	mysock->send("DDP DL DEL " + id_str.str());
+	mysock->recv(answer);
+
+	check_error_code(answer);
+
+	if(error){
+		throw client_exception("deleting file failed");
+		return;
 	}
 }
 
 
+void downloadc::stop_download(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP DL STOP " + id_str.str());
+	mysock->recv(answer);
+
+	check_error_code(answer);
+}
+
+
+void downloadc::priority_up(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP DL UP " + id_str.str());
+	mysock->recv(answer);
+
+	check_error_code(answer);
+}
+
+
+void downloadc::priority_down(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP DL DOWN " + id_str.str());
+	mysock->recv(answer);
+
+	check_error_code(answer);
+}
+
+
+void downloadc::activate_download(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP DL ACTIVATE " + id_str.str());
+	mysock->recv(answer);
+
+	check_error_code(answer);
+}
+
+
+void downloadc::deactivate_download(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP DL DEACTIVATE " + id_str.str());
+	mysock->recv(answer);
+
+	check_error_code(answer);
+}
+
+
+// target PKG
 void downloadc::add_package(std::string name){
 	check_connection();
 
+	boost::mutex::scoped_lock lock(mx);
 	std::string answer;
 
-	mx.lock();
 	mysock->send("DDP PKG ADD " + name);
 	mysock->recv(answer);
-	mx.unlock();
 
 	int id = atoi(answer.c_str());
 	if(id == -1){
-		// TODO: thow exception: failed to create package
+		throw client_exception("failed to create package");
 	}
 }
 
 
+void downloadc::delete_package(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP PKG DEL " + id_str.str());
+	mysock->recv(answer);
+}
+
+
+void downloadc::package_priority_up(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP PKG UP " + id_str.str());
+	mysock->recv(answer);
+}
+
+
+void downloadc::package_priority_down(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP PKG DOWN " + id_str.str());
+	mysock->recv(answer);
+}
+
+
+bool downloadc::package_exists(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP PKG EXISTS " + id_str.str());
+	mysock->recv(answer);
+
+	if(answer == "0")
+		return false;
+
+	return true;
+}
+
+
+// target VAR
+void downloadc::set_var(std::string var, std::string value, std::string old_value ){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+	std::string answer;
+
+	if(var == "mgmt_password")
+		value = old_value + " ; " + value;
+
+
+	mysock->send("DDP VAR SET " + var + " = " + value);
+	mysock->recv(answer);
+
+	check_error_code(answer);
+}
+
+
+std::string downloadc::get_var(std::string var){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+	std::string answer;
+
+	mysock->send("DDP VAR GET " + var);
+	mysock->recv(answer);
+
+	return answer;
+}
+
+
+// target FILE
+void downloadc::delete_file(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP DL DEACTIVATE " + id_str.str());
+	mysock->recv(answer);
+
+	mysock->send("DDP FILE DEL " + id_str.str());
+	mysock->recv(answer);
+
+	check_error_code(answer);
+}
+
+
+std::string downloadc::get_file_path(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP FILE GETPATH " + id_str.str());
+	mysock->recv(answer);
+
+	return answer;
+}
+
+
+double downloadc::get_file_size(int id){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP FILE GETSIZE " + id_str.str());
+	mysock->recv(answer);
+
+	return atol(answer.c_str());
+}
+
+
+// target ROUTER
+std::vector<std::string> downloadc::get_router_list(){
+	check_connection();
+
+	std::string model_list, line = "";
+	size_t lineend = 1;
+
+	mx.lock();
+	mysock->send("DDP ROUTER LIST");
+	mysock->recv(model_list);
+	mx.unlock();
+
+	std::vector<std::string> router_list;
+
+	// parse lines
+	while(model_list.length() > 0 && lineend != std::string::npos){
+		lineend = model_list.find("\n"); // termination character for line
+
+		if(lineend == std::string::npos){ // this is the last line (which ends without \n)
+			line = model_list.substr(0, model_list.length());
+			model_list = "";
+
+		}else{ // there is still another line after this one
+			line = model_list.substr(0, lineend);
+			model_list = model_list.substr(lineend+1);
+		}
+
+		router_list.push_back(line);
+	}
+
+	return router_list;
+}
+
+
+void downloadc::set_router_model(std::string model){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+
+	mysock->send("DDP ROUTER SETMODEL " + model);
+	mysock->recv(answer);
+
+	check_error_code(answer);
+}
+
+
+void downloadc::set_router_var(std::string var, std::string value){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+
+	mysock->send("DDP ROUTER SET " + var + " = " + value);
+	mysock->recv(answer);
+
+	check_error_code(answer);
+}
+
+
+std::string downloadc::get_router_var(std::string var){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+
+	mysock->send("DDP ROUTER GET " + var);
+	mysock->recv(answer);
+
+	return answer;
+}
+
+
+// target PREMIUM
+std::vector<std::string> downloadc::get_premium_list(){
+	check_connection();
+
+	std::string host_list, line = "";
+	size_t lineend = 1;
+
+	mx.lock();
+	mysock->send("DDP PREMIUM LIST");
+	mysock->recv(host_list);
+	mx.unlock();
+
+	std::vector<std::string> premium_list;
+
+	// parse lines
+	while(host_list.length() > 0 && lineend != std::string::npos){
+		lineend = host_list.find("\n"); // termination character for line
+
+		if(lineend == std::string::npos){ // this is the last line (which ends without \n)
+			line = host_list.substr(0, host_list.length());
+			host_list = "";
+
+		}else{ // there is still another line after this one
+			line = host_list.substr(0, lineend);
+			host_list = host_list.substr(lineend+1);
+		}
+
+		premium_list.push_back(line);
+	}
+
+	return premium_list;
+}
+
+
+void downloadc::set_premium_var(std::string host, std::string user, std::string password){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+
+	mysock->send("DDP PREMIUM SET " + host + " " + user + ";" + password);
+	mysock->recv(answer);
+
+	check_error_code(answer);
+}
+
+
+std::string downloadc::get_premium_var(std::string host){
+	check_connection();
+
+	boost::mutex::scoped_lock lock(mx);
+
+	std::string answer;
+
+	mysock->send("DDP PREMIUM GET " + host);
+	mysock->recv(answer);
+
+	return answer;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// helper functions
 void downloadc::check_connection(){
 	boost::mutex::scoped_lock lock(mx);
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// TODO: thow exception: connection lost
+		throw client_exception("connection lost");
 	}
+}
+
+
+void downloadc::check_error_code(std::string check_me){
+	if(check_me.find("101") == 0){ // 101 PROTOCOL <-- instruction invalid
+		throw client_exception("syntax error");
+		return;
+	}
+
+	if(check_me.find("102") == 0){ // 102 AUTHENTICATION <-- Authentication failed (wrong password or wrong encryption)
+		throw client_exception("authentification failed");
+		return;
+	}
+
+	if(check_me.find("103") == 0){ // 103 URL <-- Invalid URL
+		throw client_exception("invalid URL");
+		return;
+	}
+
+	if(check_me.find("104") == 0){ // 104 ID <-- Entered a not-existing ID or moved top-download up or bottom download down
+		throw client_exception("nonexisting ID");
+		return;
+	}
+
+	if(check_me.find("105") == 0){ // 105 STOP <-- If a download could not be stopped, because it's not running
+		throw client_exception("not running");
+		return;
+	}
+
+	if(check_me.find("106") == 0){ // 106 ACTIVATE <-- If you try to activate a download that is already active
+		throw client_exception("already activated");
+		return;
+	}
+
+	if(check_me.find("107") == 0){ // 107 DEACTIVATE <-- If you try to deactivate a downoad that is already unactive
+		throw client_exception("already deactivated");
+		return;
+	}
+
+	if(check_me.find("108") == 0){ // 108 VARIABLE	 <-- If the variable you tried to set is invalid
+		throw client_exception("variable invalid");
+		return;
+	}
+
+	if(check_me.find("109") == 0){ // 109 FILE <-- If you do any file operation on a file that does not exist.
+		throw client_exception("file does not exist");
+		return;
+	}
+
+	if(check_me.find("110") == 0){ // 110 PERMISSION <-- If a file could not be written / no write permission to list-file
+		throw client_exception("no write permission");
+		return;
+	}
+
+	if(check_me.find("111") == 0){ // 111 VALUE	<-- If you change a config-variable to an invalid value
+		throw client_exception("invalid value");
+		return;
+	}
+
 }

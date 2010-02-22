@@ -10,6 +10,7 @@
  */
 
 #include <crypt/md5.h>
+#include <downloadc/client_exception.h>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <iomanip>
