@@ -595,21 +595,33 @@ int download_container::set_next_proxy(int id) {
 	download_container::iterator it = get_download_by_id(id);
 	std::string last_proxy = (*it)->proxy;
 	std::string proxy_list = global_config.get_cfg_value("proxy_list");
-	size_t n;
+	size_t n = 0;
 	if(proxy_list.empty()) return 3;
-	if((n = proxy_list.find(last_proxy)) == string::npos || proxy_list.find(";", n) == string::npos) {
+
+	if(!last_proxy.empty() && (n = proxy_list.find(last_proxy)) == string::npos) {
 		(*it)->proxy = "";
 		return 2;
 	}
-	n = proxy_list.find(";", n) + 1;
-	if(proxy_list.size() <= n) {
+
+	n = proxy_list.find(";", n);
+	if(!last_proxy.empty() && n == string::npos) {
 		(*it)->proxy = "";
 		return 2;
-	} else {
-		(*it)->proxy = proxy_list.substr(n, proxy_list.find(";"));
-		trim_string((*it)->proxy);
+	}
+
+	if(last_proxy.empty()) {
+		(*it)->proxy = proxy_list.substr(0, proxy_list.find(";"));
 		return 1;
+	} else {
+		if(proxy_list.size() > n + 2) {
+			(*it)->proxy = proxy_list.substr(n + 1, proxy_list.find(";", n + 1));
+			return 1;
+		}
 	}
+
+	(*it)->proxy = "";
+	log_string("Invalid proxy-list syntax!", LOG_ERR);
+	return 2;
 }
 #endif
 
