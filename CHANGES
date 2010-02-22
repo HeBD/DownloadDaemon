@@ -1,6 +1,8 @@
 2010-02-22
    [adrian]
 	- DownloadDaemon now supports alternating proxies! set a list of proxys to bypass IP-based download-limits!
+   [susanne]
+	- downloadc is now fully implemented
 
 2010-02-21
    [adrian]
