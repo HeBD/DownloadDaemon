@@ -663,8 +663,9 @@ string myframe::build_status(string &status_text, string &time_left, download &d
 
 
 void myframe::find_selected_lines(){
-	/*
+
 	long item_index = -1;
+	std::string id;
 
 	selected_lines.clear();
 
@@ -673,13 +674,15 @@ void myframe::find_selected_lines(){
 
 		if(item_index == -1) // no selected ones left => leave loop
 			break;
-		else // found a selected one
-			selected_lines.push_back(item_index);
-	  }*/
+		else{ // found a selected one
+			id = std::string(list->GetItemText(item_index).mb_str());
+			selected_lines.push_back(id);
+		}
+	  }
 }
 
 
-void myframe::select_lines(){/*
+void myframe::select_lines(){
 	long item_index = -1;
 
 	while(true){
@@ -689,21 +692,21 @@ void myframe::select_lines(){/*
 			break;
 		else
 			list->SetItemState(item_index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
-	  }*/
+	  }
 }
 
 
-void myframe::select_line_by_id(string id){/*
+void myframe::select_line_by_id(string id){
 	long item_index = -1;
 
 	item_index = list->FindItem(-1, wxString(id.c_str(), wxConvUTF8));
 
 	if(item_index != -1)
-		list->SetItemState(item_index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);*/
+		list->SetItemState(item_index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
 }
 
 
-void myframe::deselect_lines(){/*
+void myframe::deselect_lines(){
 	long item_index = -1;
 
 	while(true){
@@ -713,7 +716,7 @@ void myframe::deselect_lines(){/*
 			break;
 		else // found a selected one
 			list->SetItemState(item_index, 0, wxLIST_STATE_SELECTED);
-	  }*/
+	  }
 }
 
 
@@ -723,12 +726,14 @@ wxString myframe::tsl(string text, ...){
 	size_t n;
 	int i = 1;
 	va_list vl;
-	va_start(vl,text);
+	va_start(vl, text);
 	string search("p1");
 
 
 	while((n = translated.find(search)) != string::npos){
-		translated.replace(n-1, 3, va_arg(vl, char *));
+		stringstream id;
+		id << va_arg(vl, int);
+		translated.replace(n-1, 3, id.str());
 
 		i++;
 		if(i>9) // maximal 9 additional Parameters
@@ -854,9 +859,14 @@ bool myframe::compare_package(int &line_nr, package &pkg_new, package &pkg_old){
 		line_nr++;
 	}
 
+
 	if(it_new < end_new){ // there are more new downloads in the package then old ones
 		change = true;
 		while(it_new < end_new){
+
+			line_nr++;
+			while(list->GetItemCount() >= line_nr) // delete all following items, because they will all be changed anyway
+				list->DeleteItem(list->GetItemCount()-1);
 
 			// insert content
 			line_index = list->InsertItem(line_nr, wxString::Format(wxT("%i"), it_new->id));
@@ -884,7 +894,6 @@ bool myframe::compare_package(int &line_nr, package &pkg_new, package &pkg_old){
 			// line_nr stays the same!
 		}
 	}
-
 	return change;
 }
 
@@ -954,150 +963,226 @@ void myframe::on_delete(wxCommandEvent &event){
 	if(!check_connection(true, "Please connect before deleting Downloads."))
 		return;
 
-	vector<int>::iterator it;
-	string id, answer;
+	vector<string>::iterator it;
+	int id;
 
 	find_selected_lines(); // save selection into selected_lines
-	if(!selected_lines.empty()){
 
-		// make sure user wants to delete downloads
-		wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected Download(s)?"), tsl("Delete Downloads"),
-							wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
-		int del = dialog.ShowModal();
-
-		if(del == wxID_YES){ // user clicked yes to delete
-			int dialog_answer = 2; // possible answers are 0 = yes all, 1 = yes, 2 = no, 3 = no all
-
-			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-				//id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
-				/// TODO: last instruction won't work with the new structure!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				int id = 5;/// /////////////////////////// dummy id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				try{
-					dclient->delete_download(id, dont_know);
-
-				}catch(client_exception &e){
-					if((e.get_id() == 7) && (dialog_answer != 0) && (dialog_answer != 3)){ // file exists and user didn't choose yes_all (0) or no_all (3) before
-						delete_dialog dialog(&dialog_answer, id, this);
-						dialog.ShowModal();
-
-						if((dialog_answer == 0) || (dialog_answer == 1)){ // user clicked yes all (0) or yes (1) to delete
-							try{
-								dclient->delete_download(id, del_file);
-
-							}catch(client_exception &e){
-								wxMessageBox(tsl(e.what()), tsl("Error"));
-							}
-
-						}else{
-							try{
-								dclient->delete_download(id, dont_delete);
-
-							}catch(client_exception &e){
-								wxMessageBox(tsl(e.what()), tsl("Error"));
-							}
-
-						}
-					}else{ // some error occured
-						wxMessageBox(tsl(e.what()), tsl("Error"));
-					}
-				}
-			}
-		}
-	}else
+	if(selected_lines.empty()){
 		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
-	deselect_lines();
-	get_content();
+		deselect_lines();
+		get_content();
 
+		return;
+	}
+
+
+	// make sure user wants to delete downloads
+	wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected Download(s)?"), tsl("Delete Downloads"),
+							wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+	int del = dialog.ShowModal();
+
+	if(del != wxID_YES) // user clicked no to delete
+		return;
+
+
+	int dialog_answer = 2; // possible answers are 0 = yes all, 1 = yes, 2 = no, 3 = no all
+	int package_id = -1;
+	vector<int> package_deletes; // saves how many dowloads of each package have been deleted to see if the package is empty afterwards
+	unsigned int package_count = 0;
+
+	mx.lock();
+	for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+
+		if((*it)[0] == 'P'){ // we have a package! => only save number and count downloads deleted
+
+			if(package_id != -1){ // so we don't delete the default value
+				package_deletes.push_back(package_count);
+				package_count = 0;
+			}
+
+			string package = it->substr(4);
+			package_id = atol(package.c_str());
+			id = -1;
+			package_deletes.push_back(package_id);
+
+		}else{ // we have a real download
+			id = atol(it->c_str());
+			package_count++;
+		}
+
+		try{
+			if(id != -1) // we have a real download, not a package
+				dclient->delete_download(id, dont_know);
+
+		}catch(client_exception &e){
+			if(e.get_id() == 7){
+
+				if((dialog_answer != 0) && (dialog_answer != 3)){ // file exists and user didn't choose yes_all (0) or no_all (3) before
+					delete_dialog dialog(&dialog_answer, id, this);
+					dialog.ShowModal();
+				}
+
+				if((dialog_answer == 0) || (dialog_answer == 1)){ // user clicked yes all (0) or yes (1) to delete file
+					try{
+						dclient->delete_download(id, del_file);
+
+					}catch(client_exception &e){
+						wxMessageBox(tsl("Error occured at deleting File of Download %p1.", id), tsl("Error"));
+						package_count--; // download delete failed
+					}
+
+				}else{ // don't delete file
+					try{
+						dclient->delete_download(id, dont_delete);
+
+					}catch(client_exception &e){
+							wxMessageBox(tsl("Error occured at deleting Download(s)."), tsl("Error"));
+							package_count--; // download delete failed
+					}
+
+				}
+			}else{ // some error occured
+				wxMessageBox(tsl("Error occured at deleting Download(s)."), tsl("Error"));
+				package_count--; // download delete failed
+			}
+		}
+	}
+	package_deletes.push_back(package_count);
+
+	// see if we can delete the packages (count == dls.size)
+	vector<int>::iterator pit;
+	vector<package>::iterator contentpackage_it;
+	unsigned int size;
+
+	for(pit = package_deletes.begin(); pit < package_deletes.end(); pit++){
+		package_id = *pit;
+		pit++;
+		package_count = *pit;
+
+		for(contentpackage_it = content.begin(); contentpackage_it < content.end(); contentpackage_it++){
+			if(contentpackage_it->id == package_id){
+				size = contentpackage_it->dls.size();
+				break;
+			}
+		}
+
+		if(size <= package_count){ // we deleted all downloads of that package
+			try{
+				dclient->delete_package(package_id);
+			}catch(client_exception &e){}
+		}
+	}
+
+	mx.unlock();
  }
 
 
 void myframe::on_delete_finished(wxCommandEvent &event){
 	if(!check_connection(true, "Please connect before deleting Downloads."))
 		return;
-	/*
-	vector<string>::iterator it;
-	vector<string> finished_ids;
-	vector<vector<string> >::iterator content_it;
-	string answer;
-	bool error_occured = false;
+
+	vector<int>::iterator it;
+	vector<int> finished_ids;
+	vector<package>::iterator content_it;
+	vector<download>::iterator download_it;
+	int id;
+	int package_count = 0;
 
 	mx.lock();
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
+	vector<int> package_deletes; // prepare structure to save how many downloads of which package will be deleted
+	for(unsigned int i = 0; i < content.size(); i++)
+		package_deletes.push_back(0);
 
-		wxMessageBox(tsl("Please connect before deleting Downloads."), tsl("No Connection to Server"));
-
-	}else{ // we have a connection
-
-		// find all finished downloads
-		for(content_it = content.begin(); content_it<content.end(); content_it++){
-			if((*content_it)[4] == "DOWNLOAD_FINISHED")
-				finished_ids.push_back((*content_it)[0]);
+	// delete all empty packages
+	for(content_it = content.begin(); content_it < content.end(); content_it++){
+		if(content_it->dls.size() == 0){
+			try{
+				dclient->delete_package(content_it->id);
+			}catch(client_exception &e){}
 		}
+	}
 
-		if(!finished_ids.empty()){
-
-			// make sure user wants to delete downloads
-			wxMessageDialog dialog(this, tsl("Do you really want to delete\nall finished Download(s)?"), tsl("Delete Downloads"),
-									wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
-			int del = dialog.ShowModal();
-
-			if(del == wxID_YES){ // user clicked yes to delete
-				int dialog_answer = 2; // possible answers are 0 = yes all, 1 = yes, 2 = no, 3 = no all
-
-				for(it = finished_ids.begin(); it<finished_ids.end(); it++){
-					//id = (content[*it])[0]; // gets the id of the line, which index is stored in finished_ids
-
-					// test if there is a file on the server
-					mysock->send("DDP FILE GETPATH " + *it);
-					mysock->recv(answer);
-
-					if(!answer.empty()){ // file exists
-
-						// only show dialog if user didn't choose yes_all (0) or no_all (3) before
-						if((dialog_answer != 0) && (dialog_answer != 3)){
-							delete_dialog dialog(&dialog_answer, *it, this);
-							dialog.ShowModal();
-						}
+	// find all finished downloads
+	for(content_it = content.begin(); content_it < content.end(); content_it++){
+		for(download_it = content_it->dls.begin(); download_it < content_it->dls.end(); download_it++){
+			if(download_it->status == "DOWNLOAD_FINISHED"){
+				finished_ids.push_back(download_it->id);
+				package_deletes[package_count]++;
+			}
+		}
+		package_count++;
+	}
 
 
-						if((dialog_answer == 0) || (dialog_answer == 1)){ // user clicked yes all (0) or yes (1) to delete
-							mysock->send("DDP DL DEACTIVATE " + *it);
-							mysock->recv(answer);
+	if(!finished_ids.empty()){
+		// make sure user wants to delete downloads
+		wxMessageDialog dialog(this, tsl("Do you really want to delete\nall finished Download(s)?"), tsl("Delete Downloads"),
+								wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+		int del = dialog.ShowModal();
 
-							mysock->send("DDP FILE DEL " + *it);
-							mysock->recv(answer);
+		if(del != wxID_YES) // user clicked no to delete
+			return;
 
-							if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
-								wxMessageBox(tsl("Error occured at deleting File of Download %p1.", it->c_str()), tsl("Error"));
-							}
+		int dialog_answer = 2; // possible answers are 0 = yes all, 1 = yes, 2 = no, 3 = no all
 
-						}
+		for(it = finished_ids.begin(); it < finished_ids.end(); it++){
+				id = *it;
+
+			try{
+				dclient->delete_download(id, dont_know);
+
+			}catch(client_exception &e){
+				if(e.get_id() == 7){
+
+					if((dialog_answer != 0) && (dialog_answer != 3)){ // file exists and user didn't choose yes_all (0) or no_all (3) before
+						delete_dialog dialog(&dialog_answer, id, this);
+						dialog.ShowModal();
 					}
 
-					mysock->send("DDP DL DEL " + *it);
-					mysock->recv(answer);
+					if((dialog_answer == 0) || (dialog_answer == 1)){ // user clicked yes all (0) or yes (1) to delete file
+						try{
+							dclient->delete_download(id, del_file);
 
-					if(answer.find("104") == 0) // 104 ID <-- Entered a not-existing ID
-						error_occured = true;
+						}catch(client_exception &e){
+							wxMessageBox(tsl("Error occured at deleting File of Download %p1.", id), tsl("Error"));
+						}
+
+					}else{ // don't delete file
+						try{
+							dclient->delete_download(id, dont_delete);
+
+						}catch(client_exception &e){
+								wxMessageBox(tsl("Error occured at deleting Download(s)."), tsl("Error"));
+						}
+
+					}
+				}else{ // some error occured
+					wxMessageBox(tsl("Error occured at deleting Download(s)."), tsl("Error"));
 				}
 			}
 		}
 
-		deselect_lines();
-		mx.unlock();
+	}
+	deselect_lines();
 
-		if(error_occured)
-			wxMessageBox(tsl("Error occured at deleting Download(s)."), tsl("Error"));
+	// delete all empty packages
+	int i = 0;
+	for(it = package_deletes.begin(); it < package_deletes.end(); it++){
+		unsigned int package_size = *it;
 
-		get_content();
-	}*/
+		if(content[i].dls.size() <= package_size){ // if we deleted every download inside a package
+			try{
+				dclient->delete_package(content[i].id);
+			}catch(client_exception &e){}
+		}
+		i++;
+	}
+
+	mx.unlock();
+	get_content();
 }
 
 
@@ -1105,8 +1190,9 @@ void myframe::on_delete_finished(wxCommandEvent &event){
  	if(!check_connection(true, "Please connect before deleting Files."))
 		return;
 
-	vector<int>::iterator it;
-	string id, answer;
+	vector<string>::iterator it;
+	string answer;
+	int id;
 	bool error_occured = false;
 
 	find_selected_lines(); // save selection into selected_lines
@@ -1123,7 +1209,7 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 				/// 				TODO: last line can't work because of new structure of content!
 
 				// test if there is a file on the server
-				int id = 5; /// TODO: DUMMY INPUT 							!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				id = 5; /// TODO: DUMMY INPUT 							!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				try{
 
 					dclient->delete_file(id);
@@ -1151,7 +1237,7 @@ void myframe::on_activate(wxCommandEvent &event){
 	if(!check_connection(true, "Please connect before activating Downloads."))
 		return;
 
-	vector<int>::iterator it;
+	vector<string>::iterator it;
 	string id, answer;
 	bool error = false;
 	string error_string;
@@ -1186,7 +1272,7 @@ void myframe::on_deactivate(wxCommandEvent &event){
 	if(!check_connection(true, "Please connect before deactivating Downloads."))
 		return;
 
-	vector<int>::iterator it;
+	vector<string>::iterator it;
 	string id, answer;
 
 	find_selected_lines(); // save selection into selected_lines
