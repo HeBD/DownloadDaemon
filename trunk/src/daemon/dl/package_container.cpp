@@ -24,6 +24,7 @@ package_container::package_container() : is_reconnecting(false) {
 }
 
 package_container::~package_container() {
+	lock_guard<mutex> lock(mx);
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		// the download_container safely removes the downloads one by another.
 		delete *it;
@@ -82,7 +83,11 @@ int package_container::add_package(std::string pkg_name, download_container* dow
 int package_container::add_dl_to_pkg(download* dl, int pkg_id) {
 	lock_guard<mutex> lock(mx);
 	package_container::iterator it = package_by_id(pkg_id);
-	if(it == packages.end()) return LIST_ID;
+	if(it == packages.end()) {
+		delete dl;
+		dl = NULL;
+		return LIST_ID;
+	}
 	return (*it)->add_download(dl, get_next_download_id());
 }
 
@@ -94,11 +99,15 @@ void package_container::del_package(int pkg_id) {
 	// we are friend of download_container. so we lock the it's mutex and set all statuses to deleted.
 	// then we move all the downloads to the general list, so we can safely delete the list itsself
 	(*package)->download_mutex.lock();
+	(*global)->download_mutex.lock();
 	for(download_container::iterator it = (*package)->download_list.begin(); it != (*package)->download_list.end(); ++it) {
+		(*global)->download_list.push_back(*it);
+		download_container::iterator tmp_it = (*global)->download_list.end();
+		--tmp_it;
+		(*global)->set_dl_status(tmp_it, DOWNLOAD_DELETED);
 		(*package)->set_dl_status(it, DOWNLOAD_DELETED);
 	}
-	(*global)->download_list = (*package)->download_list;
-	(*package)->download_list.clear();
+	(*global)->download_mutex.unlock();
 	(*package)->download_mutex.unlock();
 	// now all the download-pointers are in the global list and wen can safely remove the package
 	delete *package;
