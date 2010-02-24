@@ -35,6 +35,7 @@ download_container::download_container(int id, std::string container_name) : is_
 download_container::download_container(const download_container &cnt) : download_list(cnt.download_list), is_reconnecting(false), container_id(cnt.container_id), name(cnt.name) {}
 
 download_container::~download_container() {
+	lock_guard<mutex> lock(download_mutex);
 	// download-containers may only be destroyed after the ownage of the pointers is moved to another object.
 }
 
@@ -55,7 +56,9 @@ int download_container::add_download(download *dl, int dl_id) {
 int download_container::add_download(const std::string& url, const std::string& title) {
 	download* dl = new download(url);
 	dl->comment = title;
-	return add_download(dl, -1);
+	int ret = add_download(dl, -1);
+	if(ret != LIST_SUCCESS) delete dl;
+	return ret;
 }
 #endif
 
