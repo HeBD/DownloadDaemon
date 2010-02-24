@@ -86,7 +86,7 @@ void configure_dialog::create_general_panel(){
 	host.Add(wxEmptyString);
 	premium_host_list.clear();
 	premium_host_list.push_back("");
-
+/*
 	// check connection
 	myframe *myparent = (myframe *) GetParent();
 	tkSock *mysock = myparent->get_connection_attributes();
@@ -165,11 +165,11 @@ void configure_dialog::create_general_panel(){
 	overall_general_sizer->Add(outer_general_sizer, 0, wxGROW|wxALL, 20);
 	overall_general_sizer->Add(general_button_sizer, 0, wxALL);
 
-	general_panel->SetSizerAndFit(overall_general_sizer);
+	general_panel->SetSizerAndFit(overall_general_sizer);*/
 }
 
 
-void configure_dialog::create_download_panel(){
+void configure_dialog::create_download_panel(){/*
 	myframe *p = (myframe *)GetParent();
 
 	// creating elements
@@ -230,11 +230,11 @@ void configure_dialog::create_download_panel(){
 	overall_download_sizer->Add(outer_count_sizer, 0, wxGROW|wxALL, 20);
 	overall_download_sizer->Add(download_button_sizer, 0, wxLEFT|wxRIGHT, 0);
 
-	download_panel->SetSizerAndFit(overall_download_sizer);
+	download_panel->SetSizerAndFit(overall_download_sizer);*/
 }
 
 
-void configure_dialog::create_pass_panel(){
+void configure_dialog::create_pass_panel(){/*
 	myframe *p = (myframe *)GetParent();
 
 	// creating elements
@@ -267,11 +267,11 @@ void configure_dialog::create_pass_panel(){
 	overall_pass_sizer->Add(outer_pass_sizer, 0, wxGROW|wxALL, 20);
 	overall_pass_sizer->Add(pass_button_sizer, 0, wxALL);
 
-	pass_panel->SetSizerAndFit(overall_pass_sizer);
+	pass_panel->SetSizerAndFit(overall_pass_sizer);*/
 }
 
 
-void configure_dialog::create_log_panel(){
+void configure_dialog::create_log_panel(){/*
 	myframe *p = (myframe *)GetParent();
 
 	// creating elements
@@ -341,11 +341,11 @@ void configure_dialog::create_log_panel(){
 	overall_log_sizer->Add(outer_log_activity_sizer, 0, wxGROW|wxALL, 20);
 	overall_log_sizer->Add(log_button_sizer, 0, wxALL);
 
-	log_panel->SetSizerAndFit(overall_log_sizer);
+	log_panel->SetSizerAndFit(overall_log_sizer);*/
 }
 
 
-void configure_dialog::create_reconnect_panel(){
+void configure_dialog::create_reconnect_panel(){/*
 	myframe *p = (myframe *)GetParent();
 
 	// creating elements
@@ -421,11 +421,11 @@ void configure_dialog::create_reconnect_panel(){
 	if(enable) // reconnecting enabled
 		enable_reconnect_panel();
 	else
-		disable_reconnect_panel();
+		disable_reconnect_panel();*/
 }
 
 
-void configure_dialog::enable_reconnect_panel(){
+void configure_dialog::enable_reconnect_panel(){/*
 	myframe *p = (myframe *)GetParent();
 
 
@@ -523,7 +523,7 @@ void configure_dialog::enable_reconnect_panel(){
 	router_user_input->Enable(true);
 	policy_choice->Enable(true);
 	router_model_input->Enable(true);
-	router_model_box->Enable(true);
+	router_model_box->Enable(true);*/
 }
 
 
@@ -538,7 +538,7 @@ void configure_dialog::disable_reconnect_panel(){
 }
 
 
-wxString configure_dialog::get_var(const string &var, var_type typ){
+wxString configure_dialog::get_var(const string &var, var_type typ){/*
 	myframe *p = (myframe *)GetParent();
 	string answer;
 
@@ -564,12 +564,12 @@ wxString configure_dialog::get_var(const string &var, var_type typ){
 		mx->unlock();
 	}
 
-	return wxString(answer.c_str(), wxConvUTF8);
+	return wxString(answer.c_str(), wxConvUTF8);*/
 }
 
 
 // event handle methods
-void configure_dialog::on_apply(wxCommandEvent &event){
+void configure_dialog::on_apply(wxCommandEvent &event){/*
 	myframe *p = (myframe *)GetParent();
 
 	// getting user input
@@ -724,11 +724,11 @@ void configure_dialog::on_apply(wxCommandEvent &event){
 		mx->unlock();
 	}
 
-	Destroy();
+	Destroy();*/
 }
 
 
-void configure_dialog::on_pass_change(wxCommandEvent &event){
+void configure_dialog::on_pass_change(wxCommandEvent &event){/*
 	myframe *p = (myframe *)GetParent();
 
 	// getting user input
@@ -759,11 +759,11 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 			wxMessageBox(p->tsl("Failed to change the Password."), p->tsl("Password Error"));
 	}
 
-	Destroy();
+	Destroy();*/
 }
 
 
-void configure_dialog::on_premium_change(wxCommandEvent &event){
+void configure_dialog::on_premium_change(wxCommandEvent &event){/*
 	myframe *p = (myframe *)GetParent();
 
 	int selection = premium_host_choice->GetCurrentSelection();
@@ -793,7 +793,7 @@ void configure_dialog::on_premium_change(wxCommandEvent &event){
 
 			mx->unlock();
 		}
-	}
+	}*/
 }
 
 

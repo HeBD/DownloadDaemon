@@ -22,7 +22,7 @@
 #include "ddclient-wx_connect_dialog.h"
 #include "ddclient-wx_about_dialog.h"
 #include "ddclient-wx_add_dialog.h"
-#include "ddclient-wx_configure_dialog.h"
+//#include "ddclient-wx_configure_dialog.h"
 #include "ddclient-wx_delete_dialog.h"
 
 #include <wx/msgdlg.h> // for wxmessagebox
@@ -228,10 +228,12 @@ myframe::~myframe(){
 
 void myframe::update_status(wxString server){
 	string answer;
+	mx.lock();
 	try{
 		answer = dclient->get_var("downloading_active");
 
 	}catch(client_exception &e){}
+	mx.unlock();
 
 	// removing both icons/deactivating both menuentrys, even when maybe only one is shown
 	toolbar->RemoveTool(id_toolbar_download_activate);
@@ -483,12 +485,12 @@ void myframe::update_components(){
 
 
 void myframe::update_list(){
-	/*while(true){ // for boost::thread
+	while(true){ // for boost::thread
 
 		if(check_connection())
 			get_content();
 		sleep(2); // reload every two seconds
-	}*/
+	}
 }
 
 
@@ -749,6 +751,8 @@ wxString myframe::tsl(string text, ...){
 
 
 bool myframe::check_connection(bool tell_user, string individual_message){
+	boost::mutex::scoped_lock lock(mx);
+
 	try{
 		dclient->check_connection();
 
@@ -787,7 +791,7 @@ void myframe::compare_all_packages(){
 
 
 	if(old_content_it < content.end()){ // there are more old lines than new ones or change was true
-
+		line_nr++;
 		while(list->GetItemCount() >= line_nr)
 			list->DeleteItem(list->GetItemCount()-1);
 	}
@@ -1076,6 +1080,7 @@ void myframe::on_delete(wxCommandEvent &event){
 	}
 
 	mx.unlock();
+	//get_content(); // I make deadlocks, whatever reason that could be for
  }
 
 
@@ -1123,8 +1128,10 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 								wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
 		int del = dialog.ShowModal();
 
-		if(del != wxID_YES) // user clicked no to delete
+		if(del != wxID_YES){ // user clicked no to delete
+			mx.unlock();
 			return;
+		}
 
 		int dialog_answer = 2; // possible answers are 0 = yes all, 1 = yes, 2 = no, 3 = no all
 
@@ -1182,7 +1189,7 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 	}
 
 	mx.unlock();
-	get_content();
+	//get_content(); // I make deadlocks, whatever reason that could be for
 }
 
 
@@ -1193,43 +1200,38 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 	vector<string>::iterator it;
 	string answer;
 	int id;
-	bool error_occured = false;
 
 	find_selected_lines(); // save selection into selected_lines
-	if(!selected_lines.empty()){
-
-		// make sure user wants to delete downloads
-		wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected File(s)?"), tsl("Delete Files"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
-		int del = dialog.ShowModal();
-
-		if(del == wxID_YES){ // user clicked yes to delete
-
-			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-				//id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
-				/// 				TODO: last line can't work because of new structure of content!
-
-				// test if there is a file on the server
-				id = 5; /// TODO: DUMMY INPUT 							!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				try{
-
-					dclient->delete_file(id);
-				}catch(client_exception &e){
-					if(e.get_id() == 19) // file error
-						wxMessageBox(tsl("Error occured at deleting File of Download %p1.", id), tsl("Error"));
-
-				}
-			}
-		}
-	}else
+	if(selected_lines.empty()){
 		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
+		return;
+	}
 
+	// make sure user wants to delete downloads
+	wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected File(s)?"), tsl("Delete Files"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+	int del = dialog.ShowModal();
+
+	if(del != wxID_YES) // user clicked yes to delete
+		return
+
+	mx.lock();
+	for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+
+		if((*it)[0] != 'P') // we have a real download
+			id = atol(it->c_str());
+		else // we have a package selected
+			continue; // next one
+
+		try{
+			dclient->delete_file(id);
+		}catch(client_exception &e){
+			if(e.get_id() == 19) // file error
+				wxMessageBox(tsl("Error occured at deleting File of Download %p1.", id), tsl("Error"));
+		}
+	}
+
+	mx.unlock();
 	deselect_lines();
-
-	if(error_occured)
-		wxMessageBox(tsl("Error occured at deleting Files(s)."), tsl("Error"));
-
-	get_content();
-
  }
 
 
@@ -1238,33 +1240,30 @@ void myframe::on_activate(wxCommandEvent &event){
 		return;
 
 	vector<string>::iterator it;
-	string id, answer;
-	bool error = false;
+	int id;
 	string error_string;
 
 	find_selected_lines(); // save selection into selected_lines
-	if(!selected_lines.empty()){
-
-		for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-			//id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
-			/// 				TODO: last line can't work because of new structure of content!
-			int id = 5;
-
-			try{
-				dclient->activate_download(id);
-			}catch(client_exception &e){
-				error = true;
-				error_string = e.what();
-			}
-		}
-
-	}else
+	if(selected_lines.empty()){
 		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
+		return;
+	}
 
-	if(error)
-		wxMessageBox(tsl(error_string), tsl("Error"));
-	else
-		get_content();
+	mx.lock();
+	for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+
+		if((*it)[0] != 'P') // we have a real download
+			id = atol(it->c_str());
+		else // we have a package selected
+			continue; // next one
+
+		try{
+			dclient->activate_download(id);
+		}catch(client_exception &e){}
+	}
+
+	mx.unlock();
+	get_content();
  }
 
 
@@ -1273,121 +1272,110 @@ void myframe::on_deactivate(wxCommandEvent &event){
 		return;
 
 	vector<string>::iterator it;
-	string id, answer;
+	int id;
+	string error_string;
 
 	find_selected_lines(); // save selection into selected_lines
-	if(!selected_lines.empty()){
-
-		for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-			//id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
-			/// 				TODO: last line can't work because of new structure of content!
-			int id = 5;
-
-			try{
-				dclient->deactivate_download(id);
-			}catch(client_exception &e){}
-		}
-
-		get_content();
-
-	}else
+	if(selected_lines.empty()){
 		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
- }
+		return;
+	}
+
+	mx.lock();
+	for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+
+		if((*it)[0] != 'P') // we have a real download
+			id = atol(it->c_str());
+		else // we have a package selected
+			continue; // next one
+
+		try{
+			dclient->deactivate_download(id);
+		}catch(client_exception &e){}
+	}
+
+	mx.unlock();
+	get_content();
+}
 
 
  void myframe::on_priority_up(wxCommandEvent &event){
- 	if(!check_connection(true, "Please connect before increasing Priority."))
+	if(!check_connection(true, "Please connect before increasing Priority."))
 		return;
-	/*
-	vector<int>::iterator it;
-	string id, answer;
+
+	vector<string>::iterator it;
+	int id;
+	string error_string;
+
+	find_selected_lines(); // save selection into selected_lines
+	if(selected_lines.empty()){
+		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
+		return;
+	}
 
 	mx.lock();
+	reselect_lines.clear();
+	for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+		reselect_lines.push_back(*it);
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
+		if((*it)[0] != 'P') // we have a real download
+			id = atol(it->c_str());
+		else // we have a package selected
+			continue; // next one
 
-		wxMessageBox(tsl("Please connect before increasing Priority."), tsl("No Connection to Server"));
 
-	}else{ // we have a connection
+		try{
+			dclient->priority_up(id);
+		}catch(client_exception &e){
+			if(e.get_id() == 14)
+				reselect_lines.clear();
+				break;
+		}
+	}
 
-		reselect_lines.clear();
-
-		find_selected_lines(); // save selection into selected_lines
-		if(!selected_lines.empty()){
-
-			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-				id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
-				reselect_lines.push_back(id);
-
-				mysock->send("DDP DL UP " + id);
-				mysock->recv(answer);
-
-				if(answer.find("104") == 0){ // 104 ID <-- tried to move the top download up
-					reselect_lines.clear();
-					break;
-				}
-			}
-
-		}else
-			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
-
-		deselect_lines();
-		mx.unlock();
-		get_content();
-	}*/
+	deselect_lines();
+	mx.unlock();
+	get_content();
 }
 
 
 void myframe::on_priority_down(wxCommandEvent &event){
 	if(!check_connection(true, "Please connect before decreasing Priority."))
 		return;
-	/*
-	vector<int>::reverse_iterator rit;
-	string id, answer;
+
+	vector<string>::reverse_iterator rit;
+	int id;
+	string error_string;
+
+	find_selected_lines(); // save selection into selected_lines
+	if(selected_lines.empty()){
+		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
+		return;
+	}
 
 	mx.lock();
+	reselect_lines.clear();
+	for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); rit++){
+		reselect_lines.push_back(*rit);
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
+		if((*rit)[0] != 'P') // we have a real download
+			id = atol(rit->c_str());
+		else // we have a package selected
+			continue; // next one
 
-		wxMessageBox(tsl("Please connect before decreasing Priority."), tsl("No Connection to Server"));
 
-	}else{ // we have a connection
+		try{
+			dclient->priority_down(id);
+		}catch(client_exception &e){
+			if(e.get_id() == 14)
+				reselect_lines.clear();
+				break;
+		}
+	}
 
-		reselect_lines.clear();
-
-		find_selected_lines(); // save selection into selected_lines
-		if(!selected_lines.empty()){
-
-			for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); rit++){ // has to be done from the last to the first line
-				id = (content[*rit])[0]; // gets the id of the line, which index is stored in selected_lines
-				reselect_lines.push_back(id);
-
-				mysock->send("DDP DL DOWN " + id);
-				mysock->recv(answer);
-
-				if(answer.find("104") == 0){ // 104 ID <-- tried to move the bottom download down
-					reselect_lines.clear();
-					break;
-				}
-			}
-
-		}else
-			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
-
-		deselect_lines();
-		mx.unlock();
-		get_content();
-	}*/
+	deselect_lines();
+	mx.unlock();
+	get_content();
 }
 
 
@@ -1395,8 +1383,8 @@ void myframe::on_configure(wxCommandEvent &event){
 	if(!check_connection(true, "Please connect before configurating DownloadDaemon."))
 		return;
 
-	configure_dialog dialog(this);
-	dialog.ShowModal();
+	//configure_dialog dialog(this);
+	//dialog.ShowModal();
 	get_content();
 }
 
@@ -1404,116 +1392,94 @@ void myframe::on_configure(wxCommandEvent &event){
 void myframe::on_download_activate(wxCommandEvent &event){
 	if(!check_connection(true, "Please connect before activate Downloading."))
 		return;
-	/*
+
 	mx.lock();
+	try{
+		dclient->set_var("downloading_active", "1");
+	}catch(client_exception &e){}
+	mx.unlock();
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
+	// update toolbar
+	toolbar->RemoveTool(id_toolbar_download_activate);
+	toolbar->RemoveTool(id_toolbar_download_deactivate);
+	toolbar->AddTool(download_deactivate);
+	toolbar->Realize();
 
-		wxMessageBox(tsl("Please connect before activate Downloading."), tsl("No Connection to Server"));
+	file_menu->Enable(id_toolbar_download_deactivate, true);
+	file_menu->Enable(id_toolbar_download_activate, false);
 
-	}else{
-		string answer;
-
-		mysock->send("DDP VAR SET downloading_active = 1");
-		mysock->recv(answer);
-
-		mx.unlock();
-		get_content();
-
-		// update toolbar
-		toolbar->RemoveTool(id_toolbar_download_activate);
-		toolbar->RemoveTool(id_toolbar_download_deactivate);
-		toolbar->AddTool(download_deactivate);
-		toolbar->Realize();
-
-		file_menu->Enable(id_toolbar_download_deactivate, true);
-		file_menu->Enable(id_toolbar_download_activate, false);
-	}*/
 }
 
 
 void myframe::on_download_deactivate(wxCommandEvent &event){
 	if(!check_connection(true, "Please connect before deactivate Downloading."))
 		return;
-	/*
+
 	mx.lock();
+	try{
+		dclient->set_var("downloading_active", "1");
+	}catch(client_exception &e){}
+	mx.unlock();
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
+	// update toolbar
+	toolbar->RemoveTool(id_toolbar_download_activate);
+	toolbar->RemoveTool(id_toolbar_download_deactivate);
+	toolbar->AddTool(download_activate);
+	toolbar->Realize();
 
-		wxMessageBox(tsl("Please connect before deactivate Downloading."), tsl("No Connection to Server"));
-
-	}else{
-		string answer;
-
-		mysock->send("DDP VAR SET downloading_active = 0");
-		mysock->recv(answer);
-
-		mx.unlock();
-		get_content();
-
-		// update toolbar
-		toolbar->RemoveTool(id_toolbar_download_activate);
-		toolbar->RemoveTool(id_toolbar_download_deactivate);
-		toolbar->AddTool(download_activate);
-		toolbar->Realize();
-
-		file_menu->Enable(id_toolbar_download_activate, true);
-		file_menu->Enable(id_toolbar_download_deactivate, false);
-	}*/
+	file_menu->Enable(id_toolbar_download_activate, true);
+	file_menu->Enable(id_toolbar_download_deactivate, false);
 }
 
 
 void myframe::on_copy_url(wxCommandEvent &event){
 	if(!check_connection(true, "Please connect before copying URLs."))
 		return;
-	/*
-	vector<int>::iterator it;
-	string url, answer;
+
+	vector<string>::iterator it;
+	string url;
 	wxString clipboard_data = wxT("");
+
+	find_selected_lines(); // save selection into selected_lines
+	if(selected_lines.empty()){
+		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
+		return;
+	}
 
 	mx.lock();
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
+	vector<package>::iterator content_it;
+	vector<download>::iterator download_it;
+	bool found = false;
 
-		wxMessageBox(tsl("Please connect before copying URLs."), tsl("No Connection to Server"));
+	for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+		if((*it)[0] == 'P') // we have a package
+			continue; // next one
 
-	}else{ // we have a connection
-
-		find_selected_lines(); // save selection into selected_lines
-		if(!selected_lines.empty()){
-
-			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-				url = (content[*it])[3]; // gets the url of the line, which index is stored in selected_lines
-				url += "\n";
-				clipboard_data += wxString(url.c_str(), wxConvUTF8);
+		for(content_it = content.begin(); ((content_it < content.end()) && (!found)); content_it++){ // search url of saved id
+			for(download_it = content_it->dls.begin(); ((download_it < content_it->dls.end()) && (!found)); download_it++){
+				if(download_it->id == atol((*it).c_str())){
+					url = download_it->url;
+					found = true; // leave the two loops
+				}
 			}
 
-			if(wxTheClipboard->Open()){
-				wxTheClipboard->SetData(new wxTextDataObject(clipboard_data));
-				wxTheClipboard->Close();
-			}else
-				wxMessageBox(tsl("Couldn't write into clipboard."), tsl("Clipboard Error"));
-		}else
-			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
+		}
 
-		mx.unlock();
-	}*/
- }
+		url += "\n";
+		found = false;
+		clipboard_data += wxString(url.c_str(), wxConvUTF8);
+	}
+
+	if(wxTheClipboard->Open()){
+		wxTheClipboard->SetData(new wxTextDataObject(clipboard_data));
+		wxTheClipboard->Close();
+	}else
+		wxMessageBox(tsl("Couldn't write into clipboard."), tsl("Clipboard Error"));
+
+	mx.unlock();
+
+}
 
 
  void myframe::on_resize(wxSizeEvent &event){
@@ -1544,6 +1510,7 @@ void myframe::on_reload(wxEvent &event){
 
 	if(!check_connection()){
 		wxString status_text = tsl("Not connected");
+		SetStatusText(status_text, 1);
 		return;
 	}
 
@@ -1585,16 +1552,6 @@ void myframe::on_right_click(wxContextMenuEvent &event){
 // getter and setter
 downloadc *myframe::get_connection(){
 	return dclient;
-}
-
-
-void myframe::set_connection_attributes(tkSock *mysock, string password){ /// TODO: chance those two methods!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
-	this->mysock = mysock;
-}
-
-
-tkSock *myframe::get_connection_attributes(){
-	return mysock;
 }
 
 
