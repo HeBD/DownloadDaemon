@@ -769,6 +769,86 @@ int package_container::set_next_proxy(dlindex id) {
 	return (*it)->set_next_proxy(id.second);
 }
 
+bool package_container::package_finished(int id) {
+	lock_guard<mutex> lock(mx);
+	package_container::iterator pkg_it = package_by_id(id);
+	lock_guard<mutex> listlock((*pkg_it)->download_mutex);
+	for(download_container::iterator it = (*pkg_it)->download_list.begin(); it != (*pkg_it)->download_list.end(); ++it) {
+		if((*it)->status != DOWNLOAD_FINISHED)
+			return false;
+	}
+	return true;
+}
+
+void package_container::extract_package(int id) {
+	if(global_config.get_cfg_value("enable_pkg_extractor") != "1") return;
+	unique_lock<mutex> lock(mx);
+	package_container::iterator pkg_it = package_by_id(id);
+	FILE* extractor;
+	string to_exec;
+	download_container::iterator it = (*pkg_it)->download_list.begin();
+	if((*pkg_it)->download_list.size() == 0) return;
+	string output_file = (*it)->output_file;
+	string extension(output_file.substr(output_file.find_last_of(".")));
+	string output_dir(output_file.substr(0, output_file.find_last_of(".")));
+
+	lock.unlock();
+	string password_list = global_config.get_cfg_value("pkg_extractor_passwords");
+	string password;
+	while(true) {
+		trim_string(password);
+		if(extension == ".rar") {
+			to_exec = "unrar x";
+			if(!password.empty())
+				to_exec += " -p" + password;
+			else
+				to_exec += " -p-";
+			to_exec += " -o+ -y '" + output_file + "' '" + output_dir + "'";
+		//} else if(extension == ".zip") {
+		//	to_exec = "unzip -o -qq";
+		//	if(!password.empty())
+		//		to_exec += " -P " + password;
+		//	to_exec += "'" + output_file + "' -d '" + output_dir + "'";
+		} else if(extension == ".gz" && output_file.find(".tar.gz") == output_file.size() - 7) {
+			to_exec = "tar xzf '" + output_file + "' -C '" + output_dir + "'";
+		} else if(extension == ".bz2" && output_file.find(".tar.bz2") == output_file.size() - 8) {
+			to_exec = "tar xjf '" + output_file + "' -C '" + output_dir + "'";
+		}
+		if(to_exec.empty()) return;
+		to_exec += " 2>&1";
+
+		mkdir_recursive(output_dir);
+		extractor = popen(to_exec.c_str(), "r");
+		if(extractor == NULL) {
+			log_string("Unable to open pipe to extractor of file: " + output_file, LOG_WARNING);
+			return;
+		}
+		string result;
+		int c;
+		do{
+			c = fgetc(extractor);
+			if(c != EOF) result.push_back(c);
+		} while(c != EOF);
+		pclose(extractor);
+		if(result.find("password incorrect") != string::npos) {
+			// next password
+			if(password_list.empty()) return;
+			if(password.empty()) {
+				password = password_list.substr(0, password_list.find(";"));
+				continue;
+			}
+			if(password_list.find(";") != string::npos)
+				password_list = password_list.substr(password_list.find(";") + 1);
+			password = password_list.substr(0, password_list.find(";"));
+			if(password.empty()) return;
+			continue;
+		}
+
+
+		break;
+	}
+}
+
 int package_container::get_next_download_id(bool lock_download_mutex) {
 	int max_id = -1;
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {

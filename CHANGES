@@ -1,3 +1,8 @@
+2010-02-24
+   [adrian]
+	- Added basic functionality to extract rar, tar.gz and tar.bz2 packages to DownloadDaemon. Set a password list
+	  in downloaddaemon.conf. all passwords in that list will be tried until extraction succeeds.
+
 2010-02-22
    [adrian]
 	- DownloadDaemon now supports alternating proxies! set a list of proxys to bypass IP-based download-limits!

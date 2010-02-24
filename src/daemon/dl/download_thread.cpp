@@ -61,7 +61,7 @@ void download_thread_wrapper(dlindex download) {
 	download_thread(download);
 
 	global_download_list.set_need_stop(download, false);
-	global_download_list.set_running(download, false);
+
 
 	download_status status = global_download_list.get_status(download);
 	plugin_status error = global_download_list.get_error(download);
@@ -82,8 +82,13 @@ void download_thread_wrapper(dlindex download) {
 	} else {
 		global_download_list.set_proxy(download, "");
 	}
-
 	global_download_list.cleanup_handle(download);
+	if(global_download_list.package_finished(download.first)) {
+		thread t(bind(&package_container::extract_package, &global_download_list, download.first));
+		t.detach();
+	}
+
+	global_download_list.set_running(download, false);
 }
 
 /** This function does the magic of downloading a file, calling the right plugin, etc.
