@@ -10,7 +10,6 @@
  */
 
 #include <crypt/md5.h>
-#include <downloadc/client_exception.h>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <iomanip>
@@ -98,6 +97,8 @@ END_EVENT_TABLE()
 myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxWindowID id):
 	wxFrame(parent, id, title){
 
+	dclient = new downloadc();
+
 	// getting working dir
 	working_dir = parameter;
 
@@ -180,127 +181,35 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 	lang.set_working_dir(std::string(working_dir.mb_str()) + "lang/");
 
-	mysock = new tkSock();
-
 	// connect if logindata was saved
 	string file_name = string(config_dir.mb_str()) + "save.dat";
 	ifstream ifs(file_name.c_str(), fstream::in | fstream::binary); // open file
 
 	if(ifs.good()){ // file successfully opened
 		login_data last_data =  { "", 0, ""};
-
 		ifs.read((char *) &last_data, sizeof(login_data));
 
 		if(last_data.lang[0] != '\0') // older versions of save.dat won't have lang, so we have to check
 			set_language(last_data.lang); // set program language
 
-
-		// try to connect with the data read from file
-		tkSock *mysock_tmp = new tkSock();
-		bool connection = false, error_occured = false;
-
 		try{
-		   connection = mysock_tmp->connect(last_data.host, last_data.port);
-		}catch(...){} // no code needed here due to boolean connection
+			dclient->connect(last_data.host, last_data.port, last_data.pass, true);
+			update_status(wxString(last_data.host, wxConvUTF8));
 
+		}catch(client_exception &e){
+			if(e.get_id() == 2){ // daemon doesn't allow encryption
 
-		if(connection){ // connection succeeded,  host (IP/URL or port) is ok
-
-			// authentification
-			std::string snd;
-			mysock_tmp->recv(snd);
-
-			if(snd.find("100") == 0){ // 100 SUCCESS <-- Operation succeeded
-				// nothing to do here if you reach this
-			}else if(snd.find("102") == 0){ // 102 AUTHENTICATION <-- Authentication failed
-
-				// try md5 authentication
-				mysock_tmp->send("ENCRYPT");
-				std::string rnd;
-				mysock_tmp->recv(rnd); // random bytes
-
-				if(rnd.find("102") != 0) { // encryption permitted
-					rnd += last_data.pass;
-
-					MD5_CTX md5;
-					MD5_Init(&md5);
-
-					unsigned char *enc_data = new unsigned char[rnd.length()];
-					for(size_t i = 0; i < rnd.length(); ++i){ // copy random bytes from string to cstring
-						enc_data[i] = rnd[i];
-					}
-
-					MD5_Update(&md5, enc_data, rnd.length());
-					unsigned char result[16];
-					MD5_Final(result, &md5); // put md5hash in result
-					std::string enc_passwd((char*)result, 16);
-					delete [] enc_data;
-
-					mysock_tmp->send(enc_passwd);
-					mysock_tmp->recv(snd);
-
-				}else{ // encryption not permitted
-					wxMessageDialog dialog(this, tsl("Encrypted authentication not supported by server.")
-											+ wxT("/n") + tsl("Do you want to try unsecure plain-text authentication?"),
+				wxMessageDialog dialog(this, tsl("Encrypted authentication not supported by server.") + wxT("\n")
+											+ tsl("Do you want to try unsecure plain-text authentication?"),
 										   tsl("Auto Connection: No Encryption Supported"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
-					int del = dialog.ShowModal();
+				int del = dialog.ShowModal();
 
-					if(del == wxID_YES){ // user clicked yes
-						// reconnect
-						try{
-							connection = mysock_tmp->connect(last_data.host, last_data.port);
-						}catch(...){} // no code needed here due to boolean connection
-
-						if(connection){
-							mysock_tmp->recv(snd);
-							mysock_tmp->send(last_data.pass);
-							mysock_tmp->recv(snd);
-						}else{
-							error_occured = true;
-						}
-					}else{
-						snd = "99"; // user doesn't want to connect without encryption => own error code
-						error_occured = true;
-					}
+				if(del == wxID_YES){ // connect again
+					try{
+						dclient->connect(last_data.host, last_data.port, last_data.pass, false);
+					}catch(client_exception &e){}
 				}
-
-				if(snd.find("100") == 0 && connection){
-					// nothing to do here if you reach this
-
-				}else if(snd.find("102") == 0 && connection){
-					error_occured = true;
-
-				}else if(snd.find("99") == 0 && connection){
-					error_occured = true;
-
-				}else{
-					error_occured = true;
-				}
-			}else{
-				error_occured = true;
-			}
-
-
-			if(!error_occured){
-				// save socket and password
-				mx.lock();
-
-				if(mysock != NULL){ //if there is already a connection, delete the old one
-					delete mysock;
-					mysock = NULL;
-				}
-
-				mysock = mysock_tmp;
-				password = last_data.pass;
-				mx.unlock();
-				update_status(wxString(last_data.host, wxConvUTF8));
-
-			}else{
-				delete mysock_tmp;
-			}
-
-		}else{ // connection failed due to host (IP/URL or port)
-			delete mysock_tmp;
+			} // we don't have error message here because it's an auto fuction
 		}
 	}
 
@@ -310,56 +219,48 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 
 myframe::~myframe(){
 		mx.lock();
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
+		if(dclient != NULL)
+			delete dclient;
+		dclient = NULL;
 		mx.unlock();
 }
 
 
 void myframe::update_status(wxString server){
-	mx.lock();
+	string answer;
+	try{
+		answer = dclient->get_var("downloading_active");
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
+	}catch(client_exception &e){}
 
-		if(server != wxT("")){
-			wxMessageBox(tsl("Please reconnect."), tsl("No Connection to Server"));
-		}
+	// removing both icons/deactivating both menuentrys, even when maybe only one is shown
+	toolbar->RemoveTool(id_toolbar_download_activate);
+	toolbar->RemoveTool(id_toolbar_download_deactivate);
+	file_menu->Enable(id_toolbar_download_activate, false);
+	file_menu->Enable(id_toolbar_download_deactivate, false);
 
-	}else{
-		string answer;
-
-		mysock->send("DDP VAR GET downloading_active");
-		mysock->recv(answer);
-
-		// removing both icons, even when maybe only one is shown
-		toolbar->RemoveTool(id_toolbar_download_activate);
-		toolbar->RemoveTool(id_toolbar_download_deactivate);
-
-		if(answer == "1"){ // downloading active
-			toolbar->AddTool(download_deactivate);
-			file_menu->Enable(id_toolbar_download_deactivate, true);
-		}else if(answer =="0"){ // downloading not active
-			toolbar->AddTool(download_activate);
-			file_menu->Enable(id_toolbar_download_activate, true);
-		}else{
-			// should never be reached
-		}
-
-		toolbar->Realize();
-
-		if(server != wxT("")){ // sometimes the function is called to update the toolbar, not the status text => server is empty
-			wxString status_text = tsl("Connected to");
-			status_text += wxT(" ");
-			status_text += server;
-			SetStatusText(status_text, 1);
-		}
+	if(!check_connection()){
+		return;
 	}
-	mx.unlock();
+
+	if(answer == "1"){ // downloading active
+		toolbar->AddTool(download_deactivate);
+		file_menu->Enable(id_toolbar_download_deactivate, true);
+	}else if(answer =="0"){ // downloading not active
+		toolbar->AddTool(download_activate);
+		file_menu->Enable(id_toolbar_download_activate, true);
+	}else{
+		// should never be reached
+	}
+
+	toolbar->Realize();
+
+	if(server != wxT("")){ // sometimes the function is called to update the toolbar, not the status text => server is empty
+		wxString status_text = tsl("Connected to");
+		status_text += wxT(" ");
+		status_text += server;
+		SetStatusText(status_text, 1);
+	}
 }
 
 void myframe::add_bars(){
@@ -451,8 +352,6 @@ void myframe::add_bars(){
 
 
 void myframe::update_bars(){
-	//mx.lock();
-
 	// update menu entrys
 	file_menu->SetLabel(id_toolbar_connect, wxT("&") + tsl("Connect") + wxT("..\tAlt-C"));
 	file_menu->SetHelpString(id_toolbar_connect, tsl("Connect"));
@@ -533,9 +432,7 @@ void myframe::update_bars(){
 	toolbar->RemoveTool(id_toolbar_download_activate); // these two toolbar icons are created for later use
 	toolbar->RemoveTool(id_toolbar_download_deactivate);
 
-	//mx.unlock();
 	update_status(wxT(""));
-
 }
 
 
@@ -546,14 +443,14 @@ void myframe::add_components(){
 
 	// all download lists
 	list = new wxListCtrl(panel_downloads, wxID_ANY, wxPoint(120, -46), wxSize(0,0), wxLC_REPORT);
-	sizer_downloads->Add(list , 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	sizer_downloads->Add(list, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 
-	// columns
 	list->InsertColumn(0, tsl("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
 	list->InsertColumn(1, tsl("Title"), wxLIST_AUTOSIZE_USEHEADER, 76);
 	list->InsertColumn(2, tsl("URL"), wxLIST_AUTOSIZE_USEHEADER, 170);
 	list->InsertColumn(3, tsl("Time left"), wxLIST_AUTOSIZE_USEHEADER, 100);
 	list->InsertColumn(4, tsl("Status"), wxLIST_AUTOSIZE_USEHEADER, 150);
+
 }
 
 
@@ -569,11 +466,6 @@ void myframe::update_components(){
 			width -= 10;
 		#endif // defined(__WXMSW__)
 
-		/*list->DeleteColumn(4);
-		list->DeleteColumn(3);
-		list->DeleteColumn(2);
-		list->DeleteColumn(1);
-		list->DeleteColumn(0);*/
 		list->ClearAll();
 
 		list->InsertColumn(0, tsl("ID"), wxLIST_AUTOSIZE_USEHEADER, 50);
@@ -591,88 +483,28 @@ void myframe::update_components(){
 
 
 void myframe::update_list(){
-	while(true){ // for boost::thread
-		mx.lock();
+	/*while(true){ // for boost::thread
 
-		if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){
-			// make sure mysock doesn't crash the program
-			if(mysock != NULL)
-				delete mysock;
-			mysock = NULL;
-			mx.unlock();
-
-			sleep(2);
-			continue;
-		}else{
-
-			mx.unlock();
-
+		if(check_connection())
 			get_content();
-			sleep(2); // reload every two seconds
-		}
-	}
+		sleep(2); // reload every two seconds
+	}*/
 }
 
 
 void myframe::get_content(){
 	mx.lock();
+	new_content.clear();
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
+	try{
+		new_content = dclient->get_list();
 
-		mx.unlock();
+	}catch(client_exception &e){}
+	mx.unlock();
 
-	}else{
-
-		vector<string> splitted_line;
-		string answer, line, tab;
-		size_t lineend = 1, tabend = 1;
-
-		new_content.clear();
-
-		mysock->send("DDP DL LIST");
-		mysock->recv(answer);
-
-
-		// parse lines
-		while(answer.length() > 0 && lineend != string::npos){
-			lineend = answer.find("\n"); // termination character for line
-			line = answer.substr(0, lineend);
-			answer = answer.substr(lineend+1);
-
-			// parse columns
-			tabend = 0;
-			while(line.length() > 0 && tabend != string::npos){
-				tabend = line.find("|"); // termination character for column
-
-				if(tabend == string::npos){ // no | found, so it is the last column
-					tab = line;
-					line = "";
-				}else{
-					if(tabend != 0 && line.at(tabend-1) == '\\') // because titles can have | inside (will be escaped with \)
-						tabend = line.find("|", tabend+1);
-
-					tab = line.substr(0, tabend);
-					line = line.substr(tabend+1);
-
-				}
-			splitted_line.push_back(tab); // save all tabs per line for later use
-			}
-
-			new_content.push_back(splitted_line);
-			splitted_line.clear();
-		}
-
-		mx.unlock();
-
-		// send event to reload list
-		wxCommandEvent event(wxEVT_reload_list, GetId());
-		wxPostEvent(this, event);
-
-	}
+	// send event to reload list
+	wxCommandEvent event(wxEVT_reload_list, GetId());
+	wxPostEvent(this, event);
 }
 
 
@@ -715,59 +547,63 @@ void myframe::cut_time(string &time_left){
 	return;
 }
 
-string myframe::build_status(string &status_text, string &time_left, vector<string> &splitted_line){
+string myframe::build_status(string &status_text, string &time_left, download &dl){
 	string color = "WHITE";
 
-	if(splitted_line[4] == "DOWNLOAD_RUNNING"){
+	if(dl.status == "DOWNLOAD_RUNNING"){
 		color = "LIME GREEN";
 
-		if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] == "PLUGIN_SUCCESS"){ // waiting time > 0
+		if(dl.wait > 0 && dl.error == "PLUGIN_SUCCESS"){ // waiting time > 0
 			status_text = lang["Download running. Waiting."];
-			time_left =  splitted_line[7];
+			stringstream time;
+			time << dl.wait;
+			time_left =  time.str();
 			cut_time(time_left);
 
-		}else if(atol(splitted_line[7].c_str()) > 0 && splitted_line[8] != "PLUGIN_SUCCESS") {
+		}else if(dl.wait > 0 && dl.error != "PLUGIN_SUCCESS"){
 			color = "RED";
-			status_text = lang["Error"] + ": " + lang[splitted_line[8]] + " " + lang["Retrying soon."];
-			time_left =  splitted_line[7];
+			status_text = lang["Error"] + ": " + lang[dl.error] + " " + lang["Retrying soon."];
+			stringstream time;
+			time << dl.wait;
+			time_left =  time.str();
 			cut_time(time_left);
 
 		}else{ // no waiting time
 			stringstream stream_buffer, time_buffer;
 			stream_buffer << lang["Running"];
 
-			if(splitted_line[9] != "0" && splitted_line[9] != "-1") // download speed known
-				stream_buffer << "@" << setprecision(1) << fixed << (float)atol(splitted_line[9].c_str()) / 1024 << " kb/s";
+			if(dl.speed != 0 && dl.speed != -1) // download speed known
+				stream_buffer << "@" << setprecision(1) << fixed << (float)dl.speed / 1024 << " kb/s";
 
 			stream_buffer << ": ";
 
-			if(splitted_line[6] == "0" || splitted_line[6] == "1"){ // download size unknown
+			if(dl.size == 0 || dl.size == 1){ // download size unknown
 				stream_buffer << "0.00% - ";
 				time_left = "";
 
-				if(splitted_line[5] == "0" || splitted_line[5] == "1") // nothing downloaded yet
+				if(dl.downloaded == 0 || dl.downloaded == 1) // nothing downloaded yet
 					stream_buffer << "0.00 MB/ 0.00 MB";
 				else // something downloaded
-					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[5].c_str()) / 1048576 << " MB/ 0.00 MB";
+					stream_buffer << setprecision(1) << fixed << (float)dl.downloaded / 1048576 << " MB/ 0.00 MB";
 
 			}else{ // download size known
-				if(splitted_line[5] == "0" || splitted_line[5] == "1"){ // nothing downloaded yet
-					stream_buffer << "0.00% - 0.00 MB/ " << fixed << (float)atol(splitted_line[6].c_str()) / 1048576 << " MB";
+				if(dl.downloaded == 0 || dl.downloaded == 1){ // nothing downloaded yet
+					stream_buffer << "0.00% - 0.00 MB/ " << fixed << (float)dl.size / 1048576 << " MB";
 
-					if(splitted_line[9] != "0" && splitted_line[9] != "-1"){ // download speed known => calc time left
-						time_buffer << (int)(atol(splitted_line[6].c_str()) / atol(splitted_line[9].c_str()));
+					if(dl.speed != 0 && dl.speed != -1){ // download speed known => calc time left
+						time_buffer << (int)(dl.size / dl.speed);
 						time_left = time_buffer.str();
 						cut_time(time_left);
 					}else
 						time_left = "";
 
 				}else{ // download size known and something downloaded
-					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[5].c_str()) / (float)atol(splitted_line[6].c_str()) * 100 << "% - ";
-					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[5].c_str()) / 1048576 << " MB/ ";
-					stream_buffer << setprecision(1) << fixed << (float)atol(splitted_line[6].c_str()) / 1048576 << " MB";
+					stream_buffer << setprecision(1) << fixed << (float)dl.downloaded / (float)dl.size * 100 << "% - ";
+					stream_buffer << setprecision(1) << fixed << (float)dl.downloaded / 1048576 << " MB/ ";
+					stream_buffer << setprecision(1) << fixed << (float)dl.size / 1048576 << " MB";
 
-					if(splitted_line[9] != "0" && splitted_line[9] != "-1"){ // download speed known => calc time left
-						time_buffer << (int)((atol(splitted_line[6].c_str()) - atol(splitted_line[5].c_str())) / atol(splitted_line[9].c_str()));
+					if(dl.speed != 0 && dl.speed != -1){ // download speed known => calc time left
+						time_buffer << (int)((dl.size - dl.downloaded) / dl.speed);
 						time_left = time_buffer.str();
 						cut_time(time_left);
 					}else
@@ -777,41 +613,43 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 			status_text = stream_buffer.str();
 		}
 
-	}else if(splitted_line[4] == "DOWNLOAD_INACTIVE"){
-		if(splitted_line[8] == "PLUGIN_SUCCESS"){
+	}else if(dl.status == "DOWNLOAD_INACTIVE"){
+		if(dl.error == "PLUGIN_SUCCESS"){
 			color = "YELLOW";
 			status_text = lang["Download Inactive."];
 			time_left = "";
 
 		}else{ // error occured
 			color = "RED";
-			status_text = lang["Inactive. Error"] + ": " + lang[splitted_line[8]];
+			status_text = lang["Inactive. Error"] + ": " + lang[dl.error];
 			time_left = "";
 		}
 
-	}else if(splitted_line[4] == "DOWNLOAD_PENDING"){
+	}else if(dl.status == "DOWNLOAD_PENDING"){
 		time_left = "";
 
-		if(splitted_line[8] == "PLUGIN_SUCCESS"){
+		if(dl.error == "PLUGIN_SUCCESS"){
 			status_text = lang["Download Pending."];
 
 		}else{ //error occured
 			color = "RED";
-			status_text = "Error: " + lang[splitted_line[8]];
+			status_text = "Error: " + lang[dl.error];
 		}
 
-	}else if(splitted_line[4] == "DOWNLOAD_WAITING"){
+	}else if(dl.status == "DOWNLOAD_WAITING"){
 		color = "YELLOW";
 		status_text = lang["Have to wait."];
-		time_left = splitted_line[7];
+		stringstream time;
+		time << dl.wait;
+		time_left =  time.str();
 		cut_time(time_left);
 
-	}else if(splitted_line[4] == "DOWNLOAD_FINISHED"){
+	}else if(dl.status == "DOWNLOAD_FINISHED"){
 		color = "GREEN";
 		status_text = lang["Download Finished."];
 		time_left = "";
 
-	}else if(splitted_line[4] == "DOWNLOAD_RECONNECTING") {
+	}else if(dl.status == "DOWNLOAD_RECONNECTING") {
 		color = "YELLOW";
 		status_text = lang["Reconnecting..."];
 		time_left = "";
@@ -825,6 +663,7 @@ string myframe::build_status(string &status_text, string &time_left, vector<stri
 
 
 void myframe::find_selected_lines(){
+	/*
 	long item_index = -1;
 
 	selected_lines.clear();
@@ -836,11 +675,11 @@ void myframe::find_selected_lines(){
 			break;
 		else // found a selected one
 			selected_lines.push_back(item_index);
-	  }
+	  }*/
 }
 
 
-void myframe::select_lines(){
+void myframe::select_lines(){/*
 	long item_index = -1;
 
 	while(true){
@@ -850,21 +689,21 @@ void myframe::select_lines(){
 			break;
 		else
 			list->SetItemState(item_index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
-	  }
+	  }*/
 }
 
 
-void myframe::select_line_by_id(string id){
+void myframe::select_line_by_id(string id){/*
 	long item_index = -1;
 
 	item_index = list->FindItem(-1, wxString(id.c_str(), wxConvUTF8));
 
 	if(item_index != -1)
-		list->SetItemState(item_index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+		list->SetItemState(item_index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);*/
 }
 
 
-void myframe::deselect_lines(){
+void myframe::deselect_lines(){/*
 	long item_index = -1;
 
 	while(true){
@@ -874,7 +713,7 @@ void myframe::deselect_lines(){
 			break;
 		else // found a selected one
 			list->SetItemState(item_index, 0, wxLIST_STATE_SELECTED);
-	  }
+	  }*/
 }
 
 
@@ -900,97 +739,172 @@ wxString myframe::tsl(string text, ...){
 		search = sb.str();
 	}
 
-	//return wxString(lang[text].c_str(), wxConvUTF8);
 	return wxString(translated.c_str(), wxConvUTF8);
 }
 
 
+bool myframe::check_connection(bool tell_user, string individual_message){
+	try{
+		dclient->check_connection();
+
+	}catch(client_exception &e){
+		if(e.get_id() == 10){ //connection lost
+
+			if(tell_user)
+				wxMessageBox(tsl(individual_message), tsl("No Connection to Server"));
+
+			return false;
+		}
+	}
+	return true;
+}
+
+
 // methods for comparing and actualizing content if necessary
-void myframe::compare_vectorvector(){
+void myframe::compare_all_packages(){
+	vector<package>::iterator old_content_it = content.begin();
+	vector<package>::iterator new_content_it = new_content.begin();
 
-	vector<vector<string> >::iterator old_content_it = content.begin();
-	vector<vector<string> >::iterator new_content_it = new_content.begin();
-
-	size_t line_nr = 0, line_index;
+	int line_nr = 0, line_index;
 	string status_text, time_left, color;
+	bool change;
 
-
-	// compare the i-th vector in content with the i-th vector in new_content
+	// compare the i-th package in content with the i-th package in new_content
 	while((new_content_it < new_content.end()) && (old_content_it < content.end())){
-		compare_vector(line_nr, *new_content_it, *old_content_it);
+		change = compare_package(line_nr, *new_content_it, *old_content_it);
 
 		new_content_it++;
 		old_content_it++;
-		line_nr++;
+
+		if(change) // a package changed it's download count => every line coming now changed
+			break;
 	}
 
 
-	if(new_content_it < new_content.end()){ // there are more new lines then old ones
+	if(old_content_it < content.end()){ // there are more old lines than new ones or change was true
+
+		while(list->GetItemCount() >= line_nr)
+			list->DeleteItem(list->GetItemCount()-1);
+	}
+
+	if(new_content_it < new_content.end()){ // there are more new packages then old ones  or change was true
 		while(new_content_it < new_content.end()){
 
-			// insert content
-			line_index = list->InsertItem(line_nr, wxString(new_content_it->at(0).c_str(), wxConvUTF8));
+			stringstream id; // package ID
+			id << "PKG " << new_content_it->id;
+			line_index = list->InsertItem(line_nr, wxString(id.str().c_str(), wxConvUTF8));
 
-			for(int i=1; i<3; i++){ // column 1 to 2
-				list->SetItem(line_index, i, wxString(new_content_it->at(i+1).c_str(), wxConvUTF8));
+			list->SetItem(line_index, 1, wxString(new_content_it->name.c_str(), wxConvUTF8)); // package name
+			list->SetItemBackgroundColour(line_index, wxString(wxT("WHITE")));
+			line_nr++;
+
+
+			// insert all downloads of the new package
+			vector<download>::iterator it_new = new_content_it->dls.begin();
+			vector<download>::iterator end_new = new_content_it->dls.end();
+
+			for(; it_new < end_new; it_new++){
+
+				// insert content
+				line_index = list->InsertItem(line_nr, wxString::Format(wxT("%i"), it_new->id));
+				list->SetItem(line_index, 1, wxString(it_new->title.c_str(), wxConvUTF8));
+				list->SetItem(line_index, 2, wxString(it_new->url.c_str(), wxConvUTF8));
+
+				// status column
+				color = build_status(status_text, time_left, *it_new);
+				list->SetItemBackgroundColour(line_index, wxString(color.c_str(), wxConvUTF8));
+				list->SetItem(line_index, 3, wxString(time_left.c_str(), wxConvUTF8));
+				list->SetItem(line_index, 4, wxString(status_text.c_str(), wxConvUTF8));
+
+				line_nr++;
 			}
 
-			// status column
-			color = build_status(status_text, time_left, *new_content_it);
-			list->SetItemBackgroundColour(line_index, wxString(color.c_str(), wxConvUTF8));
-			list->SetItem(line_index, 3, wxString(time_left.c_str(), wxConvUTF8));
-			list->SetItem(line_index, 4, wxString(status_text.c_str(), wxConvUTF8));
-
 			new_content_it++;
-			line_nr++;
-		}
-
-	}else if(old_content_it < content.end()){ // there are more old lines than new ones
-		while(old_content_it < content.end()){
-
-			// delete content
-			list->DeleteItem(line_nr);
-
-			old_content_it++;
-			// line_nr stays the same!
 		}
 	}
 }
 
+bool myframe::compare_package(int &line_nr, package &pkg_new, package &pkg_old){
+	int line_index;
+	string status_text, time_left, color;
+	bool change = false;
 
-void myframe::compare_vector(size_t line_nr, vector<string> &splitted_line_new, vector<string> &splitted_line_old){
+	if(pkg_new.id != pkg_old.id){ // package ID
+		stringstream id;
+		id << "PKG " << pkg_new.id;
+		list->SetItem(line_nr, 0, wxString(id.str().c_str(), wxConvUTF8));
+	}
+	if(pkg_new.name != pkg_old.name){ // package name
+		list->SetItem(line_nr, 1, wxString(pkg_new.name.c_str(), wxConvUTF8));
+	}
 
-	vector<string>::iterator it_old = splitted_line_old.begin();
-	vector<string>::iterator end_old = splitted_line_old.end();
-	vector<string>::iterator it_new = splitted_line_new.begin();
-	vector<string>::iterator end_new = splitted_line_new.end();
+	line_nr++;
 
-	size_t column_nr = 0;
-	bool status_change = false;
+
+	// compare all downloads
+	vector<download>::iterator it_old = pkg_old.dls.begin();
+	vector<download>::iterator end_old = pkg_old.dls.end();
+	vector<download>::iterator it_new = pkg_new.dls.begin();
+	vector<download>::iterator end_new = pkg_new.dls.end();
+
+	while((it_new < end_new) && (it_old < end_old)){
+		compare_download(line_nr, *it_new, *it_old);
+		it_new++;
+		it_old++;
+		line_nr++;
+	}
+
+
+	if(it_new < end_new){ // there are more new downloads in the package then old ones
+		change = true;
+		while(it_new < end_new){
+
+			// insert content
+			line_index = list->InsertItem(line_nr, wxString::Format(wxT("%i"), it_new->id));
+			list->SetItem(line_index, 1, wxString(it_new->title.c_str(), wxConvUTF8));
+			list->SetItem(line_index, 2, wxString(it_new->url.c_str(), wxConvUTF8));
+
+			// status column
+			color = build_status(status_text, time_left, *it_new);
+			list->SetItemBackgroundColour(line_index, wxString(color.c_str(), wxConvUTF8));
+			list->SetItem(line_index, 3, wxString(time_left.c_str(), wxConvUTF8));
+			list->SetItem(line_index, 4, wxString(status_text.c_str(), wxConvUTF8));
+
+			line_nr++;
+			it_new++;
+		}
+
+	}else if(it_old < end_old){ // there are more old downloads than new ones
+		change = true;
+		while(it_old < end_old){
+
+			// delete content
+			list->DeleteItem(line_nr);
+
+			it_old++;
+			// line_nr stays the same!
+		}
+	}
+	return change;
+}
+
+void myframe::compare_download(int &line_nr, download &new_dl, download &old_dl){
 	string status_text, time_left, color;
 
 	// compare every column
-	while((it_new < end_new) && (it_old < end_old)){
+	if(new_dl.id != old_dl.id) // ID
+		list->SetItem(line_nr, 0, wxString::Format(wxT("%i"), new_dl.id));
 
-		if(*it_new != *it_old){ // content of column_new != content of column_old
+	if(new_dl.title != old_dl.title) // title
+		list->SetItem(line_nr, 1,wxString(new_dl.title.c_str(), wxConvUTF8));
 
-			if(column_nr == 0) // id
-				list->SetItem(line_nr, column_nr, wxString(it_new->c_str(), wxConvUTF8));
+	if(new_dl.url != old_dl.url) // url
+		list->SetItem(line_nr, 2,wxString(new_dl.url.c_str(), wxConvUTF8));
 
-			else if(column_nr == 2 || column_nr == 3) // content of column 2 and 3 goes into gui column 1 and 2! (content column 1 is no needed)
-				list->SetItem(line_nr, column_nr-1, wxString(it_new->c_str(), wxConvUTF8));
+	if((new_dl.status != old_dl.status) || (new_dl.status != old_dl.status) || (new_dl.status != old_dl.status) ||
+	   (new_dl.status != old_dl.status) || (new_dl.status != old_dl.status) || (new_dl.status != old_dl.status)){
 
-			else // status column
-				status_change = true;
-		}
-
-		it_new++;
-		it_old++;
-		column_nr++;
-	}
-
-	if(status_change){
-		color = build_status(status_text, time_left, splitted_line_new);
+		color = build_status(status_text, time_left, new_dl);
 		list->SetItemBackgroundColour(line_nr, wxString(color.c_str(), wxConvUTF8));
 		list->SetItem(line_nr, 3, wxString(time_left.c_str(), wxConvUTF8));
 		list->SetItem(line_nr, 4, wxString(status_text.c_str(), wxConvUTF8));
@@ -1011,9 +925,10 @@ void myframe::on_about(wxCommandEvent &event){
 
 
 void myframe::on_select_all_lines(wxCommandEvent &event){
-	mx.lock();
+	if(!check_connection(false))
+		return;
+
 	select_lines();
-	mx.unlock();
 }
 
 
@@ -1026,111 +941,81 @@ void myframe::on_select_all_lines(wxCommandEvent &event){
 
 
 void myframe::on_add(wxCommandEvent &event){
-	mx.lock();
+	if(!check_connection(true, "Please connect before adding Downloads."))
+		return;
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
-
-		wxMessageBox(tsl("Please connect before adding Downloads."), tsl("No Connection to Server"));
-
-
-	}else{
-		mx.unlock();
-		add_dialog dialog(this);
-		dialog.ShowModal();
-		get_content();
-	}
-
-
+	add_dialog dialog(this);
+	dialog.ShowModal();
+	get_content();
  }
 
 
 void myframe::on_delete(wxCommandEvent &event){
+	if(!check_connection(true, "Please connect before deleting Downloads."))
+		return;
+
 	vector<int>::iterator it;
 	string id, answer;
-	bool error_occured = false;
 
-	mx.lock();
+	find_selected_lines(); // save selection into selected_lines
+	if(!selected_lines.empty()){
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
+		// make sure user wants to delete downloads
+		wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected Download(s)?"), tsl("Delete Downloads"),
+							wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+		int del = dialog.ShowModal();
 
-		wxMessageBox(tsl("Please connect before deleting Downloads."), tsl("No Connection to Server"));
+		if(del == wxID_YES){ // user clicked yes to delete
+			int dialog_answer = 2; // possible answers are 0 = yes all, 1 = yes, 2 = no, 3 = no all
 
-	}else{ // we have a connection
+			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+				//id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+				/// TODO: last instruction won't work with the new structure!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				int id = 5;/// /////////////////////////// dummy id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				try{
+					dclient->delete_download(id, dont_know);
 
-		find_selected_lines(); // save selection into selected_lines
-		if(!selected_lines.empty()){
-
-			// make sure user wants to delete downloads
-			wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected Download(s)?"), tsl("Delete Downloads"),
-									wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
-			int del = dialog.ShowModal();
-
-			if(del == wxID_YES){ // user clicked yes to delete
-				int dialog_answer = 2; // possible answers are 0 = yes all, 1 = yes, 2 = no, 3 = no all
-
-				for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-					id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
-
-					// test if there is a file on the server
-					mysock->send("DDP FILE GETPATH " + id);
-					mysock->recv(answer);
-
-					if(!answer.empty()){ // file exists
-
-						// only show dialog if user didn't choose yes_all (0) or no_all (3) before
-						if((dialog_answer != 0) && (dialog_answer != 3)){
-							delete_dialog dialog(&dialog_answer, id, this);
-							dialog.ShowModal();
-						}
-
+				}catch(client_exception &e){
+					if((e.get_id() == 7) && (dialog_answer != 0) && (dialog_answer != 3)){ // file exists and user didn't choose yes_all (0) or no_all (3) before
+						delete_dialog dialog(&dialog_answer, id, this);
+						dialog.ShowModal();
 
 						if((dialog_answer == 0) || (dialog_answer == 1)){ // user clicked yes all (0) or yes (1) to delete
-							mysock->send("DDP DL DEACTIVATE " + id);
-							mysock->recv(answer);
+							try{
+								dclient->delete_download(id, del_file);
 
-							mysock->send("DDP FILE DEL " + id);
-							mysock->recv(answer);
+							}catch(client_exception &e){
+								wxMessageBox(tsl(e.what()), tsl("Error"));
+							}
 
-							if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
-								string message = lang["Error occured at deleting File of ID"] + " " + id;
-								wxMessageBox(wxString(message.c_str(), wxConvUTF8), tsl("Error"));
+						}else{
+							try{
+								dclient->delete_download(id, dont_delete);
+
+							}catch(client_exception &e){
+								wxMessageBox(tsl(e.what()), tsl("Error"));
 							}
 
 						}
+					}else{ // some error occured
+						wxMessageBox(tsl(e.what()), tsl("Error"));
 					}
-
-					mysock->send("DDP DL DEL " + id);
-					mysock->recv(answer);
-
-					if(answer.find("104") == 0) // 104 ID <-- Entered a not-existing ID
-						error_occured = true;
 				}
 			}
-		}else
-			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
+		}
+	}else
+		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
-		deselect_lines();
-		mx.unlock();
+	deselect_lines();
+	get_content();
 
-		if(error_occured)
-			wxMessageBox(tsl("Error occured at deleting Download(s)."), tsl("Error"));
-
-		get_content();
-	}
  }
 
 
 void myframe::on_delete_finished(wxCommandEvent &event){
+	if(!check_connection(true, "Please connect before deleting Downloads."))
+		return;
+	/*
 	vector<string>::iterator it;
 	vector<string> finished_ids;
 	vector<vector<string> >::iterator content_it;
@@ -1212,141 +1097,122 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 			wxMessageBox(tsl("Error occured at deleting Download(s)."), tsl("Error"));
 
 		get_content();
-	}
+	}*/
 }
 
 
  void myframe::on_delete_file(wxCommandEvent &event){
+ 	if(!check_connection(true, "Please connect before deleting Files."))
+		return;
+
 	vector<int>::iterator it;
 	string id, answer;
 	bool error_occured = false;
 
-	mx.lock();
+	find_selected_lines(); // save selection into selected_lines
+	if(!selected_lines.empty()){
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
+		// make sure user wants to delete downloads
+		wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected File(s)?"), tsl("Delete Files"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+		int del = dialog.ShowModal();
 
-		wxMessageBox(tsl("Please connect before deleting Files."), tsl("No Connection to Server"));
+		if(del == wxID_YES){ // user clicked yes to delete
 
-	}else{ // we have a connection
+			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+				//id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+				/// 				TODO: last line can't work because of new structure of content!
 
-		find_selected_lines(); // save selection into selected_lines
-		if(!selected_lines.empty()){
+				// test if there is a file on the server
+				int id = 5; /// TODO: DUMMY INPUT 							!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				try{
 
-			// make sure user wants to delete downloads
-			wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected File(s)?"), tsl("Delete Files"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
-			int del = dialog.ShowModal();
+					dclient->delete_file(id);
+				}catch(client_exception &e){
+					if(e.get_id() == 19) // file error
+						wxMessageBox(tsl("Error occured at deleting File of Download %p1.", id), tsl("Error"));
 
-			if(del == wxID_YES){ // user clicked yes to delete
-
-				for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-					id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
-
-					// test if there is a file on the server
-					mysock->send("DDP FILE GETPATH " + id);
-					mysock->recv(answer);
-
-					if(!answer.empty()){ // file exists
-
-						mysock->send("DDP DL DEACTIVATE " + id);
-						mysock->recv(answer);
-
-						mysock->send("DDP FILE DEL " + id);
-						mysock->recv(answer);
-
-						if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
-							string message = lang["Error occured at deleting File from ID"] + " " + id;
-							wxMessageBox(wxString(message.c_str(), wxConvUTF8), tsl("Error"));
-						}
-
-					}
 				}
 			}
-		}else
-			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
+		}
+	}else
+		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
-		deselect_lines();
-		mx.unlock();
+	deselect_lines();
 
-		if(error_occured)
-			wxMessageBox(tsl("Error occured at deleting Files(s)."), tsl("Error"));
+	if(error_occured)
+		wxMessageBox(tsl("Error occured at deleting Files(s)."), tsl("Error"));
 
-		get_content();
-	}
+	get_content();
+
  }
 
 
 void myframe::on_activate(wxCommandEvent &event){
+	if(!check_connection(true, "Please connect before activating Downloads."))
+		return;
+
 	vector<int>::iterator it;
 	string id, answer;
+	bool error = false;
+	string error_string;
 
-	mx.lock();
+	find_selected_lines(); // save selection into selected_lines
+	if(!selected_lines.empty()){
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
+		for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+			//id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+			/// 				TODO: last line can't work because of new structure of content!
+			int id = 5;
 
-		wxMessageBox(tsl("Please connect before activating Downloads."), tsl("No Connection to Server"));
-
-	}else{ // we have a connection
-
-		find_selected_lines(); // save selection into selected_lines
-		if(!selected_lines.empty()){
-
-			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-				id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
-
-				mysock->send("DDP DL ACTIVATE " + id);
-				mysock->recv(answer); // might receive error 106 ACTIVATE, but that doesn't matter
+			try{
+				dclient->activate_download(id);
+			}catch(client_exception &e){
+				error = true;
+				error_string = e.what();
 			}
+		}
 
-		}else
-			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
+	}else
+		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
-		mx.unlock();
+	if(error)
+		wxMessageBox(tsl(error_string), tsl("Error"));
+	else
 		get_content();
-	}
  }
 
 
 void myframe::on_deactivate(wxCommandEvent &event){
+	if(!check_connection(true, "Please connect before deactivating Downloads."))
+		return;
+
 	vector<int>::iterator it;
 	string id, answer;
 
-	mx.lock();
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		mx.unlock();
-		wxMessageBox(tsl("Please connect before deactivating Downloads."), tsl("No Connection to Server"));
+	find_selected_lines(); // save selection into selected_lines
+	if(!selected_lines.empty()){
 
-	}else{ // we have a connection
+		for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+			//id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
+			/// 				TODO: last line can't work because of new structure of content!
+			int id = 5;
 
-		find_selected_lines(); // save selection into selected_lines
-		if(!selected_lines.empty()){
+			try{
+				dclient->deactivate_download(id);
+			}catch(client_exception &e){}
+		}
 
-			for(it = selected_lines.begin(); it<selected_lines.end(); it++){
-				id = (content[*it])[0]; // gets the id of the line, which index is stored in selected_lines
-
-				mysock->send("DDP DL DEACTIVATE " + id);
-				mysock->recv(answer); // might receive error 107 DEACTIVATE, but that doesn't matter
-			}
-
-		}else
-			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
-
-		mx.unlock();
 		get_content();
-	}
+
+	}else
+		wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
  }
 
 
  void myframe::on_priority_up(wxCommandEvent &event){
+ 	if(!check_connection(true, "Please connect before increasing Priority."))
+		return;
+	/*
 	vector<int>::iterator it;
 	string id, answer;
 
@@ -1387,11 +1253,14 @@ void myframe::on_deactivate(wxCommandEvent &event){
 		deselect_lines();
 		mx.unlock();
 		get_content();
-	}
+	}*/
 }
 
 
 void myframe::on_priority_down(wxCommandEvent &event){
+	if(!check_connection(true, "Please connect before decreasing Priority."))
+		return;
+	/*
 	vector<int>::reverse_iterator rit;
 	string id, answer;
 
@@ -1432,32 +1301,24 @@ void myframe::on_priority_down(wxCommandEvent &event){
 		deselect_lines();
 		mx.unlock();
 		get_content();
-	}
+	}*/
 }
 
 
 void myframe::on_configure(wxCommandEvent &event){
-	mx.lock();
+	if(!check_connection(true, "Please connect before configurating DownloadDaemon."))
+		return;
 
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		// make sure mysock doesn't crash the program
-		if(mysock != NULL)
-			delete mysock;
-		mysock = NULL;
-		mx.unlock();
-
-		wxMessageBox(tsl("Please connect before configurating DownloadDaemon."),tsl("No Connection to Server"));
-
-	}else{
-		mx.unlock();
-		configure_dialog dialog(this);
-		dialog.ShowModal();
-		get_content();
-	}
+	configure_dialog dialog(this);
+	dialog.ShowModal();
+	get_content();
 }
 
 
 void myframe::on_download_activate(wxCommandEvent &event){
+	if(!check_connection(true, "Please connect before activate Downloading."))
+		return;
+	/*
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
@@ -1486,11 +1347,14 @@ void myframe::on_download_activate(wxCommandEvent &event){
 
 		file_menu->Enable(id_toolbar_download_deactivate, true);
 		file_menu->Enable(id_toolbar_download_activate, false);
-	}
+	}*/
 }
 
 
 void myframe::on_download_deactivate(wxCommandEvent &event){
+	if(!check_connection(true, "Please connect before deactivate Downloading."))
+		return;
+	/*
 	mx.lock();
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
@@ -1519,11 +1383,14 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 
 		file_menu->Enable(id_toolbar_download_activate, true);
 		file_menu->Enable(id_toolbar_download_deactivate, false);
-	}
+	}*/
 }
 
 
 void myframe::on_copy_url(wxCommandEvent &event){
+	if(!check_connection(true, "Please connect before copying URLs."))
+		return;
+	/*
 	vector<int>::iterator it;
 	string url, answer;
 	wxString clipboard_data = wxT("");
@@ -1559,7 +1426,7 @@ void myframe::on_copy_url(wxCommandEvent &event){
 			wxMessageBox(tsl("At least one Row should be selected."), tsl("Error"));
 
 		mx.unlock();
-	}
+	}*/
  }
 
 
@@ -1589,13 +1456,13 @@ void myframe::on_copy_url(wxCommandEvent &event){
 
 void myframe::on_reload(wxEvent &event){
 
-	mx.lock();
-
-	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		status_bar->SetStatusText(tsl("Not connected"), 1);
+	if(!check_connection()){
+		wxString status_text = tsl("Not connected");
+		return;
 	}
 
-	compare_vectorvector();
+	mx.lock();
+	compare_all_packages();
 	content.clear();
 	content = new_content;
 
@@ -1630,9 +1497,13 @@ void myframe::on_right_click(wxContextMenuEvent &event){
 
 
 // getter and setter
-void myframe::set_connection_attributes(tkSock *mysock, string password){
+downloadc *myframe::get_connection(){
+	return dclient;
+}
+
+
+void myframe::set_connection_attributes(tkSock *mysock, string password){ /// TODO: chance those two methods!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
 	this->mysock = mysock;
-	this->password = password;
 }
 
 

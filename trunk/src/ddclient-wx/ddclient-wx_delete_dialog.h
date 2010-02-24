@@ -28,7 +28,7 @@ class delete_dialog: public wxDialog{
 		*	@param id ID of the File to be deleted
 		*	@param parent Parent wxWindow
 		*/
-		delete_dialog(int *answer, std::string id, wxWindow *parent);
+		delete_dialog(int *answer, int id, wxWindow *parent);
 
 	private:
 		int *answer;

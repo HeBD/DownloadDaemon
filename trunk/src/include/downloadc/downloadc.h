@@ -16,6 +16,7 @@
 #include <string>
 #include <boost/thread.hpp>
 #include <netpptk/netpptk.h>
+#include <downloadc/client_exception.h>
 
 
 /** Download Struct, defines one single Download */
@@ -215,13 +216,14 @@ class downloadc{
 		*/
 		std::string get_premium_var(std::string host);
 
+		/** Checks connection, successful or not shown by exception*/
+		void check_connection();
 
 	private:
 
 		tkSock *mysock;
 		boost::mutex mx;
 
-		void check_connection();
 		void check_error_code(std::string check_me);
 };
 

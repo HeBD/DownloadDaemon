@@ -12,7 +12,6 @@
 #include "downloadc.h"
 
 #include <crypt/md5.h>
-#include <downloadc/client_exception.h>
 #include <sstream>
 
 
@@ -36,13 +35,13 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 	}catch(...){} // no code needed here due to boolean connection
 
 	if(!connection){
-		throw client_exception("connection failed (wrong ip/url or port)");
+		throw client_exception(1, "Connection failed (wrong IP/URL or Port).");
 		delete mysock;
 		return;
 	}
 
 
-	// authentification
+	// authentication
 	std::string snd;
 	mysock->recv(snd);
 
@@ -76,7 +75,7 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 			mysock->recv(snd);
 
 		}else if(encrypt){ // encryption not permitted and user really wants it
-			throw client_exception("connection failed (no encryption)");
+			throw client_exception(2, "connection failed (no encryption)");
 			delete mysock;
 			return;
 
@@ -87,7 +86,7 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 			}catch(...){} // no code needed here due to boolean connection
 
 			if(!connection){
-				throw client_exception("connection failed (wrong ip/url or port)");
+				throw client_exception(1, "Connection failed (wrong IP/URL or Port).");
 				delete mysock;
 				return;
 			}
@@ -100,13 +99,13 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 
 		// check if password was ok
 		if(snd.find("102") == 0 && connection){
-			throw client_exception("connection failed (wrong password)");
+			throw client_exception(3, "Wrong Password, Authentication failed.");
 			delete mysock;
 			return;
 		}
 
 	}else{
-		throw client_exception("connection failed (unknown error)");
+		throw client_exception(4, "Connection failed");
 		delete mysock;
 		return;
 	}
@@ -178,8 +177,11 @@ std::vector<package> downloadc::get_list(){
 	package mypackage = {0, ""};
 	bool empty_package = true;
 
+	if(new_content.size() == 0)
+		return pkg;
+
 	if((*content_it)[0] != "PACKAGE"){
-		throw client_exception("dlist corrupt");
+		throw client_exception(5, "dlist corrupt");
 		return pkg;
 	}
 
@@ -190,6 +192,7 @@ std::vector<package> downloadc::get_list(){
 				pkg.push_back(mypackage);
 				mypackage.id = 0;
 				mypackage.name = "";
+				mypackage.dls.clear();
 			}else
 				empty_package = false;
 
@@ -232,6 +235,8 @@ std::vector<package> downloadc::get_list(){
 		}
 	}
 
+	pkg.push_back(mypackage);
+
 	return pkg;
 }
 
@@ -256,7 +261,7 @@ void downloadc::add_download(int package, std::string url, std::string title){
 
 		id = atoi(answer.c_str());
 		if(id == -1){
-			throw client_exception("failed to create package");
+			throw client_exception(6, "failed to create package");
 			return;
 		}
 		package = id;
@@ -287,7 +292,7 @@ void downloadc::delete_download(int id, file_delete fdelete){
 	mysock->recv(answer);
 
 	if(!answer.empty() && (fdelete == dont_know)){ // file exists and user didn't decide to delete
-		throw client_exception("file exists, call again with del_file or dont_delete");
+		throw client_exception(7, "file exists, call again with del_file or dont_delete");
 		return;
 	}
 
@@ -309,7 +314,7 @@ void downloadc::delete_download(int id, file_delete fdelete){
 	check_error_code(answer);
 
 	if(error){
-		throw client_exception("deleting file failed");
+		throw client_exception(8, "deleting file failed");
 		return;
 	}
 }
@@ -407,7 +412,7 @@ void downloadc::add_package(std::string name){
 
 	int id = atoi(answer.c_str());
 	if(id == -1){
-		throw client_exception("failed to create package");
+		throw client_exception(9, "failed to create package");
 	}
 }
 
@@ -694,83 +699,69 @@ std::string downloadc::get_premium_var(std::string host){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // helper functions
 void downloadc::check_connection(){
 	boost::mutex::scoped_lock lock(mx);
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
-		throw client_exception("connection lost");
+		throw client_exception(10, "connection lost");
 	}
 }
 
 
 void downloadc::check_error_code(std::string check_me){
 	if(check_me.find("101") == 0){ // 101 PROTOCOL <-- instruction invalid
-		throw client_exception("syntax error");
+		throw client_exception(11, "syntax error");
 		return;
 	}
 
 	if(check_me.find("102") == 0){ // 102 AUTHENTICATION <-- Authentication failed (wrong password or wrong encryption)
-		throw client_exception("authentification failed");
+		throw client_exception(12, "Authentication failed");
 		return;
 	}
 
 	if(check_me.find("103") == 0){ // 103 URL <-- Invalid URL
-		throw client_exception("invalid URL");
+		throw client_exception(13, "invalid URL");
 		return;
 	}
 
 	if(check_me.find("104") == 0){ // 104 ID <-- Entered a not-existing ID or moved top-download up or bottom download down
-		throw client_exception("nonexisting ID");
+		throw client_exception(14, "nonexisting ID");
 		return;
 	}
 
 	if(check_me.find("105") == 0){ // 105 STOP <-- If a download could not be stopped, because it's not running
-		throw client_exception("not running");
+		throw client_exception(15, "not running");
 		return;
 	}
 
 	if(check_me.find("106") == 0){ // 106 ACTIVATE <-- If you try to activate a download that is already active
-		throw client_exception("already activated");
+		throw client_exception(16, "already activated");
 		return;
 	}
 
 	if(check_me.find("107") == 0){ // 107 DEACTIVATE <-- If you try to deactivate a downoad that is already unactive
-		throw client_exception("already deactivated");
+		throw client_exception(17, "already deactivated");
 		return;
 	}
 
 	if(check_me.find("108") == 0){ // 108 VARIABLE	 <-- If the variable you tried to set is invalid
-		throw client_exception("variable invalid");
+		throw client_exception(18, "variable invalid");
 		return;
 	}
 
 	if(check_me.find("109") == 0){ // 109 FILE <-- If you do any file operation on a file that does not exist.
-		throw client_exception("file does not exist");
+		throw client_exception(19, "file does not exist");
 		return;
 	}
 
 	if(check_me.find("110") == 0){ // 110 PERMISSION <-- If a file could not be written / no write permission to list-file
-		throw client_exception("no write permission");
+		throw client_exception(20, "no write permission");
 		return;
 	}
 
 	if(check_me.find("111") == 0){ // 111 VALUE	<-- If you change a config-variable to an invalid value
-		throw client_exception("invalid value");
+		throw client_exception(21, "invalid value");
 		return;
 	}
 

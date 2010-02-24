@@ -13,7 +13,6 @@
 #include "ddclient-wx_connect_dialog.h"
 #include "ddclient-wx_main.h"
 #include <crypt/md5.h>
-
 #include <fstream>
 
 #include <wx/msgdlg.h> // for wxmessagebox
@@ -140,146 +139,96 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 		default:	break;
 	}
 
-	myframe *p = ((myframe *) GetParent());
+	bool error_occured = false;
+	myframe *p = (myframe *) GetParent();
+	downloadc *dclient = p->get_connection();
 	p->set_language(lang);
 
-	tkSock *mysock = new tkSock();
-	bool connection = false, error_occured = false;
 
 	try{
-	   connection = mysock->connect(host, port);
-	}catch(...){} // no code needed here due to boolean connection
+		dclient->connect(host, port, pass, true);
 
+	}catch(client_exception &e){
+		if(e.get_id() == 2){ // daemon doesn't allow encryption
 
-	if(connection){ // connection succeeded,  host (IP/URL or port) is ok
+			wxMessageDialog dialog(this, p->tsl("Encrypted authentication not supported by server.") + wxT("\n")
+									+ p->tsl("Do you want to try unsecure plain-text authentication?"),
+								   p->tsl("No Encryption"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
+			int del = dialog.ShowModal();
 
-		// authentification
-		std::string snd;
-		mysock->recv(snd);
+			if(del == wxID_YES){ // connect again
+				try{
+					dclient->connect(host, port, pass, false);
+				}catch(client_exception &e){
 
-		if(snd.find("100") == 0){ // 100 SUCCESS <-- Operation succeeded
-			// nothing to do here if you reach this
-		}else if(snd.find("102") == 0){ // 102 AUTHENTICATION <-- Authentication failed
+					// standard connection error handling
+					if(e.get_id() == 1){ // wrong host/port
+						wxMessageBox(wxT("\n") + p->tsl("Connection failed (wrong IP/URL or Port).") + wxT("\t\t\n")
+								+ p->tsl("Please try again."), p->tsl("Connection failed"));
+						error_occured = true;
 
-			// try md5 authentication
-			mysock->send("ENCRYPT");
-			std::string rnd;
-			mysock->recv(rnd); // random bytes
+					}else if(e.get_id() == 3){ // wrong password
+						wxMessageBox(p->tsl("Wrong Password, Authentication failed."), p->tsl("Authentication Error"));
+						error_occured = true;
 
-			if(rnd.find("102") != 0) { // encryption permitted
-				rnd += pass;
+					}else if(e.get_id() == 4){ // wrong password
+						wxMessageBox(p->tsl("Unknown Error while Authentication."), p->tsl("Authentication Error"));
+						error_occured = true;
 
-				MD5_CTX md5;
-				MD5_Init(&md5);
-
-				unsigned char *enc_data = new unsigned char[rnd.length()];
-				for(size_t i = 0; i < rnd.length(); ++i){ // copy random bytes from string to cstring
-					enc_data[i] = rnd[i];
-				}
-
-				MD5_Update(&md5, enc_data, rnd.length());
-				unsigned char result[16];
-				MD5_Final(result, &md5); // put md5hash in result
-				std::string enc_passwd((char*)result, 16);
-				delete [] enc_data;
-
-				mysock->send(enc_passwd);
-				mysock->recv(snd);
-
-			}else{ // encryption not permitted
-				wxMessageDialog dialog(this, p->tsl("Encrypted authentication not supported by server.")
-										+ wxT("/n") + p->tsl("Do you want to try unsecure plain-text authentication?"),
-										p->tsl("No Encryption"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
-				int del = dialog.ShowModal();
-
-				if(del == wxID_YES){ // user clicked yes
-					// reconnect
-					try{
-						connection = mysock->connect(host, port);
-					}catch(...){} // no code needed here due to boolean connection
-
-					if(connection){
-						mysock->recv(snd);
-						mysock->send(pass);
-						mysock->recv(snd);
-					}else{
-						wxMessageBox(p->tsl("Unknown Error while Authentication."), p->tsl("Authentification Error"));
+					}else{ // we have some other connection error
+						wxMessageBox(p->tsl("Unknown Error while Authentication."), p->tsl("Authentication Error"));
 						error_occured = true;
 					}
-				}else{
-					snd = "99"; // user doesn't want to connect without encryption => own error code
-					error_occured = true;
+
 				}
 			}
 
-			if(snd.find("100") == 0 && connection){
-				// nothing to do here if you reach this
+		// standard connection error handling
+		}else if(e.get_id() == 1){ // wrong host/port
+			wxMessageBox(wxT("\n") + p->tsl("Connection failed (wrong IP/URL or Port).") + wxT("\t\t\n")
+					+ p->tsl("Please try again."), p->tsl("Connection failed"));
+			error_occured = true;
 
-			}else if(snd.find("102") == 0 && connection){
-				wxMessageBox(p->tsl("Wrong Password, Authentification failed."), p->tsl("Authentification Error"));
-				error_occured = true;
+		}else if(e.get_id() == 3){ // wrong password
+			wxMessageBox(p->tsl("Wrong Password, Authentication failed."), p->tsl("Authentication Error"));
+			error_occured = true;
 
-			}else if(snd.find("99") == 0 && connection){
-				wxMessageBox(p->tsl("No connection established."), p->tsl("Authentification Error"));
-				error_occured = true;
+		}else if(e.get_id() == 4){ // wrong password
+			wxMessageBox(p->tsl("Unknown Error while Authentication."), p->tsl("Authentication Error"));
+			error_occured = true;
 
-			}else{
-				wxMessageBox(p->tsl("Unknown Error while Authentication."), p->tsl("Authentification Error"));
-				error_occured = true;
-			}
-		}else{
-			wxMessageBox(p->tsl("Unknown Error while Authentication."), p->tsl("Authentification Error"));
+		}else{ // we have some other connection error
+			wxMessageBox(p->tsl("Unknown Error while Authentication."), p->tsl("Authentication Error"));
 			error_occured = true;
 		}
+	}
 
+	// save data if no error occured => connection established
+	if(!error_occured){
 
-		if(!error_occured){
+		// updated statusbar of parent
+		p->update_status(host_input->GetValue());
 
-			// give socket and password to parent (myframe)
-			myframe *myparent = (myframe *) GetParent();
-			tkSock *frame_socket = myparent->get_connection_attributes();
+		// write login_data to a file
+		if(save_data_check->GetValue()){ // user clicked checkbox to save data
 
-			boost::mutex *mx = myparent->get_mutex();
-			mx->lock();
+			string file_name = string(config_dir.mb_str()) + "save.dat";
+			ofstream ofs(file_name.c_str(), fstream::out | fstream::binary | fstream::trunc); // open file
 
-			if(frame_socket != NULL){ //if there is already a connection, delete the old one
-				delete frame_socket;
-				frame_socket = NULL;
+			login_data last_data;
+			snprintf(last_data.host, 256, "%s", host.c_str());
+			last_data.port = port;
+			snprintf(last_data.pass, 256, "%s", pass.c_str());
+			snprintf(last_data.lang, 128, "%s", lang.c_str());
+
+			if(ofs.good()){ // file successfully opened
+
+				ofs.write((char *) &last_data, sizeof(login_data));
 			}
-
-			myparent->set_connection_attributes(mysock, pass);
-			mx->unlock();
-			myparent->update_status(host_input->GetValue());
-
-			// write login_data to a file
-			if(save_data_check->GetValue()){ // user clicked checkbox to save data
-
-				string file_name = string(config_dir.mb_str()) + "save.dat";
-				ofstream ofs(file_name.c_str(), fstream::out | fstream::binary | fstream::trunc); // open file
-
-				login_data last_data;
-				snprintf(last_data.host, 256, "%s", host.c_str());
-				last_data.port = port;
-				snprintf(last_data.pass, 256, "%s", pass.c_str());
-				snprintf(last_data.lang, 128, "%s", lang.c_str());
-
-				if(ofs.good()){ // file successfully opened
-
-					ofs.write((char *) &last_data, sizeof(login_data));
-				}
-				ofs.close();
-			}
-
-			Destroy();
-
-		}else{
-			delete mysock;
+			ofs.close();
 		}
 
-	}else{ // connection failed due to host (IP/URL or port)
-		wxMessageBox(wxT("\n") + p->tsl("Connection failed (wrong IP/URL or Port).") + wxT("\t\t\n")
-					+ p->tsl("Please try again."), p->tsl("Connection failed"));
-		delete mysock;
+		Destroy();
 	}
 	// the dialog doesn't close with an error (so you don't have to type everything again), you have to get an connection or press cancel to do so
 }

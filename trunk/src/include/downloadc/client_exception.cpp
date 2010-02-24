@@ -11,7 +11,7 @@
 
 #include "client_exception.h"
 
-client_exception::client_exception(std::string message = "") : message(message){
+client_exception::client_exception(int id, std::string message = "") : id(id), message(message){
 }
 
 
@@ -21,4 +21,9 @@ client_exception::~client_exception() throw(){
 
 const char* client_exception::what() const throw(){
 	return message.c_str();
+}
+
+
+int client_exception::get_id(){
+	return id;
 }

@@ -29,7 +29,7 @@ BEGIN_EVENT_TABLE(delete_dialog, wxDialog)
 END_EVENT_TABLE()
 
 
-delete_dialog::delete_dialog(int *answer, std::string id, wxWindow *parent):
+delete_dialog::delete_dialog(int *answer, int id, wxWindow *parent):
 	wxDialog(parent, -1, wxString(wxEmptyString)){
 	myframe *p = (myframe *)parent;
 	SetTitle(p->tsl("Delete File"));
@@ -41,7 +41,7 @@ delete_dialog::delete_dialog(int *answer, std::string id, wxWindow *parent):
 	button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
 
-	question_text = new wxStaticText(this, -1, p->tsl("Do you want to delete the downloaded File for Download %p1?", id.c_str()));
+	question_text = new wxStaticText(this, -1, p->tsl("Do you want to delete the downloaded File for Download %p1?", id));
 
 	yes_all_button = new wxButton(this, id_yes_all, p->tsl("Always yes"));
 	yes_button = new wxButton(this, wxID_YES);

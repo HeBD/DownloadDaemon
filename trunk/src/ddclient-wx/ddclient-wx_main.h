@@ -20,7 +20,7 @@
 #include <wx/notebook.h>
 #include <wx/toolbar.h>
 #include <wx/sizer.h>
-#include <wx/listctrl.h>
+#include <wx/listctrl.h> /// /////////////////////////////////////////////	TODO: delete me when listctrl is gone :3
 
 #include <netpptk/netpptk.h>
 #include <downloadc/downloadc.h>
@@ -50,6 +50,11 @@ class myframe : public wxFrame{
 		void update_status(wxString server);
 
 		// getter and setter methods
+		/** Getter for Download-Client Object (used for Communication with Daemon)
+		*	@returns Download-Client Object
+		*/
+		downloadc *get_connection();
+
 		/** Setter for Attributes of Connection with DownloadDaemon Server
 		*	@param mysock Socket
 		*	@param password	Password
@@ -77,10 +82,17 @@ class myframe : public wxFrame{
 		*/
 		wxString tsl(string text, ...);
 
+		/** Checks connection
+		*	@param tell_user show to user via message box if connection is lost
+		*	@param individual_message part of a message to send to user
+		*	@returns connection available or not
+		*/
+		bool check_connection(bool tell_user = false, string individual_message = "");
+
 	private:
 
-		vector<vector<string> > content;
-		vector<vector<string> > new_content;
+		std::vector<package> content;
+		std::vector<package> new_content;
 		vector<int> selected_lines;
 		vector<string> reselect_lines;
 		wxString working_dir;
@@ -89,8 +101,8 @@ class myframe : public wxFrame{
 		language lang;
 
 		// connection attributes
-		tkSock *mysock;
-		string password;
+		downloadc *dclient;
+		tkSock *mysock; /// TODO: OBSOLETE, DELETE ME!!!!!!!!!!!!!
 
 		// elements for bars
 		wxMenuBar *menu;
@@ -131,15 +143,16 @@ class myframe : public wxFrame{
 		void update_list();
 		void get_content();
 		void cut_time(string &time_left);
-		string build_status(string &status_text, string &time_left, vector<string> &splitted_line);
+		string build_status(string &status_text, string &time_left, download &dl);
 		void find_selected_lines();
 		void select_lines();
 		void select_line_by_id(string id);
 		void deselect_lines();
 
 		// methods for comparing and actualizing content if necessary
-		void compare_vectorvector();
-		void compare_vector(size_t line_nr, vector<string> &splitted_line_new, vector<string> &splitted_line_old);
+		void compare_all_packages();
+		bool compare_package(int &line_nr, package &pkg_new, package &pkg_old);
+		void compare_download(int &line_nr, download &new_dl, download &old_dl);
 
 		// event handle methods
 		void on_quit(wxCommandEvent &event);
