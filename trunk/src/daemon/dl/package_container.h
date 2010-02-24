@@ -208,6 +208,17 @@ class package_container {
 	*/
 	int set_next_proxy(dlindex id);
 
+	/** Checks if all downloads in a package are finished
+	*	@param id ID of the package
+	*	@returns true if finished, false if not
+	*/
+	bool package_finished(int id);
+
+	/** Extracts the archives from a package
+	*	@param id ID of the package
+	*/
+	void extract_package(int id);
+
 private:
 	typedef std::vector<download_container*>::iterator iterator;
 
