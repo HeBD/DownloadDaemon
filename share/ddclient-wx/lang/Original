@@ -23,6 +23,8 @@ Please connect before adding Downloads.->Bitte verbinden Sie bevor sie Downloads
 No Connection to Server->Keine Verbindung zum Server
 At least one inserted URL was invalid.->Mindestens eine hinzugefügte URL war ungültig.
 Invalid URL->Ungültige URL
+Package->Packet
+Failed to create Package.->Packeterstellung fehlgeschlagen.
 
 #configure dialog
 Configure DownloadDaemon->DownloadDaemon konfigurieren
@@ -90,8 +92,8 @@ Encrypted authentication not supported by server.->Verschlüsselte Authentifikat
 Do you want to try unsecure plain-text authentication?->Wollen Sie unterschlüsselte Authentifikation versuchen?
 No Encryption->Keine Verschlüsselung
 Unknown Error while Authentication.->Unbekannter Fehler während der Authentifikation
-Authentification Error->Authentifizierungsfehler
-Wrong Password, Authentification failed.->Falsches Passwort, Authentifizierung fehlgeschlagen.
+Authentication Error->Authentifizierungsfehler
+Wrong Password, Authentication failed.->Falsches Passwort, Authentifizierung fehlgeschlagen.
 No connection established.->Keine Verbindung hergestellt.
 Connection failed (wrong IP/URL or Port).->Verbindung fehlgeschlagen (falsche IP/URL oder Port)
 Please try again.->Bitte versuchen Sie es erneut.

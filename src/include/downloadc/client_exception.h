@@ -21,9 +21,10 @@ class client_exception : public std::exception{
 	public:
 
 		/** Constructor
+		*	@param id ID
 		*	@param message Message to be saved in the exception
 		*/
-		client_exception(std::string message);
+		client_exception(int id, std::string message);
 
 		/** Destructor */
 		virtual ~client_exception() throw();
@@ -33,7 +34,13 @@ class client_exception : public std::exception{
 		*/
 		virtual const char* what() const throw();
 
+		/** Returns exception ID
+		*	@returns ID
+		*/
+		int get_id();
+
 	private:
+		int id;
 		std::string message;
 };
 

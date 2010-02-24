@@ -33,10 +33,14 @@ class add_dialog : public wxDialog{
 		wxStaticText *add_many_text;
 		wxStaticText *title_text;
 		wxStaticText *url_text;
+		wxStaticText *package_text;
+		wxStaticText *package_text_many;
 		wxStaticText *add_many_inner_text;
 		wxTextCtrl *title_input;
 		wxTextCtrl *url_input;
+		wxTextCtrl *package_input;
 		wxTextCtrl *many_input;
+		wxTextCtrl *package_input_many;
 
 		wxButton *add_button;
 		wxButton *cancel_button;
@@ -45,6 +49,7 @@ class add_dialog : public wxDialog{
 		wxStaticBoxSizer* outer_add_one_sizer;
 		wxStaticBoxSizer* outer_add_many_sizer;
 		wxFlexGridSizer *inner_add_one_sizer;
+		wxFlexGridSizer *inner_add_many_sizer;
 		wxBoxSizer *button_sizer;
 
 		// event handle methods
