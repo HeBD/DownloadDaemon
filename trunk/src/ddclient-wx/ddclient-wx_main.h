@@ -55,17 +55,6 @@ class myframe : public wxFrame{
 		*/
 		downloadc *get_connection();
 
-		/** Setter for Attributes of Connection with DownloadDaemon Server
-		*	@param mysock Socket
-		*	@param password	Password
-		*/
-		void set_connection_attributes(tkSock *mysock, string password);
-
-		/** Getter for Attributes of Connection with DownloadDaemon Server
-		*	@returns Socket
-		*/
-		tkSock *get_connection_attributes();
-
 		/** Getter for Mutex, that makes sure only one Thread uses Socket and Content List at a time
 		*	@returns Mutex
 		*/
@@ -102,7 +91,6 @@ class myframe : public wxFrame{
 
 		// connection attributes
 		downloadc *dclient;
-		tkSock *mysock; /// TODO: OBSOLETE, DELETE ME!!!!!!!!!!!!!
 
 		// elements for bars
 		wxMenuBar *menu;

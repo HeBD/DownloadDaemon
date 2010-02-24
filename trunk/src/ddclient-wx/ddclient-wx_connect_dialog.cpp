@@ -141,10 +141,11 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 
 	bool error_occured = false;
 	myframe *p = (myframe *) GetParent();
+	boost::mutex *mx = p->get_mutex();
 	downloadc *dclient = p->get_connection();
 	p->set_language(lang);
 
-
+	mx->lock();
 	try{
 		dclient->connect(host, port, pass, true);
 
@@ -202,6 +203,7 @@ void connect_dialog::on_connect(wxCommandEvent &event){
 			error_occured = true;
 		}
 	}
+	mx->unlock();
 
 	// save data if no error occured => connection established
 	if(!error_occured){

@@ -488,7 +488,6 @@ void downloadc::set_var(std::string var, std::string value, std::string old_valu
 	if(var == "mgmt_password")
 		value = old_value + " ; " + value;
 
-
 	mysock->send("DDP VAR SET " + var + " = " + value);
 	mysock->recv(answer);
 
@@ -518,6 +517,12 @@ void downloadc::delete_file(int id){
 	std::string answer;
 	std::stringstream id_str;
 	id_str << id;
+
+	mysock->send("DDP FILE GETPATH " + id_str.str());
+	mysock->recv(answer);
+
+	if(answer.empty()) // no error if file doesn't exist
+		return;
 
 	mysock->send("DDP DL DEACTIVATE " + id_str.str());
 	mysock->recv(answer);

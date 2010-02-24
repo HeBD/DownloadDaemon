@@ -5,6 +5,8 @@
 	- DownloadDaemon now deletes a downloaded file if its size is 0 bytes
 	- some improvements to alternating proxy support
 	- DownloadDaemon can now also handle "false", "no", "true", "yes", ... in config files, instead of just 0 and 1 
+   [susanne]
+	- made everything of ddclient-wx except config-dialog (which is disabled right now) work with the new packages
 
 2010-02-22
    [adrian]
