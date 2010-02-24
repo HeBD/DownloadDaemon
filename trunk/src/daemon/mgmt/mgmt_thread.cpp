@@ -42,8 +42,8 @@ using namespace std;
 /** the main thread for the management-interface over tcp
  */
 void mgmt_thread_main() {
-	tkSock main_sock(string_to_int(global_config.get_cfg_value("mgmt_max_connections")), 1024);
-	int mgmt_port = string_to_int(global_config.get_cfg_value("mgmt_port"));
+	tkSock main_sock(global_config.get_int_value("mgmt_max_connections"), 1024);
+	int mgmt_port = global_config.get_int_value("mgmt_port");
 	if(mgmt_port == 0) {
 		log_string("Unable to get management-socket-port from configuration file. defaulting to 56789", LOG_ERR);
 		mgmt_port = 56789;
@@ -303,8 +303,7 @@ void target_dl_add(std::string &data, tkSock *sock) {
 	}
 	if(validate_url(url)) {
 		if(global_download_list.url_is_in_list(url)) {
-			std::string refuse(global_config.get_cfg_value("refuse_existing_links"));
-			if(refuse == "1" || refuse == "true") {
+			if(global_config.get_bool_value("refuse_existing_links")) {
 				*sock << "108 VARIABLE";
 				return;
 			}

@@ -60,7 +60,13 @@ void download_thread_wrapper(dlindex download) {
 	global_download_list.init_handle(download);
 	download_thread(download);
 
-	global_download_list.set_need_stop(download, false);
+	struct stat st;
+	stat(global_download_list.get_output_file(download).c_str(), &st);
+	if(st.st_size == 0) {
+		remove(global_download_list.get_output_file(download).c_str());
+		global_download_list.set_output_file(download, "");
+	}
+
 
 
 	download_status status = global_download_list.get_status(download);
@@ -75,7 +81,8 @@ void download_thread_wrapper(dlindex download) {
 		global_download_list.set_error(download, PLUGIN_SUCCESS);
 		global_download_list.set_wait(download, 0);
 	} else if((error == PLUGIN_ERROR || error == PLUGIN_CONNECTION_ERROR || error == PLUGIN_CONNECTION_LOST || error == PLUGIN_INVALID_HOST)
-			  && !atoi(global_config.get_cfg_value("assume_proxys_online").c_str()) && global_download_list.set_next_proxy(download) == 1) {
+			  && !global_config.get_bool_value("assume_proxys_online") && !global_config.get_cfg_value("proxy_list").empty()
+			  && !global_download_list.get_proxy(download).empty() && global_download_list.set_next_proxy(download) == 1) {
 		global_download_list.set_status(download, DOWNLOAD_PENDING);
 		global_download_list.set_error(download, PLUGIN_SUCCESS);
 		global_download_list.set_wait(download, 0);
@@ -88,6 +95,7 @@ void download_thread_wrapper(dlindex download) {
 		t.detach();
 	}
 
+	global_download_list.set_need_stop(download, false);
 	global_download_list.set_running(download, false);
 }
 
@@ -129,7 +137,7 @@ void download_thread(dlindex download) {
 		break;
 		case PLUGIN_AUTH_FAIL:
 			global_download_list.set_status(download, DOWNLOAD_PENDING);
-			wait = atol(global_config.get_cfg_value("auth_fail_wait").c_str());
+			wait = global_config.get_int_value("auth_fail_wait");
 			if(wait == 0) {
 				global_download_list.set_status(download, DOWNLOAD_INACTIVE);
 			} else {
@@ -150,7 +158,7 @@ void download_thread(dlindex download) {
 		case PLUGIN_CONNECTION_ERROR:
 		case PLUGIN_CONNECTION_LOST:
 			log_string(std::string("Plugin failed to connect for ID:") + dlid_log, LOG_WARNING);
-			wait = atol(global_config.get_cfg_value("connection_lost_wait").c_str());
+			wait = global_config.get_int_value("connection_lost_wait");
 			if(wait == 0) {
 				global_download_list.set_status(download, DOWNLOAD_INACTIVE);
 			} else {
@@ -164,7 +172,7 @@ void download_thread(dlindex download) {
 			return;
 		case PLUGIN_ERROR:
 			log_string("An error occured on download ID: " + dlid_log, LOG_WARNING);
-			wait = atol(global_config.get_cfg_value("plugin_fail_wait").c_str());
+			wait = global_config.get_int_value("plugin_fail_wait");
 			if(wait == 0) {
 				global_download_list.set_status(download, DOWNLOAD_INACTIVE);
 			} else {
@@ -216,7 +224,7 @@ void download_thread(dlindex download) {
 
 		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file;
-		if(global_download_list.get_hostinfo(download).allows_resumption && global_config.get_cfg_value("enable_resume") != "0" &&
+		if(global_download_list.get_hostinfo(download).allows_resumption && global_config.get_bool_value("enable_resume") &&
 		   stat(output_filename.c_str(), &st) == 0 && (unsigned)st.st_size == global_download_list.get_downloaded_bytes(download) &&
 		   global_download_list.get_can_resume(download)) {
 
@@ -225,8 +233,7 @@ void download_thread(dlindex download) {
 			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
 		} else {
 			// Check if the file should be overwritten if it exists
-			string overwrite(global_config.get_cfg_value("overwrite_files"));
-			if(overwrite == "0" || overwrite == "false" || overwrite == "no") {
+			if(!global_config.get_bool_value("overwrite_files")) {
 				if(stat(final_filename.c_str(), &st) == 0) {
 					global_download_list.set_status(download, DOWNLOAD_INACTIVE);
 					global_download_list.set_error(download, PLUGIN_WRITE_FILE_ERROR);
@@ -240,7 +247,7 @@ void download_thread(dlindex download) {
 		if(!output_file.good()) {
 			log_string(std::string("Could not write to file: ") + output_filename, LOG_ERR);
 			global_download_list.set_error(download, PLUGIN_WRITE_FILE_ERROR);
-			wait = atol(global_config.get_cfg_value("write_error_wait").c_str());
+			wait = global_config.get_int_value("write_error_wait");
 			if(wait == 0) {
 				global_download_list.set_status(download, DOWNLOAD_INACTIVE);
 			} else {
@@ -255,7 +262,7 @@ void download_thread(dlindex download) {
 		if(plug_outp.download_url.empty()) {
 			log_string(std::string("Empty URL for download ID: ") + dlid_log, LOG_ERR);
 			global_download_list.set_error(download, PLUGIN_ERROR);
-			wait = atol(global_config.get_cfg_value("plugin_fail_wait").c_str());
+			wait = global_config.get_int_value("plugin_fail_wait");
 			if(wait == 0) {
 				global_download_list.set_status(download, DOWNLOAD_INACTIVE);
 			} else {
@@ -282,7 +289,7 @@ void download_thread(dlindex download) {
 		// set timeouts
 		curl_easy_setopt(handle_copy, CURLOPT_LOW_SPEED_LIMIT, 100);
 		curl_easy_setopt(handle_copy, CURLOPT_LOW_SPEED_TIME, 20);
-		long dl_speed = atol(global_config.get_cfg_value("max_dl_speed").c_str()) * 1024;
+		long dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
 		if(dl_speed > 0) {
 			curl_easy_setopt(handle_copy, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
 		}
@@ -292,17 +299,16 @@ void download_thread(dlindex download) {
 		// because the callback only safes every half second, there is still an unsafed rest-data:
 		output_file.write(cache.c_str(), cache.size());
 		global_download_list.set_downloaded_bytes(download, global_download_list.get_downloaded_bytes(download) + cache.size());
-
-
+		output_file.close();
 
 		long http_code;
 		curl_easy_getinfo(handle_copy, CURLINFO_RESPONSE_CODE, &http_code);
-		output_file.close();
+
 
 		switch(http_code) {
 			case 401:
 				log_string(std::string("Invalid premium account credentials, ID: ") + dlid_log, LOG_WARNING);
-				wait = atol(global_config.get_cfg_value("auth_fail_wait").c_str());
+				wait = global_config.get_int_value("auth_fail_wait");
 				if(wait == 0) {
 					global_download_list.set_status(download, DOWNLOAD_INACTIVE);
 				} else {
@@ -343,7 +349,7 @@ void download_thread(dlindex download) {
 			case CURLE_COULDNT_RESOLVE_HOST:
 				log_string(std::string("Connection lost for download ID: ") + dlid_log, LOG_WARNING);
 				global_download_list.set_error(download, PLUGIN_CONNECTION_LOST);
-				wait = atol(global_config.get_cfg_value("connection_lost_wait").c_str());
+				wait = global_config.get_int_value("connection_lost_wait");
 				if(wait == 0) {
 					global_download_list.set_status(download, DOWNLOAD_INACTIVE);
 				} else {

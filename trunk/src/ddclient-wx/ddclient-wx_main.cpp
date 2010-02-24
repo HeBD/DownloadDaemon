@@ -854,7 +854,6 @@ bool myframe::compare_package(int &line_nr, package &pkg_new, package &pkg_old){
 		line_nr++;
 	}
 
-
 	if(it_new < end_new){ // there are more new downloads in the package then old ones
 		change = true;
 		while(it_new < end_new){
@@ -885,6 +884,7 @@ bool myframe::compare_package(int &line_nr, package &pkg_new, package &pkg_old){
 			// line_nr stays the same!
 		}
 	}
+
 	return change;
 }
 

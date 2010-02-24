@@ -2,6 +2,9 @@
    [adrian]
 	- Added basic functionality to extract rar, tar.gz and tar.bz2 packages to DownloadDaemon. Set a password list
 	  in downloaddaemon.conf. all passwords in that list will be tried until extraction succeeds.
+	- DownloadDaemon now deletes a downloaded file if its size is 0 bytes
+	- some improvements to alternating proxy support
+	- DownloadDaemon can now also handle "false", "no", "true", "yes", ... in config files, instead of just 0 and 1 
 
 2010-02-22
    [adrian]

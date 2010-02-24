@@ -185,7 +185,7 @@ int download_container::get_next_downloadable(bool do_lock) {
 	}
 
 	download_container::iterator downloadable = download_list.end();
-	if(running_downloads() >= atoi(global_config.get_cfg_value("simultaneous_downloads").c_str()) || global_config.get_cfg_value("downloading_active") == "0") {
+	if(running_downloads() >= global_config.get_int_value("simultaneous_downloads") || !global_config.get_bool_value("downloading_active")) {
 		return LIST_ID;
 	}
 
