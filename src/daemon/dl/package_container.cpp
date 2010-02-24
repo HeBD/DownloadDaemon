@@ -419,7 +419,7 @@ int package_container::prepare_download(dlindex dl, plugin_output &poutp) {
 
 	plugin_status retval;
 	try {
-		retval = plugin_exec_func(**it, dl.second, pinp, poutp, atoi(global_config.get_cfg_value("captcha_retrys").c_str()),
+		retval = plugin_exec_func(**it, dl.second, pinp, poutp, global_config.get_int_value("captcha_retrys"),
                                   global_config.get_cfg_value("gocr_binary"), program_root);
 	} catch(captcha_exception &e) {
 		log_string("Failed to decrypt captcha. Giving up (" + pluginfile + ")", LOG_ERR);
@@ -573,7 +573,7 @@ void  package_container::move_pkg(int dl, package_container::direction d) {
 bool package_container::reconnect_needed() {
 	std::string reconnect_policy;
 
-	if(global_config.get_cfg_value("enable_reconnect") == "0") {
+	if(!global_config.get_bool_value("enable_reconnect")) {
 		return false;
 	}
 
@@ -781,17 +781,18 @@ bool package_container::package_finished(int id) {
 }
 
 void package_container::extract_package(int id) {
-	if(global_config.get_cfg_value("enable_pkg_extractor") != "1") return;
+	if(!global_config.get_bool_value("enable_pkg_extractor")) return;
 	unique_lock<mutex> lock(mx);
 	package_container::iterator pkg_it = package_by_id(id);
 	FILE* extractor;
 	string to_exec;
+	unique_lock<mutex> pkg_lock((*pkg_it)->download_mutex);
 	download_container::iterator it = (*pkg_it)->download_list.begin();
 	if((*pkg_it)->download_list.size() == 0) return;
 	string output_file = (*it)->output_file;
 	string extension(output_file.substr(output_file.find_last_of(".")));
 	string output_dir(output_file.substr(0, output_file.find_last_of(".")));
-
+	pkg_lock.unlock();
 	lock.unlock();
 	string password_list = global_config.get_cfg_value("pkg_extractor_passwords");
 	string password;
@@ -818,6 +819,7 @@ void package_container::extract_package(int id) {
 		to_exec += " 2>&1";
 
 		mkdir_recursive(output_dir);
+		log_string("extracting... " + to_exec, LOG_DEBUG);
 		extractor = popen(to_exec.c_str(), "r");
 		if(extractor == NULL) {
 			log_string("Unable to open pipe to extractor of file: " + output_file, LOG_WARNING);
@@ -829,7 +831,7 @@ void package_container::extract_package(int id) {
 			c = fgetc(extractor);
 			if(c != EOF) result.push_back(c);
 		} while(c != EOF);
-		pclose(extractor);
+		int retval = pclose(extractor);
 		if(result.find("password incorrect") != string::npos) {
 			// next password
 			if(password_list.empty()) return;
@@ -844,7 +846,18 @@ void package_container::extract_package(int id) {
 			continue;
 		}
 
-
+		if(retval == 0 && global_config.get_bool_value("delete_extracted_archives")) {
+			// success, let's delete the files.
+			log_string("Successfully extracted package " + int_to_string(id) + ". Removing archives...", LOG_DEBUG);
+			pkg_lock.lock();
+			for(it = (*pkg_it)->download_list.begin(); it != (*pkg_it)->download_list.end(); ++it) {
+				remove((*it)->output_file.c_str());
+				(*it)->output_file = "";
+			}
+			pkg_lock.unlock();
+		} else {
+			log_string("Successfully extracted package " + int_to_string(id), LOG_DEBUG);
+		}
 		break;
 	}
 }

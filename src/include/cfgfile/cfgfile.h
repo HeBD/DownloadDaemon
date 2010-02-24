@@ -61,11 +61,23 @@ public:
 	void open_cfg_file(const std::string &fp, bool open_writeable);
 
 
-	/** Returns a configuration options found in a file.
+	/** Returns a configuration options found in a file as a std::string
  	*	@param cfg_identifier specifies the configruation option to search for
  	*	@returns Configuration value, or, if none found or no file is opened, an empty string
  	*/
 	std::string get_cfg_value(const std::string &cfg_identifier);
+
+	/** Returns the configuration option as a bool (default: false)
+ 	*	@param cfg_identifier specifies the configruation option to search for
+ 	*	@returns Configuration value, or, if none found or no file is opened, false
+ 	*/
+ 	bool get_bool_value(const std::string &cfg_identifier);
+
+	/** Returns the configuration option as an int (default: 0)
+ 	*	@param cfg_identifier specifies the configruation option to search for
+ 	*	@returns Configuration value, or, if none found or no file is opened, 0
+ 	*/
+ 	long get_int_value(const std::string &cfg_identifier);
 
 	/** Sets a configuration option. If the identifier already exists, the value is changed. Else, the option is appended.
  	*	@param cfg_identifier Identifier to search for/add

@@ -81,6 +81,24 @@ std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 	return "";
 }
 
+bool cfgfile::get_bool_value(const std::string &cfg_identifier) {
+	std::string result = get_cfg_value(cfg_identifier);
+	for(size_t i = 0; i < result.size(); ++i) {
+		result[i] = tolower(result[i]);
+	}
+	if(result == "1" || result == "true" || result == "yes")
+		return true;
+	return false;
+}
+
+long cfgfile::get_int_value(const std::string &cfg_identifier) {
+	std::stringstream ss;
+	ss << get_cfg_value(cfg_identifier);
+	long res;
+	ss >> res;
+	return res;
+}
+
 bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string &value) {
 	mx.lock();
 	std::string cfg_value = value;
