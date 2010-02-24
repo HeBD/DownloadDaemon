@@ -93,7 +93,7 @@ class myframe : public wxFrame{
 
 		std::vector<package> content;
 		std::vector<package> new_content;
-		vector<int> selected_lines;
+		vector<string> selected_lines;
 		vector<string> reselect_lines;
 		wxString working_dir;
 		wxString config_dir;

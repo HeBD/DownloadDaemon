@@ -40,7 +40,6 @@ delete_dialog::delete_dialog(int *answer, int id, wxWindow *parent):
 	overall_sizer = new wxBoxSizer(wxVERTICAL);
 	button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-
 	question_text = new wxStaticText(this, -1, p->tsl("Do you want to delete the downloaded File for Download %p1?", id));
 
 	yes_all_button = new wxButton(this, id_yes_all, p->tsl("Always yes"));
