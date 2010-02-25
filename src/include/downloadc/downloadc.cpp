@@ -550,7 +550,7 @@ std::string downloadc::get_file_path(int id){
 }
 
 
-double downloadc::get_file_size(int id){
+uint64_t downloadc::get_file_size(int id){
 	check_connection();
 
 	boost::mutex::scoped_lock lock(mx);

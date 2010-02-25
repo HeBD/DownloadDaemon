@@ -20,9 +20,9 @@
 #include <wx/notebook.h>
 #include <wx/toolbar.h>
 #include <wx/sizer.h>
-#include <wx/listctrl.h> /// /////////////////////////////////////////////	TODO: delete me when listctrl is gone :3
+#include <wx/listctrl.h>
 
-#include <netpptk/netpptk.h>
+//#include <netpptk/netpptk.h>
 #include <downloadc/downloadc.h>
 #ifdef __WXMSW__
     #include <wx/msw/winundef.h>
