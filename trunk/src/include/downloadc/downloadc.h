@@ -17,6 +17,7 @@
 #include <boost/thread.hpp>
 #include <netpptk/netpptk.h>
 #include <downloadc/client_exception.h>
+#include <stdint.h>
 
 
 /** Download Struct, defines one single Download */
@@ -170,7 +171,7 @@ class downloadc{
 		*	@param id ID of the file
 		*	@returns filesize in byte
 		*/
-		double get_file_size(int id);
+		uint64_t get_file_size(int id);
 
 
 		// target ROUTER

@@ -22,7 +22,7 @@
 #include "ddclient-wx_connect_dialog.h"
 #include "ddclient-wx_about_dialog.h"
 #include "ddclient-wx_add_dialog.h"
-//#include "ddclient-wx_configure_dialog.h"
+#include "ddclient-wx_configure_dialog.h"
 #include "ddclient-wx_delete_dialog.h"
 
 #include <wx/msgdlg.h> // for wxmessagebox
@@ -1383,8 +1383,8 @@ void myframe::on_configure(wxCommandEvent &event){
 	if(!check_connection(true, "Please connect before configurating DownloadDaemon."))
 		return;
 
-	//configure_dialog dialog(this);
-	//dialog.ShowModal();
+	configure_dialog dialog(this);
+	dialog.ShowModal();
 	get_content();
 }
 

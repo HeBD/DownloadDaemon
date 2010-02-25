@@ -1,3 +1,7 @@
+2010-02-25
+   [susanne]
+	- ddclient-wx is now fully working with the new download list structure
+
 2010-02-24
    [adrian]
 	- Added basic functionality to extract rar, tar.gz and tar.bz2 packages to DownloadDaemon. Set a password list
