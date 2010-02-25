@@ -14,7 +14,12 @@
 
 #include <config.h>
 #include <string>
-#include <syslog.h>
+
+#ifdef HAVE_SYSLOG_H
+	#include <syslog.h>
+#else
+	enum { LOG_ERR, LOG_WARNING, LOG_DEBUG };
+#endif
 
 /** Convert a string to an int
 * @param str string to convert

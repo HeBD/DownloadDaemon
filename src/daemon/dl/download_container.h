@@ -26,6 +26,10 @@ namespace std {
 #include <thread>
 #endif
 
+#ifndef HAVE_STDINT_H
+	#define uint64_t double
+#endif
+
 enum property { DL_ID = 0, DL_DOWNLOADED_BYTES, DL_SIZE, DL_WAIT_SECONDS, DL_PLUGIN_STATUS, DL_STATUS,
 				DL_IS_RUNNING, DL_NEED_STOP, DL_SPEED, DL_CAN_RESUME };
 enum string_property { DL_URL = 20, DL_COMMENT, DL_ADD_DATE, DL_OUTPUT_FILE };

@@ -1,3 +1,4 @@
+#include <config.h>
 #include "package_container.h"
 #include "download.h"
 #include "download_container.h"
@@ -11,6 +12,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dlfcn.h>
+
+#ifndef HAVE_STDINT_H
+	#define uint64_t double
+#endif
 
 using namespace std;
 
@@ -144,9 +149,6 @@ dlindex package_container::get_next_downloadable() {
 	}
 	return make_pair<int, int>(LIST_ID, LIST_ID);
 }
-
-
-
 
 void package_container::set_url(dlindex dl, std::string url) {
 	lock_guard<mutex> lock(mx);

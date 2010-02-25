@@ -2,6 +2,7 @@
    [adrian]
 	- made ddclient-php package-compatible
 	- fixed problem in ddclient-php that makes logging in impossible if the server time is a few years in the past
+	- DownloadDaemon now checks if syslog.h and stdint.h exist, and compiles without those headers if they don't
    [susanne]
 	- ddclient-wx is now fully working with the new download list structure
 
