@@ -60,7 +60,7 @@ void download_thread_wrapper(dlindex download) {
 	global_download_list.init_handle(download);
 	download_thread(download);
 
-	struct stat st;
+	struct stat st = {0};
 	stat(global_download_list.get_output_file(download).c_str(), &st);
 	if(st.st_size == 0) {
 		remove(global_download_list.get_output_file(download).c_str());

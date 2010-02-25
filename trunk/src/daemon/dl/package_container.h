@@ -219,6 +219,7 @@ class package_container {
 	*/
 	void extract_package(int id);
 
+
 private:
 	typedef std::vector<download_container*>::iterator iterator;
 
@@ -241,6 +242,8 @@ private:
 	void correct_invalid_ids();
 
 	std::vector<download_container*> packages;
+	std::vector<download_container*> packages_to_delete;
+
 	std::mutex mx;
 	std::mutex plugin_mutex;
 	std::string list_file;
