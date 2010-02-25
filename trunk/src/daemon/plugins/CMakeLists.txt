@@ -4,12 +4,16 @@ cmake_minimum_required (VERSION 2.6)
 OPTION(USE_STD_THREAD "Use C++0x's std::thread implementation instead of boost::thread library" OFF)
 SET(DD_CONF_DIR "\"/etc/downloaddaemon/\"")
 SET(${DD_CONF_DIR}_OPTION "ON")
+INCLUDE(CheckIncludeFiles)
 CONFIGURE_FILE(../config.h.cmake ${CMAKE_BINARY_DIR}/include/config.h)
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/ ../include)
 
+INCLUDE(CheckFunctionExists)
+CHECK_FUNCTION_EXISTS(popen HAVE_POPEN)
+
 find_package(CURL REQUIRED)
 
-IF(CURL_FOUND)
+IF(CURL_FOUND AND HAVE_POPEN)
 	INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRs} ${CMAKE_BINARY_DIR}/include)
 
 	ADD_LIBRARY(rapidshare.com MODULE rapidshare_com.cpp)
@@ -55,6 +59,6 @@ IF(CURL_FOUND)
 	install(CODE "EXEC_PROGRAM(\"tar xjf \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/megaupload.com.tar.bz2 -C \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/ \")")
 
 
-ENDIF(CURL_FOUND)
+ENDIF(CURL_FOUND AND HAVE_POPEN)
 
 
