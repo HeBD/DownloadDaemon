@@ -2,10 +2,6 @@
 $err_message = '';
 if(isset($_POST['submit'])) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, 0);
-	$day = 0;
-	if(isset($_POST['stayli'])) {
-		$day = time() + 99999999999;
-	}
 
 	$host = $_POST['host'];
 	$port = $_POST['port'];
@@ -30,10 +26,10 @@ if(isset($_POST['submit'])) {
 		$test = connect_to_daemon($socket, $host, $port, $pwd, $enc, $timeout);
 	
 		if($test == 'SUCCESS') {
-			setcookie("ddclient_host", $host, $day);
-			setcookie("ddclient_port", $port, $day);
-			setcookie("ddclient_passwd", $pwd, $day);
-			setcookie("ddclient_enc", $enc, $day);
+			setcookie("ddclient_host", $host);
+			setcookie("ddclient_port", $port);
+			setcookie("ddclient_passwd", $pwd);
+			setcookie("ddclient_enc", $enc);
 			header("Location: index.php?site=manage");
 		} else {
 			$err_message = msg_generate($LANG[$test], 'error');	
