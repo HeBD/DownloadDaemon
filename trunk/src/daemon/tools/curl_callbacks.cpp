@@ -41,7 +41,7 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	dlindex id = *(dlindex*)clientp;
 	CURL* curr_handle = global_download_list.get_handle(id);
 
-	global_download_list.set_size(id, dltotal);
+	global_download_list.set_size(id, dltotal + 0.5);
 	std::string output_file;
 	output_file = global_download_list.get_output_file(id);
 
@@ -50,7 +50,7 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	if(curr_speed == 0) {
 		global_download_list.set_speed(id, -1);
 	} else {
-		global_download_list.set_speed(id, curr_speed);
+		global_download_list.set_speed(id, curr_speed + 0.5);
 	}
 
 	struct stat st;

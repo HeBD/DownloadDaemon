@@ -66,7 +66,6 @@ std::string program_root;
 char** env_vars;
 
 int main(int argc, char* argv[], char* env[]) {
-	setlocale(LC_ALL, "");
 	env_vars = env;
 	// Drop user if there is one, and we were run as root
 	bool check_home_for_cfg = true;
