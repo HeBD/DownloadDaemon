@@ -222,6 +222,10 @@ tr.odd {
 	background-color: #eee;
 }
 
+tr.pkg {
+	background-color: #ccc;
+}
+
 td.download_finished {
 	text-align: center;
 	background: green;

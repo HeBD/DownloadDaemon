@@ -29,8 +29,12 @@ if($connect != 'SUCCESS') {
 				}
         		break;
     		case 'delete':
-				send_all($socket, "DDP DL DEL " . $_GET['id']);
 				$buf = "";
+				if($_GET['pkg_id'] != "") {
+					send_all($socket, "DDP PKG DEL " . $_GET['pkg_id']);
+				} else {
+					send_all($socket, "DDP DL DEL " . $_GET['id']);
+				}
 				recv_all($socket, $buf);
 				if(mb_substr($buf, 0, 3) != "100") {
 					$err_message .= msg_generate($LANG['ERR_DL_DEL'], 'error');
@@ -45,8 +49,12 @@ if($connect != 'SUCCESS') {
 				}
     			break;
     		case 'move':
-				send_all($socket, "DDP DL UP " . $_GET['id']);
 				$buf = "";
+				if($_GET['pkg_id'] != "") {
+					send_all($socket, "DDP PKG UP " . $_GET['pkg_id']);
+				} else {
+					send_all($socket, "DDP DL UP " . $_GET['id']);
+				}
 				recv_all($socket, $buf);
 				if(mb_substr($buf, 0, 3) != "100") {
 					$err_message .= msg_generate($LANG['ERR_DL_UP'], 'error');
@@ -71,6 +79,26 @@ if($connect != 'SUCCESS') {
 	for($i = 0; $i < count($exp_dls); $i++) {
 		if($exp_dls[$i][0] == "") continue;
 		if($exp_dls[$i][0] == "PACKAGE") {
+
+			$tpl_manage_vars = array(
+				'T_Activate_Button' => '',
+				'T_DelFile_Button' => '',
+				'T_TR_CLASS' => 'pkg',
+				'T_PKG_ID' => $exp_dls[$i][1],
+				'T_DL_ID' => '',
+				'T_DL_Date' => '',
+				'T_DL_Title' => $exp_dls[$i][2],
+				'T_DL_URL' => '',
+				'T_DL_Class' => '',
+				'T_DL_Status' => '',
+				'T_SITE_URL' => '',
+				'L_Activate' => '" style="visibility:hidden',
+				'L_Delete' => '',
+				'L_Move' => $LANG['Move'],
+				'L_Delete_File' => ''
+			);
+	
+			$dl_list .= template_parse('manage_line', $tpl_manage_vars);
 			continue;
 		}
 		
@@ -141,6 +169,7 @@ if($connect != 'SUCCESS') {
 		'T_Activate_Button' => $activate_button,
 		'T_DelFile_Button' => $del_file,
 		'T_TR_CLASS' => $tr_class,
+		'T_PKG_ID' => '',
 		'T_DL_ID' => $exp_dls[$i][0],
 		'T_DL_Date' => $exp_dls[$i][1],
 		'T_DL_Title' => $exp_dls[$i][2],
