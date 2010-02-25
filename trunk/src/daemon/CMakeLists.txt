@@ -17,10 +17,12 @@ SET(daemon_SRCS downloaddaemon.cpp
 		 ../include/crypt/md5.cpp
 		reconnect/reconnect_parser.cpp)
 
-
+INCLUDE (CheckIncludeFiles)
 OPTION(USE_STD_THREAD "Use C++0x's std::thread implementation instead of boost::thread library" OFF)
 SET(DD_CONF_DIR "\"/etc/downloaddaemon/\"")
 SET(${DD_CONF_DIR}_OPTION "ON")
+CHECK_INCLUDE_FILES (stdint.h HAVE_STDINT_H)
+CHECK_INCLUDE_FILES (syslog.h HAVE_SYSLOG_H)
 CONFIGURE_FILE(config.h.cmake ${CMAKE_BINARY_DIR}/include/config.h)
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/ ../include)
 

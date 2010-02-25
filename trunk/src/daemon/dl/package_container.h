@@ -1,10 +1,15 @@
 #ifndef PACKAGE_CONTAINER_H_INCLUDED
 #define PACKAGE_CONTAINER_H_INCLUDED
 
+#include <config.h>
 #include <string>
 #include <vector>
 #include "download.h"
 #include "download_container.h"
+
+#ifndef HAVE_STDINT_H
+	#define uint64_t double
+#endif
 
 typedef std::pair<int, int> dlindex;
 

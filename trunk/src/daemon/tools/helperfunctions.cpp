@@ -9,6 +9,7 @@
  * GNU General Public License for more details.
  */
 
+#include <config.h>
 #include "helperfunctions.h"
 #include <sstream>
 #include <string>
@@ -27,7 +28,9 @@ namespace std {
 #endif
 
 #include <sys/stat.h>
-#include <syslog.h>
+#ifdef HAVE_SYSLOG_H
+	#include <syslog.h>
+#endif
 #include <cfgfile/cfgfile.h>
 #include "../dl/download.h"
 #include "../dl/download_container.h"
@@ -124,9 +127,13 @@ void log_string(const std::string logstr, int level) {
 	} else if(log_procedure == "stderr") {
 		cerr << to_log.str() << flush;
 	} else if(log_procedure == "syslog") {
+		#ifdef HAVE_SYSLOG_H
 		openlog("DownloadDaemon", LOG_PID, LOG_DAEMON);
 		syslog(level, to_syslog.str().c_str(), 0);
 		closelog();
+		#else
+		cerr << "DownloadDaemon compiled without syslog support! Either recompile with syslog support or change the log_procedure!";
+		#endif
 	}
 }
 

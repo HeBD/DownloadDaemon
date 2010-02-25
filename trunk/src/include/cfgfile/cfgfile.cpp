@@ -12,6 +12,7 @@
 #include"cfgfile.h"
 #include<fstream>
 #include<string>
+#include<sstream>
 #include<vector>
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>

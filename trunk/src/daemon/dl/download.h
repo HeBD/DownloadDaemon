@@ -15,8 +15,7 @@
 #include <config.h>
 #include <string>
 #include <fstream>
-// cstdint will exist in c++0x, we use stdint.h (C99) to be compatible with older compilers
-#include <stdint.h>
+
 #include <curl/curl.h>
 
 #ifndef USE_STD_THREAD
@@ -26,6 +25,12 @@ namespace std {
 }
 #else
 #include <thread>
+#endif
+
+#ifndef HAVE_STDINT_H
+	// cstdint will exist in c++0x, we use stdint.h (C99) to be compatible with older compilers
+	#include <stdint.h>
+	#define uint64_t double
 #endif
 
 enum download_status { DOWNLOAD_PENDING = 1, DOWNLOAD_INACTIVE, DOWNLOAD_FINISHED, DOWNLOAD_RUNNING, DOWNLOAD_WAITING, DOWNLOAD_DELETED, DOWNLOAD_RECONNECTING };

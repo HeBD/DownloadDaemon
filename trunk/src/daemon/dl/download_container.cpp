@@ -9,6 +9,7 @@
  * GNU General Public License for more details.
  */
 
+#include <config.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dlfcn.h>
@@ -26,6 +27,10 @@
 	#include "../tools/helperfunctions.h"
 	#include "../reconnect/reconnect_parser.h"
 	#include "../global.h"
+#endif
+
+#ifndef HAVE_STDINT_H
+	#define uint64_t double
 #endif
 using namespace std;
 
@@ -302,12 +307,10 @@ void download_container::set_size(int id, uint64_t size) {
 	if(dl == download_list.end()) return;
 	(*dl)->size = size;
 }
-#include <iostream>
+
 void download_container::set_wait(int id, int seconds) {
 	lock_guard<mutex> lock(download_mutex);
-	std::cout << download_list.size() << endl;
 	download_container::iterator dl = get_download_by_id(id);
-	std::cout << download_list.size() << endl;
 	if(dl == download_list.end()) return;
 	(*dl)->wait_seconds = seconds;
 }
