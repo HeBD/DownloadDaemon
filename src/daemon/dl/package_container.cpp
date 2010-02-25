@@ -96,6 +96,8 @@ void package_container::del_package(int pkg_id) {
 	package_container::iterator package = package_by_id(pkg_id);
 	package_container::iterator global = package_by_id(-1);
 	if(package == packages.end() || global == packages.end()) return;
+
+	bool can_delete_pkg = true;
 	// we are friend of download_container. so we lock the it's mutex and set all statuses to deleted.
 	// then we move all the downloads to the general list, so we can safely delete the list itsself
 	(*package)->download_mutex.lock();
@@ -106,11 +108,21 @@ void package_container::del_package(int pkg_id) {
 		--tmp_it;
 		(*global)->set_dl_status(tmp_it, DOWNLOAD_DELETED);
 		(*package)->set_dl_status(it, DOWNLOAD_DELETED);
+
+		if((*it)->is_running) {
+			can_delete_pkg = false;
+		}
 	}
 	(*global)->download_mutex.unlock();
 	(*package)->download_mutex.unlock();
-	// now all the download-pointers are in the global list and wen can safely remove the package
-	delete *package;
+	// now all the download-pointers are in the global list and wen can safely remove the package if no download is running (because the plugin got a pointer to
+	// that download list)
+	if(can_delete_pkg) {
+		delete *package;
+
+	} else {
+		packages_to_delete.push_back(*package);
+	}
 	packages.erase(package);
 }
 
@@ -236,7 +248,7 @@ void package_container::set_proxy(dlindex dl, std::string proxy) {
 std::string package_container::get_proxy(dlindex dl) {
 	lock_guard<mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
-	if(it == packages.end()) return false;
+	if(it == packages.end()) return "";
 	return (*it)->get_proxy(dl.second);
 }
 
@@ -526,6 +538,19 @@ void package_container::purge_deleted() {
 	lock_guard<mutex> lock(mx);
 	for(package_container::iterator it = packages.begin() + 1; it != packages.end(); ++it) {
 		(*it)->purge_deleted();
+	}
+	for(package_container::iterator it = packages_to_delete.begin(); it != packages_to_delete.end(); ++it) {
+		bool can_delete = true;
+		for(download_container::iterator it2 = (*it)->download_list.begin(); it2 != (*it)->download_list.end(); ++it2) {
+			if((*it2)->is_running) {
+				can_delete = false;
+			}
+		}
+		if(can_delete) {
+			delete *it;
+			packages_to_delete.erase(it);
+			it = packages_to_delete.begin();
+		}
 	}
 }
 

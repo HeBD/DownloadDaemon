@@ -302,10 +302,12 @@ void download_container::set_size(int id, uint64_t size) {
 	if(dl == download_list.end()) return;
 	(*dl)->size = size;
 }
-
+#include <iostream>
 void download_container::set_wait(int id, int seconds) {
 	lock_guard<mutex> lock(download_mutex);
+	std::cout << download_list.size() << endl;
 	download_container::iterator dl = get_download_by_id(id);
+	std::cout << download_list.size() << endl;
 	if(dl == download_list.end()) return;
 	(*dl)->wait_seconds = seconds;
 }
