@@ -1,6 +1,7 @@
 2010-02-25
    [adrian]
 	- made ddclient-php package-compatible
+	- fixed problem in ddclient-php that makes logging in impossible if the server time is a few years in the past
    [susanne]
 	- ddclient-wx is now fully working with the new download list structure
 
