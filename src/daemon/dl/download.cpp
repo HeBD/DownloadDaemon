@@ -136,9 +136,30 @@ std::string download::serialize() {
 	if(status == DOWNLOAD_DELETED) {
 		return "";
 	}
+
+	string dl_bytes;
+	string dl_size;
+	#ifndef HAVE_STDINT_H
+		stringstream double_conv;
+		double_conv << downloaded_bytes;
+		string tmp = double_conv.str();
+		dl_bytes = tmp.substr(0, tmp.find("."));
+		double_conv.clear();
+		double_conv << size;
+		tmp = double_conv.str();
+		dl_size = tmp.substr(0, tmp.find("."));
+	#else
+		stringstream conv;
+		conv << downloaded_bytes;
+		dl_bytes = conv.str();
+		conv.clear();
+		conv << size;
+		dl_size = conv.str();
+	#endif
+
 	stringstream ss;
 	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << status << '|'
-	<< downloaded_bytes << '|' << size << '|' << output_file << "|\n";
+	<< dl_bytes << '|' << dl_size << '|' << output_file << "|\n";
 	return ss.str();
 }
 
