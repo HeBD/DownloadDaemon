@@ -3,11 +3,29 @@ cmake_minimum_required (VERSION 2.6)
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckIncludeFileCXX)
 INCLUDE(CheckFunctionExists)
+INCLUDE(CheckTypeSize)
+INCLUDE(CheckCXXCompilerFlag)
+INCLUDE(CheckCXXSourceCompiles)
 
-#OPTION(USE_STD_THREAD "Use C++0x's std::thread implementation instead of boost::thread library" OFF)
 SET(DD_CONF_DIR "\"/etc/downloaddaemon/\"")
 SET(${DD_CONF_DIR}_OPTION "ON")
-CHECK_INCLUDE_FILE_CXX(thread USE_STD_THREAD -std=c++0x)
+
+CHECK_INCLUDE_FILE_CXX (syslog.h HAVE_SYSLOG_H)
+CHECK_CXX_COMPILER_FLAG(-std=c++0x HAVE_STD_CXX0X)
+
+IF(HAVE_STD_CXX0X)
+	CHECK_INCLUDE_FILE_CXX(thread USE_STD_THREAD -std=c++0x)
+ELSE(HAVE_STD_CXX0X)
+	set(USE_STD_THREAD false)
+ENDIF(HAVE_STD_CXX0X)
+
+CHECK_CXX_SOURCE_COMPILES("#include <stdint.h>\nint main() { uint64_t asdf = 12345; return 0; }" HAVE_UINT64_T)
+
+IF(NOT HAVE_UINT64_T)
+	#message ("-- WARNING: You do not have uint64_t. Using double instead. This might cause problems in rare cases")
+	#set(HAVE_STD_INT false)
+ENDIF(NOT HAVE_UINT64_T)
+
 CONFIGURE_FILE(../config.h.cmake ${CMAKE_BINARY_DIR}/include/config.h)
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/ ../include)
 

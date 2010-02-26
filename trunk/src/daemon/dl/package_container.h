@@ -7,7 +7,7 @@
 #include "download.h"
 #include "download_container.h"
 
-#ifndef HAVE_STDINT_H
+#ifndef HAVE_UINT64_T
 	#define uint64_t double
 #endif
 

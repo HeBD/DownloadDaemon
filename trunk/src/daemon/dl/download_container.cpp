@@ -29,7 +29,7 @@
 	#include "../global.h"
 #endif
 
-#ifndef HAVE_STDINT_H
+#ifndef HAVE_UINT64_T
 	#define uint64_t double
 #endif
 using namespace std;

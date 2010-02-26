@@ -139,7 +139,7 @@ std::string download::serialize() {
 
 	string dl_bytes;
 	string dl_size;
-	#ifndef HAVE_STDINT_H
+	#ifndef HAVE_UINT64_T
 		stringstream double_conv;
 		double_conv << downloaded_bytes;
 		string tmp = double_conv.str();
