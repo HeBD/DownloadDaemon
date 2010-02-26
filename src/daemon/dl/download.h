@@ -27,7 +27,7 @@ namespace std {
 #include <thread>
 #endif
 
-#ifndef HAVE_STDINT_H
+#ifndef HAVE_UINT64_T
 	// cstdint will exist in c++0x, we use stdint.h (C99) to be compatible with older compilers
 	#include <stdint.h>
 	#define uint64_t double

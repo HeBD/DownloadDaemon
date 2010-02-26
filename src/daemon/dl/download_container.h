@@ -26,7 +26,7 @@ namespace std {
 #include <thread>
 #endif
 
-#ifndef HAVE_STDINT_H
+#ifndef HAVE_UINT64_T
 	#define uint64_t double
 #endif
 

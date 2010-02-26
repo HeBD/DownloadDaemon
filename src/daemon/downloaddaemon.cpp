@@ -40,9 +40,9 @@ namespace std {
 #include <dlfcn.h>
 #include <pwd.h>
 
-#ifndef HAVE_STDINT_H
-	#warning You do not have stdint.h, which declares uint64_t. this is pretty bad and you might get problems when you download big files.
-	#warning This includes that DownloadDaemon may display wrong download sizes/progress. But downloading should work.. should.
+#ifndef HAVE_UINT64_T
+	#warning You do not have the type uint64_t. this is pretty bad and you might get problems when you download big files.
+	#warning This includes that DownloadDaemon may display wrong download sizes/progress. But downloading should work.. maybe...
 #endif
 
 #define DAEMON_USER "downloadd"
