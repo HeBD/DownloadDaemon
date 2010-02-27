@@ -1,3 +1,7 @@
+2010-02-27
+   [susanne]
+	- started working on ddclient-gui (rewrite of ddclient-wx in qt)
+
 2010-02-25
    [adrian]
 	- made ddclient-php package-compatible
