@@ -174,7 +174,9 @@ std::vector<package> downloadc::get_list(){
 	// now we have the data in a vector<vector<string> > and can push it in a better readable structure
 	std::vector<package> pkg;
 	std::vector<std::vector<std::string> >::iterator content_it = new_content.begin();
-	package mypackage = {0, ""};
+	package mypackage;
+	mypackage.id = 0;
+	mypackage.name = "";
 	bool empty_package = true;
 
 	if(new_content.size() == 0)

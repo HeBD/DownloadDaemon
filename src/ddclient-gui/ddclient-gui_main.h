@@ -1,0 +1,4 @@
+#ifndef DDCLIENTGUI_MAIN_H
+#define DDCLIENTGUI_MAIN_H
+
+#endif // DDCLIENTGUI_MAIN_H
