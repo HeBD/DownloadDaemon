@@ -9,15 +9,36 @@ SET(ddclient_gui_SRCS	ddclient_gui.cpp
 
 SET(moc_headers		ddclient_gui.h)
 
+INCLUDE(CheckIncludeFiles)
+INCLUDE(CheckIncludeFileCXX)
+INCLUDE(CheckFunctionExists)
+INCLUDE(CheckTypeSize)
+INCLUDE(CheckCXXCompilerFlag)
+INCLUDE(CheckCXXSourceCompiles)
 
-find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
+CHECK_CXX_COMPILER_FLAG(-std=c++0x HAVE_STD_CXX0X)
+IF(HAVE_STD_CXX0X)
+	CHECK_INCLUDE_FILE_CXX(thread USE_STD_THREAD -std=c++0x)
+ELSE(HAVE_STD_CXX0X)
+	set(USE_STD_THREAD false)
+ENDIF(HAVE_STD_CXX0X)
+CONFIGURE_FILE(config.h.cmake ${CMAKE_BINARY_DIR}/include/config.h)
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/ ../include)
+
+
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
 include(${QT_USE_FILE})
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR} ../include)
 QT4_WRAP_CPP(ddclient_gui_MOC_SRCS ${moc_headers})
-
-ADD_EXECUTABLE(ddclient-gui ${ddclient_gui_SRCS} ${ddclient_gui_MOC_SRCS})
-TARGET_LINK_LIBRARIES(ddclient-gui ${Boost_LIBRARIES} ${QT_LIBRARIES})
+IF(NOT USE_STD_THREAD)
+	find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
+	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR} ../include)
+	ADD_EXECUTABLE(ddclient-gui ${ddclient_gui_SRCS} ${ddclient_gui_MOC_SRCS})
+	TARGET_LINK_LIBRARIES(ddclient-gui ${Boost_LIBRARIES} ${QT_LIBRARIES})
+ELSE(NOT USE_STD_THREAD)
+	ADD_EXECUTABLE(ddclient-gui ${ddclient_gui_SRCS} ${ddclient_gui_MOC_SRCS})
+	SET_TARGET_PROPERTIES(ddclient-gui PROPERTIES COMPILE_FLAGS -std=c++0x)
+	TARGET_LINK_LIBRARIES(ddclient-gui ${QT_LIBRARIES})
+ENDIF(NOT USE_STD_THREAD)
 
 install(TARGETS ddclient-gui DESTINATION bin)
 
