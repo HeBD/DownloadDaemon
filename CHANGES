@@ -1,3 +1,7 @@
+2010-02-28
+   [susanne]
+	- added  menu, toolbar, contextmenu and download table to ddclient-gui (all functions are stubs right now)
+
 2010-02-27
    [susanne]
 	- started working on ddclient-gui (rewrite of ddclient-wx in qt)
