@@ -64,9 +64,17 @@ void mgmt_thread_main() {
 
 	srand(time(NULL));
 
-	main_sock.auto_accept(connection_handler);
-	main_sock.auto_accept_join();
 
+	while(true) {
+		try {
+			tkSock* connection = new tkSock;
+			main_sock.accept(*connection);
+			thread t(bind(connection_handler, connection));
+			t.detach();
+		} catch(...) {
+			log_string("Failed to create socket", LOG_ERR);
+		}
+	}
 }
 
 /** connection handle for management connections (callback function for tkSock)
@@ -196,6 +204,7 @@ void connection_handler(tkSock *sock) {
 			*sock << "101 PROTOCOL";
 		}
 	}
+	delete sock;
 }
 
 

@@ -15,17 +15,6 @@
 #include <config.h>
 #include <string>
 
-#ifndef NO_BOOST_THREAD
-	#ifndef USE_STD_THREAD
-		#include <boost/thread.hpp>
-		namespace std {
-			using namespace boost;
-		}
-	#else
-		#include <thread>
-	#endif
-#endif
-
 #ifdef _WIN32
 	#include <winsock2.h>
 #else
@@ -111,17 +100,6 @@ public:
 	*/
 	void set_sockdesc(int n) { m_sock = n;}
 
-	/** Advise the class to handle multithreaded connection management
-	*	@param handle A function pointer to a function that wants a tkSock arguement. This function will be called for every connection
-	*/
-	void auto_accept (void (*handle) (tkSock*));
-
-	/** Stop auto-accepting new connections */
-	void auto_accept_stop();
-
-	/** Join the auto-accept threads for terminating programs */
-	void auto_accept_join();
-
 	/** Gets the ip-address of the "other side" of the connection
 	*	@reutrns Peer ip-address, empty string if it fails
 	*/
@@ -129,8 +107,6 @@ public:
 
 
 private:
-	void auto_accept_threadfunc(void(*handle) (tkSock*));
-	void handle_wrapper(tkSock *sock, void(*handle) (tkSock*));
 	int m_sock; // Socket descriptor
 	bool valid;
 	sockaddr_in m_addr;
@@ -138,10 +114,6 @@ private:
 	unsigned int m_maxrecv;
 	static int m_instanceCount;
 	unsigned int m_open_connections;
-	#ifndef NO_BOOST_THREAD
-	std::thread* auto_accept_thread;
-	#endif
-	bool stop_threads;
 	std::string append_header(std::string data);
 	int remove_header(std::string &data);
 };

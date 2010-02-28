@@ -64,9 +64,6 @@ const char *inet_ntop(int af, const void *src, char *dst, socklen_t cnt) {
 
 
 tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0) {
-	#ifndef NO_BOOST_THREAD
-		auto_accept_thread = 0;
-	#endif
 	valid = false;
 	#ifdef _WIN32
 		if(m_instanceCount == 0) {
@@ -93,9 +90,6 @@ tkSock::tkSock() : m_maxconnections(20), m_maxrecv(1024), m_open_connections(0) 
 
 tkSock::tkSock(const unsigned int MaxConnections, const unsigned int MaxReceive)
 	: m_maxconnections(MaxConnections), m_maxrecv(MaxReceive), m_open_connections(0) {
-	#ifndef NO_BOOST_THREAD
-		auto_accept_thread = 0;
-	#endif
 	valid = false;
 	#ifdef _WIN32
 		WORD Version;
@@ -130,11 +124,6 @@ tkSock::~tkSock() {
 		}
 	#else
 		close(m_sock);
-	#endif
-	#ifndef NO_BOOST_THREAD
-	if(auto_accept_thread != 0) {
-		delete auto_accept_thread;
-	}
 	#endif
 	--m_instanceCount;
 }
@@ -200,58 +189,6 @@ bool tkSock::accept (tkSock& new_socket) {
 	return true;
 }
 
-#ifndef NO_BOOST_THREAD
-void tkSock::auto_accept (void (*handle) (tkSock*)) {
-	auto_accept_thread = new std::thread(std::bind(&tkSock::auto_accept_threadfunc, this, handle));
-}
-
-void tkSock::auto_accept_threadfunc(void (*handle) (tkSock*)) {
-	stop_threads = false;
-	while(!stop_threads) {
-		if(m_open_connections < m_maxconnections) {
-			++m_open_connections;
-			tkSock* tmpsock;
-			try {
-				tmpsock = new tkSock(1, m_maxrecv);
-			} catch (...) {
-				--m_open_connections;
-				delete tmpsock;
-				continue;
-			}
-
-			if(!this->accept(*tmpsock)) {
-				--m_open_connections;
-				delete tmpsock;
-				continue;
-			}
-			if(stop_threads) {
-				delete tmpsock;
-				break;
-			}
-			std::thread connection_handle(std::bind(&tkSock::handle_wrapper, this, tmpsock, handle));
-			connection_handle.detach();
-		} else {
-			sleep(1);
-		}
-	}
-}
-
-void tkSock::handle_wrapper(tkSock *tmpsock, void(*handle) (tkSock*)) {
-	(*handle) (tmpsock);
-	delete tmpsock;
-	--m_open_connections;
-}
-
-void tkSock::auto_accept_join() {
-	auto_accept_thread->join();
-}
-
-void tkSock::auto_accept_stop() {
-	delete auto_accept_thread;
-	stop_threads = true;
-	auto_accept_thread = 0;
-}
-#endif
 bool tkSock::connect(const std::string &host, const int port) {
 	struct hostent *host_info;
 	unsigned long addr;
