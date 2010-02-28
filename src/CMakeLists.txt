@@ -13,3 +13,5 @@ project (ddclient-wx)
 add_subdirectory (ddclient-wx)
 #add_subdirectory (lib)
 
+project (ddclient-gui)
+add_subdirectory (ddclient-gui)
