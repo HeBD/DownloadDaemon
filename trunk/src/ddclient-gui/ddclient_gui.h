@@ -7,6 +7,7 @@
 #include <QMainWindow>
 #include <QString>
 #include <QtGui/QMenu>
+#include <QtGui/QLabel>
 
 class ddclient_gui : public QMainWindow{
     Q_OBJECT
@@ -27,12 +28,11 @@ class ddclient_gui : public QMainWindow{
     private:
 	void add_bars();
 
-
-
-
 	QMenu* file_menu;
-	QAction* activate_action;
+        QToolBar *downloading_menu;
+        QAction* activate_action;
 	QAction* deactivate_action;
+        QLabel* status_connection;
 
     private slots:
 	void on_about();
@@ -52,7 +52,9 @@ class ddclient_gui : public QMainWindow{
 	void on_copy();
 	void on_resize();
 	void on_reload();
-	void on_right_click();
+
+    protected:
+        void contextMenuEvent(QContextMenuEvent *event);
 
 };
 
