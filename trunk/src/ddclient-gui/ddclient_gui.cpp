@@ -6,8 +6,9 @@
 #include <QtGui/QLabel>
 #include <QToolBar>
 #include <QStringList>
-
-#include <QtGui> // this is only for testing if includes are the problem
+#include <QStandardItem>
+#include <QtGui/QContextMenuEvent>
+//#include <QtGui> // this is only for testing if includes are the problem
 
 #include <sstream>
 
@@ -31,15 +32,52 @@ ddclient_gui::ddclient_gui() : QMainWindow(NULL){
 
     list = new QTreeView();
     list_model->setHorizontalHeaderLabels(column_labels);
-    list->setModel(list_model);                                // maybe we have a problem when a user moves a column
-    list->setColumnWidth(0, 50);
-    list->setColumnWidth(1, 76);
-    list->setColumnWidth(2, 170);
+    list->setModel(list_model);
+
+    selection_model = new QItemSelectionModel(list_model);
+    list->setSelectionModel(selection_model);
+    list->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    list->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+    double width = list->width();
+
+    list->setColumnWidth(0, 100); // fixed sizes
     list->setColumnWidth(3, 100);
-    list->setColumnWidth(4, 150);
+    width -= 100;
+    list->setColumnWidth(1, 0.25*width);
+    list->setColumnWidth(2, 0.3*width);
+    list->setColumnWidth(4, 0.45*width);
 
     setCentralWidget(list);
 
+    // testdata
+    QStandardItem *testitem1 = new QStandardItem(QIcon("img/package.png"), tsl("0"));
+    QStandardItem *testitem2 = new QStandardItem(tsl("Packettitel1"));
+    QStandardItem *testitem3 = new QStandardItem(QIcon("img/bullet_black.png"), tsl("1"));
+    QStandardItem *testitem8 = new QStandardItem(tsl("10h, 59:25m"));
+    QStandardItem *testitem4 = new QStandardItem(tsl("Downloadtitel1"));
+    QStandardItem *testitem5 = new QStandardItem(QIcon("img/bullet_black.png"), tsl("2"));
+    QStandardItem *testitem6 = new QStandardItem(QIcon("img/package.png"), tsl("1"));
+    QStandardItem *testitem7 = new QStandardItem(QIcon("img/bullet_black.png"), tsl("3"));
+
+    testitem1->setEditable(false);
+    testitem2->setEditable(false);
+    testitem3->setEditable(false);
+    testitem4->setEditable(false);
+    testitem5->setEditable(false);
+    testitem6->setEditable(false);
+    testitem7->setEditable(false);
+
+    testitem1->setChild(0, testitem3);
+    testitem1->setChild(0, 1, testitem4);
+    testitem1->setChild(1, 0, testitem5);
+    testitem1->setChild(0, 3, testitem8);
+
+    testitem6->setChild(0, testitem7);
+
+    list_model->setItem(0, 0, testitem1);
+    list_model->setItem(0, 1, testitem2);
+    list_model->setItem(1, 0, testitem6);
 }
 
 
@@ -150,21 +188,6 @@ void ddclient_gui::add_bars(){
     about_action->setStatusTip(tsl("About"));
     help_menu->addAction(about_action);
 
-
-    connect(connect_action, SIGNAL(triggered()), this, SLOT(on_connect()));
-    connect(configure_action, SIGNAL(triggered()), this, SLOT(on_configure()));
-    connect(activate_action, SIGNAL(triggered()), this, SLOT(on_downloading_activate()));
-    connect(deactivate_action, SIGNAL(triggered()), this, SLOT(on_downloading_deactivate()));
-    connect(activate_download_action, SIGNAL(triggered()), this, SLOT(on_activate()));
-    connect(deactivate_download_action, SIGNAL(triggered()), this, SLOT(on_deactivate()));
-    connect(add_action, SIGNAL(triggered()), this, SLOT(on_add()));
-    connect(delete_action, SIGNAL(triggered()), this, SLOT(on_delete()));
-    connect(delete_finished_action, SIGNAL(triggered()), this, SLOT(on_delete_finished()));
-    connect(select_action, SIGNAL(triggered()), this, SLOT(on_select()));
-    connect(copy_action, SIGNAL(triggered()), this, SLOT(on_copy()));
-    connect(quit_action, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(about_action, SIGNAL(triggered()), this, SLOT(on_about()));
-
     // toolbar
     QAction* up_action = new QAction(QIcon("img/6_up.png"), "&" + tsl("Increase Priority"), this);
     about_action->setStatusTip(tsl("Increase Priority of the selected Download"));
@@ -191,6 +214,23 @@ void ddclient_gui::add_bars(){
 
     downloading_menu = addToolBar(tsl("Downloading"));
     downloading_menu->addAction(activate_action);
+
+
+    connect(connect_action, SIGNAL(triggered()), this, SLOT(on_connect()));
+    connect(configure_action, SIGNAL(triggered()), this, SLOT(on_configure()));
+    connect(activate_action, SIGNAL(triggered()), this, SLOT(on_downloading_activate()));
+    connect(deactivate_action, SIGNAL(triggered()), this, SLOT(on_downloading_deactivate()));
+    connect(activate_download_action, SIGNAL(triggered()), this, SLOT(on_activate()));
+    connect(deactivate_download_action, SIGNAL(triggered()), this, SLOT(on_deactivate()));
+    connect(add_action, SIGNAL(triggered()), this, SLOT(on_add()));
+    connect(delete_action, SIGNAL(triggered()), this, SLOT(on_delete()));
+    connect(delete_finished_action, SIGNAL(triggered()), this, SLOT(on_delete_finished()));
+    connect(select_action, SIGNAL(triggered()), this, SLOT(on_select()));
+    connect(copy_action, SIGNAL(triggered()), this, SLOT(on_copy()));
+    connect(quit_action, SIGNAL(triggered()), qApp, SLOT(quit()));
+    connect(about_action, SIGNAL(triggered()), this, SLOT(on_about()));
+    connect(up_action, SIGNAL(triggered()), this, SLOT(on_priority_up()));
+    connect(down_action, SIGNAL(triggered()), this, SLOT(on_priority_down()));
 }
 
 
@@ -202,6 +242,9 @@ void ddclient_gui::on_about(){
 
 void ddclient_gui::on_select(){
     QMessageBox::information(this, "Test", "on_select");
+    list->expandAll();
+    list->selectAll();
+
 }
 
 
@@ -270,11 +313,6 @@ void ddclient_gui::on_copy(){
 }
 
 
-void ddclient_gui::on_resize(){
-    QMessageBox::information(this, "Test", "on_resize");
-}
-
-
 void ddclient_gui::on_reload(){
     QMessageBox::information(this, "Test", "on_reload");
 }
@@ -323,4 +361,14 @@ void ddclient_gui::contextMenuEvent(QContextMenuEvent *event){
     connect(copy_action, SIGNAL(triggered()), this, SLOT(on_copy()));
 
     menu.exec(event->globalPos());
+}
+
+void ddclient_gui::resizeEvent(QResizeEvent* event){
+    event = event;
+    double width = list->width();
+
+    width -= 250;
+    list->setColumnWidth(1, 0.25*width);
+    list->setColumnWidth(2, 0.3*width);
+    list->setColumnWidth(4, 0.45*width);
 }

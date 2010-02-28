@@ -10,6 +10,7 @@
 #include <QtGui/QLabel>
 #include <QTreeView>
 #include <QStandardItemModel>
+#include <QItemSelectionModel>
 
 class ddclient_gui : public QMainWindow{
     Q_OBJECT
@@ -37,6 +38,7 @@ class ddclient_gui : public QMainWindow{
         QLabel *status_connection;
         QTreeView *list;
         QStandardItemModel *list_model;
+        QItemSelectionModel *selection_model;
 
     private slots:
 	void on_about();
@@ -54,11 +56,11 @@ class ddclient_gui : public QMainWindow{
 	void on_downloading_activate();
 	void on_downloading_deactivate();
 	void on_copy();
-	void on_resize();
 	void on_reload();
 
     protected:
         void contextMenuEvent(QContextMenuEvent *event);
+        void resizeEvent(QResizeEvent* event);
 
 };
 
