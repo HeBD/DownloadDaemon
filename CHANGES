@@ -1,6 +1,8 @@
 2010-02-28
    [susanne]
 	- added  menu, toolbar, contextmenu and download table to ddclient-gui (all functions are stubs right now)
+	- added language support to ddclient-gui
+	- and select all function to ddclient-gui
 
 2010-02-27
    [susanne]

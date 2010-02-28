@@ -4,6 +4,7 @@
 #include <config.h>
 #include <downloadc/downloadc.h>
 #include <language/language.h>
+
 #include <QMainWindow>
 #include <QString>
 #include <QtGui/QMenu>
@@ -38,9 +39,10 @@ class ddclient_gui : public QMainWindow{
         QLabel *status_connection;
         QTreeView *list;
         QStandardItemModel *list_model;
-
         QItemSelectionModel *selection_model;
+
         QString conf_dir;
+        language lang;
 
     private slots:
 	void on_about();

@@ -17,7 +17,9 @@ using namespace std;
 ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), conf_dir(config_dir) {
     setWindowTitle("DownloadDaemon Client GUI");
     this->resize(750, 500);
-    setWindowIcon(QIcon("IMG/logoDD.png"));                // have to find working dir again
+    setWindowIcon(QIcon("img/logoDD.png"));
+
+    lang.set_working_dir("lang/");
 
     statusBar()->show();
     status_connection = new QLabel(tsl("Not connected"));
@@ -86,7 +88,7 @@ ddclient_gui::~ddclient_gui(){
 
 
 QString ddclient_gui::tsl(string text, ...){
-    string translated = text; // = lang[text];            TODO: get language working (need working dir)
+    string translated = lang[text];
 
     size_t n;
     int i = 1;
