@@ -8,6 +8,8 @@
 #include <QString>
 #include <QtGui/QMenu>
 #include <QtGui/QLabel>
+#include <QTreeView>
+#include <QStandardItemModel>
 
 class ddclient_gui : public QMainWindow{
     Q_OBJECT
@@ -28,11 +30,13 @@ class ddclient_gui : public QMainWindow{
     private:
 	void add_bars();
 
-	QMenu* file_menu;
+        QMenu *file_menu;
         QToolBar *downloading_menu;
-        QAction* activate_action;
-	QAction* deactivate_action;
-        QLabel* status_connection;
+        QAction *activate_action;
+        QAction *deactivate_action;
+        QLabel *status_connection;
+        QTreeView *list;
+        QStandardItemModel *list_model;
 
     private slots:
 	void on_about();

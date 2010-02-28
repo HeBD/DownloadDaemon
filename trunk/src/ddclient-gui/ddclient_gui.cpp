@@ -4,7 +4,8 @@
 #include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
 #include <QtGui/QLabel>
- #include <QToolBar>
+#include <QToolBar>
+#include <QStringList>
 
 #include <QtGui> // this is only for testing if includes are the problem
 
@@ -15,7 +16,7 @@ using namespace std;
 ddclient_gui::ddclient_gui() : QMainWindow(NULL){
     setWindowTitle("DownloadDaemon Client GUI");
     this->resize(750, 500);
-    // setWindowIcon(QIcon("logoDD.png"));                // have to find working dir again
+    setWindowIcon(QIcon("IMG/logoDD.png"));                // have to find working dir again
 
     statusBar()->show();
     status_connection = new QLabel(tsl("Not connected"));
@@ -23,6 +24,21 @@ ddclient_gui::ddclient_gui() : QMainWindow(NULL){
 
     add_bars();
 
+    // create treeview which will show all the data later
+    list_model = new QStandardItemModel();
+    QStringList column_labels;
+    column_labels << tsl("ID") << tsl("Title") << tsl("URL") << tsl("Time left") << tsl("Status");
+
+    list = new QTreeView();
+    list_model->setHorizontalHeaderLabels(column_labels);
+    list->setModel(list_model);                                // maybe we have a problem when a user moves a column
+    list->setColumnWidth(0, 50);
+    list->setColumnWidth(1, 76);
+    list->setColumnWidth(2, 170);
+    list->setColumnWidth(3, 100);
+    list->setColumnWidth(4, 150);
+
+    setCentralWidget(list);
 
 }
 
