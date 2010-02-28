@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-project(ddclient-wx)
+project(ddclient-gui)
 
 SET(ddclient_gui_SRCS	ddclient_gui.cpp
 			main.cpp
