@@ -20,7 +20,7 @@ downloadc::downloadc(){
 }
 
 downloadc::~downloadc(){
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 	delete mysock;
 	mysock = NULL;
 }
@@ -112,7 +112,7 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 
 
 	// connection ok => save data
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	if(this->mysock != NULL){ //if there is already a connection, delete the old one
 		delete this->mysock;
@@ -246,7 +246,7 @@ std::vector<package> downloadc::get_list(){
 void downloadc::add_download(int package, std::string url, std::string title){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	// make sure everything with the package is ok
 	std::string answer;
@@ -282,7 +282,7 @@ void downloadc::add_download(int package, std::string url, std::string title){
 void downloadc::delete_download(int id, file_delete fdelete){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -325,7 +325,7 @@ void downloadc::delete_download(int id, file_delete fdelete){
 void downloadc::stop_download(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -341,7 +341,7 @@ void downloadc::stop_download(int id){
 void downloadc::priority_up(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -357,7 +357,7 @@ void downloadc::priority_up(int id){
 void downloadc::priority_down(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -373,7 +373,7 @@ void downloadc::priority_down(int id){
 void downloadc::activate_download(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -389,7 +389,7 @@ void downloadc::activate_download(int id){
 void downloadc::deactivate_download(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -406,7 +406,7 @@ void downloadc::deactivate_download(int id){
 void downloadc::add_package(std::string name){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 	std::string answer;
 
 	mysock->send("DDP PKG ADD " + name);
@@ -422,7 +422,7 @@ void downloadc::add_package(std::string name){
 void downloadc::delete_package(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -436,7 +436,7 @@ void downloadc::delete_package(int id){
 void downloadc::package_priority_up(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -450,7 +450,7 @@ void downloadc::package_priority_up(int id){
 void downloadc::package_priority_down(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -464,7 +464,7 @@ void downloadc::package_priority_down(int id){
 bool downloadc::package_exists(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -484,7 +484,7 @@ bool downloadc::package_exists(int id){
 void downloadc::set_var(std::string var, std::string value, std::string old_value ){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 	std::string answer;
 
 	if(var == "mgmt_password")
@@ -500,7 +500,7 @@ void downloadc::set_var(std::string var, std::string value, std::string old_valu
 std::string downloadc::get_var(std::string var){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 	std::string answer;
 
 	mysock->send("DDP VAR GET " + var);
@@ -514,7 +514,7 @@ std::string downloadc::get_var(std::string var){
 void downloadc::delete_file(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -539,7 +539,7 @@ void downloadc::delete_file(int id){
 std::string downloadc::get_file_path(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -555,7 +555,7 @@ std::string downloadc::get_file_path(int id){
 uint64_t downloadc::get_file_size(int id){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -605,7 +605,7 @@ std::vector<std::string> downloadc::get_router_list(){
 void downloadc::set_router_model(std::string model){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 
@@ -619,7 +619,7 @@ void downloadc::set_router_model(std::string model){
 void downloadc::set_router_var(std::string var, std::string value){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 
@@ -633,7 +633,7 @@ void downloadc::set_router_var(std::string var, std::string value){
 std::string downloadc::get_router_var(std::string var){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 
@@ -681,7 +681,7 @@ std::vector<std::string> downloadc::get_premium_list(){
 void downloadc::set_premium_var(std::string host, std::string user, std::string password){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 
@@ -695,7 +695,7 @@ void downloadc::set_premium_var(std::string host, std::string user, std::string 
 std::string downloadc::get_premium_var(std::string host){
 	check_connection();
 
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 
@@ -708,7 +708,7 @@ std::string downloadc::get_premium_var(std::string host){
 
 // helper functions
 void downloadc::check_connection(){
-	boost::mutex::scoped_lock lock(mx);
+	std::lock_guard<std::mutex> lock(mx);
 
 	if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
 		throw client_exception(10, "connection lost");

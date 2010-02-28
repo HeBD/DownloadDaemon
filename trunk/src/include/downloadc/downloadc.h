@@ -12,9 +12,18 @@
 #ifndef DOWNLOADC_H
 #define DOWNLOADC_H
 
+#include <config.h>
+#ifndef USE_STD_THREAD
+#include <boost/thread.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
+
 #include <vector>
 #include <string>
-#include <boost/thread.hpp>
 #include <netpptk/netpptk.h>
 #include <downloadc/client_exception.h>
 #include <stdint.h>
@@ -223,7 +232,7 @@ class downloadc{
 	private:
 
 		tkSock *mysock;
-		boost::mutex mx;
+		std::mutex mx;
 
 		void check_error_code(std::string check_me);
 };

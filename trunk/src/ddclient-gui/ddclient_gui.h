@@ -1,6 +1,9 @@
 #ifndef DDCLIENT_GUI_H
 #define DDCLIENT_GUI_H
 
+#include <config.h>
+#include <downloadc/downloadc.h>
+#include <language/language.h>
 #include <QMainWindow>
 #include <QString>
 #include <QtGui/QMenu>

@@ -12,9 +12,18 @@
 #ifndef DDCLIENT_WX_LANGUAGE_H
 #define DDCLIENT_WX_LANGUAGE_H
 
+#include <config.h>
 #include <map>
 #include <string>
+#ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
+
 
 
 /** Language Class, translates a string to a given language */
@@ -53,7 +62,7 @@ class language{
 		std::map<std::string, std::string> texts;
 		std::string lang;
 		std::string working_dir;
-		boost::mutex mx;
+		std::mutex mx;
 };
 
 #endif // DDCLIENT_WX_LANGUAGE_H
