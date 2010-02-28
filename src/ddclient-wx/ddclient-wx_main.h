@@ -30,6 +30,8 @@
 
 #include <language/language.h>
 
+#include <boost/thread.hpp>
+
 
 using namespace std;
 

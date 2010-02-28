@@ -38,7 +38,6 @@
 					<Add option="-pedantic" />
 					<Add option="-Wall" />
 					<Add option="-g" />
-					<Add option="-DNO_BOOST_THREAD" />
 					<Add directory="src/include" />
 				</Compiler>
 			</Target>
