@@ -15,9 +15,9 @@
 class ddclient_gui : public QMainWindow{
     Q_OBJECT
 
-    public:    
+    public:
 	/** Defaultconstructor */
-	ddclient_gui();
+        ddclient_gui(QString config_dir);
 
 	/** Destructor */
 	~ddclient_gui();
@@ -29,7 +29,7 @@ class ddclient_gui : public QMainWindow{
 	QString tsl(std::string text, ...);
 
     private:
-	void add_bars();
+        void add_bars();
 
         QMenu *file_menu;
         QToolBar *downloading_menu;
@@ -38,7 +38,9 @@ class ddclient_gui : public QMainWindow{
         QLabel *status_connection;
         QTreeView *list;
         QStandardItemModel *list_model;
+
         QItemSelectionModel *selection_model;
+        QString conf_dir;
 
     private slots:
 	void on_about();

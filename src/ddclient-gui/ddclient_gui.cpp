@@ -14,7 +14,7 @@
 
 using namespace std;
 
-ddclient_gui::ddclient_gui() : QMainWindow(NULL){
+ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), conf_dir(config_dir) {
     setWindowTitle("DownloadDaemon Client GUI");
     this->resize(750, 500);
     setWindowIcon(QIcon("IMG/logoDD.png"));                // have to find working dir again

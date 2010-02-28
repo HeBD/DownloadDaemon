@@ -9,6 +9,15 @@ SET(ddclient_gui_SRCS	ddclient_gui.cpp
 
 SET(moc_headers		ddclient_gui.h)
 
+IF(WIN32)
+	SET(GUI_TYPE WIN32)
+ENDIF(WIN32)
+IF (APPLE)
+	SET(GUI_TYPE MACOSX_BUNDLE)
+ENDIF (APPLE)
+
+
+
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckIncludeFileCXX)
 INCLUDE(CheckFunctionExists)
@@ -32,10 +41,10 @@ QT4_WRAP_CPP(ddclient_gui_MOC_SRCS ${moc_headers})
 IF(NOT USE_STD_THREAD)
 	find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
 	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR} ../include)
-	ADD_EXECUTABLE(ddclient-gui ${ddclient_gui_SRCS} ${ddclient_gui_MOC_SRCS})
-	TARGET_LINK_LIBRARIES(ddclient-gui ${Boost_LIBRARIES} ${QT_LIBRARIES})
+	ADD_EXECUTABLE(ddclient-gui ${GUI_TYPE} ${ddclient_gui_SRCS} ${ddclient_gui_MOC_SRCS})
+	TARGET_LINK_LIBRARIES(ddclient-gui ${QT_LIBRARIES})
 ELSE(NOT USE_STD_THREAD)
-	ADD_EXECUTABLE(ddclient-gui ${ddclient_gui_SRCS} ${ddclient_gui_MOC_SRCS})
+	ADD_EXECUTABLE(ddclient-gui ${GUI_TYPE} ${ddclient_gui_SRCS} ${ddclient_gui_MOC_SRCS})
 	SET_TARGET_PROPERTIES(ddclient-gui PROPERTIES COMPILE_FLAGS -std=c++0x)
 	TARGET_LINK_LIBRARIES(ddclient-gui ${QT_LIBRARIES})
 ENDIF(NOT USE_STD_THREAD)

@@ -13,7 +13,9 @@ SOURCES += ddclient_gui.cpp \
     ../include/crypt/md5.cpp \
     ../include/language/language.cpp
 INCLUDEPATH += ../include
-LIBS += -lboost_thread-mt
+
 DESTDIR = ../../build/bin
 
-QMAKE_CXXFLAGS += -std=c++0x
+win32 {
+    LIBS += -lws2_32
+}
