@@ -9,4 +9,3 @@ StartupNotify=true
 Terminal=false
 Type=Application
 Categories=Network;FileTransfer;
-Name[de_DE]=ddclient-gui.desktop
