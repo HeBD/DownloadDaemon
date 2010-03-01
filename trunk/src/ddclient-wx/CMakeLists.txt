@@ -11,13 +11,16 @@ SET(ddclient_wx_SRCS	ddclient-wx_about_dialog.cpp
 			ddclient-wx_delete_dialog.cpp
 			../include/netpptk/netpptk.cpp
 			../include/crypt/md5.cpp
-			../include/language/language.cpp)
+			../include/language/language.cpp
+			../include/downloadc/downloadc.cpp
+			../include/downloadc/client_exception.cpp)
 
 find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
 find_package(wxWidgets REQUIRED base core richtext)
 
 IF(Boost_FOUND AND wxWidgets_FOUND)
 	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR} ../include)
+	INCLUDE_DIRECTORIES(./)
 
 	INCLUDE(${wxWidgets_USE_FILE})
 
@@ -39,8 +42,11 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-wx/img/8_configur
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-wx/img/9_activate.png DESTINATION share/ddclient-wx/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-wx/img/9_deactivate.png DESTINATION share/ddclient-wx/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-wx/img/10_delete_finished.png DESTINATION share/ddclient-wx/img/)
+
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-wx.png DESTINATION share/pixmaps)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-wx.xpm DESTINATION share/pixmaps)
+
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/applications/ddclient-wx.desktop DESTINATION share/applications/)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/doc/ddclient-wx/copyright DESTINATION share/doc/ddclient-wx/)
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-wx/lang/Deutsch DESTINATION share/ddclient-wx/lang/)
 
