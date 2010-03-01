@@ -2,12 +2,14 @@ cmake_minimum_required (VERSION 2.6)
 project(ddclient-gui)
 
 
-SET(ddclient_gui_SRCS	ddclient_gui.cpp
-			main.cpp
-			ddclient_gui_connect_dialog.cpp
-			../include/netpptk/netpptk.cpp
-			../include/crypt/md5.cpp
-			../include/language/language.cpp)
+SET(ddclient_gui_SRCS   ddclient_gui.cpp
+                        main.cpp
+                        ddclient_gui_connect_dialog.cpp
+                        ../include/netpptk/netpptk.cpp
+                        ../include/crypt/md5.cpp
+                        ../include/language/language.cpp
+                        ../include/downloadc/downloadc.cpp
+                        ../include/downloadc/client_exception.cpp)
 
 SET(moc_headers		ddclient_gui.h ddclient_gui_connect_dialog.h)
 
