@@ -249,10 +249,10 @@ void ddclient_gui::get_selected_lines(){
         selected_info info;
         info.row = selection_list.at(i).row();
 
-        if(selection_list.at(i).parent() == QModelIndex::QModelIndex()) // no parent: we have a package
+        if(selection_list.at(i).parent() == QModelIndex::QModelIndex()){ // no parent: we have a package
             info.package = true;
             info.parent_row = -1;
-        else{
+        }else{
             info.package = false;
             info.parent_row = selection_list.at(i).parent().row();
         }
