@@ -16,6 +16,10 @@ INCLUDEPATH += ../include
 
 DESTDIR = ../../build/bin
 
+unix {
+    LIBS += -lboost_thread-mt
+}
+
 win32 {
     LIBS += -lws2_32
 }

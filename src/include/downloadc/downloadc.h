@@ -14,7 +14,7 @@
 
 #include <config.h>
 #ifndef USE_STD_THREAD
-#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 namespace std {
 	using namespace boost;
 }
