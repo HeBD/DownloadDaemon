@@ -21,7 +21,8 @@ int main(int argc, char *argv[])
 
         while((curr_pos = env_path.find_first_of(";:", curr_pos)) != std::string::npos) {
             curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
-            curr_path += argv[0];
+	    curr_path += '/';
+	    curr_path += argv[0];
 
             QFile file(curr_path.c_str());
             if(file.exists()) {
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
     if(working_dir.find_last_of("/\\") != std::string::npos) {
         working_dir = working_dir.substr(0, working_dir.find_last_of("/\\"));
     } else {
-        // needed if it's started with ./ddclient-gui, so we become ./../share/
+	// needed if it's started with ./ddclient-gui, so we get ./../share/
         working_dir += "/..";
     }
     working_dir += "/share/ddclient-gui/";
