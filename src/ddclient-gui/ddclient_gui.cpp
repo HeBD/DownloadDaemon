@@ -1,4 +1,6 @@
 #include "ddclient_gui.h"
+#include "ddclient_gui_connect_dialog.h"
+
 #include <QtGui/QStatusBar>
 #include <QtGui/QMenuBar>
 #include <QtGui/QApplication>
@@ -274,7 +276,9 @@ void ddclient_gui::on_select(){
 
 
 void ddclient_gui::on_connect(){
-    QMessageBox::information(this, "Test", "on_connect");
+    connect_dialog dialog(this);
+    dialog.setModal(true);
+    dialog.exec();
 }
 
 
