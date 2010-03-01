@@ -12,7 +12,7 @@ class connect_dialog : public QDialog{
 
     public:
         /** Defaultconstructor */
-        connect_dialog(QWidget *parent);
+        connect_dialog(QWidget *parent, QString config_dir);
 
     private:
         QLineEdit *host;
@@ -20,6 +20,7 @@ class connect_dialog : public QDialog{
         QLineEdit *password;
         QComboBox *language;
         QCheckBox *save_data;
+        QString config_dir;
 
     private slots:
         void ok();

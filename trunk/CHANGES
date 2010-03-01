@@ -2,7 +2,8 @@
    [adrian]
 	- added program icon to ddclient-gui
    [susanne]
-	- added connect dialog (only gui, no logic) to ddclient-gui
+	- added connect dialog (fully working) to ddclient-gui 
+	- made ddclient-gui language settings working 
 
 2010-02-28
    [susanne]
