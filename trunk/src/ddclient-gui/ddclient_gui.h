@@ -4,6 +4,7 @@
 #include <config.h>
 #include <downloadc/downloadc.h>
 #include <language/language.h>
+#include <vector>
 
 #include <QMainWindow>
 #include <QString>
@@ -12,6 +13,14 @@
 #include <QTreeView>
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
+
+
+struct selected_info{
+    bool package;
+    int row;
+    int parent_row;
+};
+
 
 class ddclient_gui : public QMainWindow{
     Q_OBJECT
@@ -31,6 +40,7 @@ class ddclient_gui : public QMainWindow{
 
     private:
         void add_bars();
+        void get_selected_lines();
 
         QMenu *file_menu;
         QToolBar *downloading_menu;
@@ -43,6 +53,7 @@ class ddclient_gui : public QMainWindow{
 
         QString conf_dir;
         language lang;
+        std::vector<selected_info> selected_lines;
 
     private slots:
 	void on_about();

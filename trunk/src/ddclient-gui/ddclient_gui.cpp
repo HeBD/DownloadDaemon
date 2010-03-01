@@ -8,6 +8,7 @@
 #include <QStringList>
 #include <QStandardItem>
 #include <QtGui/QContextMenuEvent>
+#include <QModelIndex>
 //#include <QtGui> // this is only for testing if includes are the problem
 
 #include <sstream>
@@ -69,6 +70,7 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), conf_dir(con
     testitem5->setEditable(false);
     testitem6->setEditable(false);
     testitem7->setEditable(false);
+    testitem8->setEditable(false);
 
     testitem1->setChild(0, testitem3);
     testitem1->setChild(0, 1, testitem4);
@@ -236,6 +238,29 @@ void ddclient_gui::add_bars(){
 }
 
 
+void ddclient_gui::get_selected_lines(){
+    selected_lines.clear();
+
+    // find the selected indizes and save them into vector selected_lines
+    QModelIndexList selection_list = selection_model->selectedRows();
+
+    // find row, package (yes/no), parent_row
+    for(int i=0; i<selection_list.size(); ++i){
+        selected_info info;
+        info.row = selection_list.at(i).row();
+
+        if(selection_list.at(i).parent() == QModelIndex::QModelIndex()) // no parent: we have a package
+            info.package = true;
+            info.parent_row = -1;
+        else{
+            info.package = false;
+            info.parent_row = selection_list.at(i).parent().row();
+        }
+    selected_lines.push_back(info);
+    }
+}
+
+
 // slots
 void ddclient_gui::on_about(){
     QMessageBox::information(this, "Test", "on_about");
@@ -243,10 +268,8 @@ void ddclient_gui::on_about(){
 
 
 void ddclient_gui::on_select(){
-    QMessageBox::information(this, "Test", "on_select");
     list->expandAll();
     list->selectAll();
-
 }
 
 
@@ -262,6 +285,7 @@ void ddclient_gui::on_add(){
 
 void ddclient_gui::on_delete(){
     QMessageBox::information(this, "Test", "on_delete");
+    get_selected_lines();
 }
 
 

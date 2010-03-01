@@ -1,6 +1,7 @@
 2010-03-01
    [adrian]
 	- added program icon to ddclient-gui
+
 2010-02-28
    [susanne]
 	- added  menu, toolbar, contextmenu and download table to ddclient-gui (all functions are stubs right now)
