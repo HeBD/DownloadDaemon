@@ -165,7 +165,7 @@ void ddclient_gui::add_bars(){
     up_action = new QAction(QIcon("img/6_up.png"), "&" + tsl("Increase Priority"), this);
     up_action->setStatusTip(tsl("Increase Priority of the selected Download"));
 
-    down_action = new QAction(QIcon("img/7_down.png"), "&" + tsl("Dencrease Priority"), this);
+    down_action = new QAction(QIcon("img/7_down.png"), "&" + tsl("Decrease Priority"), this);
     down_action->setStatusTip(tsl("Decrease Priority of the selected Download"));
 
     QToolBar *connect_menu = addToolBar(tsl("Connect"));
@@ -251,9 +251,9 @@ void ddclient_gui::update_bars(){
     about_action->setStatusTip(tsl("About"));
 
     up_action->setText("&" + tsl("Increase Priority"));
-    about_action->setStatusTip(tsl("Increase Priority of the selected Download"));
+    up_action->setStatusTip(tsl("Increase Priority of the selected Download"));
 
-    down_action->setText("&" + tsl("Dencrease Priority"));
+    down_action->setText("&" + tsl("Decrease Priority"));
     down_action->setStatusTip(tsl("Decrease Priority of the selected Download"));
 }
 
