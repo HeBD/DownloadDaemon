@@ -22,4 +22,5 @@ unix {
 
 win32 {
     LIBS += -lws2_32
+    RC_FILE = ddgui.rc
 }

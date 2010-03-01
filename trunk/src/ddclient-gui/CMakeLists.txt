@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project(ddclient-gui)
 
+
 SET(ddclient_gui_SRCS	ddclient_gui.cpp
 			main.cpp
 			../include/netpptk/netpptk.cpp
@@ -11,6 +12,16 @@ SET(moc_headers		ddclient_gui.h)
 
 IF(WIN32)
 	SET(GUI_TYPE WIN32)
+	IF(MINGW)
+    		ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ddgui.o
+                      			COMMAND windres.exe -I${CMAKE_CURRENT_SOURCE_DIR}
+                                        -i${CMAKE_CURRENT_SOURCE_DIR}/ddgui.rc
+                                        -o ${CMAKE_CURRENT_BINARY_DIR}/ddgui.o)
+    		SET(ddclient_gui_SRCS ${ddclient_gui_SRCS} ${CMAKE_CURRENT_BINARY_DIR}/ddgui.o)		
+	ELSE(MINGW)
+		SET(ddclient_gui_SRCS ${ddclient_gui_SRCS} ddgui.rc)
+	ENDIF(MINGW)
+	
 ENDIF(WIN32)
 IF (APPLE)
 	SET(GUI_TYPE MACOSX_BUNDLE)
@@ -36,18 +47,21 @@ INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/ ../include)
 
 
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+
+
 include(${QT_USE_FILE})
 QT4_WRAP_CPP(ddclient_gui_MOC_SRCS ${moc_headers})
 IF(NOT USE_STD_THREAD)
 	find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
 	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR} ../include)
-	ADD_EXECUTABLE(ddclient-gui ${GUI_TYPE} ${ddclient_gui_SRCS} ${ddclient_gui_MOC_SRCS})
+	ADD_EXECUTABLE(ddclient-gui ${GUI_TYPE} ${ddclient_gui_MOC_SRCS} ${ddclient_gui_SRCS})
 	TARGET_LINK_LIBRARIES(ddclient-gui ${QT_LIBRARIES})
 ELSE(NOT USE_STD_THREAD)
-	ADD_EXECUTABLE(ddclient-gui ${GUI_TYPE} ${ddclient_gui_SRCS} ${ddclient_gui_MOC_SRCS})
+	ADD_EXECUTABLE(ddclient-gui ${GUI_TYPE} ${ddclient_gui_MOC_SRCS} ${ddclient_gui_SRCS})
 	SET_TARGET_PROPERTIES(ddclient-gui PROPERTIES COMPILE_FLAGS -std=c++0x)
 	TARGET_LINK_LIBRARIES(ddclient-gui ${QT_LIBRARIES})
 ENDIF(NOT USE_STD_THREAD)
+
 
 install(TARGETS ddclient-gui DESTINATION bin)
 
