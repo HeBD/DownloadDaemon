@@ -201,9 +201,20 @@ void download_thread(dlindex download) {
 		std::string output_filename;
 		std::string download_folder = global_config.get_cfg_value("download_folder");
 		correct_path(download_folder);
-		std::string dl_subfolder = global_download_list.get_pkg_name(download.first);
-		make_valid_filename(dl_subfolder);
-		if(!dl_subfolder.empty()) {
+		if(global_config.get_bool_value("download_to_subdirs")) {
+			std::string dl_subfolder = global_download_list.get_pkg_name(download.first);
+			make_valid_filename(dl_subfolder);
+			if(dl_subfolder.empty()) {
+				std::vector<int> dls = global_download_list.get_download_list(download.first);
+				if(dls.empty()) return;
+				int first_id = dls[0];
+				dl_subfolder = filename_from_url(global_download_list.get_url(make_pair<int, int>(download.first, first_id)));
+				if(dl_subfolder.find(".") != string::npos) {
+					dl_subfolder = dl_subfolder.substr(0, dl_subfolder.find_last_of("."));
+				} else {
+					dl_subfolder = "";
+				}
+			}
 			download_folder += "/" + dl_subfolder;
 		}
 

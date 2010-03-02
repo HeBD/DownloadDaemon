@@ -114,6 +114,12 @@ class package_container {
 
 	CURL* get_handle(dlindex dl);
 
+	/** will give you a list of all download IDs in the container
+	*	@param id ID of the container
+	*	@returns list of all download IDs
+	*/
+	std::vector<int> get_download_list(int id);
+
 	/** inits a download-handle
 	*	@param id ID of the download
 	*/
