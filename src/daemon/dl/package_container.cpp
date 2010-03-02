@@ -46,14 +46,16 @@ int package_container::from_file(const char* filename) {
 	std::string line;
 	int curr_pkg_id = -1;
 	while(getline(dlist, line)) {
-		if(line.find("PKG:") == 0) {
+		if(line.find("PKG|") == 0) {
 			line = line.substr(4);
-			if(line.find(":") == string::npos || line.find(":") == 0) return LIST_ID;
-			curr_pkg_id = atoi(line.substr(0, line.find(":")).c_str());
-			line = line.substr(line.find(":") + 1);
-			int id = add_package(line);
+			if(line.find("|") == string::npos || line.find("|") == 0) return LIST_ID;
+			curr_pkg_id = atoi(line.substr(0, line.find("|")).c_str());
+			line = line.substr(line.find("|") + 1);
+			int id = add_package(line.substr(0, line.find("|")));
+			line = line.substr(line.find("|") + 1);
 			package_container::iterator package = package_by_id(id);
 			(*package)->container_id = curr_pkg_id;
+			(*package)->password = line.substr(0, line.find("|"));
 			continue;
 		}
 		download* dl = new download;
@@ -791,7 +793,7 @@ void package_container::dump_to_file(bool do_lock) {
 	ofstream ofs(list_file.c_str(), ios::trunc);
 	for(package_container::iterator pkg = packages.begin() + 1; pkg != packages.end(); ++pkg) {
 		(*pkg)->download_mutex.lock();
-		ofs << "PKG:" << (*pkg)->container_id << ":" << (*pkg)->name << endl;
+		ofs << "PKG|" << (*pkg)->container_id << "|" << (*pkg)->name << "|" << (*pkg)->password << endl;
 		for(download_container::iterator it = (*pkg)->download_list.begin(); it != (*pkg)->download_list.end(); ++it) {
 			ofs << (*it)->serialize();
 		}

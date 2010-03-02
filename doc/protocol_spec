@@ -116,7 +116,7 @@ For now, this list represents all codes:
 105 STOP		<-- If a download could not be stopped, because it's not running
 106 ACTIVATE		<-- If you try to activate a download that is already active
 107 DEACTIVATE		<-- If you try to deactivate a downoad that is already unactive
-108 VARIABLE		<-- If the variable you tried to set is invalid (if get fails, you just receive an empty string)
+108 VARIABLE		<-- If the variable you tried to set is invalid (if get fails, you just receive an empty string). also applies to other variable values (changing download url, etc)
 109 FILE		<-- If you do any file operation on a file that does not exist.
 110 PERMISSION		<-- If a file could not be written (this can also happen if you add/del a download and don't have write permissions to the list-file)
 111 VALUE		<-- If you change a config-variable to an invalid value
