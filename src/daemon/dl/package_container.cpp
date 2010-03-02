@@ -382,6 +382,20 @@ std::string package_container::get_pkg_name(int id) {
 	return (*it)->get_pkg_name();
 }
 
+std::vector<int> package_container::get_download_list(int id) {
+	lock_guard<mutex> lock(mx);
+	std::vector<int> vec;
+	package_container::iterator it = package_by_id(id);
+	if(it == packages.end()) return vec;
+	(*it)->download_mutex.lock();
+
+	for(download_container::iterator dlit = (*it)->download_list.begin(); dlit != (*it)->download_list.end(); ++dlit) {
+		vec.push_back((*dlit)->id);
+	}
+	(*it)->download_mutex.unlock();
+	return vec;
+}
+
 void package_container::init_handle(dlindex dl) {
 	lock_guard<mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
