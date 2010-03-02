@@ -312,3 +312,22 @@ bool CompareNoCase( const std::string& s1, const std::string& s2 ) {
 	return std::lexicographical_compare( s1.begin(), s1.end(), s2.begin(), s2.end(), lt_nocase());
 }
 
+void make_valid_filename(std::string &fn) {
+	replace_all(fn, "\r\n", " ");
+	replace_all(fn, "\r", " ");
+	replace_all(fn, "\n", " ");
+	replace_all(fn, "/", " ");
+	replace_all(fn, "\\", " ");
+	replace_all(fn, ":", " ");
+	replace_all(fn, "*", " ");
+	replace_all(fn, "?", " ");
+	replace_all(fn, "\"", " ");
+	replace_all(fn, "<", " ");
+	replace_all(fn, ">", " ");
+	replace_all(fn, "|", " ");
+	replace_all(fn, "@", " ");
+	replace_all(fn, "'", " ");
+	replace_all(fn, "\"", " ");
+	replace_all(fn, ";", " ");
+}
+
