@@ -471,7 +471,7 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
         }else{ //error occured
             color = "red";
 
-            status_text = "Error: " + lang[dl.error];
+            status_text = lang["Error"] + ": " + lang[dl.error];
         }
 
     }else if(dl.status == "DOWNLOAD_WAITING"){
