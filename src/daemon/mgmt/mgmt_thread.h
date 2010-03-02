@@ -37,12 +37,16 @@ void target_dl_up(std::string &data, tkSock *sock);
 void target_dl_down(std::string &data, tkSock *sock);
 void target_dl_activate(std::string &data, tkSock *sock);
 void target_dl_deactivate(std::string &data, tkSock *sock);
+void target_dl_set(std::string &data, tkSock *sock);
+void target_dl_get(std::string &data, tkSock *sock);
 
 void target_pkg_add(std::string &data, tkSock *sock);
 void target_pkg_del(std::string &data, tkSock *sock);
 void target_pkg_up(std::string &data, tkSock *sock);
 void target_pkg_down(std::string &data, tkSock *sock);
 void target_pkg_exists(std::string &data, tkSock *sock);
+void target_pkg_set(std::string &data, tkSock *sock);
+void target_pkg_get(std::string &data, tkSock *sock);
 
 void target_var_get(std::string &data, tkSock *sock);
 void target_var_set(std::string &data, tkSock *sock);

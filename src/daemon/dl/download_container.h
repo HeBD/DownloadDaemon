@@ -152,6 +152,12 @@ public:
 	void set_proxy(int id, std::string proxy);
 	std::string get_proxy(int id);
 
+	void set_password(const std::string& passwd);
+	std::string get_password();
+
+	void set_pkg_name(const std::string& pkg_name);
+	std::string get_pkg_name();
+
 	CURL* get_handle(int id);
 
 	/** strip the host from the URL
@@ -247,9 +253,9 @@ private:
 	std::mutex download_mutex;
 	std::mutex plugin_mutex; // makes sure that you don't call the same plugin multiple times at the same time
 				   // because it would bring thread-safety problems
-	bool is_reconnecting;
 	int container_id;
 	std::string name;
+	std::string password; // password for rar-extraction
 };
 
 

@@ -34,10 +34,10 @@
 #endif
 using namespace std;
 
-download_container::download_container(int id, std::string container_name) : is_reconnecting(false), container_id(id), name(container_name) {
+download_container::download_container(int id, std::string container_name) : container_id(id), name(container_name) {
 }
 
-download_container::download_container(const download_container &cnt) : download_list(cnt.download_list), is_reconnecting(false), container_id(cnt.container_id), name(cnt.name) {}
+download_container::download_container(const download_container &cnt) : download_list(cnt.download_list), container_id(cnt.container_id), name(cnt.name) {}
 
 download_container::~download_container() {
 	lock_guard<mutex> lock(download_mutex);
@@ -179,7 +179,7 @@ int download_container::get_next_downloadable(bool do_lock) {
 		lock.lock();
 	}
 
-	if(is_reconnecting || download_list.empty()) {
+	if(download_list.empty()) {
 		return LIST_ID;
 	}
 	int pending_downloads = 0;
@@ -268,9 +268,6 @@ int download_container::get_next_downloadable(bool do_lock) {
 }
 
 #endif // IS_PLUGIN
-
-
-
 
 
 void download_container::set_url(int id, std::string url) {
@@ -481,6 +478,26 @@ std::string download_container::get_host(int dl) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(dl);
 	return (*it)->get_host();
+}
+
+void download_container::set_password(const std::string& passwd) {
+	lock_guard<mutex> lock(download_mutex);
+	password = passwd;
+}
+
+std::string download_container::get_password() {
+	lock_guard<mutex> lock(download_mutex);
+	return password;
+}
+
+void download_container::set_pkg_name(const std::string& pkg_name) {
+	lock_guard<mutex> lock(download_mutex);
+	name = pkg_name;
+}
+
+std::string download_container::get_pkg_name() {
+	lock_guard<mutex> lock(download_mutex);
+	return name;
 }
 
 void download_container::decrease_waits() {

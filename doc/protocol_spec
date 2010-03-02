@@ -45,7 +45,7 @@ After specifing the target, at least one whitespace needs to follow, so now we g
 
 the third parameter is a command about what to do with the target.
 
-For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "UP", "DOWN", "ACTIVATE", "DEACTIVATE".
+For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "UP", "DOWN", "ACTIVATE", "DEACTIVATE", "SET", "GET".
 	LIST will return the current list of downloads in the following format:
 	     PACKAGE|<pkg_id>|<pkg_title>
 	     id|date added|title|url|status|downloaded bytes|file size|wait seconds|error message|download speed
@@ -58,13 +58,17 @@ For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "
 	DOWN <id> will move a download one position downwards and therfore decrease its priority. The command needs to be followed by a download ID
 	ACTIVATE <id> will activate a deactivated download
 	DEACTIVATE <id> will deactivate an active download. Running downloads will be aborted by this command.
+	SET <id> <option>=<value> will change the property of a download. options are: DL_URL and DL_TITLE
+	GET <id> <option> returns a download-parameter. options are: DL_URL, DL_TITLE, DL_ADD_DATE
 
-For the target PKG, the following commands exist: "ADD", "DEL", "UP", "DOWN", "EXISTS".
+For the target PKG, the following commands exist: "ADD", "DEL", "UP", "DOWN", "EXISTS", "SET", "GET".
 	ADD <name> adds an empty package to the list (add downloads to it with the DL ADD command). This command returns the ID of the newly created container or -1 on error
 	DEL <id> removes a package and all the downloads inside it
 	UP <id> moves a package up
 	DOWN <id> moves a package down
-	EXISTS <id> checks if a container exists. returns "1" if it exists or "0" if it doesnt.	
+	EXISTS <id> checks if a container exists. returns "1" if it exists or "0" if it doesnt.
+	SET <id> <option>=<value> sets an option of a package. options are: PKG_NAME, PKG_PASSWORD 
+	GET <id> <option> returns a package-parameter. options are: PKG_NAME, PKG_PASSWORD
 
 For the target VAR, the following commands exist: "SET", "GET".
 	SET <var>=<value> will set a configuration variable and needs to be in the format <variable> = <value>. the variable identifier is just the same
