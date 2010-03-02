@@ -1385,7 +1385,6 @@ void myframe::on_configure(wxCommandEvent &event){
 
 	configure_dialog dialog(this);
 	dialog.ShowModal();
-	get_content();
 }
 
 
