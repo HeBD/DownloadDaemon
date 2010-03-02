@@ -1,4 +1,7 @@
 2010-03-02
+   [adrian]
+	- finished implementation of the untar/unrar functionality
+	- extended mgmt-api, made setting/getting of single download and package properties possible
    [susanne]
 	- ddclient-gui now shows download list
 

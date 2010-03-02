@@ -275,6 +275,22 @@ void target_dl(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_dl_deactivate(data, sock);
+	} else if(data.find("SET") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_dl_set(data, sock);
+	} else if(data.find("GET") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_dl_get(data, sock);
 	} else {
 		*sock << "101 PROTOCOL";
 	}
@@ -442,6 +458,63 @@ void target_dl_deactivate(std::string &data, tkSock *sock) {
 	}
 }
 
+void target_dl_set(std::string &data, tkSock *sock) {
+	string option;
+	string value;
+	size_t n;
+	int id = atoi(data.substr(0, (n = data.find_first_of("\n\r\t "))).c_str());
+	int pkg_id = global_download_list.pkg_that_contains_download(id);
+	if(pkg_id == LIST_ID) {
+		*sock << "104 ID";
+		return;
+	}
+	data = data.substr(n);
+	trim_string(data);
+	if((n = data.find('=')) == string::npos || n + 1 >= data.size()) {
+		*sock << "101 PROTOCOL";
+		return;
+	}
+	option = data.substr(0, n);
+	value = data.substr(n);
+	if(data.find_first_of("\n\r|") != string::npos) {
+		*sock << "101 PROTOCOL";
+		return;
+	}
+	trim_string(option);
+	trim_string(value);
+	if(option == "DL_URL") {
+		global_download_list.set_url(make_pair<int, int>(pkg_id, id), value);
+		*sock << "100 SUCCESS";
+	} else if(option == "DL_TITLE") {
+		global_download_list.set_title(make_pair<int, int>(pkg_id, id), value);
+		*sock << "100 SUCCESS";
+	} else {
+		*sock << "101 PROTOCOL";
+	}
+}
+
+void target_dl_get(std::string &data, tkSock *sock) {
+	size_t n;
+	int id = atoi(data.substr(0, (n = data.find_first_of("\n\r "))).c_str());
+	int pkg_id = global_download_list.pkg_that_contains_download(id);
+	if(pkg_id == LIST_ID || n == string::npos) {
+		*sock << "";
+		return;
+	}
+	data = data.substr(n);
+	trim_string(data);
+	dlindex idx(pkg_id, id);
+	if(data == "DL_URL") {
+		*sock << global_download_list.get_url(idx);
+	} else if(data == "DL_TITLE") {
+		*sock << global_download_list.get_title(idx);
+	} else if(data == "DL_ADD_DATE") {
+		*sock << global_download_list.get_add_date(idx);
+	} else {
+		*sock << "";
+	}
+}
+
 void target_pkg(std::string &data, tkSock *sock) {
 	if(data.find("ADD") == 0) {
 		data = data.substr(3);
@@ -479,6 +552,22 @@ void target_pkg(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_pkg_exists(data, sock);
+	} else if(data.find("SET") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_set(data, sock);
+	} else if(data.find("GET") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_get(data, sock);
 	} else {
 		*sock << "101 PROTOCOL";
 	}
@@ -509,6 +598,60 @@ void target_pkg_down(std::string &data, tkSock *sock) {
 
 void target_pkg_exists(std::string &data, tkSock *sock) {
 	*sock << int_to_string(global_download_list.pkg_exists(atoi(data.c_str())));
+}
+
+void target_pkg_set(std::string &data, tkSock *sock) {
+	string option;
+	string value;
+	size_t n;
+	int id = atoi(data.substr(0, (n = data.find_first_of("\n\r\t "))).c_str());
+	if(!global_download_list.pkg_exists(id)) {
+		*sock << "104 ID";
+		return;
+	}
+	data = data.substr(n);
+	trim_string(data);
+	if((n = data.find('=')) == string::npos || n + 1 >= data.size()) {
+		*sock << "101 PROTOCOL";
+		return;
+	}
+	option = data.substr(0, n);
+	value = data.substr(n);
+	if(data.find_first_of("\n\r|") != string::npos) {
+		*sock << "101 PROTOCOL";
+		return;
+	}
+	trim_string(option);
+	trim_string(value);
+	if(option == "PKG_NAME") {
+		global_download_list.set_pkg_name(id, value);
+		*sock << "100 SUCCESS";
+	} else if(option == "PKG_PASSWORD") {
+		global_download_list.set_password(id, value);
+		*sock << "100 SUCCESS";
+	} else {
+		*sock << "101 PROTOCOL";
+	}
+}
+
+void target_pkg_get(std::string &data, tkSock *sock) {
+	size_t n;
+	int pkg_id = atoi(data.substr(0, (n = data.find_first_of("\n\r "))).c_str());
+	if(n == string::npos) {
+		*sock << "";
+		return;
+	}
+	// if the package doesn't exists, "" is returned automatically
+
+	data = data.substr(n);
+	trim_string(data);
+	if(data == "PKG_NAME") {
+		*sock << global_download_list.get_pkg_name(pkg_id);
+	} else if(data == "PKG_PASSWORD") {
+		*sock << global_download_list.get_password(pkg_id);
+	} else {
+		*sock << "";
+	}
 }
 
 void target_var(std::string &data, tkSock *sock) {

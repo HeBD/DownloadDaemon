@@ -106,6 +106,12 @@ class package_container {
 	void set_proxy(dlindex dl, std::string proxy);
 	std::string get_proxy(dlindex dl);
 
+	void set_password(int id, const std::string& passwd);
+	std::string get_password(int id);
+
+	void set_pkg_name(int id, const std::string& name);
+	std::string get_pkg_name(int id);
+
 	CURL* get_handle(dlindex dl);
 
 	/** inits a download-handle

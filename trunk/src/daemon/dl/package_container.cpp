@@ -352,6 +352,34 @@ std::string package_container::get_url(dlindex dl) {
 	return (*it)->get_url(dl.second);
 }
 
+void package_container::set_password(int id, const std::string& passwd) {
+	lock_guard<mutex> lock(mx);
+	package_container::iterator it = package_by_id(id);
+	if(it == packages.end()) return;
+	(*it)->set_password(passwd);
+}
+
+std::string package_container::get_password(int id) {
+	lock_guard<mutex> lock(mx);
+	package_container::iterator it = package_by_id(id);
+	if(it == packages.end()) return "";
+	return (*it)->get_password();
+}
+
+void package_container::set_pkg_name(int id, const std::string& name) {
+	lock_guard<mutex> lock(mx);
+	package_container::iterator it = package_by_id(id);
+	if(it == packages.end()) return;
+	(*it)->set_pkg_name(name);
+}
+
+std::string package_container::get_pkg_name(int id) {
+	lock_guard<mutex> lock(mx);
+	package_container::iterator it = package_by_id(id);
+	if(it == packages.end()) return "";
+	return (*it)->get_pkg_name();
+}
+
 void package_container::init_handle(dlindex dl) {
 	lock_guard<mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
@@ -820,6 +848,7 @@ void package_container::extract_package(int id) {
 	if(!global_config.get_bool_value("enable_pkg_extractor")) return;
 	unique_lock<mutex> lock(mx);
 	package_container::iterator pkg_it = package_by_id(id);
+	std::string fixed_passwd = (*pkg_it)->get_password();
 	FILE* extractor;
 	string to_exec;
 	unique_lock<mutex> pkg_lock((*pkg_it)->download_mutex);
@@ -831,11 +860,14 @@ void package_container::extract_package(int id) {
 	pkg_lock.unlock();
 	lock.unlock();
 	string password_list = global_config.get_cfg_value("pkg_extractor_passwords");
-	string password;
+	string password = fixed_passwd;
+	std::string unrar_path = global_config.get_cfg_value("unrar_path");
+	std::string tar_path = global_config.get_cfg_value("tar_path");
 	while(true) {
 		trim_string(password);
 		if(extension == ".rar") {
-			to_exec = "unrar x";
+			if(unrar_path.empty()) return;
+			to_exec = unrar_path + " x";
 			if(!password.empty())
 				to_exec += " -p" + password;
 			else
@@ -846,9 +878,9 @@ void package_container::extract_package(int id) {
 		//	if(!password.empty())
 		//		to_exec += " -P " + password;
 		//	to_exec += "'" + output_file + "' -d '" + output_dir + "'";
-		} else if(extension == ".gz" && output_file.find(".tar.gz") == output_file.size() - 7) {
+		} else if(extension == ".gz" && output_file.find(".tar.gz") == output_file.size() - 7 && !tar_path.empty()) {
 			to_exec = "tar xzf '" + output_file + "' -C '" + output_dir + "'";
-		} else if(extension == ".bz2" && output_file.find(".tar.bz2") == output_file.size() - 8) {
+		} else if(extension == ".bz2" && output_file.find(".tar.bz2") == output_file.size() - 8 && !tar_path.empty()) {
 			to_exec = "tar xjf '" + output_file + "' -C '" + output_dir + "'";
 		}
 		if(to_exec.empty()) return;
@@ -870,6 +902,7 @@ void package_container::extract_package(int id) {
 		int retval = pclose(extractor);
 		if(result.find("password incorrect") != string::npos) {
 			// next password
+			if(!fixed_passwd.empty()) return;
 			if(password_list.empty()) return;
 			if(password.empty()) {
 				password = password_list.substr(0, password_list.find(";"));
