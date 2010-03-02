@@ -117,5 +117,10 @@ std::string filename_from_url(const std::string &url);
 */
 bool CompareNoCase( const std::string& s1, const std::string& s2 );
 
+/** creates a filename from a string by replacing special chars (ONLY pass a filename, not a path. / and \ will also be replaced!)
+*	@param fn filename
+*/
+void make_valid_filename(std::string &fn);
+
 
 #endif /*HELPERFUNCTIONS_H_*/

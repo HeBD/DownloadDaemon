@@ -201,6 +201,12 @@ void download_thread(dlindex download) {
 		std::string output_filename;
 		std::string download_folder = global_config.get_cfg_value("download_folder");
 		correct_path(download_folder);
+		std::string dl_subfolder = global_download_list.get_pkg_name(download.first);
+		make_valid_filename(dl_subfolder);
+		if(!dl_subfolder.empty()) {
+			download_folder += "/" + dl_subfolder;
+		}
+
 		mkdir_recursive(download_folder);
 		if(plug_outp.download_filename == "") {
 			if(plug_outp.download_url != "") {

@@ -2,6 +2,7 @@
    [adrian]
 	- finished implementation of the untar/unrar functionality
 	- extended mgmt-api, made setting/getting of single download and package properties possible
+	- DownloadDaemon now downloads into a subfolder called like the package title, if there is one
    [susanne]
 	- ddclient-gui now shows download list
 
