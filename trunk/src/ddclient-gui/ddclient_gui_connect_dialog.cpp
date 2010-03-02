@@ -36,8 +36,6 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
         snprintf(last_data.lang, 128, "English");
     }
 
-
-
     QGroupBox *connect_box = new QGroupBox(p->tsl("Data"));
     QFormLayout *form_layout = new QFormLayout();
     QVBoxLayout *layout = new QVBoxLayout();
@@ -59,6 +57,8 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
     language->addItem("Deutsch");
     save_data = new QCheckBox();
     save_data->setChecked(true);
+    button_box->button(QDialogButtonBox::Ok)->setDefault(true);
+    button_box->button(QDialogButtonBox::Ok)->setFocus(Qt::OtherFocusReason);
 
     if(strcmp(last_data.lang, "Deutsch") == 0)
         language->setCurrentIndex(1);
@@ -84,10 +84,10 @@ void connect_dialog::ok(){
     bool error_occured = false;
     ddclient_gui *p = (ddclient_gui *) parent();
     p->set_language(language);
-    //boost::mutex *mx = p->get_mutex();
+    QMutex *mx = p->get_mutex();
     downloadc *dclient = p->get_connection();
 
-    //mx->lock();
+    mx->lock();
     try{
         dclient->connect(host, port, password, true);
 
@@ -146,7 +146,7 @@ void connect_dialog::ok(){
             error_occured = true;
         }
     }
-    //mx->unlock();
+    mx->unlock();
 
     // save data if no error occured => connection established
     if(!error_occured){

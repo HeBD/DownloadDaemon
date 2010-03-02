@@ -1,5 +1,7 @@
 #include "ddclient_gui.h"
 #include "ddclient_gui_connect_dialog.h"
+#include <sstream>
+#include <iomanip>
 
 #include <QtGui/QStatusBar>
 #include <QtGui/QMenuBar>
@@ -13,9 +15,8 @@
 #include <QModelIndex>
 //#include <QtGui> // this is only for testing if includes are the problem
 
-#include <sstream>
-
 using namespace std;
+
 
 ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(config_dir) {
     setWindowTitle("DownloadDaemon Client GUI");
@@ -31,11 +32,15 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 
     add_bars();
     add_list_components();
+
+    connect(this, SIGNAL(do_reload()), this, SLOT(on_reload()));
 }
 
 
 ddclient_gui::~ddclient_gui(){
-    delete dclient;                                                     // TODO: <= mutexlock around this
+    mx.lock();
+    delete dclient;
+    mx.unlock();
 }
 
 
@@ -72,6 +77,11 @@ QString ddclient_gui::tsl(string text, ...){
 }
 
 
+QMutex *ddclient_gui::get_mutex(){
+    return &mx;
+}
+
+
 void ddclient_gui::set_language(std::string lang_to_set){
     lang.set_language(lang_to_set);
 
@@ -82,6 +92,41 @@ void ddclient_gui::set_language(std::string lang_to_set){
 
 downloadc *ddclient_gui::get_connection(){
     return dclient;
+}
+
+
+void ddclient_gui::get_content(){
+    mx.lock();
+    new_content.clear();
+
+    try{
+        new_content = dclient->get_list();
+
+    }catch(client_exception &e){}
+
+    // send event to reload list
+    mx.unlock();
+    emit do_reload();
+}
+
+
+bool ddclient_gui::check_connection(bool tell_user, string individual_message){
+    mx.lock();
+
+    try{
+        dclient->check_connection();
+
+    }catch(client_exception &e){
+        if(e.get_id() == 10){ //connection lost
+
+            if(tell_user)
+                QMessageBox::information(this, tsl("No Connection to Server"), tsl(individual_message));
+            mx.unlock();
+            return false;
+        }
+    }
+    mx.unlock();
+    return true;
 }
 
 
@@ -188,7 +233,6 @@ void ddclient_gui::add_bars(){
     downloading_menu = addToolBar(tsl("Downloading"));
     downloading_menu->addAction(activate_action);
 
-
     connect(connect_action, SIGNAL(triggered()), this, SLOT(on_connect()));
     connect(configure_action, SIGNAL(triggered()), this, SLOT(on_configure()));
     connect(activate_action, SIGNAL(triggered()), this, SLOT(on_downloading_activate()));
@@ -283,36 +327,6 @@ void ddclient_gui::add_list_components(){
     list->setColumnWidth(4, 0.45*width);
 
     setCentralWidget(list);
-
-    // testdata
-    QStandardItem *testitem1 = new QStandardItem(QIcon("img/package.png"), tsl("0"));
-    QStandardItem *testitem2 = new QStandardItem(tsl("Packettitel1"));
-    QStandardItem *testitem3 = new QStandardItem(QIcon("img/bullet_black.png"), tsl("1"));
-    QStandardItem *testitem8 = new QStandardItem(tsl("10h, 59:25m"));
-    QStandardItem *testitem4 = new QStandardItem(tsl("Downloadtitel1"));
-    QStandardItem *testitem5 = new QStandardItem(QIcon("img/bullet_black.png"), tsl("2"));
-    QStandardItem *testitem6 = new QStandardItem(QIcon("img/package.png"), tsl("1"));
-    QStandardItem *testitem7 = new QStandardItem(QIcon("img/bullet_black.png"), tsl("3"));
-
-    testitem1->setEditable(false);
-    testitem2->setEditable(false);
-    testitem3->setEditable(false);
-    testitem4->setEditable(false);
-    testitem5->setEditable(false);
-    testitem6->setEditable(false);
-    testitem7->setEditable(false);
-    testitem8->setEditable(false);
-
-    testitem1->setChild(0, testitem3);
-    testitem1->setChild(0, 1, testitem4);
-    testitem1->setChild(1, 0, testitem5);
-    testitem1->setChild(0, 3, testitem8);
-
-    testitem6->setChild(0, testitem7);
-
-    list_model->setItem(0, 0, testitem1);
-    list_model->setItem(0, 1, testitem2);
-    list_model->setItem(1, 0, testitem6);
 }
 
 
@@ -321,9 +335,171 @@ void ddclient_gui::update_list_components(){
     column_labels << tsl("ID") << tsl("Title") << tsl("URL") << tsl("Time left") << tsl("Status");
     list_model->setHorizontalHeaderLabels(column_labels);
 
-    /*mx.lock();
+    mx.lock();                                                                                                  // TODO: if there is no compare_vectorvector, we don't need that
     content.clear(); // delete old content to force reload of list
-    mx.unlock();*/
+    mx.unlock();
+}
+
+
+void ddclient_gui::cut_time(string &time_left){
+    long time_span = atol(time_left.c_str());
+    int hours = 0, mins = 0, secs = 0;
+    stringstream stream_buffer;
+
+    secs = time_span % 60;
+    if(time_span >= 60) // cut time_span down to minutes
+        time_span /= 60;
+    else { // we don't have minutes
+        stream_buffer << secs << " s";
+        time_left = stream_buffer.str();
+        return;
+    }
+
+    mins = time_span % 60;
+    if(time_span >= 60) // cut time_span down to hours
+        time_span /= 60;
+    else { // we don't have hours
+        stream_buffer << mins << ":";
+        if(secs < 10)
+            stream_buffer << "0";
+        stream_buffer << secs << "m";
+        time_left = stream_buffer.str();
+        return;
+    }
+
+    hours = time_span;
+    stream_buffer << hours << "h, ";
+    if(mins < 10)
+        stream_buffer << "0";
+    stream_buffer << mins << ":";
+    if(secs < 10)
+        stream_buffer << "0";
+    stream_buffer << secs << "m";
+
+    time_left = stream_buffer.str();
+    return;
+}
+
+string ddclient_gui::build_status(string &status_text, string &time_left, download &dl){
+    string color;
+    color = "white";
+
+    if(dl.status == "DOWNLOAD_RUNNING"){
+        color = "green";
+
+        if(dl.wait > 0 && dl.error == "PLUGIN_SUCCESS"){ // waiting time > 0
+            status_text = lang["Download running. Waiting."];
+            stringstream time;
+            time << dl.wait;
+            time_left =  time.str();
+            cut_time(time_left);
+
+        }else if(dl.wait > 0 && dl.error != "PLUGIN_SUCCESS"){
+            color = "red";
+
+            status_text = lang["Error"] + ": " + lang[dl.error] + " " + lang["Retrying soon."];
+            stringstream time;
+            time << dl.wait;
+            time_left =  time.str();
+            cut_time(time_left);
+
+        }else{ // no waiting time
+            stringstream stream_buffer, time_buffer;
+            stream_buffer << lang["Running"];
+
+            if(dl.speed != 0 && dl.speed != -1) // download speed known
+                stream_buffer << "@" << setprecision(1) << fixed << (float)dl.speed / 1024 << " kb/s";
+
+            stream_buffer << ": ";
+
+            if(dl.size == 0 || dl.size == 1){ // download size unknown
+                stream_buffer << "0.00% - ";
+                time_left = "";
+
+                if(dl.downloaded == 0 || dl.downloaded == 1) // nothing downloaded yet
+                    stream_buffer << "0.00 MB/ 0.00 MB";
+                else // something downloaded
+                    stream_buffer << setprecision(1) << fixed << (float)dl.downloaded / 1048576 << " MB/ 0.00 MB";
+
+            }else{ // download size known
+                if(dl.downloaded == 0 || dl.downloaded == 1){ // nothing downloaded yet
+                    stream_buffer << "0.00% - 0.00 MB/ " << fixed << (float)dl.size / 1048576 << " MB";
+
+                    if(dl.speed != 0 && dl.speed != -1){ // download speed known => calc time left
+                        time_buffer << (int)(dl.size / dl.speed);
+                        time_left = time_buffer.str();
+                        cut_time(time_left);
+                    }else
+                        time_left = "";
+
+                }else{ // download size known and something downloaded
+                    stream_buffer << setprecision(1) << fixed << (float)dl.downloaded / (float)dl.size * 100 << "% - ";
+                    stream_buffer << setprecision(1) << fixed << (float)dl.downloaded / 1048576 << " MB/ ";
+                    stream_buffer << setprecision(1) << fixed << (float)dl.size / 1048576 << " MB";
+
+                    if(dl.speed != 0 && dl.speed != -1){ // download speed known => calc time left
+                        time_buffer << (int)((dl.size - dl.downloaded) / dl.speed);
+                        time_left = time_buffer.str();
+                        cut_time(time_left);
+                    }else
+                        time_left = "";
+                }
+            }
+            status_text = stream_buffer.str();
+        }
+
+    }else if(dl.status == "DOWNLOAD_INACTIVE"){
+        if(dl.error == "PLUGIN_SUCCESS"){
+            color = "yellow";
+
+            status_text = lang["Download Inactive."];
+            time_left = "";
+
+        }else{ // error occured
+            color = "red";
+
+            status_text = lang["Inactive. Error"] + ": " + lang[dl.error];
+            time_left = "";
+        }
+
+    }else if(dl.status == "DOWNLOAD_PENDING"){
+        time_left = "";
+
+        if(dl.error == "PLUGIN_SUCCESS"){
+            status_text = lang["Download Pending."];
+
+        }else{ //error occured
+            color = "red";
+
+            status_text = "Error: " + lang[dl.error];
+        }
+
+    }else if(dl.status == "DOWNLOAD_WAITING"){
+        color = "red";
+
+        status_text = lang["Have to wait."];
+        stringstream time;
+        time << dl.wait;
+        time_left =  time.str();
+        cut_time(time_left);
+
+    }else if(dl.status == "DOWNLOAD_FINISHED"){
+        color = "star";
+
+        status_text = lang["Download Finished."];
+        time_left = "";
+
+    }else if(dl.status == "DOWNLOAD_RECONNECTING") {
+        color = "yellow";
+
+        status_text = lang["Reconnecting..."];
+        time_left = "";
+    }else{ // default, column 4 has unknown input
+        status_text = lang["Status not detected."];
+        time_left = "";
+    }
+
+    return color;
 }
 
 
@@ -357,6 +533,9 @@ void ddclient_gui::on_about(){
 
 
 void ddclient_gui::on_select(){
+    if(!check_connection(false))
+        return;
+
     list->expandAll();
     list->selectAll();
 }
@@ -366,72 +545,224 @@ void ddclient_gui::on_connect(){
     connect_dialog dialog(this, config_dir);
     dialog.setModal(true);
     dialog.exec();
+
+    get_content();
 }
 
 
 void ddclient_gui::on_add(){
+    if(!check_connection(true, "Please connect before adding Downloads."))
+        return;
     QMessageBox::information(this, "Test", "on_add");
+
+    get_content();
 }
 
 
 void ddclient_gui::on_delete(){
+    if(!check_connection(true, "Please connect before deleting Downloads."))
+        return;
+
     QMessageBox::information(this, "Test", "on_delete");
     get_selected_lines();
+                                                                                               // TODO: not finished!
+    get_content();
 }
 
 
 void ddclient_gui::on_delete_finished(){
+        if(!check_connection(true, "Please connect before deleting Downloads."))
+        return;
+
     QMessageBox::information(this, "Test", "on_delete_finished");
+    get_selected_lines();
+                                                                                               // TODO: not finished!
+    get_content();
 }
 
 
 void ddclient_gui::on_delete_file(){
+    if(!check_connection(true, "Please connect before deleting Files."))
+        return;
+
     QMessageBox::information(this, "Test", "on_delete_file");
+    get_selected_lines();
+                                                                                               // TODO: not finished!
+    get_content();
 }
 
 
 void ddclient_gui::on_activate(){
+    if(!check_connection(true, "Please connect before activating Downloads."))
+        return;
+
     QMessageBox::information(this, "Test", "on_activate");
+    get_selected_lines();
+                                                                                               // TODO: not finished!
+    get_content();
 }
 
 
 void ddclient_gui::on_deactivate(){
+    if(!check_connection(true, "Please connect before deactivating Downloads."))
+        return;
+
     QMessageBox::information(this, "Test", "on_deactivate");
+    get_selected_lines();
+                                                                                               // TODO: not finished!
+    get_content();
 }
 
 
 void ddclient_gui::on_priority_up(){
+    if(!check_connection(true, "Please connect before increasing Priority."))
+        return;
+
     QMessageBox::information(this, "Test", "on_priority_up");
+    get_selected_lines();
+                                                                                               // TODO: not finished!
+    get_content();
 }
 
 
 void ddclient_gui::on_priority_down(){
+    if(!check_connection(true, "Please connect before decreasing Priority."))
+        return;
+
     QMessageBox::information(this, "Test", "on_priority_down");
+    get_selected_lines();
+                                                                                               // TODO: not finished!
+    get_content();
 }
 
 
 void ddclient_gui::on_configure(){
+    if(!check_connection(true, "Please connect before configurating DownloadDaemon."))
+        return;
+
     QMessageBox::information(this, "Test", "on_configure");
+                                                                                               // TODO: not finished!
 }
 
 
 void ddclient_gui::on_downloading_activate(){
+    if(!check_connection(true, "Please connect before activate Downloading."))
+        return;
+
     QMessageBox::information(this, "Test", "on_downloading_activate");
+    get_selected_lines();
+                                                                                               // TODO: not finished!
+    get_content();
 }
 
 
 void ddclient_gui::on_downloading_deactivate(){
+    if(!check_connection(true, "Please connect before deactivate Downloading."))
+        return;
+
     QMessageBox::information(this, "Test", "on_downloading_deactivate");
+    get_selected_lines();
+                                                                                               // TODO: not finished!
+    get_content();
 }
 
 
 void ddclient_gui::on_copy(){
+    if(!check_connection(true, "Please connect before copying URLs."))
+        return;
+
     QMessageBox::information(this, "Test", "on_copy");
+    get_selected_lines();
+                                                                                               // TODO: not finished!
+    get_content();
 }
 
 
 void ddclient_gui::on_reload(){
-    QMessageBox::information(this, "Test", "on_reload");
+    if(!check_connection()){
+        status_connection->setText(tsl("Not connected"));
+        return;
+    }
+
+    mx.lock();
+    //compare_all_packages();
+    content.clear();
+    content = new_content;
+
+    list_model->clear();
+
+    QStringList column_labels;
+    column_labels << tsl("ID") << tsl("Title") << tsl("URL") << tsl("Time left") << tsl("Status");
+    list_model->setHorizontalHeaderLabels(column_labels);
+
+    double width = list->width();
+
+    list->setColumnWidth(0, 100); // fixed sizes
+    list->setColumnWidth(3, 100);
+    width -= 250;
+    list->setColumnWidth(1, 0.25*width);
+    list->setColumnWidth(2, 0.3*width);
+    list->setColumnWidth(4, 0.45*width);
+
+    vector<package>::iterator pit = content.begin();
+    vector<download>::iterator dit;
+    QStandardItem *pkg;
+    QStandardItem *dl;
+    int line = 0;
+    string color, status_text, time_left;
+
+    for(; pit != content.end(); pit++){ // loop all packages
+        pkg = new QStandardItem(QIcon("img/package.png"), QString("%1").arg(pit->id));
+        pkg->setEditable(false);
+        list_model->setItem(line, 0, pkg);
+
+        int dl_line = 0;
+        for(dit = pit->dls.begin(); dit != pit->dls.end(); dit++){ // loop all downloads of that package
+            color = build_status(status_text, time_left, *dit);
+
+            dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(dit->id));
+            pkg->setEditable(false);
+            pkg->setChild(dl_line, 0, dl);
+
+            dl = new QStandardItem(QString(dit->title.c_str()));
+            pkg->setEditable(false);
+            pkg->setChild(dl_line, 1, dl);
+
+            dl = new QStandardItem(QString(dit->url.c_str()));
+            pkg->setEditable(false);
+            pkg->setChild(dl_line, 2, dl);
+
+            dl = new QStandardItem(QString(time_left.c_str()));
+            pkg->setEditable(false);
+            pkg->setChild(dl_line, 3, dl);
+
+            string colorstring = "img/bullet_" + color + ".png";
+            dl = new QStandardItem(QIcon(colorstring.c_str()), QString(status_text.c_str()));
+            pkg->setEditable(false);
+            pkg->setChild(dl_line, 4, dl);
+
+            dl_line++;
+        }
+
+        pkg = new QStandardItem(QString(pit->name.c_str()));
+        pkg->setEditable(false);
+        list_model->setItem(line, 1, pkg);
+
+        line++;
+    }
+    list->expandAll();                                                                                      // remember and recreate expaned items later
+
+    /*if(!reselect_lines.empty()){ // update selection
+        vector<string>::iterator sit;
+
+        for(sit = reselect_lines.begin(); sit<reselect_lines.end(); sit++){
+            select_line_by_id(*sit);
+        }
+
+        reselect_lines.clear();
+    }
+    */
+    mx.unlock();
 }
 
 
