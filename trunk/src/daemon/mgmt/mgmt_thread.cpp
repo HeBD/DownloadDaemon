@@ -468,14 +468,20 @@ void target_dl_set(std::string &data, tkSock *sock) {
 		*sock << "104 ID";
 		return;
 	}
+	download_status st = global_download_list.get_status(make_pair<int, int>(pkg_id, id));
+	if(st == DOWNLOAD_RUNNING || st == DOWNLOAD_FINISHED || global_download_list.get_running(make_pair<int, int>(pkg_id, id))) {
+		*sock << "108 VARIABLE";
+		return;
+	}
+
 	data = data.substr(n);
 	trim_string(data);
-	if((n = data.find('=')) == string::npos || n + 1 >= data.size()) {
+	if((n = data.find('=')) == string::npos || n + 1 > data.size()) {
 		*sock << "101 PROTOCOL";
 		return;
 	}
 	option = data.substr(0, n);
-	value = data.substr(n);
+	value = data.substr(n + 1);
 	if(data.find_first_of("\n\r|") != string::npos) {
 		*sock << "101 PROTOCOL";
 		return;
@@ -483,8 +489,12 @@ void target_dl_set(std::string &data, tkSock *sock) {
 	trim_string(option);
 	trim_string(value);
 	if(option == "DL_URL") {
-		global_download_list.set_url(make_pair<int, int>(pkg_id, id), value);
-		*sock << "100 SUCCESS";
+		if(validate_url(value)) {
+			global_download_list.set_url(make_pair<int, int>(pkg_id, id), value);
+			*sock << "100 SUCCESS";
+		} else {
+			*sock << "108 VARIABLE";
+		}
 	} else if(option == "DL_TITLE") {
 		global_download_list.set_title(make_pair<int, int>(pkg_id, id), value);
 		*sock << "100 SUCCESS";
@@ -611,12 +621,12 @@ void target_pkg_set(std::string &data, tkSock *sock) {
 	}
 	data = data.substr(n);
 	trim_string(data);
-	if((n = data.find('=')) == string::npos || n + 1 >= data.size()) {
+	if((n = data.find('=')) == string::npos || n + 1 > data.size()) {
 		*sock << "101 PROTOCOL";
 		return;
 	}
 	option = data.substr(0, n);
-	value = data.substr(n);
+	value = data.substr(n + 1);
 	if(data.find_first_of("\n\r|") != string::npos) {
 		*sock << "101 PROTOCOL";
 		return;
