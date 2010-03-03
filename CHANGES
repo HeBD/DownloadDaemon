@@ -1,3 +1,7 @@
+2010-03-03
+   [susanne]
+        - ddclient-gui now reloads download list (not automatically, but when pushing a button, etc)
+
 2010-03-02
    [adrian]
 	- finished implementation of the untar/unrar functionality
