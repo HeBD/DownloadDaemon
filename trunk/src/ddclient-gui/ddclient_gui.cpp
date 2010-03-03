@@ -585,7 +585,7 @@ vector<view_info> ddclient_gui::get_current_view(){
             int id = (content.at(parent_row)).dls.at(row).id; // found real id!
 
             for(vit = info.begin(); vit != info.end(); ++vit){ // find download with that in info
-                if((vit->id == id) && (vit->package == false)){
+                if((vit->id == id) && !(vit->package)){
                     vit->selected = true;
                     break;
                 }
@@ -799,7 +799,7 @@ void ddclient_gui::on_reload(){
                     expanded = true;
 
                 if(vit->selected){ // package is selected
-                     for(int i=0; i<5; i++)
+                    for(int i=0; i<5; i++)
                         selection_model->select(list_model->index(line, i, QModelIndex()), QItemSelectionModel::Select);
                 }
                 break;
@@ -809,17 +809,6 @@ void ddclient_gui::on_reload(){
         int dl_line = 0;
         for(dit = pit->dls.begin(); dit != pit->dls.end(); dit++){ // loop all downloads of that package
             color = build_status(status_text, time_left, *dit);
-
-            // recreate selection if existed
-            for(vit = info.begin(); vit != info.end(); ++vit){
-                if((vit->id == dit->id) && !(vit->package)){
-                    if(vit->selected){ // download is selected
-                        for(int i=0; i<5; i++)
-                            selection_model->select(list_model->index(dl_line, i, index), QItemSelectionModel::Select);
-                        break;
-                    }
-                }
-            }
 
             dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(dit->id));
             pkg->setEditable(false);
@@ -842,6 +831,18 @@ void ddclient_gui::on_reload(){
             pkg->setEditable(false);
             pkg->setChild(dl_line, 4, dl);
 
+            // recreate selection if existed
+            for(vit = info.begin(); vit != info.end(); ++vit){
+                if((vit->id == dit->id) && !(vit->package)){
+                    if(vit->selected){ // download is selected
+                        for(int i=0; i<5; i++)
+                            selection_model->select(index.child(dl_line, i), QItemSelectionModel::Select);
+
+                        break;
+                    }
+                }
+            }
+
             dl_line++;
         }
 
@@ -854,8 +855,6 @@ void ddclient_gui::on_reload(){
 
         line++;
     }
-    list->repaint();
-    list->update();
 
     mx.unlock();
 }
