@@ -335,9 +335,7 @@ void ddclient_gui::update_list_components(){
     column_labels << tsl("ID") << tsl("Title") << tsl("URL") << tsl("Time left") << tsl("Status");
     list_model->setHorizontalHeaderLabels(column_labels);
 
-    mx.lock();                                                                                                  // TODO: if there is no compare_vectorvector, we don't need that
-    content.clear(); // delete old content to force reload of list
-    mx.unlock();
+    emit do_reload();
 }
 
 
@@ -526,6 +524,68 @@ void ddclient_gui::get_selected_lines(){
 }
 
 
+vector<view_info> ddclient_gui::get_current_view(){
+    get_selected_lines();
+    vector<view_info> info;
+
+    vector<package>::iterator pit = content.begin();
+    vector<selected_info>::iterator sit = selected_lines.begin();
+    vector<download>::iterator dit;
+    vector<view_info>::iterator vit;
+    int line = 0;
+
+    // loop all packages to see which are expanded
+    for(; pit != content.end(); ++pit){
+        view_info curr_info;
+        curr_info.package = true;
+        curr_info.id = pit->id;
+        curr_info.package_id = -1;
+        curr_info.expanded = list->isExpanded(list->indexAt(QPoint(line, 0)));
+        curr_info.selected = false;
+        info.push_back(curr_info);
+
+        // loop all downloads to save information for later
+        for(dit = pit->dls.begin(); dit != pit->dls.end(); ++dit){
+            view_info curr_d_info;
+            curr_d_info.package = false;
+            curr_d_info.id = dit->id;
+            curr_d_info.package_id = pit->id;
+            curr_d_info.expanded = false;
+            curr_d_info.selected = false;
+            info.push_back(curr_d_info);
+        }
+        line++;
+    }
+
+    // loop all selected lines to save that too
+
+    for(; sit != selected_lines.end(); ++sit){
+
+        if(sit->package){ // package
+            info.at(sit->row).selected = true;
+        }else{ // download
+
+            // loop info to find the download with the right id
+            unsigned int row = sit->row;
+            unsigned int parent_row = sit->parent_row;
+            if(content.size() < parent_row)
+                break; // shouldn't happen => someone deleted content!
+            if(content.at(sit->parent_row).dls.size() < row)
+                break;
+
+            int id = (content.at(parent_row)).dls.at(row).id; // found real id!
+
+            for(vit = info.begin(); vit != info.end(); ++vit){ // find download with that in info
+                if((vit->id == id) && (vit->package == false)){
+                    vit->selected = true;
+                }
+            }
+        }
+    }
+
+    return info;
+}
+
 // slots
 void ddclient_gui::on_about(){
     QMessageBox::information(this, "Test", "on_about");
@@ -685,7 +745,7 @@ void ddclient_gui::on_reload(){
     }
 
     mx.lock();
-    //compare_all_packages();
+    vector<view_info> info = get_current_view();
     content.clear();
     content = new_content;
 
@@ -706,15 +766,32 @@ void ddclient_gui::on_reload(){
 
     vector<package>::iterator pit = content.begin();
     vector<download>::iterator dit;
+    vector<view_info>::iterator vit;
+
     QStandardItem *pkg;
     QStandardItem *dl;
     int line = 0;
     string color, status_text, time_left;
+    bool expanded;
 
     for(; pit != content.end(); pit++){ // loop all packages
         pkg = new QStandardItem(QIcon("img/package.png"), QString("%1").arg(pit->id));
         pkg->setEditable(false);
         list_model->setItem(line, 0, pkg);
+
+        // recreate expansion and selection
+        expanded = false;
+        for(vit = info.begin(); vit != info.end(); ++vit){
+            if((vit->id == pit->id) && (vit->package)){
+                if(vit->expanded) // package is expanded
+                    expanded = true;
+
+                //if(vit->selected){ // package is selected
+                //    for(int i=0; i<4; i++)
+                //        selection_model->select(list->indexAt(QPoint(line, i)), QItemSelectionModel::Select|QItemSelectionModel::Current);
+                //}
+            }
+        }
 
         int dl_line = 0;
         for(dit = pit->dls.begin(); dit != pit->dls.end(); dit++){ // loop all downloads of that package
@@ -740,6 +817,9 @@ void ddclient_gui::on_reload(){
             dl = new QStandardItem(QIcon(colorstring.c_str()), QString(status_text.c_str()));
             pkg->setEditable(false);
             pkg->setChild(dl_line, 4, dl);
+            
+            if(expanded)
+                list->expand(list->indexAt(QPoint(line, 0)));
 
             dl_line++;
         }
@@ -748,9 +828,18 @@ void ddclient_gui::on_reload(){
         pkg->setEditable(false);
         list_model->setItem(line, 1, pkg);
 
+        if(expanded)
+            list->expand(list->indexAt(QPoint(line, 0)));
+
+
+        for(int i=0; i<5; i++) // this does not work at all: somehow it always just selects line 0, column 0
+            selection_model->select(list->indexAt(QPoint(line, i)), QItemSelectionModel::Select|QItemSelectionModel::Current);
         line++;
     }
-    list->expandAll();                                                                                      // remember and recreate expaned items later
+
+
+
+
 
     /*if(!reselect_lines.empty()){ // update selection
         vector<string>::iterator sit;
