@@ -185,23 +185,23 @@ void ddclient_gui::add_bars(){
     file_menu->addAction(delete_finished_action);
     file_menu->addSeparator();
 
-    select_action = new QAction(tsl("Select all"), this);
+    select_action = new QAction(QIcon("img/14_select_all.png"), tsl("Select all"), this);
     select_action->setShortcut(QString("Ctrl+A"));
     select_action->setStatusTip(tsl("Select all"));
     file_menu->addAction(select_action);
 
-    copy_action = new QAction(tsl("Copy URL"), this);
+    copy_action = new QAction(QIcon("img/11_copy_url.png"), tsl("Copy URL"), this);
     copy_action->setShortcut(QString("Ctrl+C"));
     copy_action->setStatusTip(tsl("Copy URL"));
     file_menu->addAction(copy_action);
     file_menu->addSeparator();
 
-    quit_action = new QAction("&" + tsl("Quit"), this);
+    quit_action = new QAction(QIcon("img/12_quit.png"), "&" + tsl("Quit"), this);
     quit_action->setShortcut(QString("Alt+F4"));
     quit_action->setStatusTip(tsl("Quit"));
     file_menu->addAction(quit_action);
 
-    about_action = new QAction("&" + tsl("About"), this);
+    about_action = new QAction(QIcon("img/13_about.png"), "&" + tsl("About"), this);
     about_action->setShortcut(QString("F1"));
     about_action->setStatusTip(tsl("About"));
     help_menu->addAction(about_action);
@@ -811,24 +811,24 @@ void ddclient_gui::on_reload(){
             color = build_status(status_text, time_left, *dit);
 
             dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(dit->id));
-            pkg->setEditable(false);
+            dl->setEditable(false);
             pkg->setChild(dl_line, 0, dl);
 
             dl = new QStandardItem(QString(dit->title.c_str()));
-            pkg->setEditable(false);
+            dl->setEditable(false);
             pkg->setChild(dl_line, 1, dl);
 
             dl = new QStandardItem(QString(dit->url.c_str()));
-            pkg->setEditable(false);
+            dl->setEditable(false);
             pkg->setChild(dl_line, 2, dl);
 
             dl = new QStandardItem(QString(time_left.c_str()));
-            pkg->setEditable(false);
+            dl->setEditable(false);
             pkg->setChild(dl_line, 3, dl);
 
             string colorstring = "img/bullet_" + color + ".png";
             dl = new QStandardItem(QIcon(colorstring.c_str()), QString(status_text.c_str()));
-            pkg->setEditable(false);
+            dl->setEditable(false);
             pkg->setChild(dl_line, 4, dl);
 
             // recreate selection if existed
@@ -850,6 +850,12 @@ void ddclient_gui::on_reload(){
         pkg->setEditable(false);
         list_model->setItem(line, 1, pkg);
 
+        for(int i=2; i<5; i++){
+            pkg = new QStandardItem(QString(""));
+            pkg->setEditable(false);
+            list_model->setItem(line, i, pkg);
+        }
+
         if(expanded)
             list->expand(index);
 
@@ -863,7 +869,7 @@ void ddclient_gui::on_reload(){
 void ddclient_gui::contextMenuEvent(QContextMenuEvent *event){
     QMenu menu(this);
 
-    QAction* delete_file_action = new QAction(tsl("Delete File"), this);
+    QAction* delete_file_action = new QAction(QIcon("img/15_delete_file.png"), tsl("Delete File"), this);
     delete_file_action->setShortcut(QString("Ctrl+F"));
     delete_file_action->setStatusTip(tsl("Delete File"));
     menu.addAction(delete_file_action);
