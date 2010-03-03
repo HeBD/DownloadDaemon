@@ -334,8 +334,6 @@ void ddclient_gui::update_list_components(){
     QStringList column_labels;
     column_labels << tsl("ID") << tsl("Title") << tsl("URL") << tsl("Time left") << tsl("Status");
     list_model->setHorizontalHeaderLabels(column_labels);
-
-    emit do_reload();
 }
 
 
@@ -540,7 +538,8 @@ vector<view_info> ddclient_gui::get_current_view(){
         curr_info.package = true;
         curr_info.id = pit->id;
         curr_info.package_id = -1;
-        curr_info.expanded = list->isExpanded(list->indexAt(QPoint(line, 0)));
+
+        curr_info.expanded = list->isExpanded(list_model->index(line, 0, QModelIndex()));
         curr_info.selected = false;
         info.push_back(curr_info);
 
@@ -578,6 +577,7 @@ vector<view_info> ddclient_gui::get_current_view(){
             for(vit = info.begin(); vit != info.end(); ++vit){ // find download with that in info
                 if((vit->id == id) && (vit->package == false)){
                     vit->selected = true;
+                    break;
                 }
             }
         }
@@ -779,6 +779,8 @@ void ddclient_gui::on_reload(){
         pkg->setEditable(false);
         list_model->setItem(line, 0, pkg);
 
+        QModelIndex index = list_model->index(line, 0, QModelIndex()); // downloads need the parent index
+
         // recreate expansion and selection
         expanded = false;
         for(vit = info.begin(); vit != info.end(); ++vit){
@@ -786,16 +788,28 @@ void ddclient_gui::on_reload(){
                 if(vit->expanded) // package is expanded
                     expanded = true;
 
-                //if(vit->selected){ // package is selected
-                //    for(int i=0; i<4; i++)
-                //        selection_model->select(list->indexAt(QPoint(line, i)), QItemSelectionModel::Select|QItemSelectionModel::Current);
-                //}
+                if(vit->selected){ // package is selected
+                     for(int i=0; i<5; i++)
+                        selection_model->select(list_model->index(line, i, QModelIndex()), QItemSelectionModel::Select);
+                }
+                break;
             }
         }
 
         int dl_line = 0;
         for(dit = pit->dls.begin(); dit != pit->dls.end(); dit++){ // loop all downloads of that package
             color = build_status(status_text, time_left, *dit);
+
+            // recreate selection if existed
+            for(vit = info.begin(); vit != info.end(); ++vit){
+                if((vit->id == dit->id) && !(vit->package)){
+                    if(vit->selected){ // download is selected
+                        for(int i=0; i<5; i++)
+                            selection_model->select(list_model->index(dl_line, i, index), QItemSelectionModel::Select);
+                        break;
+                    }
+                }
+            }
 
             dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(dit->id));
             pkg->setEditable(false);
@@ -817,9 +831,6 @@ void ddclient_gui::on_reload(){
             dl = new QStandardItem(QIcon(colorstring.c_str()), QString(status_text.c_str()));
             pkg->setEditable(false);
             pkg->setChild(dl_line, 4, dl);
-            
-            if(expanded)
-                list->expand(list->indexAt(QPoint(line, 0)));
 
             dl_line++;
         }
@@ -829,28 +840,11 @@ void ddclient_gui::on_reload(){
         list_model->setItem(line, 1, pkg);
 
         if(expanded)
-            list->expand(list->indexAt(QPoint(line, 0)));
+            list->expand(index);
 
-
-        for(int i=0; i<5; i++) // this does not work at all: somehow it always just selects line 0, column 0
-            selection_model->select(list->indexAt(QPoint(line, i)), QItemSelectionModel::Select|QItemSelectionModel::Current);
         line++;
     }
 
-
-
-
-
-    /*if(!reselect_lines.empty()){ // update selection
-        vector<string>::iterator sit;
-
-        for(sit = reselect_lines.begin(); sit<reselect_lines.end(); sit++){
-            select_line_by_id(*sit);
-        }
-
-        reselect_lines.clear();
-    }
-    */
     mx.unlock();
 }
 
