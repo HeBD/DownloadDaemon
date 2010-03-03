@@ -22,6 +22,13 @@ struct selected_info{
     int parent_row;
 };
 
+struct view_info{
+    bool package;
+    int id;
+    int package_id;
+    bool expanded;
+    bool selected;
+};
 
 struct login_data{
     char host[256];
@@ -88,6 +95,7 @@ class ddclient_gui : public QMainWindow{
         void cut_time(std::string &time_left);
         std::string build_status(std::string &status_text, std::string &time_left, download &dl);
         void get_selected_lines();
+        std::vector<view_info> get_current_view();
 
         QMutex mx;
         downloadc *dclient;
