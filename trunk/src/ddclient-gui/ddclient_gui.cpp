@@ -557,14 +557,23 @@ vector<view_info> ddclient_gui::get_current_view(){
     }
 
     // loop all selected lines to save that too
-
     for(; sit != selected_lines.end(); ++sit){
-
         if(sit->package){ // package
-            info.at(sit->row).selected = true;
-        }else{ // download
+            unsigned int row = sit->row;
+            if(content.size() < row)
+                break; // shouldn't happen => someone deleted content!
 
-            // loop info to find the download with the right id
+             // loop info to find the package with the right id
+            int id = content.at(row).id;
+
+            for(vit = info.begin(); vit != info.end(); ++vit){ // find package with that in info
+                if((vit->id == id) && (vit->package)){
+                    vit->selected = true;
+                    break;
+                }
+            }
+
+        }else{ // download
             unsigned int row = sit->row;
             unsigned int parent_row = sit->parent_row;
             if(content.size() < parent_row)
@@ -572,6 +581,7 @@ vector<view_info> ddclient_gui::get_current_view(){
             if(content.at(sit->parent_row).dls.size() < row)
                 break;
 
+            // loop info to find the download with the right id
             int id = (content.at(parent_row)).dls.at(row).id; // found real id!
 
             for(vit = info.begin(); vit != info.end(); ++vit){ // find download with that in info
@@ -844,6 +854,8 @@ void ddclient_gui::on_reload(){
 
         line++;
     }
+    list->repaint();
+    list->update();
 
     mx.unlock();
 }
