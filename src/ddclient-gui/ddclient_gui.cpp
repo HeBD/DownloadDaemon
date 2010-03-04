@@ -1,6 +1,7 @@
 #include "ddclient_gui.h"
-#include "ddclient_gui_connect_dialog.h"
 #include "ddclient_gui_update_thread.h"
+#include "ddclient_gui_connect_dialog.h"
+#include "ddclient_gui_add_dialog.h"
 
 #include <sstream>
 #include <fstream>
@@ -690,7 +691,10 @@ void ddclient_gui::on_connect(){
 void ddclient_gui::on_add(){
     if(!check_connection(true, "Please connect before adding Downloads."))
         return;
-    QMessageBox::information(this, "Test", "on_add");
+
+    add_dialog dialog(this);
+    dialog.setModal(true);
+    dialog.exec();
 
     get_content();
 }

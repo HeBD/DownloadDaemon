@@ -114,6 +114,8 @@ void add_dialog::on_add(wxCommandEvent &event){
 	size_t lineend = 1, urlend;
 
 	// add single download
+	boost::mutex *mx = p->get_mutex();
+	mx->lock();
 	if(!url.empty()){
 		try{
 			dclient->add_download(package, url, title);
@@ -174,6 +176,7 @@ void add_dialog::on_add(wxCommandEvent &event){
 		else
 			wxMessageBox(p->tsl("At least one inserted URL was invalid."), p->tsl("Invalid URL"));
 	}
+	mx->unlock();
 	Destroy();
 }
 

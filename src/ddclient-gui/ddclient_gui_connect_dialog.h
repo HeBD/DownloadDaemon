@@ -11,7 +11,10 @@ class connect_dialog : public QDialog{
     Q_OBJECT
 
     public:
-        /** Defaultconstructor */
+        /** Constructor
+        *   @param parent MainWindo, which calls the dialog
+        *   @param config_dir Configuration Directory
+        */
         connect_dialog(QWidget *parent, QString config_dir);
 
     private:
