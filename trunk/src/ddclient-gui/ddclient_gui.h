@@ -42,8 +42,10 @@ class ddclient_gui : public QMainWindow{
     Q_OBJECT
 
     public:
-        /** Defaultconstructor */
-            ddclient_gui(QString config_dir);
+        /** Constructor
+        *   @param config_dir Configuration Directory of Program
+        */
+        ddclient_gui(QString config_dir);
 
         /** Destructor */
         ~ddclient_gui();
