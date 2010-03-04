@@ -3,6 +3,7 @@
         - made ddclient-gui autoconnect to last connection, if possible
         - ddclient-gui now automatically updates download list every two seconds
         - added possibility to (de)activate downloading to ddclient-gui
+        - added add diaog to ddclient-gui (no functionlity yet)
 
 2010-03-03
    [susanne]
