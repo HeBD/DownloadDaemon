@@ -228,14 +228,6 @@ myframe::~myframe(){
 
 
 void myframe::update_status(wxString server){
-	string answer;
-	mx.lock();
-	try{
-		answer = dclient->get_var("downloading_active");
-
-	}catch(client_exception &e){}
-	mx.unlock();
-
 	// removing both icons/deactivating both menuentrys, even when maybe only one is shown
 	toolbar->RemoveTool(id_toolbar_download_activate);
 	toolbar->RemoveTool(id_toolbar_download_deactivate);
@@ -245,6 +237,13 @@ void myframe::update_status(wxString server){
 	if(!check_connection()){
 		return;
 	}
+	string answer;
+	mx.lock();
+	try{
+		answer = dclient->get_var("downloading_active");
+
+	}catch(client_exception &e){}
+	mx.unlock();
 
 	if(answer == "1"){ // downloading active
 		toolbar->AddTool(download_deactivate);
@@ -1381,7 +1380,7 @@ void myframe::on_priority_down(wxCommandEvent &event){
 
 
 void myframe::on_configure(wxCommandEvent &event){
-	if(!check_connection(true, "Please connect before configurating DownloadDaemon."))
+	if(!check_connection(true, "Please connect before you configurating DownloadDaemon."))
 		return;
 
 	configure_dialog dialog(this);
@@ -1390,7 +1389,7 @@ void myframe::on_configure(wxCommandEvent &event){
 
 
 void myframe::on_download_activate(wxCommandEvent &event){
-	if(!check_connection(true, "Please connect before activate Downloading."))
+	if(!check_connection(true, "Please connect before you activate Downloading."))
 		return;
 
 	mx.lock();
@@ -1417,7 +1416,7 @@ void myframe::on_download_deactivate(wxCommandEvent &event){
 
 	mx.lock();
 	try{
-		dclient->set_var("downloading_active", "1");
+		dclient->set_var("downloading_active", "0");
 	}catch(client_exception &e){}
 	mx.unlock();
 

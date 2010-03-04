@@ -70,7 +70,7 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
     }
 
     connect(this, SIGNAL(do_reload()), this, SLOT(on_reload()));
-    get_content();
+    
     update_thread *thread = new update_thread(this);
     thread->start();
 }
@@ -84,8 +84,36 @@ ddclient_gui::~ddclient_gui(){
 
 
 void ddclient_gui::update_status(QString server){
-    status_connection->setText(tsl("Connected to") + " " + server);
-                                                                      // TODO: <= not finished!
+    if(!check_connection()){
+        return;
+    }
+    
+    string answer;
+    mx.lock();
+    try{
+        answer = dclient->get_var("downloading_active");
+
+    }catch(client_exception &e){}
+    mx.unlock();
+
+    // removing both icons/deactivating both menuentrys, even when maybe only one is shown
+    activate_action->setEnabled(false);
+    deactivate_action->setEnabled(false);
+    downloading_menu->removeAction(activate_action);
+    downloading_menu->removeAction(deactivate_action);
+    
+    if(answer == "1"){ // downloading active
+        downloading_menu->addAction(deactivate_action);
+        deactivate_action->setEnabled(true);
+    }else if(answer =="0"){ // downloading not active
+        downloading_menu->addAction(activate_action);
+        activate_action->setEnabled(true);
+    }else{
+        // should never be reached
+    }
+
+    if(server != QString("")) // sometimes the function is called to update the toolbar, not the status text => server is empty
+        status_connection->setText(tsl("Connected to") + " " + server);
 }
 
 
@@ -755,24 +783,40 @@ void ddclient_gui::on_configure(){
 
 
 void ddclient_gui::on_downloading_activate(){
-    if(!check_connection(true, "Please connect before activate Downloading."))
+    if(!check_connection(true, "Please connect before you activate Downloading."))
         return;
 
-    QMessageBox::information(this, "Test", "on_downloading_activate");
-    get_selected_lines();
-                                                                                               // TODO: not finished!
-    get_content();
+    mx.lock();
+    try{
+        dclient->set_var("downloading_active", "1");
+    }catch(client_exception &e){}
+    mx.unlock();
+
+    // update toolbar
+    activate_action->setEnabled(false);
+    deactivate_action->setEnabled(true);
+    downloading_menu->removeAction(activate_action);
+    downloading_menu->removeAction(deactivate_action); // just to be save
+    downloading_menu->addAction(deactivate_action);
 }
 
 
 void ddclient_gui::on_downloading_deactivate(){
-    if(!check_connection(true, "Please connect before deactivate Downloading."))
+    if(!check_connection(true, "Please connect before you deactivate Downloading."))
         return;
 
-    QMessageBox::information(this, "Test", "on_downloading_deactivate");
-    get_selected_lines();
-                                                                                               // TODO: not finished!
-    get_content();
+    mx.lock();
+    try{
+        dclient->set_var("downloading_active", "0");
+    }catch(client_exception &e){}
+    mx.unlock();
+
+    // update toolbar
+    activate_action->setEnabled(true);
+    deactivate_action->setEnabled(false);
+    downloading_menu->removeAction(activate_action);
+    downloading_menu->removeAction(deactivate_action); // just to be save
+    downloading_menu->addAction(activate_action);
 }
 
 
@@ -795,6 +839,10 @@ void ddclient_gui::on_reload(){
 
     mx.lock();
     vector<view_info> info = get_current_view();
+
+    bool new_list = false;
+    if(content.size() < 1)
+        new_list = true;
     content.clear();
     content = new_content;
 
@@ -902,6 +950,8 @@ void ddclient_gui::on_reload(){
     }
 
     mx.unlock();
+    if(new_list)
+        list->expandAll();
 }
 
 
