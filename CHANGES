@@ -1,6 +1,7 @@
 2010-03-04
    [susanne]
         - made ddclient-gui autoconnect to last connection, if possible
+        - ddclient-gui now automatically updates download list every two seconds
 
 2010-03-03
    [susanne]

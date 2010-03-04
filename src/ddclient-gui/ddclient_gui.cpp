@@ -1,5 +1,7 @@
 #include "ddclient_gui.h"
 #include "ddclient_gui_connect_dialog.h"
+#include "ddclient_gui_update_thread.h"
+
 #include <sstream>
 #include <fstream>
 #include <iomanip>
@@ -69,6 +71,8 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 
     connect(this, SIGNAL(do_reload()), this, SLOT(on_reload()));
     get_content();
+    update_thread *thread = new update_thread(this);
+    thread->start();
 }
 
 
