@@ -207,6 +207,7 @@ myframe::myframe(wxChar *parameter, wxWindow *parent, const wxString &title, wxW
 				if(del == wxID_YES){ // connect again
 					try{
 						dclient->connect(last_data.host, last_data.port, last_data.pass, false);
+						update_status(wxString(last_data.host, wxConvUTF8));
 					}catch(client_exception &e){}
 				}
 			} // we don't have error message here because it's an auto fuction

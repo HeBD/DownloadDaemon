@@ -1,3 +1,7 @@
+2010-03-04
+   [susanne]
+        - made ddclient-gui autoconnect to last connection, if possible
+
 2010-03-03
    [susanne]
         - ddclient-gui now reloads download list (not automatically, but when pushing a button, etc)

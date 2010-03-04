@@ -1,6 +1,7 @@
 #include "ddclient_gui.h"
 #include "ddclient_gui_connect_dialog.h"
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 
 #include <QtGui/QStatusBar>
@@ -33,7 +34,41 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
     add_bars();
     add_list_components();
 
+    // connect if logindata was saved
+    string file_name = config_dir.toStdString() + "save.dat";
+    ifstream ifs(file_name.c_str(), fstream::in | fstream::binary); // open file
+
+    if(ifs.good()){ // file successfully opened
+        login_data last_data =  { "", 0, "", ""};
+        ifs.read((char *) &last_data, sizeof(login_data));
+
+        if(last_data.lang[0] != '\0') // older versions of save.dat won't have lang, so we have to check
+            set_language(last_data.lang); // set program language
+
+        try{
+            dclient->connect(last_data.host, last_data.port, last_data.pass, true);
+            update_status(last_data.host);
+
+        }catch(client_exception &e){
+            if(e.get_id() == 2){ // daemon doesn't allow encryption
+
+                QMessageBox box(QMessageBox::Question, tsl("Auto Connection: No Encryption Supported"), tsl("Encrypted authentication not supported by server.") + ("\n")
+                                +tsl("Do you want to try unsecure plain-text authentication?"), QMessageBox::Yes|QMessageBox::No);
+
+                box.setModal(true);
+                int del = box.exec();
+
+                if(del == QMessageBox::YesRole){ // connect again
+                    try{
+                        dclient->connect(last_data.host, last_data.port, last_data.pass, false);
+                    }catch(client_exception &e){}
+                }
+            } // we don't have error message here because it's an auto fuction
+        }
+    }
+
     connect(this, SIGNAL(do_reload()), this, SLOT(on_reload()));
+    get_content();
 }
 
 
