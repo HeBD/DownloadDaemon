@@ -1,5 +1,6 @@
 #include "ddclient_gui_add_dialog.h"
 #include "ddclient_gui.h"
+#include <sstream>
 
 #include <QtGui/QGroupBox>
 #include <QtGui/QFormLayout>
@@ -9,6 +10,7 @@
 #include <QDialogButtonBox>
 #include <QtGui/QMessageBox>
 #include <QtGui/QTextEdit>
+
 
 using namespace std;
 
@@ -71,6 +73,8 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
             package_single->addItem(QString("%1").arg(it->id));
             package_many->addItem(QString("%1").arg(it->id));
         }
+        package_info info = {it->id, it->name};
+        packages.push_back(info);
     }
 
     button_box->button(QDialogButtonBox::Ok)->setDefault(true);
@@ -92,7 +96,7 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
 }
 
 void add_dialog::ok(){
-    /*ddclient_gui *p = (ddclient_gui *) parent();
+    ddclient_gui *p = (ddclient_gui *) parent();
     downloadc *dclient = p->get_connection();
     QMutex *mx = p->get_mutex();
 
@@ -111,17 +115,40 @@ void add_dialog::ok(){
         title_find = title.find("|");
     }
 
+    // find out if we have an existing or new package;
+    int package_single_id = -1;
+    int package_many_id = -1;
+    vector<package_info>::iterator it = packages.begin();
 
+    for(; it != packages.end(); ++it){ // first single package
+        stringstream s;
+        s << it->id;
+        if(package_single == s.str()){
+            package_single_id = it->id;
+            break;
+        }
 
-    //first: find out if it's new package or existing one
-    // if new: create package, remember id
-    // if existing: find out id
-    // add downloads
+        s << ": " << it->name;
+        if(package_single == s.str()){
+            package_single_id = it->id;
+            break;
+        }
+    }
 
+    for(it = packages.begin(); it != packages.end(); ++it){ // now many package
+        stringstream s;
+        s << it->id;
+        if(package_many == s.str()){
+            package_many_id = it->id;
+            break;
+        }
 
-
-
-
+        s << ": " << it->name;
+        if(package_many == s.str()){
+            package_many_id = it->id;
+            break;
+        }
+    }
 
 
     bool error_occured = false;
@@ -134,13 +161,15 @@ void add_dialog::ok(){
     mx->lock();
     if(!url.empty()){
         try{
-            //dclient->add_download(package_single, url, title);
+            if(package_single_id == -1) // create a new package
+                package_single_id = dclient->add_package(package_single);
+
+            dclient->add_download(package_single_id, url, title);
         }catch(client_exception &e){
             error_occured = true;
             error = e.get_id();
         }
     }
-
 
     // add many downloads
     // parse lines
@@ -177,23 +206,24 @@ void add_dialog::ok(){
 
         // send a single download
         try{
-            //dclient->add_download(package_many, url, title);
+            if(package_many_id == -1) // create a new package
+                package_many_id = dclient->add_package(package_many);
+
+            dclient->add_download(package_many_id, url, title);
         }catch(client_exception &e){
             error_occured = true;
             error = e.get_id();
         }
-    }*/
-
-  /* if(error_occured){
-        if(error == 6)
-            wxMessageBox(p->tsl("Failed to create Package."), p->tsl("Error"));
-        else
-            wxMessageBox(p->tsl("At least one inserted URL was invalid."), p->tsl("Invalid URL"));
     }
-    Destroy();*/
 
-    //QMessageBox::critical(this,  p->tsl("Authentication Error"), p->tsl("Unknown Error while Authentication."));
-    //mx->unlock();
+    if(error_occured){
+        if(error == 6)
+            QMessageBox::critical(this,  p->tsl("Error"), p->tsl("Failed to create Package."));
+        else if(error == 13)
+            QMessageBox::critical(this,  p->tsl("Invalid URL"), p->tsl("At least one inserted URL was invalid."));
+    }
+    mx->unlock();
+
     emit done(0);
 }
 
