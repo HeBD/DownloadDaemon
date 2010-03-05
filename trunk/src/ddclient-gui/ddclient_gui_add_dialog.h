@@ -7,6 +7,11 @@
 #include <QtGui/QCheckBox>
 #include <QComboBox>
 
+struct package_info{
+    int id;
+    std::string name;
+};
+
 
 class add_dialog : public QDialog{
     Q_OBJECT
@@ -23,6 +28,7 @@ class add_dialog : public QDialog{
         QComboBox *package_single;
         QComboBox *package_many;
         QTextDocument *add_many;
+        std::vector<package_info> packages;
 
     private slots:
         void ok();

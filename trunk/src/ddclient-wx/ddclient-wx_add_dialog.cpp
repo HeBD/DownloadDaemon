@@ -173,7 +173,7 @@ void add_dialog::on_add(wxCommandEvent &event){
 	if(error_occured){
 		if(error == 6)
 			wxMessageBox(p->tsl("Failed to create Package."), p->tsl("Error"));
-		else
+		else if(error == 13)
 			wxMessageBox(p->tsl("At least one inserted URL was invalid."), p->tsl("Invalid URL"));
 	}
 	mx->unlock();
