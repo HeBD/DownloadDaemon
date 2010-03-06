@@ -567,6 +567,11 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
 }
 
 
+void ddclient_gui::deselect_lines(){
+    list->clearSelection();
+}
+
+
 void ddclient_gui::get_selected_lines(){
     selected_lines.clear();
 
@@ -704,20 +709,238 @@ void ddclient_gui::on_delete(){
     if(!check_connection(true, "Please connect before deleting Downloads."))
         return;
 
-    QMessageBox::information(this, "Test", "on_delete");
+    mx.lock();
     get_selected_lines();
-                                                                                               // TODO: not finished!
+
+    vector<selected_info>::iterator it;
+    int id;
+
+    if(selected_lines.empty()){
+        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+        mx.unlock();
+        return;
+    }
+
+    // make sure user wants to delete downloads
+    QMessageBox box(QMessageBox::Question, tsl("Delete Downloads"), tsl("Do you really want to delete\nthe selected Download(s)?"),
+                    QMessageBox::Yes|QMessageBox::No, this);
+    box.setModal(true);
+    int del = box.exec();
+
+    if(del != QMessageBox::Yes){ // user clicked no to delete
+        mx.unlock();
+        return;
+    }
+
+
+    int dialog_answer = QMessageBox::No; // possible answers are YesToAll, Yes, No, NoToAll
+    int package_id = -1;
+    vector<int> package_deletes; // saves how many dowloads of each package have been deleted to see if the package is empty afterwards
+    unsigned int package_count = 0;
+
+    for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+
+        if(it->package){ // we have a package! => only save number and count downloads deleted
+
+            if(package_id != -1){ // so we don't delete the default value
+                package_deletes.push_back(package_count);
+                package_count = 0;
+            }
+
+            package_id = content.at(it->row).id;
+            package_deletes.push_back(package_id);
+
+        }else{ // we have a real download
+            id = content.at(it->parent_row).dls.at(it->row).id;
+            package_count++;
+        }
+
+        try{
+            if(!(it->package)) // we have a real download, not a package
+                dclient->delete_download(id, dont_know);
+
+        }catch(client_exception &e){
+            if(e.get_id() == 7){
+
+                if((dialog_answer != QMessageBox::YesToAll) && (dialog_answer != QMessageBox::NoToAll)){ // file exists and user didn't choose YesToAll or NoToAll before
+                    stringstream s;
+                    s << id;
+                    QMessageBox file_box(QMessageBox::Question, tsl("Delete File"), tsl("Do you want to delete the downloaded File for Download %p1?", s.str().c_str()),
+                                         QMessageBox::YesToAll|QMessageBox::Yes|QMessageBox::No|QMessageBox::NoToAll, this);
+                    file_box.setModal(true);
+                    dialog_answer = file_box.exec();
+                }
+
+                if((dialog_answer == QMessageBox::YesToAll) || (dialog_answer == QMessageBox::Yes)){
+                    try{
+                        dclient->delete_download(id, del_file);
+
+                    }catch(client_exception &e){
+                        stringstream s;
+                        s << id;
+                        QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
+                        package_count--; // download delete failed
+                    }
+
+                }else{ // don't delete file
+                    try{
+                        dclient->delete_download(id, dont_delete);
+
+                    }catch(client_exception &e){
+                            QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
+                            package_count--; // download delete failed
+                    }
+                }
+            }else{ // some error occured
+                QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
+                package_count--; // download delete failed
+            }
+        }
+    }
+    package_deletes.push_back(package_count);
+
+    // see if we can delete the packages (count == dls.size)
+    vector<int>::iterator pit;
+    vector<package>::iterator contentpackage_it;
+    unsigned int size;
+
+    for(pit = package_deletes.begin(); pit < package_deletes.end(); pit++){
+        package_id = *pit;
+        pit++;
+        package_count = *pit;
+
+        for(contentpackage_it = content.begin(); contentpackage_it < content.end(); contentpackage_it++){
+            if(contentpackage_it->id == package_id){
+                size = contentpackage_it->dls.size();
+                break;
+            }
+        }
+
+        if(size <= package_count){ // we deleted all downloads of that package
+            try{
+                dclient->delete_package(package_id);
+            }catch(client_exception &e){}
+        }
+    }
+
+    mx.unlock();
     get_content();
 }
 
 
 void ddclient_gui::on_delete_finished(){
-        if(!check_connection(true, "Please connect before deleting Downloads."))
+    if(!check_connection(true, "Please connect before deleting Downloads."))
         return;
 
-    QMessageBox::information(this, "Test", "on_delete_finished");
-    get_selected_lines();
-                                                                                               // TODO: not finished!
+    vector<int>::iterator it;
+    vector<int> finished_ids;
+    vector<package>::iterator content_it;
+    vector<download>::iterator download_it;
+    int id;
+    int package_count = 0;
+
+
+    mx.lock();
+    vector<int> package_deletes; // prepare structure to save how many downloads of which package will be deleted
+    for(unsigned int i = 0; i < content.size(); i++)
+        package_deletes.push_back(0);
+
+    // delete all empty packages
+    for(content_it = content.begin(); content_it < content.end(); content_it++){
+        if(content_it->dls.size() == 0){
+            try{
+                dclient->delete_package(content_it->id);
+            }catch(client_exception &e){}
+        }
+    }
+
+    // find all finished downloads
+    for(content_it = content.begin(); content_it < content.end(); content_it++){
+        for(download_it = content_it->dls.begin(); download_it < content_it->dls.end(); download_it++){
+            if(download_it->status == "DOWNLOAD_FINISHED"){
+                finished_ids.push_back(download_it->id);
+                package_deletes[package_count]++;
+            }
+        }
+        package_count++;
+    }
+
+
+    if(!finished_ids.empty()){
+        // make sure user wants to delete downloads
+        QMessageBox box(QMessageBox::Question, tsl("Delete Downloads"), tsl("Do you really want to delete\nall finished Download(s)?"),
+                        QMessageBox::Yes|QMessageBox::No, this);
+        box.setModal(true);
+        int del = box.exec();
+
+        if(del != QMessageBox::Yes){ // user clicked no to delete
+            mx.unlock();
+            return;
+        }
+
+
+        int dialog_answer = QMessageBox::No; // possible answers are YesToAll, Yes, No, NoToAll
+
+        for(it = finished_ids.begin(); it < finished_ids.end(); it++){
+                id = *it;
+
+            try{
+                dclient->delete_download(id, dont_know);
+
+            }catch(client_exception &e){
+                if(e.get_id() == 7){
+
+                    if((dialog_answer != QMessageBox::YesToAll) && (dialog_answer != QMessageBox::NoToAll)){ // file exists and user didn't choose YesToAll or NoToAll before
+                    stringstream s;
+                    s << id;
+                    QMessageBox file_box(QMessageBox::Question, tsl("Delete File"), tsl("Do you want to delete the downloaded File for Download %p1?", s.str().c_str()),
+                                         QMessageBox::YesToAll|QMessageBox::Yes|QMessageBox::No|QMessageBox::NoToAll, this);
+                    file_box.setModal(true);
+                    dialog_answer = file_box.exec();
+                }
+
+                    if((dialog_answer == QMessageBox::YesToAll) || (dialog_answer == QMessageBox::Yes)){
+                        try{
+                            dclient->delete_download(id, del_file);
+
+                        }catch(client_exception &e){
+                            stringstream s;
+                            s << id;
+                            QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
+                        }
+
+                    }else{ // don't delete file
+                        try{
+                            dclient->delete_download(id, dont_delete);
+
+                        }catch(client_exception &e){
+                                QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
+                        }
+
+                    }
+                }else{ // some error occured
+                    QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
+                }
+            }
+        }
+
+    }
+    deselect_lines();
+
+    // delete all empty packages
+    int i = 0;
+    for(it = package_deletes.begin(); it < package_deletes.end(); it++){
+        unsigned int package_size = *it;
+
+        if(content.at(i).dls.size() <= package_size){ // if we deleted every download inside a package
+            try{
+                dclient->delete_package(content.at(i).id);
+            }catch(client_exception &e){}
+        }
+        i++;
+    }
+
+    mx.unlock();
     get_content();
 }
 
@@ -726,9 +949,51 @@ void ddclient_gui::on_delete_file(){
     if(!check_connection(true, "Please connect before deleting Files."))
         return;
 
-    QMessageBox::information(this, "Test", "on_delete_file");
+    mx.lock();
     get_selected_lines();
-                                                                                               // TODO: not finished!
+
+    vector<selected_info>::iterator it;
+    string answer;
+    int id;
+
+    if(selected_lines.empty()){
+        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+        mx.unlock();
+        return;
+    }
+
+    // make sure user wants to delete files
+    QMessageBox box(QMessageBox::Question, tsl("Delete Files"), tsl("Do you really want to delete\nthe selected File(s)?"),
+                    QMessageBox::Yes|QMessageBox::No, this);
+    box.setModal(true);
+    int del = box.exec();
+
+    if(del != QMessageBox::Yes){ // user clicked no to delete
+        mx.unlock();
+        return;
+    }
+
+    for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+
+        if(it->package) // we have a package
+            continue; // next one
+
+        else // we have a real download
+            id = content.at(it->parent_row).dls.at(it->row).id;
+
+        try{
+            dclient->delete_file(id);
+        }catch(client_exception &e){
+            if(e.get_id() == 19){ // file error
+                stringstream s;
+                s << id;
+                QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
+            }
+        }
+    }
+
+    mx.unlock();
+    deselect_lines();
     get_content();
 }
 

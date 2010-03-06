@@ -1207,12 +1207,12 @@ void myframe::on_delete_finished(wxCommandEvent &event){
 		return;
 	}
 
-	// make sure user wants to delete downloads
+	// make sure user wants to delete files
 	wxMessageDialog dialog(this, tsl("Do you really want to delete\nthe selected File(s)?"), tsl("Delete Files"), wxYES_NO|wxYES_DEFAULT|wxICON_EXCLAMATION);
 	int del = dialog.ShowModal();
 
 	if(del != wxID_YES) // user clicked yes to delete
-		return
+		return;
 
 	mx.lock();
 	for(it = selected_lines.begin(); it < selected_lines.end(); it++){

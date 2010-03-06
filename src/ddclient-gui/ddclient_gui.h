@@ -96,6 +96,7 @@ class ddclient_gui : public QMainWindow{
         void update_list_components();
         void cut_time(std::string &time_left);
         std::string build_status(std::string &status_text, std::string &time_left, download &dl);
+        void deselect_lines();
         void get_selected_lines();
         std::vector<view_info> get_current_view();
 

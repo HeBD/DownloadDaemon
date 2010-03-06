@@ -218,9 +218,9 @@ void add_dialog::ok(){
 
     if(error_occured){
         if(error == 6)
-            QMessageBox::critical(this,  p->tsl("Error"), p->tsl("Failed to create Package."));
+            QMessageBox::warning(this,  p->tsl("Error"), p->tsl("Failed to create Package."));
         else if(error == 13)
-            QMessageBox::critical(this,  p->tsl("Invalid URL"), p->tsl("At least one inserted URL was invalid."));
+            QMessageBox::warning(this,  p->tsl("Invalid URL"), p->tsl("At least one inserted URL was invalid."));
     }
     mx->unlock();
 
