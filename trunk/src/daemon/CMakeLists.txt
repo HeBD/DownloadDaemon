@@ -7,7 +7,6 @@ SET(daemon_SRCS downloaddaemon.cpp
 		tools/curl_callbacks.cpp 
 		mgmt/global_management.cpp 
 		mgmt/mgmt_thread.cpp
-		dl/download_thread.cpp 
 		dl/download.cpp 
 		dl/recursive_parser.cpp
 		../include/netpptk/netpptk.cpp 
@@ -15,7 +14,11 @@ SET(daemon_SRCS downloaddaemon.cpp
 		dl/download_container.cpp
 		dl/package_container.cpp
 		 ../include/crypt/md5.cpp
-		reconnect/reconnect_parser.cpp)
+		reconnect/reconnect_parser.cpp
+		../include/crypt/AES/aes_cbc.cpp
+		../include/crypt/AES/aes_cfb.cpp
+		../include/crypt/AES/aes_core.cpp
+		../include/crypt/base64.cpp)
 
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckIncludeFileCXX)
