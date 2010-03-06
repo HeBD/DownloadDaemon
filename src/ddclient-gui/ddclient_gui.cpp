@@ -1183,7 +1183,7 @@ void ddclient_gui::on_reload(){
             pkg->setChild(dl_line, 3, dl);
 
             string colorstring = "img/bullet_" + color + ".png";
-            dl = new QStandardItem(QIcon(colorstring.c_str()), QString(status_text.c_str()));
+            dl = new QStandardItem(QIcon(colorstring.c_str()), trUtf8(status_text.c_str()));
             dl->setEditable(false);
             pkg->setChild(dl_line, 4, dl);
 
