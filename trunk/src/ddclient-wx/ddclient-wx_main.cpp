@@ -1330,7 +1330,6 @@ void myframe::on_deactivate(wxCommandEvent &event){
 		}
 	}
 
-	deselect_lines();
 	mx.unlock();
 	get_content();
 }
@@ -1370,7 +1369,6 @@ void myframe::on_priority_down(wxCommandEvent &event){
 		}
 	}
 
-	deselect_lines();
 	mx.unlock();
 	get_content();
 }

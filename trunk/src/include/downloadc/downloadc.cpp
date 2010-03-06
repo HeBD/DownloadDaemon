@@ -802,7 +802,16 @@ std::string downloadc::get_premium_var(std::string host){
 void downloadc::check_connection(){
     std::lock_guard<std::mutex> lock(mx);
 
-    if(mysock == NULL || !*mysock || mysock->get_peer_name() == ""){ // if there is no active connection
+    if(mysock == NULL){ // deleted mysock
+        throw client_exception(10, "connection lost");
+    }
+
+    std::string answer;
+
+    mysock->send("hello :3"); // send something, so we can test the connection
+    mysock->recv(answer);
+
+    if(!*mysock){ // if there is no active connection
         throw client_exception(10, "connection lost");
     }
 }
