@@ -345,11 +345,11 @@ void download::download_me() {
 }
 
 void download::download_me_worker() {
-	unique_lock<mutex> lock(mx);
 	plugin_output plug_outp;
-	lock.unlock();
 	plugin_status success = prepare_download(plug_outp);
-	lock.lock();
+
+	unique_lock<mutex> lock(mx);
+
 	std::string dlid_log = int_to_string(id);
 	if(need_stop) {
 		return;
@@ -658,7 +658,6 @@ void download::wait() {
 }
 
 plugin_status download::prepare_download(plugin_output &poutp) {
-	unique_lock<mutex> plock(plugin_mutex);
 	unique_lock<mutex> lock(mx);
 
 	plugin_input pinp;
@@ -727,11 +726,11 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	dlclose(dlhandle);
 
 	global_download_list.correct_invalid_ids();
+	lock.lock();
 	return retval;
 }
 
 std::string download::get_plugin_file() {
-	// TODO: delete
 	string host = get_host(false);
 	if(host == "") {
 		return "";

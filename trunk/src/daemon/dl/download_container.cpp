@@ -635,17 +635,6 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 
 }
 
-void download_container::wait(int id) {
-	// TODO
-	download_mutex.lock();
-	download_container::iterator it = download_list.begin();
-	download_mutex.unlock();
-	while(get_wait(id) > 0) {
-		usleep(500);
-	}
-
-}
-
 #ifndef IS_PLUGIN
 void download_container::do_download(int id) {
 	lock_guard<mutex> lock(download_mutex);

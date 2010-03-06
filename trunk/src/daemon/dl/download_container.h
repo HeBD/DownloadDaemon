@@ -211,7 +211,7 @@ public:
 	/** wait for a download and return if the wait-time is set to something else while waiting
 	*	@param id the Download-id
 	*/
-	void wait(int id);
+	//void wait(int id);
 
 	/** Sets the next proxy from list to the download
 	*	@param id ID of the download
