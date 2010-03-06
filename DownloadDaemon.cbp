@@ -206,12 +206,6 @@
 		<Unit filename="src/daemon/dl/download_container.h">
 			<Option target="Daemon" />
 		</Unit>
-		<Unit filename="src/daemon/dl/download_thread.cpp">
-			<Option target="Daemon" />
-		</Unit>
-		<Unit filename="src/daemon/dl/download_thread.h">
-			<Option target="Daemon" />
-		</Unit>
 		<Unit filename="src/daemon/dl/package_container.cpp">
 			<Option target="Daemon" />
 		</Unit>
@@ -363,6 +357,27 @@
 			<Option target="Daemon" />
 		</Unit>
 		<Unit filename="src/include/cfgfile/cfgfile.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/include/crypt/AES/aes.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/include/crypt/AES/aes_cbc.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/include/crypt/AES/aes_cfb.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/include/crypt/AES/aes_core.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/include/crypt/AES/aes_locl.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/include/crypt/base64.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/include/crypt/base64.h">
 			<Option target="Daemon" />
 		</Unit>
 		<Unit filename="src/include/crypt/md5.cpp">

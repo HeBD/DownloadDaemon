@@ -223,7 +223,7 @@ class package_container {
 	*		 	 2 if all proxys have been tried already
 	*			 3 if there are no proxys at all
 	*/
-	int set_next_proxy(dlindex id);
+	//int set_next_proxy(dlindex id);
 
 	/** Checks if all downloads in a package are finished
 	*	@param id ID of the package
@@ -235,6 +235,12 @@ class package_container {
 	*	@param id ID of the package
 	*/
 	void extract_package(int id);
+
+	download_container* get_listptr(int id);
+
+	void do_download(dlindex dl);
+
+	void correct_invalid_ids();
 
 
 private:
@@ -256,7 +262,7 @@ private:
 	*	of a download it wants to add to its container. So it sets the ID to -1. When the plugin returns,
 	*	the downloads then get a proper ID with this function.
 	*/
-	void correct_invalid_ids();
+
 
 	std::vector<download_container*> packages;
 	std::vector<download_container*> packages_to_delete;

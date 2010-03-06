@@ -32,6 +32,7 @@
 #ifndef HAVE_UINT64_T
 	#define uint64_t double
 #endif
+#include <iostream>
 using namespace std;
 
 download_container::download_container(int id, std::string container_name) : container_id(id), name(container_name) {
@@ -41,7 +42,19 @@ download_container::download_container(const download_container &cnt) : download
 
 download_container::~download_container() {
 	lock_guard<mutex> lock(download_mutex);
-	// download-containers may only be destroyed after the ownage of the pointers is moved to another object.
+	#ifndef IS_PLUGIN
+	if(!download_list.empty()) {
+		log_string("Memory leak detected: container deleted, but there are still Downloads in the list. Please report!", LOG_ERR);
+		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+			// this is just the last way out to prevent memory-leaking.. usually this should never happen
+			delete *it;
+		}
+	}
+	#else
+		cerr << "Memory leak detected: container deleted, but there are still Downloads in the list. Please report! (happend in a plugin-call)" << endl;
+	#endif
+	//lock_guard<mutex> lock(download_mutex);
+	// download-containers may only be destroyed after the ownage of the pointers is moved to another object
 }
 
 
@@ -52,7 +65,8 @@ int download_container::total_downloads() {
 
 int download_container::add_download(download *dl, int dl_id) {
 	lock_guard<mutex> lock(download_mutex);
-	dl->id = dl_id;
+	dl->set_id(dl_id);
+	dl->set_parent(container_id);
 	download_list.push_back(dl);
 	return LIST_SUCCESS;
 }
@@ -60,7 +74,8 @@ int download_container::add_download(download *dl, int dl_id) {
 #ifdef IS_PLUGIN
 int download_container::add_download(const std::string& url, const std::string& title) {
 	download* dl = new download(url);
-	dl->comment = title;
+	dl->set_title(title);
+	dl->set_parent(container_id);
 	int ret = add_download(dl, -1);
 	if(ret != LIST_SUCCESS) delete dl;
 	return ret;
@@ -72,7 +87,7 @@ int download_container::move_up(int id) {
 	download_container::iterator it;
 	int location1 = 0, location2 = 0;
 	for(it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->id == id) {
+		if((*it)->get_id() == id) {
 			break;
 		}
 		++location1;
@@ -109,7 +124,7 @@ int download_container::move_down(int id) {
 	download_container::iterator it;
 	int location1 = 0, location2 = 0;
 	for(it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->id == id) {
+		if((*it)->get_id() == id) {
 			break;
 		}
 		++location1;
@@ -149,7 +164,7 @@ int download_container::activate(int id) {
 	} else if((*it)->get_status() != DOWNLOAD_INACTIVE) {
 		return LIST_PROPERTY;
 	} else {
-		set_dl_status(it, DOWNLOAD_PENDING);
+		(*it)->set_status(DOWNLOAD_PENDING);
 	}
 	return LIST_SUCCESS;
 }
@@ -164,9 +179,9 @@ int download_container::deactivate(int id) {
 			return LIST_PROPERTY;
 		}
 
-		set_dl_status(it, DOWNLOAD_INACTIVE);
+		(*it)->set_status(DOWNLOAD_INACTIVE);
 
-		(*it)->wait_seconds = 0;
+		(*it)->set_wait(0);
 	}
 	return LIST_SUCCESS;
 }
@@ -246,21 +261,21 @@ int download_container::get_next_downloadable(bool do_lock) {
 	}
 
 	for(iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->get_status() == DOWNLOAD_PENDING && (*it)->wait_seconds == 0 && !(*it)->is_running && (*it)->id >= 0) {
+		if((*it)->get_status() == DOWNLOAD_PENDING && (*it)->get_wait() == 0 && !(*it)->get_running() && (*it)->get_id() >= 0) {
 			std::string current_host((*it)->get_host());
 			bool can_attach = true;
 			for(download_container::iterator it2 = download_list.begin(); it2 != download_list.end(); ++it2) {
-				if((*it)->wait_seconds > 0 || it == it2) {
+				if((*it)->get_wait() > 0 || it == it2) {
 					continue;
 				}
-				if((*it2)->get_host() == current_host && ((*it2)->get_status() == DOWNLOAD_RUNNING || (*it2)->get_status() == DOWNLOAD_WAITING || (*it2)->is_running)
+				if((*it2)->get_host() == current_host && ((*it2)->get_status() == DOWNLOAD_RUNNING || (*it2)->get_status() == DOWNLOAD_WAITING || (*it2)->get_running())
 				   && !(*it2)->get_hostinfo().allows_multiple) {
 					can_attach = false;
 					break;
 				}
 			}
 			if(can_attach) {
-				return (*it)->id;
+				return (*it)->get_id();
 			}
 		}
 	}
@@ -274,91 +289,91 @@ void download_container::set_url(int id, std::string url) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->url = url;
+	(*dl)->set_url(url);
 }
 
 void download_container::set_title(int id, std::string title) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->comment = title;
+	(*dl)->set_title(title);
 }
 
 void download_container::set_add_date(int id, std::string add_date) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->add_date = add_date;
+	(*dl)->set_add_date(add_date);
 }
 
 void download_container::set_downloaded_bytes(int id, uint64_t bytes) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->downloaded_bytes = bytes;
+	(*dl)->set_downloaded_bytes(bytes);
 }
 
 void download_container::set_size(int id, uint64_t size) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->size = size;
+	(*dl)->set_size(size);
 }
 
 void download_container::set_wait(int id, int seconds) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->wait_seconds = seconds;
+	(*dl)->set_wait(seconds);
 }
 
 void download_container::set_error(int id, plugin_status error) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->error = error;
+	(*dl)->set_error(error);
 }
 
 void download_container::set_output_file(int id, std::string output_file) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->output_file = output_file;
+	(*dl)->set_filename(output_file);
 }
 
 void download_container::set_running(int id, bool running) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->is_running = running;
+	(*dl)->set_running(running);
 }
 
 void download_container::set_need_stop(int id, bool need_stop) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->need_stop = need_stop;
+	(*dl)->set_need_stop(need_stop);
 }
 
 void download_container::set_status(int id, download_status status) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	set_dl_status(dl, status);
+	(*dl)->set_status(status);
 }
 
 void download_container::set_speed(int id, int speed) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->speed = speed;
+	(*dl)->set_speed(speed);
 }
 
 void download_container::set_can_resume(int id, bool can_resume) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->can_resume = can_resume;
+	(*dl)->set_resumable(can_resume);
 }
 
 
@@ -366,112 +381,112 @@ void download_container::set_proxy(int id, std::string proxy) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
-	(*dl)->proxy = proxy;
+	(*dl)->set_proxy(proxy);
 }
 
 std::string download_container::get_proxy(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return false;
-	return (*dl)->proxy;
+	return (*dl)->get_proxy();
 }
 
 bool download_container::get_can_resume(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return false;
-	return (*dl)->can_resume;
+	return (*dl)->get_resumable();
 }
 
 download_status download_container::get_status(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return DOWNLOAD_DELETED;
-	return (*dl)->status;
+	return (*dl)->get_status();
 }
 
 bool download_container::get_need_stop(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return true;
-	return (*dl)->need_stop;
+	return (*dl)->get_need_stop();
 }
 
 bool download_container::get_running(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return false;
-	return (*dl)->is_running;
+	return (*dl)->get_running();
 }
 
 std::string download_container::get_output_file(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return "";
-	return (*dl)->output_file;
+	return (*dl)->get_filename();
 }
 
 plugin_status download_container::get_error(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return PLUGIN_ERROR;
-	return (*dl)->error;
+	return (*dl)->get_error();
 }
 
 int download_container::get_wait(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return 0;
-	return (*dl)->wait_seconds;
+	return (*dl)->get_wait();
 }
 
 std::string download_container::get_add_date(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return "";
-	return (*dl)->add_date;
+	return (*dl)->get_add_date();
 }
 
 std::string download_container::get_title(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return "";
-	return (*dl)->comment;
+	return (*dl)->get_title();
 }
 
 std::string download_container::get_url(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return "";
-	return (*dl)->url;
+	return (*dl)->get_url();
 }
 
 uint64_t download_container::get_downloaded_bytes(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return 0;
-	return (*dl)->downloaded_bytes;
+	return (*dl)->get_downloaded_bytes();
 }
 
 uint64_t download_container::get_size(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return 0;
-	return (*dl)->size;
+	return (*dl)->get_size();
 }
 
 int download_container::get_speed(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return 0;
-	return (*dl)->speed;
+	return (*dl)->get_speed();
 }
 
 CURL* download_container::get_handle(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return NULL;
-	return (*dl)->handle;
+	return (*dl)->get_handle();
 }
 
 std::string download_container::get_host(int dl) {
@@ -503,11 +518,11 @@ std::string download_container::get_pkg_name() {
 void download_container::decrease_waits() {
 	lock_guard<mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->wait_seconds > 0) {
-			--((*it)->wait_seconds);
-			if((*it)->get_status() == DOWNLOAD_INACTIVE) (*it)->wait_seconds = 0;
-		} else if((*it)->wait_seconds == 0 && (*it)->get_status() == DOWNLOAD_WAITING) {
-			set_dl_status(it, DOWNLOAD_PENDING);
+		if((*it)->get_wait() > 0) {
+			(*it)->set_wait((*it)->get_wait() - 1);
+			if((*it)->get_status() == DOWNLOAD_INACTIVE) (*it)->set_wait(0);
+		} else if((*it)->get_wait() == 0 && (*it)->get_status() == DOWNLOAD_WAITING) {
+			(*it)->set_status(DOWNLOAD_PENDING);
 		}
 	}
 }
@@ -515,8 +530,8 @@ void download_container::decrease_waits() {
 void download_container::purge_deleted() {
 	lock_guard<mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->get_status() == DOWNLOAD_DELETED && (*it)->is_running == false) {
-			remove_download((*it)->id);
+		if((*it)->get_status() == DOWNLOAD_DELETED && (*it)->get_running() == false) {
+			remove_download((*it)->get_id());
 			it = download_list.begin();
 		}
 	}
@@ -528,13 +543,13 @@ std::string download_container::create_client_list() {
 	std::stringstream ss;
 
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->get_status() == DOWNLOAD_DELETED || (*it)->id < 0) {
+		if((*it)->get_status() == DOWNLOAD_DELETED || (*it)->get_id() < 0) {
 			continue;
 		}
-		ss << (*it)->id << '|' << (*it)->add_date << '|';
-		std::string comment = (*it)->comment;
-		ss << comment << '|' << (*it)->url << '|' << (*it)->get_status_str() << '|' << (*it)->downloaded_bytes << '|' << (*it)->size
-		   << '|' << (*it)->wait_seconds << '|' << (*it)->get_error_str() << '|' << (*it)->speed << '\n';
+		ss << (*it)->get_id() << '|' << (*it)->get_add_date() << '|';
+		std::string comment = (*it)->get_title();
+		ss << comment << '|' << (*it)->get_url() << '|' << (*it)->get_status_str() << '|' << (*it)->get_downloaded_bytes() << '|' << (*it)->get_size()
+		   << '|' << (*it)->get_wait() << '|' << (*it)->get_error_str() << '|' << (*it)->get_speed() << '\n';
 	}
 	return ss.str();
 }
@@ -545,15 +560,15 @@ int download_container::stop_download(int id) {
 	if(it == download_list.end() || (*it)->get_status() == DOWNLOAD_DELETED) {
 		return LIST_ID;
 	} else {
-		if((*it)->get_status() != DOWNLOAD_INACTIVE) set_dl_status(it, DOWNLOAD_PENDING);
-		(*it)->need_stop = true;
+		if((*it)->get_status() != DOWNLOAD_INACTIVE) (*it)->set_status(DOWNLOAD_PENDING);
+		(*it)->set_need_stop(true);
 		return LIST_SUCCESS;
 	}
 }
 
 download_container::iterator download_container::get_download_by_id(int id) {
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->id == id) {
+		if((*it)->get_id() == id) {
 			return it;
 		}
 	}
@@ -563,7 +578,7 @@ download_container::iterator download_container::get_download_by_id(int id) {
 int download_container::running_downloads() {
 	int running_dls = 0;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->is_running) {
+		if((*it)->get_running()) {
 			++running_dls;
 		}
 	}
@@ -583,7 +598,7 @@ int download_container::remove_download(int id) {
 bool download_container::url_is_in_list(std::string url) {
 	lock_guard<mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(url == (*it)->url) {
+		if(url == (*it)->get_url()) {
 			return true;
 		}
 	}
@@ -594,7 +609,7 @@ int download_container::get_list_position(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	int curr_pos = 0;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(id == (*it)->id) {
+		if(id == (*it)->get_id()) {
 			return curr_pos;
 		}
 		++curr_pos;
@@ -611,7 +626,8 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 	}
 	dl.download_mutex.lock();
 	for(download_container::iterator it = dl.download_list.begin(); it != dl.download_list.end(); ++it) {
-		(*it)->id = -1; // -1 means that they have to be assigned later
+		(*it)->set_id(-1); // -1 means that they have to be assigned later
+		(*it)->set_parent(container_id);
 		insert_it = download_list.insert(insert_it, *it);
 		++insert_it;
 	}
@@ -620,6 +636,7 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 }
 
 void download_container::wait(int id) {
+	// TODO
 	download_mutex.lock();
 	download_container::iterator it = download_list.begin();
 	download_mutex.unlock();
@@ -630,54 +647,14 @@ void download_container::wait(int id) {
 }
 
 #ifndef IS_PLUGIN
-int download_container::set_next_proxy(int id) {
+void download_container::do_download(int id) {
 	lock_guard<mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
-	std::string last_proxy = (*it)->proxy;
-	std::string proxy_list = global_config.get_cfg_value("proxy_list");
-	size_t n = 0;
-	if(proxy_list.empty()) return 3;
-
-	if(!last_proxy.empty() && (n = proxy_list.find(last_proxy)) == string::npos) {
-		(*it)->proxy = "";
-		return 2;
-	}
-
-	n = proxy_list.find(";", n);
-	if(!last_proxy.empty() && n == string::npos) {
-		(*it)->proxy = "";
-		return 2;
-	}
-
-	if(last_proxy.empty()) {
-		(*it)->proxy = proxy_list.substr(0, proxy_list.find(";"));
-		trim_string((*it)->proxy);
-		return 1;
-	} else {
-		if(proxy_list.size() > n + 2) {
-			(*it)->proxy = proxy_list.substr(n + 1, proxy_list.find(";", n + 1) - (n + 1));
-			trim_string((*it)->proxy);
-			return 1;
-		}
-	}
-
-	(*it)->proxy = "";
-	log_string("Invalid proxy-list syntax!", LOG_ERR);
-	return 2;
+	if(it == download_list.end()) return;
+	(*it)->set_running(true);
+	(*it)->set_status(DOWNLOAD_RUNNING);
+	thread t(bind(&download::download_me, *it));
+	t.detach();
 }
+
 #endif
-
-void download_container::set_dl_status(download_container::iterator it, download_status st) {
-	if((*it)->status == DOWNLOAD_DELETED) {
-		return;
-	} else {
-		if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) {
-			(*it)->need_stop = true;
-		}
-		(*it)->status = st;
-	}
-
-	if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) {
-		(*it)->wait_seconds = 0;
-	}
-}

@@ -1,4 +1,7 @@
 2010-03-06
+   [adrian]
+	- complete restructuring of the download-process, download class now threadsafe, so we can access it from all areas.
+	- added experimental support for RSDF containers
    [susanne]
         - made ddclient-gui able to delete files, downloads and packages
 

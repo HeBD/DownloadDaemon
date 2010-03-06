@@ -20,6 +20,8 @@
 #include "../tools/curl_callbacks.h"
 #include "../tools/helperfunctions.h"
 #include "../global.h"
+#include "recursive_parser.h"
+#include "../plugins/captcha.h"
 #endif
 
 #include <string>
@@ -33,6 +35,7 @@ using namespace std;
 download::download(const std::string& dl_url)
 	: url(dl_url), id(0), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
 	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true), handle(NULL) {
+	lock_guard<mutex> lock(mx);
 	time_t rawtime;
 	struct tm* timeinfo;
 	time(&rawtime);
@@ -49,6 +52,7 @@ download::download(const std::string& dl_url)
 
 #ifndef IS_PLUGIN
 void download::from_serialized(std::string& serializedDL) {
+	lock_guard<mutex> lock(mx);
 	std::string current_entry;
 	size_t curr_pos = 0;
 	size_t entry_num = 0;
@@ -112,6 +116,7 @@ download::download(const download& dl) {
 }
 
 void download::operator=(const download& dl) {
+	lock_guard<mutex> lock(mx);
 	url = dl.url;
 	comment = dl.comment;
 	add_date = dl.add_date;
@@ -130,9 +135,13 @@ void download::operator=(const download& dl) {
 }
 
 download::~download() {
+	while(is_running) {
+		usleep(10);
+	}
 }
 
 std::string download::serialize() {
+	lock_guard<mutex> lock(mx);
 	if(status == DOWNLOAD_DELETED) {
 		return "";
 	}
@@ -163,7 +172,11 @@ std::string download::serialize() {
 	return ss.str();
 }
 
-std::string download::get_host() {
+std::string download::get_host(bool do_lock) {
+	unique_lock<mutex> lock(mx, defer_lock);
+	if(do_lock) {
+		lock.lock();
+	}
 	size_t startpos = 0;
 
 	if(url.find("www.") != std::string::npos) {
@@ -178,6 +191,7 @@ std::string download::get_host() {
 }
 
 const char* download::get_error_str() {
+	lock_guard<mutex> lock(mx);
 	switch(error) {
 		case PLUGIN_SUCCESS:
 			return "PLUGIN_SUCCESS";
@@ -204,6 +218,7 @@ const char* download::get_error_str() {
 }
 
 const char* download::get_status_str() {
+	lock_guard<mutex> lock(mx);
 	switch(status) {
 		case DOWNLOAD_PENDING:
 			return "DOWNLOAD_PENDING";
@@ -222,15 +237,17 @@ const char* download::get_status_str() {
 	}
 }
 
+
 #ifndef IS_PLUGIN
 plugin_output download::get_hostinfo() {
+	lock_guard<mutex> lock(mx);
 	plugin_input inp;
 	plugin_output outp;
 	outp.allows_resumption = false;
 	outp.allows_multiple = false;
 	outp.offers_premium = false;
 
-	std::string host(get_host());
+	std::string host(get_host(false));
 	std::string plugindir = program_root + "/plugins/";
 	correct_path(plugindir);
 	if(host == "") {
@@ -274,14 +291,508 @@ plugin_output download::get_hostinfo() {
 		dlclose(l_handle);
 		return outp;
 	}
-	inp.premium_user = global_premium_config.get_cfg_value(get_host() + "_user");
-	inp.premium_password = global_premium_config.get_cfg_value(get_host() + "_password");
+	inp.premium_user = global_premium_config.get_cfg_value(get_host(false) + "_user");
+	inp.premium_password = global_premium_config.get_cfg_value(get_host(false) + "_password");
 	plugin_getinfo(inp, outp);
 	dlclose(l_handle);
 	return outp;
 }
+
+
+void download::download_me() {
+	unique_lock<mutex> lock(mx);
+	need_stop = false;
+	handle = curl_easy_init();
+	lock.unlock();
+	download_me_worker();
+	lock.lock();
+
+	struct stat st = {0};
+	stat(output_file.c_str(), &st);
+	if(st.st_size == 0) {
+		remove(output_file.c_str());
+		output_file = "";
+	}
+
+	if(status == DOWNLOAD_RUNNING) {
+		status = DOWNLOAD_PENDING;
+	}
+
+	if(status == DOWNLOAD_WAITING && error == PLUGIN_LIMIT_REACHED && set_next_proxy() == 1) {
+		status = DOWNLOAD_PENDING;
+		error =  PLUGIN_SUCCESS;
+		wait_seconds = 0;
+	} else if((error == PLUGIN_ERROR || error == PLUGIN_CONNECTION_ERROR || error == PLUGIN_CONNECTION_LOST || error == PLUGIN_INVALID_HOST)
+			  && !global_config.get_bool_value("assume_proxys_online") && !global_config.get_cfg_value("proxy_list").empty()
+			  && !proxy.empty() && set_next_proxy() == 1) {
+		status = DOWNLOAD_PENDING;
+		error = PLUGIN_SUCCESS;
+		wait_seconds = 0;
+	} else {
+		proxy = "";
+	}
+	curl_easy_cleanup(handle);
+
+	lock.unlock();
+	if(global_download_list.package_finished(parent)) {
+		thread t(bind(&package_container::extract_package, &global_download_list, parent));
+		t.detach();
+	}
+	lock.lock();
+
+	need_stop = false;
+	is_running = false;
+}
+
+void download::download_me_worker() {
+	unique_lock<mutex> lock(mx);
+	plugin_output plug_outp;
+	lock.unlock();
+	plugin_status success = prepare_download(plug_outp);
+	lock.lock();
+	std::string dlid_log = int_to_string(id);
+	if(need_stop) {
+		return;
+	}
+
+	std::string dl_url = plug_outp.download_url;
+	if(dl_url[dl_url.size() - 1] == '/' && dl_url.find("ftp://") == 0 && global_config.get_cfg_value("recursive_ftp_download") != "0") {
+		recursive_parser parser(dl_url);
+		parser.add_to_list(parent);
+		if(status == DOWNLOAD_DELETED) {
+			return;
+		}
+		status = DOWNLOAD_INACTIVE;
+		log_string("Downloading directory: " + dl_url, LOG_DEBUG);
+		return;
+	}
+
+	if(status != DOWNLOAD_RUNNING) {
+		return;
+	}
+	// Used later as temporary variable for all the <error>_wait config variables to save I/O
+	long wait_n;
+	error = success;
+
+	dlindex dl(make_pair<int, int>(parent, id));
+
+	switch(success) {
+		case PLUGIN_INVALID_HOST:
+			status = DOWNLOAD_INACTIVE;
+			log_string(std::string("Invalid host for download ID: ") + dlid_log, LOG_WARNING);
+			return;
+		break;
+		case PLUGIN_AUTH_FAIL:
+			status = DOWNLOAD_PENDING;
+			wait_n = global_config.get_int_value("auth_fail_wait");
+			if(wait_n == 0) {
+				status = DOWNLOAD_INACTIVE;
+			} else {
+				wait_seconds = wait_n;
+				status = DOWNLOAD_PENDING;
+			}
+			log_string(std::string("Premium authentication failed for download ") + dlid_log, LOG_WARNING);
+			return;
+		case PLUGIN_SERVER_OVERLOADED:
+			log_string(std::string("Server overloaded for download ID: ") + dlid_log, LOG_WARNING);
+			status = DOWNLOAD_WAITING;
+			return;
+		case PLUGIN_LIMIT_REACHED:
+			log_string(std::string("Download limit reached for download ID: ") + dlid_log + " (" + get_host() + ")", LOG_WARNING);
+			status = DOWNLOAD_WAITING;
+			return;
+		// do the same for both
+		case PLUGIN_CONNECTION_ERROR:
+		case PLUGIN_CONNECTION_LOST:
+			log_string(std::string("Plugin failed to connect for ID:") + dlid_log, LOG_WARNING);
+			wait_n = global_config.get_int_value("connection_lost_wait");
+			if(wait_n == 0) {
+				status = DOWNLOAD_INACTIVE;
+			} else {
+				status = DOWNLOAD_PENDING;
+				wait_seconds = wait_n;
+			}
+			return;
+		case PLUGIN_FILE_NOT_FOUND:
+			log_string(std::string("File could not be found on the server for ID: ") + dlid_log, LOG_WARNING);
+			status = DOWNLOAD_INACTIVE;
+			return;
+		case PLUGIN_ERROR:
+			log_string("An error occured on download ID: " + dlid_log, LOG_WARNING);
+			wait_n = global_config.get_int_value("plugin_fail_wait");
+			if(wait_n == 0) {
+				status = DOWNLOAD_INACTIVE;
+			} else {
+				status = DOWNLOAD_PENDING;
+				wait_seconds = wait_n;
+			}
+			return;
+		default: break;
+	}
+
+	if(success == PLUGIN_SUCCESS) {
+		log_string(std::string("Successfully parsed download ID: ") + dlid_log, LOG_DEBUG);
+		if(wait_seconds > 0) {
+			lock.unlock();
+			wait();
+			lock.lock();
+		}
+
+		if(need_stop) return;
+
+		std::string output_filename;
+		std::string download_folder = global_config.get_cfg_value("download_folder");
+		correct_path(download_folder);
+		if(global_config.get_bool_value("download_to_subdirs")) {
+			std::string dl_subfolder = global_download_list.get_pkg_name(parent);
+			make_valid_filename(dl_subfolder);
+			if(dl_subfolder.empty()) {
+				std::vector<int> dls = global_download_list.get_download_list(parent);
+				if(dls.empty()) return;
+				int first_id = dls[0];
+				dl_subfolder = filename_from_url(global_download_list.get_url(make_pair<int, int>(parent, first_id)));
+				if(dl_subfolder.find(".") != string::npos) {
+					dl_subfolder = dl_subfolder.substr(0, dl_subfolder.find_last_of("."));
+				} else {
+					dl_subfolder = "";
+				}
+			}
+			download_folder += "/" + dl_subfolder;
+		}
+
+		mkdir_recursive(download_folder);
+		if(plug_outp.download_filename == "") {
+			if(plug_outp.download_url != "") {
+				std::string fn = filename_from_url(plug_outp.download_url);
+				output_filename = download_folder + '/';
+				if(fn.empty()) {
+					output_filename += "file";
+				} else {
+					output_filename += fn;
+				}
+			}
+		} else {
+			output_filename += download_folder;
+			output_filename += '/' + plug_outp.download_filename;
+		}
+
+		std::string final_filename(output_filename);
+		output_filename += ".part";
+
+		struct stat st;
+
+		// Check if we can do a download resume or if we have to start from the beginning
+		fstream output_file_s;
+		lock.unlock();
+		if(global_download_list.get_hostinfo(dl).allows_resumption && global_config.get_bool_value("enable_resume") &&
+		   stat(output_filename.c_str(), &st) == 0 && (unsigned)st.st_size == downloaded_bytes &&
+		   can_resume) {
+			lock.lock();
+			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, downloaded_bytes);
+			output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
+			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
+		} else {
+			lock.lock();
+			// Check if the file should be overwritten if it exists
+			if(!global_config.get_bool_value("overwrite_files")) {
+				if(stat(final_filename.c_str(), &st) == 0) {
+					status = DOWNLOAD_INACTIVE;
+					error = PLUGIN_WRITE_FILE_ERROR;
+					return;
+
+				}
+			}
+			output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::trunc);
+		}
+
+		if(!output_file_s.good()) {
+			log_string(std::string("Could not write to file: ") + output_filename, LOG_ERR);
+			error = PLUGIN_WRITE_FILE_ERROR;
+			wait_n = global_config.get_int_value("write_error_wait");
+			if(wait_n == 0) {
+				status = DOWNLOAD_INACTIVE;
+			} else {
+				status = DOWNLOAD_PENDING;
+				wait_seconds = wait_n;
+			}
+			return;
+		}
+
+		output_file = output_filename;
+
+		if(plug_outp.download_url.empty()) {
+			log_string(std::string("Empty URL for download ID: ") + dlid_log, LOG_ERR);
+			error = PLUGIN_ERROR;
+			wait_n = global_config.get_int_value("plugin_fail_wait");
+			if(wait_n == 0) {
+				status = DOWNLOAD_INACTIVE;
+			} else {
+				status = DOWNLOAD_PENDING;
+				wait_seconds = wait_n;
+			}
+			return;
+		}
+
+		// set url
+		curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
+		curl_easy_setopt(handle, CURLOPT_URL, plug_outp.download_url.c_str());
+		// set file-writing function as callback
+		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_file);
+		std::string cache;
+		std::pair<fstream*, std::string*> callback_opt_left(&output_file_s, &cache);
+		std::pair<std::pair<fstream*, std::string*>, CURL*> callback_opt(callback_opt_left, handle);
+		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &callback_opt);
+		// show progress
+		curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0);
+		curl_easy_setopt(handle, CURLOPT_PROGRESSFUNCTION, report_progress);
+		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &dl);
+		// set timeouts
+		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
+		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
+		long dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
+		if(dl_speed > 0) {
+			curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
+		}
+
+		log_string(std::string("Starting download ID: ") + dlid_log, LOG_DEBUG);
+		lock.unlock();
+		int curlsucces = curl_easy_perform(handle);
+		lock.lock();
+		// because the callback only safes every half second, there is still an unsafed rest-data:
+		output_file_s.write(cache.c_str(), cache.size());
+		downloaded_bytes += cache.size();
+		output_file_s.close();
+
+		long http_code;
+		curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &http_code);
+
+
+		switch(http_code) {
+			case 401:
+				log_string(std::string("Invalid premium account credentials, ID: ") + dlid_log, LOG_WARNING);
+				wait_n = global_config.get_int_value("auth_fail_wait");
+				if(wait_n == 0) {
+					status = DOWNLOAD_INACTIVE;
+				} else {
+					status = DOWNLOAD_PENDING;
+					wait_seconds = wait_n;
+				}
+				return;
+			case 404:
+				log_string(std::string("File not found, ID: ") + dlid_log, LOG_WARNING);
+				status = DOWNLOAD_INACTIVE;
+				error = PLUGIN_FILE_NOT_FOUND;
+				if(!output_filename.empty()) {
+					remove(output_filename.c_str());
+					output_file = "";
+				}
+				return;
+			case 530:
+				log_string("Invalid http authentication on download ID: " + dlid_log, LOG_WARNING);
+				status = DOWNLOAD_INACTIVE;
+				error = PLUGIN_AUTH_FAIL;
+				remove(output_filename.c_str());
+				output_file = "";
+				return;
+		}
+
+		switch(curlsucces) {
+			case CURLE_OK:
+				log_string(std::string("Finished download ID: ") + dlid_log, LOG_DEBUG);
+				status = DOWNLOAD_FINISHED;
+				if(rename(output_filename.c_str(), final_filename.c_str()) != 0) {
+					log_string(std::string("Unable to rename .part file. You can do so manually."), LOG_ERR);
+				} else {
+					output_file = final_filename;
+				}
+				//global_download_list.post_process_download(dl); TODO
+				return;
+			case CURLE_OPERATION_TIMEDOUT:
+			case CURLE_COULDNT_RESOLVE_HOST:
+				log_string(std::string("Connection lost for download ID: ") + dlid_log, LOG_WARNING);
+				error = PLUGIN_CONNECTION_LOST;
+				wait_n = global_config.get_int_value("connection_lost_wait");
+				if(wait_n == 0) {
+					status = DOWNLOAD_INACTIVE;
+				} else {
+					status = DOWNLOAD_PENDING;
+					wait_seconds = wait_n;
+				}
+				return;
+			case CURLE_ABORTED_BY_CALLBACK:
+				log_string(std::string("Stopped download ID: ") + dlid_log, LOG_WARNING);
+				return;
+			case CURLE_BAD_DOWNLOAD_RESUME:
+				// if download resumption fails, retry without resumption
+				can_resume = false;
+				status = DOWNLOAD_PENDING;
+				log_string("Resuming download failed. retrying without resumption", LOG_WARNING);
+				return;
+			default:
+				log_string(std::string("Download error for download ID: ") + dlid_log, LOG_WARNING);
+				error = PLUGIN_CONNECTION_LOST;
+				wait_n = atol(global_config.get_cfg_value("connection_lost_wait").c_str());
+				if(wait_n == 0) {
+					status = DOWNLOAD_INACTIVE;
+				} else {
+					status = DOWNLOAD_PENDING;
+					wait_seconds = wait_n;
+				}
+				return;
+		}
+	} else {
+		log_string("Plugin returned an invalid/unhandled status. Please report! (status returned: " + int_to_string(success) + ")", LOG_ERR);
+		status = DOWNLOAD_PENDING;
+		wait_seconds = 30;
+		return;
+	}
+
+
+
+}
+
+void download::wait() {
+	while(get_wait() > 0) {
+		usleep(500);
+	}
+}
+
+plugin_status download::prepare_download(plugin_output &poutp) {
+	unique_lock<mutex> plock(plugin_mutex);
+	unique_lock<mutex> lock(mx);
+
+	plugin_input pinp;
+	string pluginfile(get_plugin_file());
+
+	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
+	if(pluginfile.empty()) {
+		log_string("No plugin found, using generic download", LOG_WARNING);
+		poutp.download_url = url;
+		return PLUGIN_SUCCESS;
+	}
+
+	// Load the plugin function needed
+	void* dlhandle = dlopen(pluginfile.c_str(), RTLD_LAZY);
+	if (!dlhandle) {
+		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
+		return PLUGIN_ERROR;
+	}
+
+	dlerror();	// Clear any existing error
+
+	plugin_status (*plugin_exec_func)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string);
+	plugin_exec_func = (plugin_status (*)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string))dlsym(dlhandle, "plugin_exec_wrapper");
+
+	char *dl_error;
+	if ((dl_error = dlerror()) != NULL)  {
+		log_string(std::string("Unable to execute plugin: ") + dl_error, LOG_ERR);
+		dlclose(dlhandle);
+		return PLUGIN_ERROR;
+	}
+
+	pinp.premium_user = global_premium_config.get_cfg_value(get_host(false) + "_user");
+	pinp.premium_password = global_premium_config.get_cfg_value(get_host(false) + "_password");
+	trim_string(pinp.premium_user);
+	trim_string(pinp.premium_password);
+
+	// enable a proxy if neccessary
+	string proxy_str = proxy;
+	if(!proxy_str.empty()) {
+		size_t n;
+		std::string proxy_ipport;
+		if((n = proxy_str.find("@")) != string::npos &&  proxy_str.size() > n + 1) {
+			curl_easy_setopt(handle, CURLOPT_PROXYUSERPWD, proxy_str.substr(0, n).c_str());
+			curl_easy_setopt(handle, CURLOPT_PROXY, proxy_str.substr(n + 1).c_str());
+			log_string("Setting proxy: " + proxy_str.substr(n + 1) + " for " + url, LOG_DEBUG);
+		} else {
+			curl_easy_setopt(handle, CURLOPT_PROXY, proxy_str.c_str());
+			log_string("Setting proxy: " + proxy_str + " for " + url, LOG_DEBUG);
+		}
+	}
+
+	lock.unlock();
+
+	plugin_status retval;
+	try {
+		retval = plugin_exec_func(*global_download_list.get_listptr(parent), id, pinp, poutp, global_config.get_int_value("captcha_retrys"),
+                                  global_config.get_cfg_value("gocr_binary"), program_root);
+	} catch(captcha_exception &e) {
+		log_string("Failed to decrypt captcha. Giving up (" + pluginfile + ")", LOG_ERR);
+		set_status(DOWNLOAD_INACTIVE);
+		retval = PLUGIN_ERROR;
+	} catch(...) {
+		retval = PLUGIN_ERROR;
+	}
+
+	dlclose(dlhandle);
+
+	global_download_list.correct_invalid_ids();
+	return retval;
+}
+
+std::string download::get_plugin_file() {
+	// TODO: delete
+	string host = get_host(false);
+	if(host == "") {
+		return "";
+	}
+
+	std::string plugindir = program_root + "/plugins/";
+	correct_path(plugindir);
+	plugindir += '/';
+
+
+	std::string pluginfile(plugindir + "lib" + host + ".so");
+
+	struct stat st;
+
+	if(stat(pluginfile.c_str(), &st) != 0) {
+		return "";
+	}
+	return pluginfile;
+}
+
+int download::set_next_proxy() {
+	//unique_lock<mutex> lock(mx);
+	std::string last_proxy = proxy;
+	std::string proxy_list = global_config.get_cfg_value("proxy_list");
+	size_t n = 0;
+	if(proxy_list.empty()) return 3;
+
+	if(!last_proxy.empty() && (n = proxy_list.find(last_proxy)) == string::npos) {
+		proxy = "";
+		return 2;
+	}
+
+	n = proxy_list.find(";", n);
+	if(!last_proxy.empty() && n == string::npos) {
+		proxy = "";
+		return 2;
+	}
+
+	if(last_proxy.empty()) {
+		string tmp = proxy_list.substr(0, proxy_list.find(";"));
+		trim_string(tmp);
+		proxy = tmp;
+		return 1;
+	} else {
+		if(proxy_list.size() > n + 2) {
+			string tmp = proxy_list.substr(n + 1, proxy_list.find(";", n + 1) - (n + 1));
+			trim_string(tmp);
+			proxy = tmp;
+			return 1;
+		}
+	}
+
+	proxy = "";
+	log_string("Invalid proxy-list syntax!", LOG_ERR);
+	return 2;
+
+
+}
+
 #endif
 
 bool operator<(const download& x, const download& y) {
-	return x.id < y.id;
+	return x.get_id() < y.get_id();
 }

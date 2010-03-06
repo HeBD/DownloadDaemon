@@ -34,8 +34,9 @@ long string_to_long(std::string str);
 
 /** Remove whitespaces from beginning and end of a string
 * @param str string to process
+* @returns str
 */
-void trim_string(std::string &str);
+const std::string& trim_string(std::string &str);
 
 /** Validation of a given URL to check if it's valid
 * @param url Url to check
@@ -122,5 +123,10 @@ bool CompareNoCase( const std::string& s1, const std::string& s2 );
 */
 void make_valid_filename(std::string &fn);
 
+/** create a binary string from ascii hex (e.g. FF will result ret.size() = 1, ret[0] = 255;)
+*	@param ascii_hex string to unhexlify
+*	@returns the binary representation
+*/
+std::string ascii_hex_to_bin(std::string ascii_hex);
 
 #endif /*HELPERFUNCTIONS_H_*/

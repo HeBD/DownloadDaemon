@@ -93,7 +93,7 @@ public:
 	/** Find out the hoster (needed to call the correct plugin)
 	* @returns host-string
 	*/
-	std::string get_host();
+	std::string get_host(bool do_lock = true);
 
 	/** Get the defines from above as a string literal
 	* @returns the resulting error string
@@ -105,23 +105,76 @@ public:
 	*/
 	const char* get_status_str();
 
-	/** Sets the status of a download
-	* @param st desired status
-	*/
-	void set_status(download_status st);
-
-	/** Returns the status of a download
-	* @returns Download status
-	*/
-	download_status get_status() {return status;}
-
 	/** gives info about the host of this download (continue downloads, parallel downloads, premium, ...)
 	*	@returns the info
 	*/
 	plugin_output get_hostinfo();
 
+	void download_me();
+	void download_me_worker();
+
 	friend bool operator<(const download& x, const download& y);
-	friend class download_container;
+
+	std::string get_url() const					{ std::lock_guard<std::mutex> lock(mx); return url; }
+	void set_url(const std::string &new_url) 	{ std::lock_guard<std::mutex> lock(mx); url = new_url; }
+
+	std::string get_title() const				{ std::lock_guard<std::mutex> lock(mx); return comment; }
+	void set_title(const std::string &title) 	{ std::lock_guard<std::mutex> lock(mx); comment = title; }
+
+	std::string get_add_date() const			{ std::lock_guard<std::mutex> lock(mx); return add_date; }
+	void set_add_date(const std::string &new_add_date) { std::lock_guard<std::mutex> lock(mx); add_date = new_add_date; }
+
+	int get_id() const							{ std::lock_guard<std::mutex> lock(mx); return id; }
+	void set_id(int new_id) 					{ std::lock_guard<std::mutex> lock(mx); id = new_id; }
+
+	uint64_t get_downloaded_bytes() const		{ std::lock_guard<std::mutex> lock(mx); return downloaded_bytes; }
+	void set_downloaded_bytes(uint64_t b) 		{ std::lock_guard<std::mutex> lock(mx); downloaded_bytes = b; }
+
+	uint64_t get_size() const					{ std::lock_guard<std::mutex> lock(mx); return size; }
+	void set_size(uint64_t b) 					{ std::lock_guard<std::mutex> lock(mx); size = b; }
+
+	int get_wait() const						{ std::lock_guard<std::mutex> lock(mx); return wait_seconds; }
+	void set_wait(int w) 						{ std::lock_guard<std::mutex> lock(mx); wait_seconds = w; }
+
+	plugin_status get_error() const				{ std::lock_guard<std::mutex> lock(mx); return error; }
+	void set_error(plugin_status e)				{ std::lock_guard<std::mutex> lock(mx); error = e; }
+
+	std::string get_filename() const			{ std::lock_guard<std::mutex> lock(mx); return output_file; }
+	void set_filename(const std::string &fn) 	{ std::lock_guard<std::mutex> lock(mx); output_file = fn; }
+
+	bool get_running() const					{ std::lock_guard<std::mutex> lock(mx); return is_running; }
+	void set_running(bool r) 					{ std::lock_guard<std::mutex> lock(mx); is_running = r; }
+
+	bool get_need_stop() const					{ std::lock_guard<std::mutex> lock(mx); return need_stop; }
+	void set_need_stop(bool r) 					{ std::lock_guard<std::mutex> lock(mx); need_stop = r; }
+
+	download_status get_status() const			{ std::lock_guard<std::mutex> lock(mx); return status; }
+	void set_status(download_status st)			{ std::lock_guard<std::mutex> lock(mx); if(status == DOWNLOAD_DELETED) return;
+												  status = st;
+												  if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) { need_stop = true; wait_seconds = 0; } }
+
+	int get_speed()	const						{ std::lock_guard<std::mutex> lock(mx); return speed; }
+	void set_speed(int s)						{ std::lock_guard<std::mutex> lock(mx); speed = s; }
+
+	bool get_resumable() const					{ std::lock_guard<std::mutex> lock(mx); return can_resume; }
+	void set_resumable(bool r) 					{ std::lock_guard<std::mutex> lock(mx); can_resume = r; }
+
+	std::string get_proxy() const				{ std::lock_guard<std::mutex> lock(mx); return proxy; }
+	void set_proxy(const std::string &p)		{ std::lock_guard<std::mutex> lock(mx); proxy = p; }
+
+	CURL* get_handle() const					{ std::lock_guard<std::mutex> lock(mx); return handle; }
+	void set_handle(CURL* h)					{ std::lock_guard<std::mutex> lock(mx); handle = h; }
+
+	int get_parent() const						{ std::lock_guard<std::mutex> lock(mx); return parent; }
+	void set_parent(int p)						{ std::lock_guard<std::mutex> lock(mx); parent = p; }
+
+
+
+private:
+	int set_next_proxy();
+	plugin_status prepare_download(plugin_output &poutp);
+	std::string get_plugin_file();
+	void wait();
 
 	std::string url;
 	std::string comment;
@@ -143,6 +196,10 @@ public:
 	bool can_resume;
 	CURL* handle;
 	std::string proxy;
+
+	int parent;
+	mutable std::mutex mx;
+	mutable std::mutex plugin_mutex;
 };
 
 bool operator<(const download& x, const download& y);
