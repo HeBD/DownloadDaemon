@@ -16,7 +16,6 @@
 
 #include "../dl/download.h"
 #include "../dl/download_container.h"
-#include "../dl/download_thread.h"
 #include "../tools/helperfunctions.h"
 #include <cfgfile/cfgfile.h>
 #include "global_management.h"
@@ -31,10 +30,13 @@ std::mutex once_per_sec_mutex;
 void do_once_per_second() {
 	while(true) {
 		once_per_sec_mutex.lock();
+		global_download_list.purge_deleted();
 		if(global_download_list.total_downloads() > 0) {
 			global_download_list.decrease_waits();
-			global_download_list.purge_deleted();
-			start_next_download();
+			dlindex downloadable = global_download_list.get_next_downloadable();
+			if(downloadable.first != LIST_ID) {
+				global_download_list.do_download(downloadable);
+			}
 		}
 	}
 }

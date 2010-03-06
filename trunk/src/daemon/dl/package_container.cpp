@@ -20,20 +20,21 @@
 using namespace std;
 
 package_container::package_container() : is_reconnecting(false) {
-	int pkg_id = add_package("");
+	//int pkg_id = add_package("");
 	// set the global package to ID -1. It will not be shown. It's just a global container
 	// where containers with an unsecure status are stored (eg. if they get a DELETE command, but the object
 	// still exists)
-	lock_guard<mutex> lock(mx);
-	(*package_by_id(pkg_id))->container_id = -1;
+	//lock_guard<mutex> lock(mx);
+	//(*package_by_id(pkg_id))->container_id = -1;
 }
 
 package_container::~package_container() {
-	lock_guard<mutex> lock(mx);
-	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
+	// This happens only on program termination.. we gotta live with it, that there is undeleted data on termination.
+	//lock_guard<mutex> lock(mx);
+	//for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		// the download_container safely removes the downloads one by another.
-		delete *it;
-	}
+	//	delete *it;
+	//}
 }
 
 int package_container::from_file(const char* filename) {
@@ -101,35 +102,17 @@ int package_container::add_dl_to_pkg(download* dl, int pkg_id) {
 void package_container::del_package(int pkg_id) {
 	lock_guard<mutex> lock(mx);
 	package_container::iterator package = package_by_id(pkg_id);
-	package_container::iterator global = package_by_id(-1);
-	if(package == packages.end() || global == packages.end()) return;
+	if(package == packages.end()) return;
 
-	bool can_delete_pkg = true;
 	// we are friend of download_container. so we lock the it's mutex and set all statuses to deleted.
-	// then we move all the downloads to the general list, so we can safely delete the list itsself
+	// then we move the package from the package list to the pending-deletion list
 	(*package)->download_mutex.lock();
-	(*global)->download_mutex.lock();
 	for(download_container::iterator it = (*package)->download_list.begin(); it != (*package)->download_list.end(); ++it) {
-		(*global)->download_list.push_back(*it);
-		download_container::iterator tmp_it = (*global)->download_list.end();
-		--tmp_it;
-		(*global)->set_dl_status(tmp_it, DOWNLOAD_DELETED);
-		(*package)->set_dl_status(it, DOWNLOAD_DELETED);
-
-		if((*it)->is_running) {
-			can_delete_pkg = false;
-		}
+		(*it)->set_status(DOWNLOAD_DELETED);
 	}
-	(*global)->download_mutex.unlock();
+
+	packages_to_delete.push_back(*package);
 	(*package)->download_mutex.unlock();
-	// now all the download-pointers are in the global list and wen can safely remove the package if no download is running (because the plugin got a pointer to
-	// that download list)
-	if(can_delete_pkg) {
-		delete *package;
-
-	} else {
-		packages_to_delete.push_back(*package);
-	}
 	packages.erase(package);
 }
 
@@ -143,7 +126,7 @@ bool package_container::empty() {
 
 dlindex package_container::get_next_downloadable() {
 	lock_guard<mutex> lock(mx);
-	for(package_container::iterator it = packages.begin() + 1; it != packages.end(); ++it) {
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		int ret = (*it)->get_next_downloadable();
 		if(ret != LIST_ID) {
 			return make_pair<int, int>((*it)->container_id, ret);
@@ -390,164 +373,11 @@ std::vector<int> package_container::get_download_list(int id) {
 	(*it)->download_mutex.lock();
 
 	for(download_container::iterator dlit = (*it)->download_list.begin(); dlit != (*it)->download_list.end(); ++dlit) {
-		vec.push_back((*dlit)->id);
+		vec.push_back((*dlit)->get_id());
 	}
 	(*it)->download_mutex.unlock();
 	return vec;
 }
-
-void package_container::init_handle(dlindex dl) {
-	lock_guard<mutex> lock(mx);
-	package_container::iterator it = package_by_id(dl.first);
-	if(it == packages.end()) return;
-	(*it)->download_mutex.lock();
-	download_container::iterator dlit = (*it)->get_download_by_id(dl.second);
-	if((*dlit)->handle == NULL)
-		(*dlit)->handle = curl_easy_init();
-	(*it)->download_mutex.unlock();
-	dump_to_file(false);
-}
-
-void package_container::cleanup_handle(dlindex dl) {
-	lock_guard<mutex> lock(mx);
-	package_container::iterator it = package_by_id(dl.first);
-	if(it == packages.end()) return;
-	(*it)->download_mutex.lock();
-	download_container::iterator dlit = (*it)->get_download_by_id(dl.second);
-	if((*dlit)->handle != NULL)
-		curl_easy_cleanup((*dlit)->handle);
-	(*dlit)->handle = NULL;
-	(*it)->download_mutex.unlock();
-	if(reconnect_needed()) {
-		thread t(&package_container::do_reconnect, this);
-		t.detach();
-	}
-	dump_to_file(false);
-}
-
-int package_container::prepare_download(dlindex dl, plugin_output &poutp) {
-	unique_lock<mutex> plock(plugin_mutex);
-	unique_lock<mutex> lock(mx);
-	package_container::iterator it = package_by_id(dl.first);
-	unique_lock<mutex> container_lock((*it)->download_mutex);
-	plugin_input pinp;
-	download_container::iterator dlit = (*it)->get_download_by_id(dl.second);
-
-	string pluginfile(get_plugin_file(dlit));
-
-	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
-	if(pluginfile.empty()) {
-		log_string("No plugin found, using generic download", LOG_WARNING);
-		poutp.download_url = (*dlit)->url.c_str();
-		return PLUGIN_SUCCESS;
-	}
-
-	// Load the plugin function needed
-	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
-	if (!handle) {
-		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
-		return PLUGIN_ERROR;
-	}
-
-	dlerror();	// Clear any existing error
-
-	plugin_status (*plugin_exec_func)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string);
-	plugin_exec_func = (plugin_status (*)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string))dlsym(handle, "plugin_exec_wrapper");
-
-	char *error;
-	if ((error = dlerror()) != NULL)  {
-		log_string(std::string("Unable to execute plugin: ") + error, LOG_ERR);
-		dlclose(handle);
-		return PLUGIN_ERROR;
-	}
-
-	pinp.premium_user = global_premium_config.get_cfg_value((*dlit)->get_host() + "_user");
-	pinp.premium_password = global_premium_config.get_cfg_value((*dlit)->get_host() + "_password");
-	trim_string(pinp.premium_user);
-	trim_string(pinp.premium_password);
-
-	// enable a proxy if neccessary
-	string proxy_str = (*dlit)->proxy;
-	if(!proxy_str.empty()) {
-		size_t n;
-		std::string proxy_ipport;
-		if((n = proxy_str.find("@")) != string::npos &&  proxy_str.size() > n + 1) {
-			curl_easy_setopt((*dlit)->handle, CURLOPT_PROXYUSERPWD, proxy_str.substr(0, n).c_str());
-			curl_easy_setopt((*dlit)->handle, CURLOPT_PROXY, proxy_str.substr(n + 1).c_str());
-			log_string("Setting proxy: " + proxy_str.substr(n + 1) + " for " + (*dlit)->url, LOG_DEBUG);
-		} else {
-			curl_easy_setopt((*dlit)->handle, CURLOPT_PROXY, proxy_str.c_str());
-			log_string("Setting proxy: " + proxy_str + " for " + (*dlit)->url, LOG_DEBUG);
-		}
-	}
-
-	container_lock.unlock();
-	lock.unlock();
-
-	plugin_status retval;
-	try {
-		retval = plugin_exec_func(**it, dl.second, pinp, poutp, global_config.get_int_value("captcha_retrys"),
-                                  global_config.get_cfg_value("gocr_binary"), program_root);
-	} catch(captcha_exception &e) {
-		log_string("Failed to decrypt captcha. Giving up (" + pluginfile + ")", LOG_ERR);
-		set_status(dl, DOWNLOAD_INACTIVE);
-		retval = PLUGIN_ERROR;
-	} catch(...) {
-		retval = PLUGIN_ERROR;
-	}
-
-	dlclose(handle);
-	lock.lock();
-	correct_invalid_ids();
-	return retval;
-}
-
-void package_container::post_process_download(dlindex dl) {
-	unique_lock<mutex> plock(plugin_mutex);
-	unique_lock<mutex> lock(mx);
-	package_container::iterator it = package_by_id(dl.first);
-	unique_lock<mutex> container_lock((*it)->download_mutex);
-	plugin_input pinp;
-	download_container::iterator dlit = (*it)->get_download_by_id(dl.second);
-
-	string pluginfile(get_plugin_file(dlit));
-	if(pluginfile.empty()) return;
-
-	// Load the plugin function needed
-	void* handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
-	if (!handle) {
-		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
-		return;
-	}
-
-	dlerror();	// Clear any existing error
-
-	void (*post_process_func)(download_container& dlc, int id, plugin_input& pinp);
-	post_process_func = (void (*)(download_container& dlc, int id, plugin_input& pinp))dlsym(handle, "post_process_dl_init");
-
-	char *error;
-	if ((error = dlerror()) != NULL)  {
-		dlclose(handle);
-		return;
-	}
-
-	pinp.premium_user = global_premium_config.get_cfg_value((*dlit)->get_host() + "_user");
-	pinp.premium_password = global_premium_config.get_cfg_value((*dlit)->get_host() + "_password");
-	trim_string(pinp.premium_user);
-	trim_string(pinp.premium_password);
-	lock.unlock();
-	plugin_mutex.lock();
-	try {
-		post_process_func(**it, dl.second, pinp);
-	} catch(...) {}
-
-	dlclose(handle);
-	plugin_mutex.unlock();
-	// lock, followed by scoped unlock. otherwise lock will be called 2 times
-	lock.lock();
-	correct_invalid_ids();
-}
-
 
 std::string package_container::get_host(dlindex dl) {
 	lock_guard<mutex> lock(mx);
@@ -567,7 +397,7 @@ plugin_output package_container::get_hostinfo(dlindex dl) {
 int package_container::total_downloads() {
 	lock_guard<mutex> lock(mx);
 	int total = 0;
-	for(package_container::iterator it = packages.begin() + 1; it != packages.end(); ++it) {
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		total += (*it)->total_downloads();
 	}
 	return total;
@@ -575,27 +405,27 @@ int package_container::total_downloads() {
 
 void package_container::decrease_waits() {
 	lock_guard<mutex> lock(mx);
-	for(package_container::iterator it = packages.begin() + 1; it != packages.end(); ++it) {
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		(*it)->decrease_waits();
 	}
 }
 
 void package_container::purge_deleted() {
 	lock_guard<mutex> lock(mx);
-	for(package_container::iterator it = packages.begin() + 1; it != packages.end(); ++it) {
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		(*it)->purge_deleted();
 	}
 	for(package_container::iterator it = packages_to_delete.begin(); it != packages_to_delete.end(); ++it) {
-		bool can_delete = true;
-		for(download_container::iterator it2 = (*it)->download_list.begin(); it2 != (*it)->download_list.end(); ++it2) {
-			if((*it2)->is_running) {
-				can_delete = false;
-			}
-		}
-		if(can_delete) {
+		(*it)->purge_deleted();
+		if((*it)->total_downloads() == 0) {
 			delete *it;
 			packages_to_delete.erase(it);
 			it = packages_to_delete.begin();
+			break;
+		}
+
+		for(download_container::iterator it2 = (*it)->download_list.begin(); it2 != (*it)->download_list.end(); ++it2) {
+			(*it2)->set_status(DOWNLOAD_DELETED);
 		}
 	}
 }
@@ -603,7 +433,7 @@ void package_container::purge_deleted() {
 std::string package_container::create_client_list() {
 	lock_guard<mutex> lock(mx);
 	std::string list;
-	for(package_container::iterator it = packages.begin() + 1; it != packages.end(); ++it) {
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		list += "PACKAGE|" + int_to_string((*it)->container_id)  + "|" + (*it)->name + "\n";
 		list += (*it)->create_client_list();
 	}
@@ -613,7 +443,7 @@ std::string package_container::create_client_list() {
 
 bool package_container::url_is_in_list(std::string url) {
 	lock_guard<mutex> lock(mx);
-	for(package_container::iterator it = packages.begin() + 1; it != packages.end(); ++it) {
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		if((*it)->url_is_in_list(url))
 			return true;
 	}
@@ -635,7 +465,7 @@ void  package_container::move_pkg(int dl, package_container::direction d) {
 	package_container::iterator it = package_by_id(dl);
 	if(it == packages.end()) return;
 	package_container::iterator it2 = it;
-	if(d == DIRECTION_UP && it != packages.begin() + 1) {
+	if(d == DIRECTION_UP && it != packages.begin()) {
 		--it2;
 		download_container* tmp = *it;
 		*it = *it2;
@@ -668,7 +498,7 @@ bool package_container::reconnect_needed() {
 	for(package_container::iterator pkg = packages.begin(); pkg != packages.end(); ++pkg) {
 		(*pkg)->download_mutex.lock();
 		for(download_container::iterator it = (*pkg)->download_list.begin(); it != (*pkg)->download_list.end(); ++it) {
-			if((*it)->get_status() == DOWNLOAD_WAITING && (*it)->error == PLUGIN_LIMIT_REACHED) {
+			if((*it)->get_status() == DOWNLOAD_WAITING && (*it)->get_error() == PLUGIN_LIMIT_REACHED) {
 				need_reconnect = true;
 			}
 		}
@@ -773,8 +603,8 @@ void package_container::do_reconnect() {
 		(*pkg)->download_mutex.lock();
 		for(download_container::iterator it = (*pkg)->download_list.begin(); it != (*pkg)->download_list.end(); ++it) {
 			if((*it)->get_status() == DOWNLOAD_WAITING) {
-				(*pkg)->set_dl_status(it, DOWNLOAD_RECONNECTING);
-				(*it)->wait_seconds = 0;
+				(*it)->set_status(DOWNLOAD_RECONNECTING);
+				(*it)->set_wait(0);
 			}
 		}
 		(*pkg)->download_mutex.unlock();
@@ -789,8 +619,8 @@ void package_container::do_reconnect() {
 		(*pkg)->download_mutex.lock();
 		for(download_container::iterator it = (*pkg)->download_list.begin(); it != (*pkg)->download_list.end(); ++it) {
 			if((*it)->get_status() == DOWNLOAD_WAITING || (*it)->get_status() == DOWNLOAD_RECONNECTING) {
-				(*pkg)->set_dl_status(it, DOWNLOAD_PENDING);
-				(*it)->wait_seconds = 0;
+				(*it)->set_status(DOWNLOAD_PENDING);
+				(*it)->set_wait(0);
 			}
 		}
 		(*pkg)->download_mutex.unlock();
@@ -805,7 +635,7 @@ void package_container::dump_to_file(bool do_lock) {
 		lock.lock();
 	}
 	ofstream ofs(list_file.c_str(), ios::trunc);
-	for(package_container::iterator pkg = packages.begin() + 1; pkg != packages.end(); ++pkg) {
+	for(package_container::iterator pkg = packages.begin(); pkg != packages.end(); ++pkg) {
 		(*pkg)->download_mutex.lock();
 		ofs << "PKG|" << (*pkg)->container_id << "|" << (*pkg)->name << "|" << (*pkg)->password << endl;
 		for(download_container::iterator it = (*pkg)->download_list.begin(); it != (*pkg)->download_list.end(); ++it) {
@@ -820,6 +650,7 @@ void package_container::wait(dlindex dl) {
 	mx.lock();
 	package_container::iterator it = package_by_id(dl.first);
 	mx.unlock();
+	if(it == packages.end()) return;
 	(*it)->wait(dl.second);
 }
 
@@ -828,7 +659,7 @@ int package_container::pkg_that_contains_download(int download_id) {
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		lock_guard<mutex> dllock((*it)->download_mutex);
 		for(download_container::iterator dlit = (*it)->download_list.begin(); dlit != (*it)->download_list.end(); ++dlit) {
-			if((*dlit)->id == download_id) return (*it)->container_id;
+			if((*dlit)->get_id() == download_id) return (*it)->container_id;
 		}
 	}
 	return LIST_ID;
@@ -843,21 +674,29 @@ bool package_container::pkg_exists(int id) {
 	return false;
 }
 
-int package_container::set_next_proxy(dlindex id) {
-	lock_guard<mutex> lock(mx);
-	package_container::iterator it = package_by_id(id.first);
-	return (*it)->set_next_proxy(id.second);
-}
-
 bool package_container::package_finished(int id) {
 	lock_guard<mutex> lock(mx);
 	package_container::iterator pkg_it = package_by_id(id);
 	lock_guard<mutex> listlock((*pkg_it)->download_mutex);
 	for(download_container::iterator it = (*pkg_it)->download_list.begin(); it != (*pkg_it)->download_list.end(); ++it) {
-		if((*it)->status != DOWNLOAD_FINISHED)
+		if((*it)->get_status() != DOWNLOAD_FINISHED)
 			return false;
 	}
 	return true;
+}
+
+download_container* package_container::get_listptr(int id) {
+	lock_guard<mutex> lock(mx);
+	package_container::iterator pkg_it = package_by_id(id);
+	if(pkg_it == packages.end()) return NULL;
+	return *pkg_it;
+}
+
+void package_container::do_download(dlindex dl) {
+	lock_guard<mutex> lock(mx);
+	package_container::iterator pkg_it = package_by_id(dl.first);
+	if(pkg_it == packages.end()) return;
+	(*pkg_it)->do_download(dl.second);
 }
 
 void package_container::extract_package(int id) {
@@ -870,7 +709,7 @@ void package_container::extract_package(int id) {
 	unique_lock<mutex> pkg_lock((*pkg_it)->download_mutex);
 	download_container::iterator it = (*pkg_it)->download_list.begin();
 	if((*pkg_it)->download_list.size() == 0) return;
-	string output_file = (*it)->output_file;
+	string output_file = (*it)->get_filename();
 	string extension(output_file.substr(output_file.find_last_of(".")));
 	string output_dir(output_file.substr(0, output_file.find_last_of(".")));
 	pkg_lock.unlock();
@@ -936,8 +775,8 @@ void package_container::extract_package(int id) {
 			log_string("Successfully extracted package " + int_to_string(id) + ". Removing archives...", LOG_DEBUG);
 			pkg_lock.lock();
 			for(it = (*pkg_it)->download_list.begin(); it != (*pkg_it)->download_list.end(); ++it) {
-				remove((*it)->output_file.c_str());
-				(*it)->output_file = "";
+				remove((*it)->get_filename().c_str());
+				(*it)->set_filename("");
 			}
 			pkg_lock.unlock();
 		} else {
@@ -953,8 +792,8 @@ int package_container::get_next_download_id(bool lock_download_mutex) {
 		if(lock_download_mutex) (*it)->download_mutex.lock();
 		int max_here = -1;
 		for(download_container::iterator cnt_it = (*it)->download_list.begin(); cnt_it != (*it)->download_list.end(); ++cnt_it) {
-			if((*cnt_it)->id > max_here) {
-				max_here = (*cnt_it)->id;
+			if((*cnt_it)->get_id() > max_here) {
+				max_here = (*cnt_it)->get_id();
 			}
 		}
 		if(max_here > max_id) max_id = max_here;
@@ -984,6 +823,7 @@ int package_container::get_next_id() {
 }
 
 std::string package_container::get_plugin_file(download_container::iterator dlit) {
+	// TODO: delete
 	std::string host((*dlit)->get_host());
 	if(host == "") {
 		return "";
@@ -1005,6 +845,7 @@ std::string package_container::get_plugin_file(download_container::iterator dlit
 }
 
 void package_container::correct_invalid_ids() {
+	lock_guard<mutex> lock(mx);
 	// sadly there is no other threadsafe way than looping 3 times - first lock, then do, then unlock
 	// the problem is that get_next_download_id accesses ALL packages. so all of them need to be locked.
 	// it can also lock automatically, but then I'd need to unlock before calling it, which might make
@@ -1014,8 +855,8 @@ void package_container::correct_invalid_ids() {
 	}
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		for(download_container::iterator dlit = (*it)->download_list.begin(); dlit != (*it)->download_list.end(); ++dlit) {
-			if((*dlit)->id == -1) {
-				(*dlit)->id = get_next_download_id(false);
+			if((*dlit)->get_id() == -1) {
+				(*dlit)->set_id(get_next_download_id(false));
 			}
 		}
 		(*it)->download_mutex.unlock();
@@ -1024,3 +865,6 @@ void package_container::correct_invalid_ids() {
 		(*it)->download_mutex.unlock();
 	}
 }
+
+
+

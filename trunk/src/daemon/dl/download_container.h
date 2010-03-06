@@ -221,6 +221,8 @@ public:
 	*/
 	int set_next_proxy(int id);
 
+	void do_download(int id);
+
 private:
 	typedef std::list<download*>::iterator iterator;
 	/** get an iterator to a download by giving an ID
@@ -244,14 +246,14 @@ private:
 	*	@param it Iterator to the download
 	*	@param st Status to set
 	*/
-	void set_dl_status(download_container::iterator it, download_status st);
+	//void set_dl_status(download_container::iterator it, download_status st);
 
 
 
 
 	std::list<download*> download_list;
 	std::mutex download_mutex;
-	std::mutex plugin_mutex; // makes sure that you don't call the same plugin multiple times at the same time
+	//std::mutex plugin_mutex; // makes sure that you don't call the same plugin multiple times at the same time
 				   // because it would bring thread-safety problems
 	int container_id;
 	std::string name;

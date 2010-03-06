@@ -50,13 +50,14 @@ int string_to_int(const std::string str) {
 	return i;
 }
 
-void trim_string(std::string &str) {
+const std::string& trim_string(std::string &str) {
 	while(str.length() > 0 && isspace(str[0])) {
 		str.erase(str.begin());
 	}
 	while(str.length() > 0 && isspace(*(str.end() - 1))) {
 		str.erase(str.end() -1);
 	}
+	return str;
 }
 
 bool validate_url(std::string &url) {
@@ -331,3 +332,13 @@ void make_valid_filename(std::string &fn) {
 	replace_all(fn, ";", " ");
 }
 
+std::string ascii_hex_to_bin(std::string ascii_hex) {
+	std::string result;
+	for(size_t i = 0; i < ascii_hex.size(); i = i + 2) {
+		char hex[5] = "0x00";
+		hex[2] = ascii_hex[i];
+		hex[3] = ascii_hex[i + 1];
+		result.push_back(strtol(hex, NULL, 16));
+	}
+	return result;
+}

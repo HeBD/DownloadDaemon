@@ -13,7 +13,6 @@
 #include <cfgfile/cfgfile.h>
 #include "mgmt/mgmt_thread.h"
 #include "dl/download.h"
-#include "dl/download_thread.h"
 #include "dl/package_container.h"
 #include "mgmt/global_management.h"
 #include "tools/helperfunctions.h"

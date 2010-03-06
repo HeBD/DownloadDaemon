@@ -32,9 +32,10 @@
 #include <netpptk/netpptk.h>
 #include <cfgfile/cfgfile.h>
 #include <crypt/md5.h>
+#include <crypt/AES/aes.h>
+#include <crypt/base64.h>
 #include "../tools/helperfunctions.h"
 #include "../dl/download_container.h"
-#include "../dl/download_thread.h"
 #include "../global.h"
 using namespace std;
 
@@ -335,7 +336,7 @@ void target_dl_add(std::string &data, tkSock *sock) {
 
 		}
 		download* dl = new download(url);
-		dl->comment = comment;
+		dl->set_title(comment);
 		std::string logstr("Adding download: ");
 		logstr += dl->serialize();
 		logstr.erase(logstr.length() - 1);
@@ -578,6 +579,14 @@ void target_pkg(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_pkg_get(data, sock);
+	} else if(data.find("CONTAINER") == 0) {
+		data = data.substr(9);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_container(data, sock);
 	} else {
 		*sock << "101 PROTOCOL";
 	}
@@ -661,6 +670,86 @@ void target_pkg_get(std::string &data, tkSock *sock) {
 		*sock << global_download_list.get_password(pkg_id);
 	} else {
 		*sock << "";
+	}
+}
+
+void target_pkg_container(std::string &data, tkSock *sock) {
+	// format:
+	// container <TYPE>\n<data>
+	size_t n;
+
+	string type = data.substr(0, (n = data.find(":")));
+	trim_string(type);
+	if(n == string::npos) {
+		*sock << "101 PROTOCOL";
+		return;
+	}
+	data = data.substr(data.find(":") + 1);
+	if(type == "RSDF") {
+		replace_all(data, "\r\n", "");
+		replace_all(data, "\n", "");
+		replace_all(data, "\r", "");
+
+		std::string key = ascii_hex_to_bin("8C35192D964DC3182C6F84F3252239EB4A320D2500000000");
+		string iv = ascii_hex_to_bin("a3d5a33cb95ac1f5cbdb1ad25cb0a7aa");
+
+		std::basic_stringstream<unsigned char> container;
+		data = ascii_hex_to_bin(data);
+		if(data.find("=") == string::npos) {
+			replace_all(data, "\r\n", "=\r\n");
+		}
+
+		string links;
+		size_t last_found = 0;
+		for(size_t i = 0; i < data.size(); ++i) {
+			if(data[i] == '=') {
+				string tmp = data.substr(last_found, i + 1 - last_found);
+				replace_all(tmp, "\r\n", "");
+				replace_all(tmp, "\n", "");
+				links += base64_decode(tmp);
+				++i;
+				last_found = i + 1;
+			}
+		}
+		data = links;
+
+		AES_KEY aes_key;
+		AES_set_encrypt_key((const unsigned char*)key.c_str(), 192, &aes_key);
+		char iv_c[16];
+		memcpy(iv_c, iv.c_str(), 16);
+		char* plaintext = new char[data.size() + 17];
+		memset(plaintext, 0, data.size() + 17);
+		AES_cfb8_encrypt((const unsigned char*)data.c_str(), (unsigned char*)plaintext, data.size() + 17, &aes_key, (unsigned char*)iv_c, 0, AES_DECRYPT);
+		string result(plaintext, links.size());
+		delete [] plaintext;
+
+		bool first = true;
+		int pkg_id = global_download_list.add_package("");
+		while(result.find("CCF: ") != string::npos) {
+			size_t this_ccf = 0;
+			result = result.substr(5);
+			size_t next_ccf = result.find("CCF: ");
+
+			string tmp = result.substr(this_ccf, next_ccf);
+			if(next_ccf != string::npos) {
+				result = result.substr(next_ccf);
+			}
+			download* dl = new download(tmp);
+			global_download_list.add_dl_to_pkg(dl, pkg_id);
+			if(first) {
+				string pkg_name = filename_from_url(tmp);
+				size_t last_dot = pkg_name.find_last_of(".");
+				if(last_dot != 0)
+					pkg_name = pkg_name.substr(0, last_dot);
+				global_download_list.set_pkg_name(pkg_id, pkg_name);
+				first = false;
+			}
+		}
+		*sock << "100 SUCCESS";
+		return;
+	} else {
+		*sock << "112 UNSUPPORTED";
+		return;
 	}
 }
 

@@ -69,6 +69,7 @@ For the target PKG, the following commands exist: "ADD", "DEL", "UP", "DOWN", "E
 	EXISTS <id> checks if a container exists. returns "1" if it exists or "0" if it doesnt.
 	SET <id> <option>=<value> sets an option of a package. options are: PKG_NAME, PKG_PASSWORD 
 	GET <id> <option> returns a package-parameter. options are: PKG_NAME, PKG_PASSWORD
+	CONTAINER <type>:<content> creates a packages and puts the contents of the container into it. currently only the type RSDF is supported. more to come.
 
 For the target VAR, the following commands exist: "SET", "GET".
 	SET <var>=<value> will set a configuration variable and needs to be in the format <variable> = <value>. the variable identifier is just the same
@@ -120,3 +121,4 @@ For now, this list represents all codes:
 109 FILE		<-- If you do any file operation on a file that does not exist.
 110 PERMISSION		<-- If a file could not be written (this can also happen if you add/del a download and don't have write permissions to the list-file)
 111 VALUE		<-- If you change a config-variable to an invalid value
+112 UNSUPPORTED		<-- If a requested feature is not (yet) supported by this DownloadDaemon
