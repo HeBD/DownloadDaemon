@@ -107,20 +107,20 @@ void connect_dialog::ok(){
 
                     // standard connection error handling
                     if(e.get_id() == 1){ // wrong host/port
-                        QMessageBox::critical(this,  p->tsl("Connection failed"), p->tsl("Connection failed (wrong IP/URL or Port).")  + ("\n")
+                        QMessageBox::warning(this,  p->tsl("Connection failed"), p->tsl("Connection failed (wrong IP/URL or Port).")  + ("\n")
                                               + p->tsl("Please try again."));
                         error_occured = true;
 
                     }else if(e.get_id() == 3){ // wrong password
-                        QMessageBox::critical(this,  p->tsl("Authentication Error"), p->tsl("Wrong Password, Authentication failed."));
+                        QMessageBox::warning(this,  p->tsl("Authentication Error"), p->tsl("Wrong Password, Authentication failed."));
                         error_occured = true;
 
                     }else if(e.get_id() == 4){ // wrong password
-                        QMessageBox::critical(this,  p->tsl("Authentication Error"), p->tsl("Unknown Error while Authentication."));
+                        QMessageBox::warning(this,  p->tsl("Authentication Error"), p->tsl("Unknown Error while Authentication."));
                         error_occured = true;
 
                     }else{ // we have some other connection error
-                        QMessageBox::critical(this,  p->tsl("Authentication Error"), p->tsl("Unknown Error while Authentication."));
+                        QMessageBox::warning(this,  p->tsl("Authentication Error"), p->tsl("Unknown Error while Authentication."));
                         error_occured = true;
                     }
 
@@ -129,20 +129,20 @@ void connect_dialog::ok(){
 
         // standard connection error handling
         }else if(e.get_id() == 1){ // wrong host/port
-            QMessageBox::critical(this,  p->tsl("Connection failed"), p->tsl("Connection failed (wrong IP/URL or Port).")  + ("\n")
+            QMessageBox::warning(this,  p->tsl("Connection failed"), p->tsl("Connection failed (wrong IP/URL or Port).")  + ("\n")
                                   + p->tsl("Please try again."));
             error_occured = true;
 
         }else if(e.get_id() == 3){ // wrong password
-            QMessageBox::critical(this,  p->tsl("Authentication Error"), p->tsl("Wrong Password, Authentication failed."));
+            QMessageBox::warning(this,  p->tsl("Authentication Error"), p->tsl("Wrong Password, Authentication failed."));
             error_occured = true;
 
         }else if(e.get_id() == 4){ // wrong password
-            QMessageBox::critical(this,  p->tsl("Authentication Error"), p->tsl("Unknown Error while Authentication."));
+            QMessageBox::warning(this,  p->tsl("Authentication Error"), p->tsl("Unknown Error while Authentication."));
             error_occured = true;
 
         }else{ // we have some other connection error
-            QMessageBox::critical(this,  p->tsl("Authentication Error"), p->tsl("Unknown Error while Authentication."));
+            QMessageBox::warning(this,  p->tsl("Authentication Error"), p->tsl("Unknown Error while Authentication."));
             error_occured = true;
         }
     }

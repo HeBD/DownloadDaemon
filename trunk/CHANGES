@@ -1,3 +1,7 @@
+2010-03-06
+   [susanne]
+        - made ddclient-gui able to delete files, downloads and packages
+
 2010-03-05
    [susanne]
         - added functionality to add dialog at ddclient-gui
