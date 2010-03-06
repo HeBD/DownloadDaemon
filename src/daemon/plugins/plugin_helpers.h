@@ -118,9 +118,12 @@ std::string gocr;
 std::string host;
 std::string share_directory;
 
+std::mutex p_mutex;
+
 /** This function is just a wrapper for defining globals and calling your plugin */
 extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, plugin_input& pinp, plugin_output& poutp,
                                              int max_captcha_retrys, const std::string &gocr_path, const std::string &root_dir) {
+	std::lock_guard<std::mutex> lock(p_mutex);
 	dl_list = &dlc;
 	dlid = id;
 	max_retrys = max_captcha_retrys;
@@ -134,6 +137,7 @@ extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, pl
 #ifdef PLUGIN_WANTS_POST_PROCESSING
 void post_process_download(plugin_input&);
 extern "C" void post_process_dl_init(download_container& dlc, int id, plugin_input& pinp) {
+	std::lock_guard<std::mutex> lock(p_mutex);
 	dl_list = &dlc;
 	dlid = id;
 	host = dlc.get_host(id);
