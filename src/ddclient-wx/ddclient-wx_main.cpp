@@ -1318,11 +1318,8 @@ void myframe::on_deactivate(wxCommandEvent &event){
 	for(it = selected_lines.begin(); it<selected_lines.end(); it++){
 		reselect_lines.push_back(*it);
 
-		if((*it)[0] != 'P') // we have a real download
-			id = atol(it->c_str());
-		else // we have a package selected
-			continue; // next one
-
+        if((*it)[0] != 'P') // download
+            id = atol(it->c_str());
 
 		try{
 			dclient->priority_up(id);

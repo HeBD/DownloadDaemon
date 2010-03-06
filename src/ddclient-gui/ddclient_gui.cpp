@@ -1002,9 +1002,33 @@ void ddclient_gui::on_activate(){
     if(!check_connection(true, "Please connect before activating Downloads."))
         return;
 
-    QMessageBox::information(this, "Test", "on_activate");
+    mx.lock();
     get_selected_lines();
-                                                                                               // TODO: not finished!
+
+    vector<selected_info>::iterator it;
+    int id;
+    string error_string;
+
+    if(selected_lines.empty()){
+        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+        mx.unlock();
+        return;
+    }
+
+
+    for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+
+        if(!(it->package)) // we have a real download
+            id = content.at(it->parent_row).dls.at(it->row).id;
+        else // we have a package selected
+            continue; // next one
+
+        try{
+            dclient->activate_download(id);
+        }catch(client_exception &e){}
+    }
+
+    mx.unlock();
     get_content();
 }
 
@@ -1013,9 +1037,33 @@ void ddclient_gui::on_deactivate(){
     if(!check_connection(true, "Please connect before deactivating Downloads."))
         return;
 
-    QMessageBox::information(this, "Test", "on_deactivate");
+    mx.lock();
     get_selected_lines();
-                                                                                               // TODO: not finished!
+
+    vector<selected_info>::iterator it;
+    int id;
+    string error_string;
+
+    if(selected_lines.empty()){
+        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+        mx.unlock();
+        return;
+    }
+
+
+    for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+
+        if(!(it->package)) // we have a real download
+            id = content.at(it->parent_row).dls.at(it->row).id;
+        else // we have a package selected
+            continue; // next one
+
+        try{
+            dclient->deactivate_download(id);
+        }catch(client_exception &e){}
+    }
+
+    mx.unlock();
     get_content();
 }
 
@@ -1024,9 +1072,36 @@ void ddclient_gui::on_priority_up(){
     if(!check_connection(true, "Please connect before increasing Priority."))
         return;
 
-    QMessageBox::information(this, "Test", "on_priority_up");
+    mx.lock();
     get_selected_lines();
-                                                                                               // TODO: not finished!
+
+    vector<selected_info>::iterator it;
+    int id;
+    string error_string;
+
+    if(selected_lines.empty()){
+        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+        mx.unlock();
+        return;
+    }
+
+
+    for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+
+        if(!(it->package)) // we have a real download
+            id = content.at(it->parent_row).dls.at(it->row).id;
+        else // we have a package selected
+            id = content.at(it->row).id;
+
+        try{
+            if(it->package)
+                dclient->package_priority_up(id);
+            else
+                dclient->priority_up(id);
+        }catch(client_exception &e){}
+    }
+
+    mx.unlock();
     get_content();
 }
 
@@ -1035,9 +1110,36 @@ void ddclient_gui::on_priority_down(){
     if(!check_connection(true, "Please connect before decreasing Priority."))
         return;
 
-    QMessageBox::information(this, "Test", "on_priority_down");
+    mx.lock();
     get_selected_lines();
-                                                                                               // TODO: not finished!
+
+    vector<selected_info>::reverse_iterator rit;
+    int id;
+    string error_string;
+
+    if(selected_lines.empty()){
+        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+        mx.unlock();
+        return;
+    }
+
+
+    for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); rit++){
+
+        if(!(rit->package)) // we have a real download
+            id = content.at(rit->parent_row).dls.at(rit->row).id;
+        else // we have a package selected
+            id = content.at(rit->row).id;
+
+        try{
+            if(rit->package)
+                dclient->package_priority_down(id);
+            else
+                dclient->priority_down(id);
+        }catch(client_exception &e){}
+    }
+
+    mx.unlock();
     get_content();
 }
 

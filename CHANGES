@@ -4,6 +4,7 @@
 	- added experimental support for RSDF containers
    [susanne]
         - made ddclient-gui able to delete files, downloads and packages
+        - added possibility to de(activate) downloads and increase/decrease downloads and packages to ddclient-gui
 
 2010-03-05
    [susanne]
