@@ -646,14 +646,6 @@ void package_container::dump_to_file(bool do_lock) {
 
 }
 
-void package_container::wait(dlindex dl) {
-	mx.lock();
-	package_container::iterator it = package_by_id(dl.first);
-	mx.unlock();
-	if(it == packages.end()) return;
-	(*it)->wait(dl.second);
-}
-
 int package_container::pkg_that_contains_download(int download_id) {
 	lock_guard<mutex> lock(mx);
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
@@ -822,7 +814,7 @@ int package_container::get_next_id() {
 	return max_id + 1;
 }
 
-std::string package_container::get_plugin_file(download_container::iterator dlit) {
+/*std::string package_container::get_plugin_file(download_container::iterator dlit) {
 	// TODO: delete
 	std::string host((*dlit)->get_host());
 	if(host == "") {
@@ -842,7 +834,7 @@ std::string package_container::get_plugin_file(download_container::iterator dlit
 		return "";
 	}
 	return pluginfile;
-}
+}*/
 
 void package_container::correct_invalid_ids() {
 	lock_guard<mutex> lock(mx);
@@ -859,7 +851,6 @@ void package_container::correct_invalid_ids() {
 				(*dlit)->set_id(get_next_download_id(false));
 			}
 		}
-		(*it)->download_mutex.unlock();
 	}
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		(*it)->download_mutex.unlock();

@@ -197,7 +197,7 @@ class package_container {
 	/**	waits for the download dl as long as the wait-time is > 0. Breaks if it's set to 0 from another thread
 	*	@param dl Index of the download
 	*/
-	void wait(dlindex dl);
+	//void wait(dlindex dl);
 
 	/** checks for the next free download ID that should be used for a download that is added
 	*	@param set to false if you already locked ALL package's download_mutex mutexes
@@ -268,7 +268,6 @@ private:
 	std::vector<download_container*> packages_to_delete;
 
 	std::mutex mx;
-	std::mutex plugin_mutex;
 	std::string list_file;
 	bool is_reconnecting;
 };

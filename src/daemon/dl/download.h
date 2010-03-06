@@ -199,7 +199,6 @@ private:
 
 	int parent;
 	mutable std::mutex mx;
-	mutable std::mutex plugin_mutex;
 };
 
 bool operator<(const download& x, const download& y);
