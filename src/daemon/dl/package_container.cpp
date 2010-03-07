@@ -486,6 +486,7 @@ void  package_container::move_pkg(int dl, package_container::direction d) {
 }
 
 bool package_container::reconnect_needed() {
+	unique_lock<mutex> lock(mx);
 	std::string reconnect_policy;
 
 	if(!global_config.get_bool_value("enable_reconnect")) {
@@ -555,7 +556,7 @@ bool package_container::reconnect_needed() {
 			}
 			(*pkg)->download_mutex.unlock();
 		}
-
+		lock.unlock();
 		if(get_next_downloadable().first != LIST_ID) {
 			return false;
 		}

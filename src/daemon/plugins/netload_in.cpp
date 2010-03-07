@@ -167,8 +167,8 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 		outp.allows_resumption = true;
 		outp.allows_multiple = true;
 	} else {
-		outp.allows_resumption = true;
-		outp.allows_multiple = true;
+		outp.allows_resumption = false;
+		outp.allows_multiple = false;
 	}
 	outp.offers_premium = true; // no login support yet
 }
