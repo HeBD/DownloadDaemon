@@ -539,7 +539,7 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
         }
 
     }else if(dl.status == "DOWNLOAD_WAITING"){
-        color = "red";
+        color = "yellow";
 
         status_text = lang["Have to wait."];
         stringstream time;
