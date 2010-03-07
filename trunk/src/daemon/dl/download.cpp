@@ -165,6 +165,8 @@ std::string download::serialize() {
 		conv << size;
 		dl_size = conv.str();
 	#endif
+	while(dl_bytes.size() > 1 && dl_bytes[0] == '0') dl_bytes.erase(0, 1);
+	while(dl_size.size() > 1 && dl_size[0] == '0') dl_size.erase(0, 1);
 
 	stringstream ss;
 	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << status << '|'
@@ -398,7 +400,7 @@ void download::download_me_worker() {
 			status = DOWNLOAD_WAITING;
 			return;
 		case PLUGIN_LIMIT_REACHED:
-			log_string(std::string("Download limit reached for download ID: ") + dlid_log + " (" + get_host() + ")", LOG_WARNING);
+			log_string(std::string("Download limit reached for download ID: ") + dlid_log + " (" + get_host(false) + ")", LOG_WARNING);
 			status = DOWNLOAD_WAITING;
 			return;
 		// do the same for both
@@ -554,10 +556,17 @@ void download::download_me_worker() {
 			curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
 		}
 
+		// set headers to parse content-disposition
+		curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, parse_header);
+		std::string fn_from_header;
+		curl_easy_setopt(handle, CURLOPT_WRITEHEADER, &fn_from_header);
+
 		log_string(std::string("Starting download ID: ") + dlid_log, LOG_DEBUG);
 		lock.unlock();
 		int curlsucces = curl_easy_perform(handle);
 		lock.lock();
+
+		if(plug_outp.download_filename.empty() && !fn_from_header.empty()) final_filename = fn_from_header;
 		// because the callback only safes every half second, there is still an unsafed rest-data:
 		output_file_s.write(cache.c_str(), cache.size());
 		downloaded_bytes += cache.size();

@@ -64,3 +64,24 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	}
 	return 0;
 }
+
+size_t parse_header( void *ptr, size_t size, size_t nmemb, void *clientp) {
+	string* filename = (string*)clientp;
+	string header((char*)ptr, size * nmemb);
+	size_t n;
+	if((n = header.find("Content-Disposition:")) != string::npos) {
+		n += 20;
+		header = header.substr(n, header.find("\n") - n);
+		if((n = header.find("filename=")) == string::npos) return nmemb;
+		header = header.substr(n + 9);
+		if(header.size() == 0) return nmemb;
+		if(header[0] == '"') {
+			n = header.find('"', 1);
+			if(n == string::npos) return nmemb;
+			*filename = header.substr(1, n - 1);
+		} else {
+			*filename = header.substr(0, header.find_first_of("\r\n "));
+		}
+	}
+	return nmemb;
+}

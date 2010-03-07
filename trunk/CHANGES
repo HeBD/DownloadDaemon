@@ -1,3 +1,8 @@
+2010-03-07
+   [adrian]
+	- added experimental support for netload.in premium accounts (UNTESTED! please test it if you have an account!)
+	- DownloadDaemon now checks the Content-Disposition header to find out the correct filename for downloaded files.
+
 2010-03-06
    [adrian]
 	- complete restructuring of the download-process, download class now threadsafe, so we can access it from all areas.
