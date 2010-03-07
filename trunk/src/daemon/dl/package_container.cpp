@@ -29,10 +29,15 @@ package_container::package_container() : is_reconnecting(false) {
 }
 
 package_container::~package_container() {
-	// This happens only on program termination.. we gotta live with it, that there is undeleted data on termination.
-	//lock_guard<mutex> lock(mx);
+	lock_guard<mutex> lock(mx);
+	dump_to_file(false);
+	// only on program termination.. data will have to be cleaned up by the OS.. sadly
+
 	//for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		// the download_container safely removes the downloads one by another.
+	//	delete *it;
+	//}
+	//for(package:container::iterator it = packages_to_delete.begin(); it != packages_to_delete.end(); ++it) {
 	//	delete *it;
 	//}
 }

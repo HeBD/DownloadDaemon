@@ -135,7 +135,10 @@ void download::operator=(const download& dl) {
 }
 
 download::~download() {
+	lock_guard<mutex> lock(mx);
 	while(is_running) {
+		need_stop = true;
+		status = DOWNLOAD_DELETED;
 		usleep(10);
 	}
 }
