@@ -1,8 +1,8 @@
-This is a shourt introduction about how to write new Plugins for the downloader to support more hosters.
+This is a short introduction about how to write new Plugins for the downloader to support more hosters.
 Generally a plugin can only be written in C++ (C might be supported soon).
-Plugins are basically shared libraries which are loaded on runtime to execute some funtions.
+Plugins are basically shared libraries which are loaded at runtime to execute some funtions.
 Good examples can be found for the rapidshare.com and uploaded.to plugins in src/daemon/plugins.
-For an example of captcha-decoding, check the netload.in plugin.
+For an example of captcha-decoding, check the netload.in or megaupload.com plugin.
 A plugin always has to be named after its hoster, plus the ".so" file extension and "lib" file prefix for shared libraries.
 so for rapidshare.com, you will get a plugin-library called "librapidshare.com.so".
 Anyhow, all work should be done by the plugin except for the final step of downloading the file. 
@@ -26,12 +26,13 @@ plugin_output &outp:
 	This structure contains information the downloader needs from you.
 	std::string download_url 	= the final URL to download from. If you are done with your plugin, this needs to be specified.
 	std::string download_filename	= Some hosters (e.g. uploaded.to) do not specify their filename in the URL. If it's a simple URL (like asdf.com/hello.rar, 
-					= you don't need to fill this out. If it's a special URL (uploaded.to/asdf, filename should be Hello.rar), this needs to
-					= be specified.
+					  you don't need to fill this out. If it's a special URL (uploaded.to/asdf, filename should be Hello.rar), this needs to
+					  be specified. As of version 0.9 DownloadDaemon also checks the Content-Disposition header. If the server sends something
+					  like this in the header, you don't have to set download_filename: Attachment; filename=Hello.rar.
 	bool allows_resumption		= Specifies if the download shoul be resumed if the download on this file has been partly finished before.
-					= this is not supported by all hosters.
+					  this is not supported by all hosters.
 	bool allows_multiple		= This specifies if the hoster currently supports multiple downloads at the same time. (If this depends on if you are
-					= a premium user or not, make your answer dependent.
+					  a premium user or not, make your answer dependent.
 
 When your plugin finished, you may return one of the following values: 
 PLUGIN_SUCCESS, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,

@@ -28,15 +28,35 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	CURL* handle = get_handle();
 	string result;
 	bool done = false;
+	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
+	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
+	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
+
+	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+		curl_easy_setopt(handle, CURLOPT_URL, "http://netload.in/index.php?lang=en");
+		string post_data = "txtuser=" + inp.premium_user + "&txtpass=" + inp.premium_password + "&txtcheck=login&txtlogin=";
+		curl_easy_setopt(handle, CURLOPT_POST, 1);
+		curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, post_data.c_str());
+		if(curl_easy_perform(handle) != 0) {
+			return PLUGIN_ERROR;
+		}
+		if(result.find("forgot the password?") != string::npos || result.find("you didn't insert a password or it might be invalid") != string::npos) {
+			return PLUGIN_AUTH_FAIL;
+		}
+		curl_easy_setopt(handle, CURLOPT_POST, 0);
+		curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "");
+		outp.download_url = get_url();
+		return PLUGIN_SUCCESS;
+	}
+
+
+
 	// so we can never get in an infinite loop..
 	int while_tries = 0;
 	while(!done && while_tries < 100) {
 		++while_tries;
 		curl_easy_setopt(handle, CURLOPT_URL, get_url());
-		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
-		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
-		curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
-		curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
 		result.clear();
 		int res = curl_easy_perform(handle);
 		if(res != 0) {
@@ -111,7 +131,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 				continue;
 			}
 
-			if(result.find("This file is currently unavailable") != string::npos) {
+			if(result.find("file is currently unavailable") != string::npos || result.find("offline") != string::npos || result.find("unknown_file_id") != string::npos) {
 				return PLUGIN_FILE_NOT_FOUND;
 			}
 
