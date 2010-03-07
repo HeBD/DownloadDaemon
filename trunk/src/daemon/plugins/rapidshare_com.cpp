@@ -48,7 +48,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 			string orig_url = get_url();
 			if(orig_url.find(".html") != string::npos) {
-				outp.download_filename = orig_url.substr(0, orig_url.find(".html") - 1);
+				size_t n = orig_url.find_last_of("/\\");
+				outp.download_filename = orig_url.substr(n + 1, orig_url.find(".html") - n - 1);
 			}
 			outp.download_url = orig_url;
 			return PLUGIN_SUCCESS;
