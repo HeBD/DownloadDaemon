@@ -554,6 +554,8 @@ void download::download_me_worker() {
 		// set file-writing function as callback
 		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_file);
 		std::string cache;
+		// reserve a cache of 512 kb
+		cache.reserve(512000);
 		std::pair<fstream*, std::string*> callback_opt_left(&output_file_s, &cache);
 		std::pair<std::pair<fstream*, std::string*>, CURL*> callback_opt(callback_opt_left, handle);
 		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &callback_opt);
@@ -579,7 +581,11 @@ void download::download_me_worker() {
 		int curlsucces = curl_easy_perform(handle);
 		lock.lock();
 
-		if(plug_outp.download_filename.empty() && !fn_from_header.empty()) final_filename = fn_from_header;
+		if(plug_outp.download_filename.empty() && !fn_from_header.empty()) {
+			final_filename = final_filename.substr(0, final_filename.find_last_of("/\\"));
+			final_filename += "/" + fn_from_header;
+		}
+
 		// because the callback only safes every half second, there is still an unsafed rest-data:
 		output_file_s.write(cache.c_str(), cache.size());
 		downloaded_bytes += cache.size();
