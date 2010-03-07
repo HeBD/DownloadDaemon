@@ -914,8 +914,8 @@ void myframe::compare_download(int &line_nr, download &new_dl, download &old_dl)
 	if(new_dl.url != old_dl.url) // url
 		list->SetItem(line_nr, 2,wxString(new_dl.url.c_str(), wxConvUTF8));
 
-	if((new_dl.status != old_dl.status) || (new_dl.status != old_dl.status) || (new_dl.status != old_dl.status) ||
-	   (new_dl.status != old_dl.status) || (new_dl.status != old_dl.status) || (new_dl.status != old_dl.status)){
+	if((new_dl.status != old_dl.status) || (new_dl.downloaded != old_dl.downloaded) || (new_dl.size != old_dl.size) ||
+	   (new_dl.wait != old_dl.wait) || (new_dl.error != old_dl.error) || (new_dl.speed != old_dl.speed)){
 
 		color = build_status(status_text, time_left, new_dl);
 		list->SetItemBackgroundColour(line_nr, wxString(color.c_str(), wxConvUTF8));
