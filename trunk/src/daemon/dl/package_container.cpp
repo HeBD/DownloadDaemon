@@ -704,6 +704,15 @@ void package_container::extract_package(int id) {
 	string output_file = (*it)->get_filename();
 	string extension(output_file.substr(output_file.find_last_of(".")));
 	string output_dir(output_file.substr(0, output_file.find_last_of(".")));
+	if(!(*pkg_it)->name.empty()) {
+		string tmp = (*pkg_it)->name;
+		make_valid_filename(tmp);
+		if(!tmp.empty()) {
+			output_dir = output_dir.substr(0, output_dir.find_last_of("/\\"));
+			output_dir += "/" + tmp;
+		}
+	}
+
 	pkg_lock.unlock();
 	lock.unlock();
 	string password_list = global_config.get_cfg_value("pkg_extractor_passwords");
@@ -734,7 +743,7 @@ void package_container::extract_package(int id) {
 		to_exec += " 2>&1";
 
 		mkdir_recursive(output_dir);
-		log_string("extracting... " + to_exec, LOG_DEBUG);
+		log_string("Trying to extract... " + to_exec, LOG_DEBUG);
 		extractor = popen(to_exec.c_str(), "r");
 		if(extractor == NULL) {
 			log_string("Unable to open pipe to extractor of file: " + output_file, LOG_WARNING);
@@ -749,6 +758,7 @@ void package_container::extract_package(int id) {
 		int retval = pclose(extractor);
 		if(result.find("password incorrect") != string::npos) {
 			// next password
+			log_string("extraction failed. Password incorrect?", LOG_DEBUG);
 			if(!fixed_passwd.empty()) return;
 			if(password_list.empty()) return;
 			if(password.empty()) {
