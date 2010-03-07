@@ -2,6 +2,8 @@
    [adrian]
 	- added experimental support for netload.in premium accounts (UNTESTED! please test it if you have an account!)
 	- DownloadDaemon now checks the Content-Disposition header to find out the correct filename for downloaded files.
+   [susanne]
+        - selecting a package acts now like selecting all downloads of a package for every function of ddclient-gui
 
 2010-03-06
    [adrian]
