@@ -323,10 +323,20 @@ void download::download_me() {
 		status = DOWNLOAD_PENDING;
 	}
 
-	if(status == DOWNLOAD_WAITING && error == PLUGIN_LIMIT_REACHED && set_next_proxy() == 1) {
-		status = DOWNLOAD_PENDING;
-		error =  PLUGIN_SUCCESS;
-		wait_seconds = 0;
+	if(status == DOWNLOAD_WAITING && error == PLUGIN_LIMIT_REACHED) {
+		int ret = set_next_proxy();
+		if(ret == 1) {
+			status = DOWNLOAD_PENDING;
+			error =  PLUGIN_SUCCESS;
+			wait_seconds = 0;
+		} else if(ret == 2 || ret == 3) {
+			lock.unlock();
+			if(global_download_list.reconnect_needed()) {
+				thread t(bind(&package_container::do_reconnect, &global_download_list));
+				t.detach();
+			}
+			lock.lock();
+		}
 	} else if((error == PLUGIN_ERROR || error == PLUGIN_CONNECTION_ERROR || error == PLUGIN_CONNECTION_LOST || error == PLUGIN_INVALID_HOST)
 			  && !global_config.get_bool_value("assume_proxys_online") && !global_config.get_cfg_value("proxy_list").empty()
 			  && !proxy.empty() && set_next_proxy() == 1) {

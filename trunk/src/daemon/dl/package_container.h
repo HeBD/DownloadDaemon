@@ -242,6 +242,14 @@ class package_container {
 
 	void correct_invalid_ids();
 
+	/** Checks if a reconnect is currently needed
+	*	@returns true if yes
+	*/
+	bool reconnect_needed();
+
+	/** Does the real work when reconnecting */
+	void do_reconnect();
+
 
 private:
 	typedef std::vector<download_container*>::iterator iterator;
@@ -250,13 +258,7 @@ private:
 	int get_next_id();
 	std::string get_plugin_file(download_container::iterator dlit);
 
-	/** Checks if a reconnect is currently needed
-	*	@returns true if yes
-	*/
-	bool reconnect_needed();
 
-	/** Does the real work when reconnecting */
-	void do_reconnect();
 
 	/** give all downloads that have the ID -1 a proper ID. A plugin can not find out the download-id
 	*	of a download it wants to add to its container. So it sets the ID to -1. When the plugin returns,

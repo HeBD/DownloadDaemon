@@ -171,7 +171,14 @@ public:
 
 
 private:
+	/** Sets the next proxy from list to the download
+	*	@param id ID of the download
+	*	@returns 1 If the next proxy has been set
+	*		 	 2 if all proxys have been tried already
+	*			 3 if there are no proxys at all
+	*/
 	int set_next_proxy();
+
 	plugin_status prepare_download(plugin_output &poutp);
 	std::string get_plugin_file();
 	void wait();
