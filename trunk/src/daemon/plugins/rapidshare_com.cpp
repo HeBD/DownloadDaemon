@@ -47,10 +47,11 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			curl_easy_setopt(handle, CURLOPT_POST, 0);
 
 			string orig_url = get_url();
-			if(orig_url.find(".html") != string::npos) {
-				size_t n = orig_url.find_last_of("/\\");
-				outp.download_filename = orig_url.substr(n + 1, orig_url.find(".html") - n - 1);
-			}
+			// as of DownloadDaemon 0.9, this should not be needed any more, since rapidshare sends the Content-Disposition header that includes the filename
+			//if(orig_url.find(".html") != string::npos) {
+			//	size_t n = orig_url.find_last_of("/\\");
+			//	outp.download_filename = orig_url.substr(n + 1, orig_url.find(".html") - n - 1);
+			//}
 			outp.download_url = orig_url;
 			return PLUGIN_SUCCESS;
 		}
