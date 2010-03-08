@@ -2,6 +2,7 @@
    [adrian]
 	- init script now checks for root permissions
 	- correctly link libdl to DownloadDaemon on older g++ versions
+	- better handling of -DDD_CONF_DIR when compiling DownloadDaemon
    [susanne]
         - added function to copy urls into clipboard to ddclient-gui
 

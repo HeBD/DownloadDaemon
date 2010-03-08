@@ -9,6 +9,8 @@
  * GNU General Public License for more details.
  */
 
+#include <config.h>
+
 #include <fstream>
 #include <vector>
 
@@ -28,7 +30,7 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 	cache->append((char*)buffer, nmemb);
 	double speed;
 	curl_easy_getinfo(callback_opt->second, CURLINFO_SPEED_DOWNLOAD, &speed);
-	if(speed <= 0 || cache->size() >= speed / 2 || cache->size() >= 1048576) {
+	if(speed < 1 || cache->size() >= speed / 2 || cache->size() >= 1048576) {
 		// wite twice per sec, if speed is 0, and if the cache is >= 1MB
 		output_file->write(cache->c_str(), cache->size());
 		cache->clear();
@@ -41,17 +43,21 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	dlindex id = *(dlindex*)clientp;
 	CURL* curr_handle = global_download_list.get_handle(id);
 
-	global_download_list.set_size(id, dltotal + 0.5);
+	double curr_speed_param;
+	curl_easy_getinfo(curr_handle, CURLINFO_SPEED_DOWNLOAD, &curr_speed_param);
+	#ifdef HAVE_UINT64_T
+	uint64_t size_conv = (uint64_t)(dltotal + 0.5);
+	uint64_t speed_conv = (uint64_t)(curr_speed_param);
+	#else
+	double size_conf = dltotal;
+	double speed_conv = curr_speed_param;
+	#endif
+	global_download_list.set_size(id, size_conv);
 	std::string output_file;
 	output_file = global_download_list.get_output_file(id);
 
-	double curr_speed;
-	curl_easy_getinfo(curr_handle, CURLINFO_SPEED_DOWNLOAD, &curr_speed);
-	if(curr_speed == 0) {
-		global_download_list.set_speed(id, -1);
-	} else {
-		global_download_list.set_speed(id, curr_speed + 0.5);
-	}
+
+	global_download_list.set_speed(id, speed_conv);
 
 	struct stat st;
 	if(stat(output_file.c_str(), &st) == 0) {
