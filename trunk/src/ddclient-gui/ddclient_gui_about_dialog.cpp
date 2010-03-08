@@ -43,22 +43,25 @@ about_dialog::about_dialog(QWidget *parent) : QDialog(parent){
     build += "\nQt ";
     build += QT_VERSION_STR;
 
-    QString version;
-    version += "DownloadDaemon Client GUI ";
-    version += DDCLIENT_GUI_VERSION;
-    QLabel *version_label = new QLabel(version);
+    QString name("DownloadDaemon Client GUI");
+    QLabel *name_label = new QLabel(name);
     QFont font;
     font.setBold(true);
-    version_label->setFont(font);
+    name_label->setFont(font);
+
+    QString version;
+    version += "Version: ";
+    version += DDCLIENT_GUI_VERSION;
 
     QLabel *url = new QLabel("<a href='http://downloaddaemon.sourceforge.net/'>Website</a>");
     url->setOpenExternalLinks(true);
 
     QString copyright = "\nCopyright 2009-2010 by the DownloadDaemon team.\nAll rights reserved.\n\n";
-    copyright += "The program is provided AS IS with NO WARRANTY\nOF ANY KIND, INCLUDING THE WARRANTY";
+    copyright += "The program is provided AS IS with NO WARRANTY\nOF ANY KIND, INCLUDING THE WARRANTY ";
     copyright += "OF DESIGN,\nMERCHANTABILITY AND FITNESS FOR A PARTICULAR\nPURPOSE.";
 
-    text_layout->addWidget(version_label);
+    text_layout->addWidget(name_label);
+    text_layout->addWidget(new QLabel(version));
     text_layout->addWidget(new QLabel(build));
     text_layout->addWidget(url);
     text_layout->addWidget(new QLabel(copyright));
