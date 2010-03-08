@@ -15,15 +15,27 @@ DESC="DownloadDaemon download manager service"
 
 case "$1" in
   start)
+	if [ "$(id -u)" != "0" ]; then
+   		echo "This script must be run as root" 1>&2
+   		exit 1
+	fi
 	DownloadDaemon -d
 	;;
   stop)
+	if [ "$(id -u)" != "0" ]; then
+   		echo "This script must be run as root" 1>&2
+   		exit 1
+	fi
 	killall DownloadDaemon 2> /dev/null
 	;;
   reload|force-reload)
        echo "Unsupported option"
        ;;
   restart)
+	if [ "$(id -u)" != "0" ]; then
+   		echo "This script must be run as root" 1>&2
+   		exit 1
+	fi
 	killall DownloadDaemon 2> /dev/null
 	DownloadDaemon -d
 	;;
