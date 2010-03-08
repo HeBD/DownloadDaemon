@@ -2,6 +2,7 @@
 #include "ddclient_gui_update_thread.h"
 #include "ddclient_gui_connect_dialog.h"
 #include "ddclient_gui_add_dialog.h"
+#include "ddclient_gui_about_dialog.h"
 
 #include <sstream>
 #include <fstream>
@@ -717,7 +718,9 @@ vector<view_info> ddclient_gui::get_current_view(){
 
 // slots
 void ddclient_gui::on_about(){
-    QMessageBox::information(this, "Test", "on_about");
+    about_dialog dialog(this);
+    dialog.setModal(true);
+    dialog.exec();
 }
 
 

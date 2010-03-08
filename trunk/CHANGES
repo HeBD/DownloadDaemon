@@ -5,6 +5,7 @@
 	- better handling of -DDD_CONF_DIR when compiling DownloadDaemon
    [susanne]
         - added function to copy urls into clipboard to ddclient-gui
+        - added about dialog to ddclient-gui
 
 2010-03-07
    [adrian]
