@@ -7,7 +7,8 @@ HEADERS += ddclient_gui.h \
     ../include/language/language.h \
     ddclient_gui_connect_dialog.h \
     ddclient_gui_update_thread.h \
-    ddclient_gui_add_dialog.h
+    ddclient_gui_add_dialog.h \
+    ddclient_gui_about_dialog.h
 SOURCES += ddclient_gui.cpp \
     main.cpp \
     ../include/downloadc/downloadc.cpp \
@@ -17,7 +18,8 @@ SOURCES += ddclient_gui.cpp \
     ../include/language/language.cpp \
     ddclient_gui_connect_dialog.cpp \
     ddclient_gui_update_thread.cpp \
-    ddclient_gui_add_dialog.cpp
+    ddclient_gui_add_dialog.cpp \
+    ddclient_gui_about_dialog.cpp
 INCLUDEPATH += ../include
 DESTDIR = ../../build/bin
 unix:LIBS += -lboost_thread-mt
