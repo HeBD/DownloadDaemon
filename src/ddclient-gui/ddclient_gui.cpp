@@ -391,7 +391,6 @@ void ddclient_gui::add_list_components(){
     list->setSelectionModel(selection_model);
     list->setSelectionMode(QAbstractItemView::ExtendedSelection);
     list->setSelectionBehavior(QAbstractItemView::SelectRows);
-    list->setAnimated(true);
 
     double width = list->width();
 
@@ -1347,18 +1346,7 @@ void ddclient_gui::on_reload(){
     content.clear();
     content = new_content;
 
-    int column[5];
-    for(int i= 0; i<5; i++)
-        column[i] = list->columnWidth(i);
-
-    list_model->clear();
-
-    QStringList column_labels;
-    column_labels << tsl("ID") << tsl("Title") << tsl("URL") << tsl("Time left") << tsl("Status");
-    list_model->setHorizontalHeaderLabels(column_labels);
-
-    for(int i= 0; i<5; i++)
-         list->setColumnWidth(i, column[i]);
+    list_model->setRowCount(0); // delete old data
 
     vector<package>::iterator pit = content.begin();
     vector<download>::iterator dit;
