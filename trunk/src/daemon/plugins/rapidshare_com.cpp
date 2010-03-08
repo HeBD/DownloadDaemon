@@ -75,14 +75,14 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_FILE_NOT_FOUND;
 	}
 
-	unsigned int pos;
+	size_t pos;
 	if((pos = resultstr.find("<form id=\"ff\"")) == std::string::npos) {
 		return PLUGIN_ERROR;
 	}
 
 	std::string url;
 	pos = resultstr.find("http://", pos);
-	unsigned int end = resultstr.find('\"', pos);
+	size_t end = resultstr.find('\"', pos);
 
 	url = resultstr.substr(pos, end - pos);
 
