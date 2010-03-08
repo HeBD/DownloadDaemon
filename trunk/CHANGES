@@ -1,3 +1,7 @@
+2010-03-08
+   [susanne]
+        - added function to copy urls into clipboard to ddclient-gui
+
 2010-03-07
    [adrian]
 	- added experimental support for netload.in premium accounts (UNTESTED! please test it if you have an account!)

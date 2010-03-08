@@ -6,6 +6,7 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <algorithm>
 
 #include <QtGui/QStatusBar>
 #include <QtGui/QMenuBar>
@@ -611,6 +612,32 @@ void ddclient_gui::get_selected_lines(){
         }
     selected_lines.push_back(info);
     }
+
+    sort(selected_lines.begin(), selected_lines.end(), ddclient_gui::sort_selected_info);
+}
+
+
+bool ddclient_gui::sort_selected_info(selected_info i1, selected_info i2){
+    if(i1.package && i2.package) // we have two packages
+        return (i1.row < i2.row);
+
+    if(i1.package){ // i1 is a package, i2 is a download
+        if(i1.row == i2.parent_row) // see if they are from the same package
+            return true; // package is smaller
+
+        return (i1.row < i2.parent_row);
+
+    }
+
+    if(i2.package){ // i1 is a download, i2 is a package
+        if(i2.row == i1.parent_row) // see if they are from the same package
+            return false; // package is smaller
+
+        return (i1.parent_row < i2.row);
+    }
+
+    // we have two downloads
+    return (i1.parent_row < i2.parent_row);
 }
 
 
@@ -1267,15 +1294,40 @@ void ddclient_gui::on_copy(){
     if(!check_connection(true, "Please connect before copying URLs."))
         return;
 
-    QMessageBox::information(this, "Test", "on_copy");
+    mx.lock();
     get_selected_lines();
 
     if(!check_selected()){
         mx.unlock();
         return;
     }
-                                                                                               // TODO: not finished!
-    get_content();
+
+    vector<selected_info>::iterator it;
+    QString clipboard_data;
+    vector<download>::iterator dit;
+    int parent_row = -1;
+    for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+
+        if(it->package){ // we have a package
+            parent_row = it->row;
+
+            // copy every url of that package
+            for(dit = content.at(parent_row).dls.begin(); dit != content.at(parent_row).dls.end(); ++dit){
+                clipboard_data += dit->url.c_str();
+                clipboard_data += '\n';
+            }
+
+        }else{ // we have a real download
+             if(it->parent_row == parent_row) // we already copied the url because we selected the package
+                continue;
+
+             clipboard_data += content.at(it->parent_row).dls.at(it->row).url.c_str();
+             clipboard_data += '\n';
+        }
+    }
+
+    QApplication::clipboard()->setText(clipboard_data);
+    mx.unlock();
 }
 
 

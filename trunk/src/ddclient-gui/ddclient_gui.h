@@ -14,6 +14,7 @@
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
 #include <QMutex>
+#include <QClipboard>
 
 
 struct selected_info{
@@ -104,6 +105,7 @@ class ddclient_gui : public QMainWindow{
         bool check_selected();
         void deselect_lines();
         void get_selected_lines();
+        static bool sort_selected_info(selected_info i1, selected_info i2);
         std::vector<view_info> get_current_view();
 
         QMutex mx;
