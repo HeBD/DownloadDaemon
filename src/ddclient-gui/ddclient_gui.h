@@ -37,6 +37,8 @@ struct login_data{
     char lang[128];
 };
 
+enum error_message{error_none, error_selected, error_connected};
+
 
 class ddclient_gui : public QMainWindow{
     Q_OBJECT
@@ -86,6 +88,9 @@ class ddclient_gui : public QMainWindow{
         */
         bool check_connection(bool tell_user = false, std::string individual_message = "");
 
+        /** Clears the error message cache, so that they will be shown again */
+        void clear_last_error_message();
+
     signals:
         void do_reload();
 
@@ -96,6 +101,7 @@ class ddclient_gui : public QMainWindow{
         void update_list_components();
         void cut_time(std::string &time_left);
         std::string build_status(std::string &status_text, std::string &time_left, download &dl);
+        bool check_selected();
         void deselect_lines();
         void get_selected_lines();
         std::vector<view_info> get_current_view();
@@ -103,6 +109,7 @@ class ddclient_gui : public QMainWindow{
         QMutex mx;
         downloadc *dclient;
         language lang;
+        error_message last_error_message;
         std::vector<selected_info> selected_lines;
         std::vector<package> content;
         std::vector<package> new_content;

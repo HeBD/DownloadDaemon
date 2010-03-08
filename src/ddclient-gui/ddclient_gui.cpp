@@ -187,8 +187,10 @@ bool ddclient_gui::check_connection(bool tell_user, string individual_message){
     }catch(client_exception &e){
         if(e.get_id() == 10){ //connection lost
 
-            if(tell_user)
+            if(tell_user && (last_error_message != error_connected)){
                 QMessageBox::information(this, tsl("No Connection to Server"), tsl(individual_message));
+                last_error_message = error_connected;
+            }
             mx.unlock();
             return false;
         }
@@ -197,6 +199,10 @@ bool ddclient_gui::check_connection(bool tell_user, string individual_message){
     return true;
 }
 
+
+void ddclient_gui::clear_last_error_message(){
+    last_error_message = error_none;
+}
 
 void ddclient_gui::add_bars(){
     // menubar
@@ -567,6 +573,19 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
 }
 
 
+bool ddclient_gui::check_selected(){
+    if(selected_lines.empty()){
+        if(last_error_message != error_selected)
+            QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+
+        last_error_message = error_selected;
+        return false;
+    }
+
+    return true;
+}
+
+
 void ddclient_gui::deselect_lines(){
     list->clearSelection();
 }
@@ -712,14 +731,13 @@ void ddclient_gui::on_delete(){
     mx.lock();
     get_selected_lines();
 
-    vector<selected_info>::iterator it;
-    int id;
-
-    if(selected_lines.empty()){
-        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+    if(!check_selected()){
         mx.unlock();
         return;
     }
+
+    vector<selected_info>::iterator it;
+    int id;
 
     // make sure user wants to delete downloads
     QMessageBox box(QMessageBox::Question, tsl("Delete Downloads"), tsl("Do you really want to delete\nthe selected Download(s)?"),
@@ -961,15 +979,14 @@ void ddclient_gui::on_delete_file(){
     mx.lock();
     get_selected_lines();
 
-    vector<selected_info>::iterator it;
-    string answer;
-    int id;
-
-    if(selected_lines.empty()){
-        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+    if(!check_selected()){
         mx.unlock();
         return;
     }
+
+    vector<selected_info>::iterator it;
+    string answer;
+    int id;
 
     // make sure user wants to delete files
     QMessageBox box(QMessageBox::Question, tsl("Delete Files"), tsl("Do you really want to delete\nthe selected File(s)?"),
@@ -1036,15 +1053,14 @@ void ddclient_gui::on_activate(){
     mx.lock();
     get_selected_lines();
 
-    vector<selected_info>::iterator it;
-    int id;
-    string error_string;
-
-    if(selected_lines.empty()){
-        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+    if(!check_selected()){
         mx.unlock();
         return;
     }
+
+    vector<selected_info>::iterator it;
+    int id;
+    string error_string;
 
     vector<download>::iterator dit;
     int parent_row = -1;
@@ -1086,16 +1102,14 @@ void ddclient_gui::on_deactivate(){
     mx.lock();
     get_selected_lines();
 
-    vector<selected_info>::iterator it;
-    int id;
-    string error_string;
-
-    if(selected_lines.empty()){
-        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+    if(!check_selected()){
         mx.unlock();
         return;
     }
 
+    vector<selected_info>::iterator it;
+    int id;
+    string error_string;
 
     vector<download>::iterator dit;
     int parent_row = -1;
@@ -1137,16 +1151,14 @@ void ddclient_gui::on_priority_up(){
     mx.lock();
     get_selected_lines();
 
-    vector<selected_info>::iterator it;
-    int id;
-    string error_string;
-
-    if(selected_lines.empty()){
-        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+    if(!check_selected()){
         mx.unlock();
         return;
     }
 
+    vector<selected_info>::iterator it;
+    int id;
+    string error_string;
 
     for(it = selected_lines.begin(); it<selected_lines.end(); it++){
 
@@ -1175,16 +1187,14 @@ void ddclient_gui::on_priority_down(){
     mx.lock();
     get_selected_lines();
 
-    vector<selected_info>::reverse_iterator rit;
-    int id;
-    string error_string;
-
-    if(selected_lines.empty()){
-        QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+    if(!check_selected()){
         mx.unlock();
         return;
     }
 
+    vector<selected_info>::reverse_iterator rit;
+    int id;
+    string error_string;
 
     for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); rit++){
 
@@ -1259,6 +1269,11 @@ void ddclient_gui::on_copy(){
 
     QMessageBox::information(this, "Test", "on_copy");
     get_selected_lines();
+
+    if(!check_selected()){
+        mx.unlock();
+        return;
+    }
                                                                                                // TODO: not finished!
     get_content();
 }
