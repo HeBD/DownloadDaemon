@@ -9,6 +9,8 @@ void update_thread::run(){
 
         if(parent->check_connection())
             parent->get_content();
+
+        parent->clear_last_error_message();
         sleep(2); // reload every two seconds
     }
 }
