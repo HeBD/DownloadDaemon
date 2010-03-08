@@ -391,6 +391,7 @@ void ddclient_gui::add_list_components(){
     list->setSelectionModel(selection_model);
     list->setSelectionMode(QAbstractItemView::ExtendedSelection);
     list->setSelectionBehavior(QAbstractItemView::SelectRows);
+    list->setAnimated(true);
 
     double width = list->width();
 
@@ -576,8 +577,8 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
 
 bool ddclient_gui::check_selected(){
     if(selected_lines.empty()){
-        if(last_error_message != error_selected)
-            QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
+        //if(last_error_message != error_selected) // user doesn't get told atm
+        //    QMessageBox::warning(this, tsl("Error"), tsl("At least one Row should be selected."));
 
         last_error_message = error_selected;
         return false;
@@ -1346,20 +1347,18 @@ void ddclient_gui::on_reload(){
     content.clear();
     content = new_content;
 
+    int column[5];
+    for(int i= 0; i<5; i++)
+        column[i] = list->columnWidth(i);
+
     list_model->clear();
 
     QStringList column_labels;
     column_labels << tsl("ID") << tsl("Title") << tsl("URL") << tsl("Time left") << tsl("Status");
     list_model->setHorizontalHeaderLabels(column_labels);
 
-    double width = list->width();
-
-    list->setColumnWidth(0, 100); // fixed sizes
-    list->setColumnWidth(3, 100);
-    width -= 250;
-    list->setColumnWidth(1, 0.25*width);
-    list->setColumnWidth(2, 0.3*width);
-    list->setColumnWidth(4, 0.45*width);
+    for(int i= 0; i<5; i++)
+         list->setColumnWidth(i, column[i]);
 
     vector<package>::iterator pit = content.begin();
     vector<download>::iterator dit;
@@ -1488,6 +1487,8 @@ void ddclient_gui::resizeEvent(QResizeEvent* event){
     double width = list->width();
 
     width -= 250;
+    list->setColumnWidth(0, 100); // fixed sizes
+    list->setColumnWidth(3, 100);
     list->setColumnWidth(1, 0.25*width);
     list->setColumnWidth(2, 0.3*width);
     list->setColumnWidth(4, 0.45*width);
