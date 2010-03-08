@@ -9,6 +9,7 @@
  * GNU General Public License for more details.
  */
 
+#include <config.h>
 #include <vector>
 #include <string>
 

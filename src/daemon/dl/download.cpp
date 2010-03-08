@@ -312,7 +312,7 @@ void download::download_me() {
 	download_me_worker();
 	lock.lock();
 
-	struct stat st = {0};
+	struct stat st;
 	stat(output_file.c_str(), &st);
 	if(st.st_size == 0) {
 		remove(output_file.c_str());

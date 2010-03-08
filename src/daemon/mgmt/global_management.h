@@ -12,6 +12,7 @@
 #ifndef GLOBAL_MANAGEMENT_H_
 #define GLOBAL_MANAGEMENT_H_
 
+#include <config.h>
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
 namespace std {
