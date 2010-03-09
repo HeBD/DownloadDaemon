@@ -1,5 +1,7 @@
 #include "ddclient_gui.h"
 #include <QtGui/QApplication>
+#include <QLibraryInfo>
+#include <QTranslator>
 #include <QFile>
 #include <QDir>
 #include <QMessageBox>
@@ -88,6 +90,11 @@ int main(int argc, char *argv[])
     }
 
     QApplication a(argc, argv);
+
+    QTranslator qtTranslator;
+    qtTranslator.load("qt_" + QLocale::system().name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    a.installTranslator(&qtTranslator);
+
     ddclient_gui c(config_dir.c_str());
     c.show();
     return a.exec();
