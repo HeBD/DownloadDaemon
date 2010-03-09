@@ -21,12 +21,15 @@ DEP_DD=""
 SYN_DD="A remote controlable download manager"
 
 # description (if you want a new line, you need to put a space right behind it)
-DESC_DD="A remote controlable download manager
- DownloadDaemon is a download manager with many features
+DESC_DD="DownloadDaemon is a download manager with many features
  including parsing of one click hoster, automatic
- reconnection, etc. In order to control the daemon
- you need a suitable client, which can be optained from
- http://downloaddaemon.sourceforge.net/"
+ reconnection, alternating proxies etc.
+ In order to control the daemon you need a suitable client, 
+ which can be optained from
+ http://downloaddaemon.sourceforge.net/. The ubuntu packages are:
+ ddconsole for a Command line interface
+ ddclient-gui for a GUI-client.
+ There is also a PHP client on the website."
 
 # specify all files/directorys (array) and the path's where they should go to (basically a cp -r FILES_XXX[i] PATHS_XXX[i] is done)
 # the .svn folders are removed automatically. Folders are created automatically before copying
@@ -124,8 +127,7 @@ echo "$replace" > changelog
 replace=$(<control)
 replace="${replace/'Section: unknown'/Section: net}"
 replace="${replace/'Homepage: <insert the upstream URL, if relevant>'/Homepage: http://downloaddaemon.sourceforge.net/
-Recommends: gocr
-Suggests: ddclient-wx, ddconsole}"
+Recommends: gocr, tar, unrar, ddclient-gui, ddconsole}"
 replace="${replace/'Description: <insert up to 60 chars description>'/Description: $SYN_DD}"
 replace="${replace/'Build-Depends: debhelper (>= 7), cmake'/Build-Depends: $BUILDDEP_DD}"
 replace="${replace/'Depends: ${shlibs:Depends}, ${misc:Depends}'/Depends: $DEP_DD}"
