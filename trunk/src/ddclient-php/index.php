@@ -42,6 +42,7 @@ $tpl_vars = array(
 	'L_Config' => $LANG['Config'],
 	'L_Logout' => $LANG['Logout'],
 	'L_Site' => $LANG[ucfirst($site)],
+	'T_META' => '',
 );
 
 include 'sites/'.$site.'.php';
