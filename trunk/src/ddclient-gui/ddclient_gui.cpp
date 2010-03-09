@@ -1,8 +1,9 @@
 #include "ddclient_gui.h"
 #include "ddclient_gui_update_thread.h"
-#include "ddclient_gui_connect_dialog.h"
 #include "ddclient_gui_add_dialog.h"
 #include "ddclient_gui_about_dialog.h"
+#include "ddclient_gui_configure_dialog.h"
+#include "ddclient_gui_connect_dialog.h"
 
 #include <sstream>
 #include <fstream>
@@ -718,7 +719,14 @@ vector<view_info> ddclient_gui::get_current_view(){
 
 // slots
 void ddclient_gui::on_about(){
-    about_dialog dialog(this);
+    QString build("Build: "); // has to be done here, if not compile time is obsolete
+    build += __DATE__;
+    build += ", ";
+    build += __TIME__;
+    build += "\nQt ";
+    build += QT_VERSION_STR;
+
+    about_dialog dialog(this, build);
     dialog.setModal(true);
     dialog.exec();
 }
@@ -1250,8 +1258,9 @@ void ddclient_gui::on_configure(){
     if(!check_connection(true, "Please connect before configurating DownloadDaemon."))
         return;
 
-    QMessageBox::information(this, "Test", "on_configure");
-                                                                                               // TODO: not finished!
+    configure_dialog dialog(this);
+    dialog.setModal(true);
+    dialog.exec();
 }
 
 

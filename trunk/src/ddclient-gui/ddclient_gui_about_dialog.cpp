@@ -16,7 +16,7 @@ using namespace std;
 #endif
 
 
-about_dialog::about_dialog(QWidget *parent) : QDialog(parent){
+about_dialog::about_dialog(QWidget *parent, QString build) : QDialog(parent){
     ddclient_gui *p = (ddclient_gui *) parent;
 
     setWindowTitle(p->tsl("About..."));
@@ -36,18 +36,7 @@ about_dialog::about_dialog(QWidget *parent) : QDialog(parent){
     button_box->button(QDialogButtonBox::Ok)->setDefault(true);
     button_box->button(QDialogButtonBox::Ok)->setFocus(Qt::OtherFocusReason);
 
-    QString build("Build: ");
-    build += __DATE__;
-    build += ", ";
-    build += __TIME__;
-    build += "\nQt ";
-    build += QT_VERSION_STR;
-
-    QString name("DownloadDaemon Client GUI");
-    QLabel *name_label = new QLabel(name);
-    QFont font;
-    font.setBold(true);
-    name_label->setFont(font);
+    QString name("<h3>DownloadDaemon Client GUI</h3>");
 
     QString version;
     version += "Version: ";
@@ -60,7 +49,7 @@ about_dialog::about_dialog(QWidget *parent) : QDialog(parent){
     copyright += "The program is provided AS IS with NO WARRANTY\nOF ANY KIND, INCLUDING THE WARRANTY ";
     copyright += "OF DESIGN,\nMERCHANTABILITY AND FITNESS FOR A PARTICULAR\nPURPOSE.";
 
-    text_layout->addWidget(name_label);
+    text_layout->addWidget(new QLabel(name));
     text_layout->addWidget(new QLabel(version));
     text_layout->addWidget(new QLabel(build));
     text_layout->addWidget(url);
