@@ -1,6 +1,7 @@
 2010-03-09
    [adrian]
 	- made auto-refresh in ddclient-php configurable (idea from here: https://sourceforge.net/projects/downloaddaemon/forums/forum/1007820/topic/3585763)
+	- auto-refresh only refreshs if there are downloads with the status DOWNLOAD_RUNNING or DOWNLOAD_WAITING
 
 2010-03-08
    [adrian]

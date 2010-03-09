@@ -6,6 +6,7 @@ $connect = connect_to_daemon($socket, $_COOKIE['ddclient_host'], $_COOKIE['ddcli
 // Site Vars
 $err_message = '';
 $dl_list = '';
+$any_download_running = false;
 
 if($connect != 'SUCCESS') {
 	$err_msg = msg_generate($LANG[$connect], 'error');
@@ -113,6 +114,7 @@ if($connect != 'SUCCESS') {
 		
 		switch($exp_dls[$i][4]){
 			case 'DOWNLOAD_RUNNING':
+				$any_download_running = true;
 				if($exp_dls[$i][7] > 0 && $exp_dls[$i][8] == 'PLUGIN_SUCCESS') {
 					$dl_status .= 'Download running. Waiting ' . $exp_dls[$i][7] . ' seconds.';
 				} else if($exp_dls[$i][7] > 0 && $exp_dls[$i][8] != 'PLUGIN_SUCCESS') {
@@ -141,6 +143,7 @@ if($connect != 'SUCCESS') {
 				}
 				break;
 			case 'DOWNLOAD_WAITING':
+				$any_download_running = true;
 				$dl_status .= 'Have to wait ' . $exp_dls[$i][7] . ' seconds';
 				break;
 			case 'DOWNLOAD_FINISHED':
@@ -194,7 +197,7 @@ $tpl_vars['L_Date'] = $LANG['Date'];
 $tpl_vars['L_Status'] = $LANG['Status'];
 $tpl_vars['T_List'] = $dl_list;
 $tpl_vars['err_message'] = $err_message;
-if(AUTO_REFRESH) {
+if(AUTO_REFRESH && $any_download_running) {
 	$tpl_vars['T_META'] = '<meta http-equiv="refresh" content="5">';
 }
 
