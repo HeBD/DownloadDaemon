@@ -5,8 +5,14 @@
 
 
 class about_dialog : public QDialog{
+    Q_OBJECT
+
     public:
-        about_dialog(QWidget *parent);
+        /** Constructor
+        *   @param parent MainWindow, which calls the dialog
+        *   @param build buildinformation
+        */
+        about_dialog(QWidget *parent, QString build);
 };
 
 #endif // DDCLIENT_GUI_ABOUT_DIALOG_H

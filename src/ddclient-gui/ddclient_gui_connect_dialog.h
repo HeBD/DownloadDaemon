@@ -12,7 +12,7 @@ class connect_dialog : public QDialog{
 
     public:
         /** Constructor
-        *   @param parent MainWindo, which calls the dialog
+        *   @param parent MainWindow, which calls the dialog
         *   @param config_dir Configuration Directory
         */
         connect_dialog(QWidget *parent, QString config_dir);

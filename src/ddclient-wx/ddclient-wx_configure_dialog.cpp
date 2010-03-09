@@ -266,7 +266,7 @@ void configure_dialog::create_log_panel(){
 
 	log_activity_text = new wxStaticText(log_panel, -1, p->tsl("This option specifies DownloadDaemons logging activity."));
 	log_output_text = new wxStaticText(log_panel, -1, p->tsl("This option specifies how logging should be done (Standard output, Standard error"
-															"\noutput, Syslog-daemon)."));
+	"\noutput, Syslog-daemon)."));
 
 	// wxChoice log_output
 	wxString old_output = get_var("log_procedure");
@@ -415,7 +415,7 @@ void configure_dialog::enable_reconnect_panel(){
 	router_model_box->Clear();
 	wxArrayString model;
 	string line = "", old_model;
-	int selection = 0;
+	int selection = 0, i = 0;
 	vector<string> model_list;
 
 	old_model = (get_var("router_model", ROUTER_T)).mb_str();
@@ -438,6 +438,11 @@ void configure_dialog::enable_reconnect_panel(){
 	for(; it != model_list.end(); it++){
 		model.Add(wxString(it->c_str(), wxConvUTF8));
 		router_model_list.push_back(*it);
+
+		i++;
+
+		if(*it == old_model)
+			selection = i;
 	}
 
 	router_model_box->Append(model);

@@ -80,7 +80,6 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
     button_box->button(QDialogButtonBox::Ok)->setDefault(true);
     button_box->button(QDialogButtonBox::Ok)->setFocus(Qt::OtherFocusReason);
 
-
     single_layout->addRow(new QLabel(p->tsl("Package")), package_single);
     single_layout->addRow(new QLabel(p->tsl("Title")), title_single);
     single_layout->addRow(new QLabel(p->tsl("URL")), url_single);
@@ -91,8 +90,8 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
     many_layout->addLayout(many_package_layout);
     many_layout->addWidget(add_many_edit);
 
-    connect(button_box->button(QDialogButtonBox::Ok), SIGNAL(clicked()),this, SLOT(ok()));
-    connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()),this, SLOT(reject()));
+    connect(button_box->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(ok()));
+    connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
 }
 
 void add_dialog::ok(){
