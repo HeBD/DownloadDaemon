@@ -36,17 +36,17 @@ DESC_DDCLIENTGUI="With ddclient-gui you can manage your DownloadDaemon
 
 # specify all files/directorys (array) and the path's where they should go to (basically a cp -r FILES_XXX[i] PATHS_XXX[i] is done)
 # the .svn folders are removed automatically. Folders are created automatically before copying
-FILES_DDCLIENTWX=("../src/ddclient-wx" "../src/include/netpptk" "../src/include/crypt" "../src/include/language" "../src/include/downloadc" "../share/applications/ddclient-wx.desktop" "../share/ddclient-wx" "../share/pixmaps/ddclient-wx*" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
-PATHS_DDCLIENTWX=("src/" "src/include/" "src/include/" "src/include/" "src/include" "share/applications" "share/" "share/pixmaps")
+FILES_DDCLIENTWX=("../src/ddclient-wx" "../src/include/netpptk" "../src/include/crypt/md5.*" "../src/include/language" "../src/include/downloadc" "../share/applications/ddclient-wx.desktop" "../share/ddclient-wx" "../share/pixmaps/ddclient-wx*" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DDCLIENTWX=("src/" "src/include/" "src/include/crypt/" "src/include/" "src/include" "share/applications" "share/" "share/pixmaps")
 
-FILES_DDCONSOLE=("../src/ddconsole" "../src/include/netpptk" "../src/include/crypt" "../src/include/config.h" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
-PATHS_DDCONSOLE=("src/" "src/include/" "src/include/" "src/include/")
+FILES_DDCONSOLE=("../src/ddconsole" "../src/include/netpptk" "../src/include/crypt/md5.*" "../src/include/config.h" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DDCONSOLE=("src/" "src/include/" "src/include/crypt/" "src/include/")
 
 FILES_DDCLIENTPHP=("../src/ddclient-php" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
 PATHS_DDCLIENTPHP=("")
 
-FILES_DDCLIENTGUI=("../src/ddclient-gui" "../src/include/netpptk" "../src/include/crypt" "../src/include/language" "../src/include/downloadc" "../share/applications/ddclient-gui.desktop" "../share/ddclient-gui" "../share/pixmaps/ddclient-gui*" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
-PATHS_DDCLIENTGUI=("src/" "src/include/" "src/include/" "src/include/" "src/include/" "share/applications" "share/" "share/pixmaps")
+FILES_DDCLIENTGUI=("../src/ddclient-gui" "../src/include/netpptk" "../src/include/crypt/md5.*" "../src/include/language" "../src/include/downloadc" "../share/applications/ddclient-gui.desktop" "../share/ddclient-gui" "../share/pixmaps/ddclient-gui*" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DDCLIENTGUI=("src/" "src/include/" "src/include/crypt/" "src/include/" "src/include/" "share/applications" "share/" "share/pixmaps")
 
 
 

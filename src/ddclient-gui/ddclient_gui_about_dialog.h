@@ -5,8 +5,6 @@
 
 
 class about_dialog : public QDialog{
-    Q_OBJECT
-
     public:
         /** Constructor
         *   @param parent MainWindow, which calls the dialog

@@ -28,9 +28,10 @@ INCLUDE(CheckCXXCompilerFlag)
 INCLUDE(CheckCXXSourceCompiles)
 
 IF(NOT DD_CONF_DIR)
-	SET(DD_CONF_DIR "\"/etc/downloaddaemon/\"")
+	SET(DD_CONF_DIR "/etc/downloaddaemon/")
 ENDIF(NOT DD_CONF_DIR)
-SET(${DD_CONF_DIR}_OPTION "ON")
+SET(DD_CONF_DIR_OPT "\"${DD_CONF_DIR}\"")
+SET(${DD_CONF_DIR_OPT}_OPTION "ON")
 
 
 
