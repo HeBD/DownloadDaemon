@@ -194,4 +194,8 @@ $tpl_vars['L_Date'] = $LANG['Date'];
 $tpl_vars['L_Status'] = $LANG['Status'];
 $tpl_vars['T_List'] = $dl_list;
 $tpl_vars['err_message'] = $err_message;
+if(AUTO_REFRESH) {
+	$tpl_vars['T_META'] = '<meta http-equiv="refresh" content="5">';
+}
+
 ?>
