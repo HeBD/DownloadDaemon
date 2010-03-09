@@ -1,0 +1,71 @@
+#ifndef DDCLIENT_GUI_CONFIGURE_DIALOG_H
+#define DDCLIENT_GUI_CONFIGURE_DIALOG_H
+
+#include <QDialog>
+#include <QtGui/QGroupBox>
+#include <QComboBox>
+#include <QtGui/QLineEdit>
+#include <QListWidget>
+#include <QtGui/QCheckBox>
+#include <vector>
+
+
+class configure_dialog : public QDialog{
+    Q_OBJECT
+
+    public:
+        /** Constructor
+        *   @param parent MainWindow, which calls the dialog
+        */
+        configure_dialog(QWidget *parent);
+
+    private:
+        enum var_type {NORMAL_T, ROUTER_T, PREMIUM_T};
+        QWidget *create_general_panel();
+        QWidget *create_download_panel();
+        QWidget *create_password_panel();
+        QWidget *create_logging_panel();
+        QWidget *create_reconnect_panel();
+        QString get_var(const std::string &var, var_type typ = NORMAL_T);
+
+        // general
+        QComboBox *premium_host;
+        QCheckBox *overwrite;
+        QCheckBox *refuse_existing;
+        QLineEdit *premium_user;
+        QLineEdit *premium_password;
+
+        // download
+        QLineEdit *start_time;
+        QLineEdit *end_time;
+        QLineEdit *folder;
+        QLineEdit *count;
+        QLineEdit *speed;
+
+        // password
+        QLineEdit *old_password;
+        QLineEdit *new_password;
+
+        // log
+        QComboBox *activity;
+        QComboBox *procedure;
+
+        // reconnect
+        std::vector<std::string> router_model_list;
+        QGroupBox *reconnect_group_box;
+        QComboBox *reconnect_policy;
+        QLineEdit *model_search;
+        QListWidget *model;
+        QLineEdit *ip;
+        QLineEdit *username;
+        QLineEdit *password;
+
+    private slots:
+        void help();
+        void search_in_model();
+        void ok();
+        void save_premium();
+        void save_password();
+};
+
+#endif // DDCLIENT_GUI_CONFIGURE_DIALOG_H
