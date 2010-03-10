@@ -494,7 +494,7 @@ void target_dl_set(std::string &data, tkSock *sock) {
 			global_download_list.set_url(make_pair<int, int>(pkg_id, id), value);
 			*sock << "100 SUCCESS";
 		} else {
-			*sock << "108 VARIABLE";
+			*sock << "103 URL";
 		}
 	} else if(option == "DL_TITLE") {
 		global_download_list.set_title(make_pair<int, int>(pkg_id, id), value);
