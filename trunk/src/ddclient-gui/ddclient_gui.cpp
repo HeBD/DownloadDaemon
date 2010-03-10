@@ -1380,6 +1380,109 @@ void ddclient_gui::on_set_password(){
 }
 
 
+void ddclient_gui::on_set_name(){
+    if(!check_connection(true, "Please connect before changing the Download List."))
+        return;
+
+    mx.lock();
+    get_selected_lines();
+
+    if(!check_selected()){
+        mx.unlock();
+        return;
+    }
+
+    vector<selected_info>::iterator it;
+    string answer;
+    int id;
+
+    for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+
+        if(it->package){ // we have a package
+            id = content.at(it->row).id;
+
+            bool ok;
+            stringstream s;
+            s << id;
+            QString name = QInputDialog::getText(this, tsl("Enter Title"), tsl("Enter Title of Package %p1", s.str().c_str()), QLineEdit::Normal, "", &ok);
+            if(!ok){
+                mx.unlock();
+                return;
+            }
+
+            try{
+                dclient->set_package_var(id, "PKG_NAME", name.toStdString());
+            }catch(client_exception &e){}
+
+        }else{ // we have a real download
+            id = content.at(it->parent_row).dls.at(it->row).id;
+
+            bool ok;
+            stringstream s;
+            s << id;
+            QString name = QInputDialog::getText(this, tsl("Enter Title"), tsl("Enter Title of Download %p1", s.str().c_str()), QLineEdit::Normal, "", &ok);
+            if(!ok){
+                mx.unlock();
+                return;
+            }
+
+            try{
+                dclient->set_download_var(id, "DL_TITLE", name.toStdString());
+            }catch(client_exception &e){
+                if(e.get_id() == 18)
+                    QMessageBox::information(this, tsl("Error"), tsl("Running or finished Downloads can't be changed."));
+            }
+        }
+    }
+
+    mx.unlock();
+}
+
+
+void ddclient_gui::on_set_url(){
+    if(!check_connection(true, "Please connect before changing the Download List."))
+        return;
+
+    mx.lock();
+    get_selected_lines();
+
+    if(!check_selected()){
+        mx.unlock();
+        return;
+    }
+
+    vector<selected_info>::iterator it;
+    string answer;
+    int id;
+
+    for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+
+        if(it->package){ // we have a package, but don't need it
+        }else{ // we have a real download
+            id = content.at(it->parent_row).dls.at(it->row).id;
+
+            bool ok;
+            stringstream s;
+            s << id;
+            QString url = QInputDialog::getText(this, tsl("Enter URL"), tsl("Enter URL of Download %p1", s.str().c_str()), QLineEdit::Normal, "", &ok);
+            if(!ok){
+                mx.unlock();
+                return;
+            }
+
+            try{
+                dclient->set_download_var(id, "DL_URL", url.toStdString());
+            }catch(client_exception &e){
+                if(e.get_id() == 18)
+                    QMessageBox::information(this, tsl("Error"), tsl("Running or finished Downloads can't be changed."));
+            }
+        }
+    }
+
+    mx.unlock();
+}
+
+
 void ddclient_gui::on_reload(){
     if(!check_connection()){
         status_connection->setText(tsl("Not connected"));
@@ -1501,6 +1604,12 @@ void ddclient_gui::contextMenuEvent(QContextMenuEvent *event){
     QAction* set_password_action = new QAction(QIcon("img/package.png"), tsl("Enter Package Password"), this);
     set_password_action->setStatusTip(tsl("Enter Package Password"));
 
+    QAction* set_name_action = new QAction(QIcon("img/download_package.png"), tsl("Enter Title"), this);
+    set_name_action->setStatusTip(tsl("Enter Title"));
+
+    QAction* set_url_action = new QAction(QIcon("img/bullet_black.png"), tsl("Enter URL"), this);
+    set_url_action->setStatusTip(tsl("Enter URL"));
+
     menu.addAction(activate_download_action);
     menu.addAction(deactivate_download_action);
     menu.addSeparator();
@@ -1509,10 +1618,15 @@ void ddclient_gui::contextMenuEvent(QContextMenuEvent *event){
     menu.addSeparator();
     menu.addAction(select_action);
     menu.addAction(copy_action);
+    menu.addSeparator();
     menu.addAction(set_password_action);
+    menu.addAction(set_name_action);
+    menu.addAction(set_url_action);
 
     connect(delete_file_action, SIGNAL(triggered()), this, SLOT(on_delete_file()));
     connect(set_password_action, SIGNAL(triggered()), this, SLOT(on_set_password()));
+    connect(set_name_action, SIGNAL(triggered()), this, SLOT(on_set_name()));
+    connect(set_url_action, SIGNAL(triggered()), this, SLOT(on_set_url()));
 
     menu.exec(event->globalPos());
 }
