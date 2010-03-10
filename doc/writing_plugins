@@ -46,6 +46,9 @@ credentials are wrong.
 
 plugin_helpers.h implements a few more functions you might need. Check out that header file, the beginning are just a bunch of declarations with
 inline-documentation. Check it out over there.
+Also, please note that you should not create your own curl-handles for connecting to the hoster. Use the curl-handle returned by get_handle().
+The handle you will get from there will already have some basic setup, that is required in some cases (e.g. if alternating proxies are enabled,
+the proxy is set in the handle. So you should always use that).
 
 
 In some rare cases, it might be possible that the plugin has to check if the downloaded file is valid (e.g. if parsing is always the same and only
