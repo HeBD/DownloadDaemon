@@ -157,6 +157,7 @@ class ddclient_gui : public QMainWindow{
         void on_downloading_activate();
         void on_downloading_deactivate();
         void on_copy();
+        void on_set_password();
         void on_reload();
 
     protected:
