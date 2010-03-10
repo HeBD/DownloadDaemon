@@ -96,140 +96,174 @@ class downloadc{
         void stop_download(int id);
 
         /** Sets priority of a download up, successful or not shown by exception
-        *    @param id ID of the download
+        *   @param id ID of the download
         */
         void priority_up(int id);
 
         /** Sets priority of a download down, successful or not shown by exception
-        *    @param id ID of the download
+        *   @param id ID of the download
         */
         void priority_down(int id);
 
         /** Activates a download, successful or not shown by exception
-        *    @param id ID of the download
+        *   @param id ID of the download
         */
         void activate_download(int id);
 
         /** Deactivates a download, successful or not shown by exception
-        *    @param id ID of the download
+        *   @param id ID of the download
         */
         void deactivate_download(int id);
+
+        /** Setter for download variables, successful or not shown by exception
+        *   @param id download ID
+        *   @param var Name of the variable
+        *   @param value Value to be set
+        */
+        void set_download_var(int id, std::string var, std::string value);
+
+        /** Getter for download variables
+        *   @param download package ID
+        *   @param var variable which value should be returned
+        *   @returns value or empty string
+        */
+        std::string get_download_var(int id, std::string var);
 
 
         // target PKG
 
         /** Returns a list of all packages without downloads
-        *    @returns list of packages
+        *   @returns list of packages
         */
         std::vector<package> get_packages();
 
         /** Adds a package, successful or not shown by exception
-        *    @param name optional name of the package
-        *    @returns ID of the new package
+        *   @param name optional name of the package
+        *   @returns ID of the new package
         */
         int add_package(std::string name = "");
 
         /** Deletes a package
-        *    @param id ID of the package
+        *   @param id ID of the package
         */
         void delete_package(int id);
 
         /** Sets priority of a package up
-        *    @param id ID of the package
+        *   @param id ID of the package
         */
         void package_priority_up(int id);
 
         /** Sets priority of a package up
-        *    @param id ID of the package
+        *   @param id ID of the package
         */
         void package_priority_down(int id);
 
         /** Checks the existance of a package
-        *    @param id ID of the package
-        *    @param true if package exists
+        *   @param id ID of the package
+        *   @param true if package exists
         */
         bool package_exists(int id);
+
+        /** Setter for package variables, successful or not shown by exception
+        *   @param id package ID
+        *   @param var Name of the variable
+        *   @param value Value to be set
+        */
+        void set_package_var(int id, std::string var, std::string value);
+
+        /** Getter for package variables
+        *   @param id package ID
+        *   @param var variable which value should be returned
+        *   @returns value or empty string
+        */
+        std::string get_package_var(int id, std::string var);
+
+        /** Creates a packages and puts the contents of the container into it
+        *   @param type container type
+        *   @param content content of the container
+        */
+        void pkg_container(std::string type, std::string content);
 
 
         // target VAR
         /** Setter for variables, successful or not shown by exception
-        *    @param var Name of the variable
-        *    @param value Value to be set
-        *    @param value Optional old value, needed if you set variable mgmt_password
+        *   @param var Name of the variable
+        *   @param value Value to be set
+        *   @param value Optional old value, needed if you set variable mgmt_password
         */
         void set_var(std::string var, std::string value, std::string old_value = "");
 
         /** Getter for variables
-        *    @param var variable which value should be returned
-        *    @returns value or empty string
+        *   @param var variable which value should be returned
+        *   @returns value or empty string
         */
         std::string get_var(std::string var);
 
 
         // target FILE
         /** Deletes a downloaded file, successful or not shown by exception
-        *    @param id ID of the file to be deleted
+        *   @param id ID of the file to be deleted
         */
         void delete_file(int id);
 
         /** Returns the file as binary data, NOT IMPLEMENTED BY DAEMON, DO NOT USE!
-        *    @param id ID of the file to be sent
+        *   @param id ID of the file to be sent
         */
         void get_file(int id);
 
         /** Returns local path of a file
-        *    @param id ID of the file
-        *    @returns path or empty string if it fails
+        *   @param id ID of the file
+        *   @returns path or empty string if it fails
         */
         std::string get_file_path(int id);
 
         /** Returns size of a file in byte
-        *    @param id ID of the file
-        *    @returns filesize in byte
+        *   @param id ID of the file
+        *   @returns filesize in byte
         */
         uint64_t get_file_size(int id);
 
 
         // target ROUTER
         /** Returns the router list, successful or not shown by exception
-        *    @returns router list in a vector
+        *   @returns router list in a vector
         */
         std::vector<std::string> get_router_list();
 
         /** Sets the router model, successful or not shown by exception
-        *    @param model model to be set
+        *   @param model model to be set
         */
         void set_router_model(std::string model);
 
         /** Setter for router variables, successful or not shown by exception
-        *    @param var Name of the variable
-        *    @param value Value to be set
+        *   @param var Name of the variable
+        *   @param value Value to be set
         */
         void set_router_var(std::string var, std::string value);
 
         /** Getter for router variables
-        *    @param var variable which value should be returned
-        *    @returns value or empty string
+        *   @param var variable which value should be returned
+        *   @returns value or empty string
         */
         std::string get_router_var(std::string var);
 
 
         // target PREMIUM
         /** Returns the premium list, successful or not shown by exception
-        *    @returns premium list in a vector
+        *   @returns premium list in a vector
         */
         std::vector<std::string> get_premium_list();
 
         /** Setter for premium host, user and password, successful or not shown by exception
-        *    @param host premiumhost
-        *    @param user username
-        *    @param password password
+        *   @param host premiumhost
+        *   @param user username
+        *   @param password password
         */
         void set_premium_var(std::string host, std::string user, std::string password);
 
         /** Getter for premium username
-        *    @param host host which the username is for
-        *    @returns value or empty string
+        *   @param host host which the username is for
+        *   @returns value or empty string
         */
         std::string get_premium_var(std::string host);
 

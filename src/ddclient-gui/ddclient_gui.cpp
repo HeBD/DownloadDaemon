@@ -20,6 +20,7 @@
 #include <QStandardItem>
 #include <QtGui/QContextMenuEvent>
 #include <QModelIndex>
+#include <QtGui/QInputDialog>
 //#include <QtGui> // this is only for testing if includes are the problem
 
 using namespace std;
@@ -69,12 +70,11 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
                         dclient->connect(last_data.host, last_data.port, last_data.pass, false);
                     }catch(client_exception &e){}
                 }
-            } // we don't have error message here because it's an auto fuction
+            } // we don't have error message here because it's an auto function
         }
     }
 
     connect(this, SIGNAL(do_reload()), this, SLOT(on_reload()));
-    
     update_thread *thread = new update_thread(this);
     thread->start();
 }
@@ -1343,6 +1343,43 @@ void ddclient_gui::on_copy(){
 }
 
 
+void ddclient_gui::on_set_password(){
+    if(!check_connection(true, "Please connect before changing Packages."))
+        return;
+
+    mx.lock();
+    get_selected_lines();
+
+    if(!check_selected()){
+        mx.unlock();
+        return;
+    }
+
+    bool ok;
+    QString pass = QInputDialog::getText(this, tsl("Enter Package Password"), tsl("Enter Package Password"), QLineEdit::Normal, "", &ok);
+    if (!ok)
+        return;
+
+    vector<selected_info>::iterator it;
+    string answer;
+    int id;
+
+    for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+
+        if(it->package){ // we have a package
+            id = content.at(it->row).id;
+
+            try{
+                dclient->set_package_var(id, "PKG_PASSWORD", pass.toStdString());
+            }catch(client_exception &e){}
+
+        }else{} // we have a real download, but we don't need it
+    }
+
+    mx.unlock();
+}
+
+
 void ddclient_gui::on_reload(){
     if(!check_connection()){
         status_connection->setText(tsl("Not connected"));
@@ -1460,8 +1497,9 @@ void ddclient_gui::contextMenuEvent(QContextMenuEvent *event){
     QAction* delete_file_action = new QAction(QIcon("img/15_delete_file.png"), tsl("Delete File"), this);
     delete_file_action->setShortcut(QString("Ctrl+F"));
     delete_file_action->setStatusTip(tsl("Delete File"));
-    menu.addAction(delete_file_action);
-    menu.addSeparator();
+
+    QAction* set_password_action = new QAction(QIcon("img/package.png"), tsl("Enter Package Password"), this);
+    set_password_action->setStatusTip(tsl("Enter Package Password"));
 
     menu.addAction(activate_download_action);
     menu.addAction(deactivate_download_action);
@@ -1471,13 +1509,10 @@ void ddclient_gui::contextMenuEvent(QContextMenuEvent *event){
     menu.addSeparator();
     menu.addAction(select_action);
     menu.addAction(copy_action);
+    menu.addAction(set_password_action);
 
-    connect(activate_download_action, SIGNAL(triggered()), this, SLOT(on_activate()));
-    connect(deactivate_download_action, SIGNAL(triggered()), this, SLOT(on_deactivate()));
-    connect(delete_action, SIGNAL(triggered()), this, SLOT(on_delete()));
     connect(delete_file_action, SIGNAL(triggered()), this, SLOT(on_delete_file()));
-    connect(select_action, SIGNAL(triggered()), this, SLOT(on_select()));
-    connect(copy_action, SIGNAL(triggered()), this, SLOT(on_copy()));
+    connect(set_password_action, SIGNAL(triggered()), this, SLOT(on_set_password()));
 
     menu.exec(event->globalPos());
 }

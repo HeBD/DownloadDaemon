@@ -402,6 +402,36 @@ void downloadc::deactivate_download(int id){
 }
 
 
+void downloadc::set_download_var(int id, std::string var, std::string value){
+    check_connection();
+
+    std::lock_guard<std::mutex> lock(mx);
+    std::string answer;
+    std::stringstream s;
+    s << id;
+
+    mysock->send("DDP DL SET " + s.str() + " " + var + "=" + value);
+    mysock->recv(answer);
+
+    check_error_code(answer); // set DL_URL can throw 108 variable if download is running or finished
+}
+
+
+std::string downloadc::get_download_var(int id, std::string var){
+    check_connection();
+
+    std::lock_guard<std::mutex> lock(mx);
+    std::string answer;
+    std::stringstream s;
+    s << id;
+
+    mysock->send("DDP DL GET " + s.str() + " " + var);
+    mysock->recv(answer);
+
+    return answer;
+}
+
+
 // target PKG
 std::vector<package> downloadc::get_packages(){
     check_connection();
@@ -569,6 +599,49 @@ bool downloadc::package_exists(int id){
         return false;
 
     return true;
+}
+
+
+void downloadc::set_package_var(int id, std::string var, std::string value){
+    check_connection();
+
+    std::lock_guard<std::mutex> lock(mx);
+    std::string answer;
+    std::stringstream s;
+    s << id;
+
+    mysock->send("DDP PKG SET " + s.str() + " " + var + " = " + value);
+    mysock->recv(answer);
+
+    check_error_code(answer);
+}
+
+
+std::string downloadc::get_package_var(int id, std::string var){
+    check_connection();
+
+    std::lock_guard<std::mutex> lock(mx);
+    std::string answer;
+    std::stringstream s;
+    s << id;
+
+    mysock->send("DDP PKG GET " + s.str() + " " + var);
+    mysock->recv(answer);
+
+    return answer;
+}
+
+
+void downloadc::pkg_container(std::string type, std::string content){
+    check_connection();
+
+    std::lock_guard<std::mutex> lock(mx);
+    std::string answer;
+
+    mysock->send("DDP PKG CONTAINER " + type + ":" + content);
+    mysock->recv(answer);
+
+    check_error_code(answer);
 }
 
 

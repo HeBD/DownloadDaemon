@@ -1,6 +1,8 @@
 2010-03-10
    [susanne]
-        - made configure dialog work
+        - made configure dialog work at ddcient-gui
+        - added possibiliy to set package password to ddcient-gui
+        - made downloadc able to set/get download and package variables and insert download containers
 
 2010-03-09
    [adrian]
