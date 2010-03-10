@@ -158,13 +158,13 @@ class ddclient_gui : public QMainWindow{
         void on_downloading_deactivate();
         void on_copy();
         void on_set_password();
+        void on_set_name();
+        void on_set_url();
         void on_reload();
 
     protected:
         void contextMenuEvent(QContextMenuEvent *event);
         void resizeEvent(QResizeEvent* event);
-
-
 };
 
 #endif // DDCLIENT_GUI_H

@@ -195,6 +195,11 @@ Please connect before copying URLs.->Bitte verbinden Sie bevor Sie URLs kopieren
 Please connect before changing Packages.->Bitte verbinden Sie bevor Sie Pakete verändern.
 Couldn't write into clipboard.->Konnte nicht in Zwischenablage schreiben.
 Clipboard Error->Zwischenablagen-Fehler
-
-Enter Password->Passwort eingeben
-
+Enter Package Password->Paket Passwort eingeben
+Please connect before changing the Download List.->Bitte verbinden Sie bevor Sie die Downloadliste verändern.
+Enter Title->Titel eingeben
+Enter Title of Package %p1->Titel für Paket %p1 eingeben
+Enter Title of Download %p1->Titel für Download %p1 eingeben
+Enter URL->URL eingeben
+Enter URL of download %p1->URL für Download %p1 eingeben
+Running or finished Downloads can't be changed.->Laufende oder beendete Downloads können nicht verändert werden.

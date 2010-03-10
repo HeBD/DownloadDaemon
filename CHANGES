@@ -3,6 +3,7 @@
         - made configure dialog work at ddcient-gui
         - added possibiliy to set package password to ddcient-gui
         - made downloadc able to set/get download and package variables and insert download containers
+        - added functionality to set package password, package/download title and download url via context menu at ddclient-gui
 
 2010-03-09
    [adrian]
