@@ -1355,11 +1355,6 @@ void ddclient_gui::on_set_password(){
         return;
     }
 
-    bool ok;
-    QString pass = QInputDialog::getText(this, tsl("Enter Package Password"), tsl("Enter Package Password"), QLineEdit::Normal, "", &ok);
-    if (!ok)
-        return;
-
     vector<selected_info>::iterator it;
     string answer;
     int id;
@@ -1368,6 +1363,15 @@ void ddclient_gui::on_set_password(){
 
         if(it->package){ // we have a package
             id = content.at(it->row).id;
+
+            bool ok;
+            stringstream s;
+            s << id;
+            QString pass = QInputDialog::getText(this, tsl("Enter Package Password"), tsl("Enter Package Password"), QLineEdit::Normal, "", &ok);
+            if(!ok){
+                mx.unlock();
+                return;
+            }
 
             try{
                 dclient->set_package_var(id, "PKG_PASSWORD", pass.toStdString());
