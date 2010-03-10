@@ -685,7 +685,7 @@ void configure_dialog::on_pass_change(wxCommandEvent &event){
 
 	string answer;
 
-	// password
+	// save password
 	try{
 		dclient->set_var("mgmt_password", new_pass, old_pass);
 	}catch(client_exception &e){
@@ -706,7 +706,7 @@ void configure_dialog::on_premium_change(wxCommandEvent &event){
 	int selection = premium_host_choice->GetCurrentSelection();
 
 	if(selection != 0){ // selected a valid host
-		string premium_host =  premium_host_list.at(selection);
+		string premium_host = premium_host_list.at(selection);
 		string premium_user = string(premium_user_input->GetValue().mb_str());
 		string premium_pass = string(premium_pass_input->GetValue().mb_str());
 
@@ -726,7 +726,6 @@ void configure_dialog::on_premium_change(wxCommandEvent &event){
 		}catch(client_exception &e){}
 		mx->unlock();
 	}
-
 }
 
 

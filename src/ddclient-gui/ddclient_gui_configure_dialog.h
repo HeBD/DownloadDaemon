@@ -63,6 +63,7 @@ class configure_dialog : public QDialog{
     private slots:
         void help();
         void search_in_model();
+        void premium_host_changed();
         void ok();
         void save_premium();
         void save_password();

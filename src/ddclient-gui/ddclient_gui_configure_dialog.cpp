@@ -60,6 +60,7 @@ QWidget *configure_dialog::create_general_panel(){
 
     // premium host
     premium_host = new QComboBox();
+    premium_host->addItem("");
     vector<string> host_list;
     string line = "";
 
@@ -111,6 +112,7 @@ QWidget *configure_dialog::create_general_panel(){
     general_layout->addRow("", refuse_existing);
 
     connect(button_box->button(QDialogButtonBox::Save), SIGNAL(clicked()),this, SLOT(save_premium()));
+    connect(premium_host, SIGNAL(currentIndexChanged(int)),this, SLOT(premium_host_changed()));
 
     layout->addWidget(general_group_box);
     return page;
@@ -423,17 +425,207 @@ void configure_dialog::search_in_model(){
 }
 
 
+void configure_dialog::premium_host_changed(){
+    string host = premium_host->currentText().toStdString();
+
+    premium_user->clear();
+    premium_password->clear();
+
+    if(host != "")
+        premium_user->insert(get_var(host, PREMIUM_T));
+}
+
+
 void configure_dialog::ok(){
-    QMessageBox::information(this, "^_____^", "I'm not doing anything....~");
+    ddclient_gui *p = (ddclient_gui *) parent();
+    downloadc *dclient = p->get_connection();
+
+    // getting user input
+    bool overwrite = this->overwrite->isChecked();
+    bool refuse_existing = this->refuse_existing->isChecked();
+
+    string start_time = this->start_time->text().toStdString();
+    string end_time = this->end_time->text().toStdString();
+    string save_dir = folder->text().toStdString();
+    string count = this->count->text().toStdString();
+    string speed = this->speed->text().toStdString();
+
+    string log_output;
+    int selection = procedure->currentIndex();
+
+    switch (selection){
+        case 0:     log_output = "stdout";
+                    break;
+        case 1:     log_output = "stderr";
+                    break;
+        case 2:     log_output = "syslog";
+                    break;
+    }
+
+    string activity_level;
+    selection = activity->currentIndex();
+
+    switch (selection){
+        case 0:     activity_level = "DEBUG";
+                    break;
+        case 1:     activity_level = "WARNING";
+                    break;
+        case 2:     activity_level = "SEVERE";
+                    break;
+        case 3:     activity_level = "OFF";
+                    break;
+    }
+
+    bool reconnect_enable = reconnect_group_box->isChecked();
+    string policy, router_model, router_ip, router_user, router_pass;
+
+    if(reconnect_enable){ // other contents of reconnect panel are only saved if reconnecting is enabled
+        selection = reconnect_policy->currentIndex();
+
+        switch (selection){
+            case 0:     policy = "HARD";
+                        break;
+            case 1:     policy = "CONTINUE";
+                        break;
+            case 2:     policy = "SOFT";
+                        break;
+            case 3:     policy = "PUSSY";
+                        break;
+        }
+
+        router_model = model->currentItem()->text().toStdString();
+
+        router_ip = ip->text().toStdString();
+        router_user = username->text().toStdString();
+        router_pass = password->text().toStdString();
+    }
+
+
+    // check connection
+    if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))
+        return;
+
+    QMutex *mx = p->get_mutex();
+    mx->lock();
+
+    try{
+        // overwrite files
+        if(overwrite)
+            dclient->set_var("overwrite_files", "1");
+        else
+            dclient->set_var("overwrite_files", "0");
+
+        // refuse existing links
+        if(refuse_existing)
+            dclient->set_var("refuse_existing_links", "1");
+        else
+            dclient->set_var("refuse_existing_links", "0");
+
+        // download times
+        dclient->set_var("download_timing_start", start_time);
+        dclient->set_var("download_timing_end", end_time);
+
+        // download folder
+        dclient->set_var("download_folder", save_dir);
+
+        // download count
+        dclient->set_var("simultaneous_downloads", count);
+
+        // download speed
+        dclient->set_var("max_dl_speed", speed);
+
+        // log output
+        dclient->set_var("log_procedure", log_output);
+
+        // log activity
+        dclient->set_var("log_level", activity_level);
+
+        // reconnect enable
+        if(reconnect_enable){
+            dclient->set_var("enable_reconnect", "1");
+
+            // policy
+            dclient->set_router_var("reconnect_policy", policy);
+
+            // router model
+            dclient->set_router_model(router_model);
+
+            // router ip
+            dclient->set_router_var("router_ip", router_ip);
+
+            // router user
+            dclient->set_router_var("router_username", router_user);
+
+            // user pass
+            dclient->set_router_var("router_password", router_pass);
+
+        }else{
+            dclient->set_var("enable_reconnect", "0");
+        }
+    }catch(client_exception &e){
+        if(e.get_id() == 10){ //connection lost
+            QMessageBox::information(this, p->tsl("No Connection to Server"), p->tsl("Please connect before configurating DownloadDaemon."));
+        }
+    }
+    mx->unlock();
+
     emit done(0);
 }
 
 
 void configure_dialog::save_premium(){
-    QMessageBox::information(this, "^_____^", "I am premiumsaving....~");
+    ddclient_gui *p = (ddclient_gui *) parent();
+    downloadc *dclient = p->get_connection();
+
+   string host = premium_host->currentText().toStdString();
+
+    if(host != ""){ // selected a valid host
+        string user = premium_user->text().toStdString();
+        string pass = premium_password->text().toStdString();
+
+        // check connection
+        if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))
+            return;
+
+        QMutex *mx = p->get_mutex();
+        mx->lock();
+
+        string answer;
+
+        // host, user and password together
+        try{
+            dclient->set_premium_var(host, user, pass);
+        }catch(client_exception &e){}
+        mx->unlock();
+    }
 }
 
 
 void configure_dialog::save_password(){
-    QMessageBox::information(this, "^_____^", "I am passwordsaving....~");
+    ddclient_gui *p = (ddclient_gui *) parent();
+    downloadc *dclient = p->get_connection();
+
+    // getting user input
+    string old_pass = old_password->text().toStdString();
+    string new_pass = new_password->text().toStdString();
+
+    // check connection
+    if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))
+        return;
+
+    QMutex *mx = p->get_mutex();
+    mx->lock();
+
+    string answer;
+
+    // save password
+    try{
+        dclient->set_var("mgmt_password", new_pass, old_pass);
+    }catch(client_exception &e){
+        if(e.get_id() == 12){ //password fail
+            QMessageBox::information(this, p->tsl("Password Error"), p->tsl("Failed to change the Password."));
+        }
+    }
+    mx->unlock();
+    emit done(0);
 }
