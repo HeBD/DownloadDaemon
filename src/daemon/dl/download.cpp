@@ -462,7 +462,9 @@ void download::download_me_worker() {
 			std::string dl_subfolder = global_download_list.get_pkg_name(parent);
 			make_valid_filename(dl_subfolder);
 			if(dl_subfolder.empty()) {
+				lock.unlock();
 				std::vector<int> dls = global_download_list.get_download_list(parent);
+				lock.lock();
 				if(dls.empty()) return;
 				int first_id = dls[0];
 				dl_subfolder = filename_from_url(global_download_list.get_url(make_pair<int, int>(parent, first_id)));
