@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
+#include <cfgfile/cfgfile.h>
 
 #include <QtGui/QStatusBar>
 #include <QtGui/QMenuBar>
@@ -42,19 +43,24 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
     add_list_components();
 
     // connect if logindata was saved
-    string file_name = config_dir.toStdString() + "save.dat";
-    ifstream ifs(file_name.c_str(), fstream::in | fstream::binary); // open file
+    string file_name = config_dir.toStdString() + "ddclient-gui.conf";
+    cfgfile file;
+    file.open_cfg_file(file_name, false);
 
-    if(ifs.good()){ // file successfully opened
-        login_data last_data =  { "", 0, "", ""};
-        ifs.read((char *) &last_data, sizeof(login_data));
+    if(file){ // file successfully opened
+	login_data data;
+	data.selected = file.get_int_value("selected");
+	stringstream s;
+	s << data.selected;
+	data.host.push_back(file.get_cfg_value("host" + s.str()));
+	data.port.push_back(file.get_int_value("port" + s.str()));
+	data.pass.push_back(file.get_cfg_value("pass" + s.str()));
 
-        if(last_data.lang[0] != '\0') // older versions of save.dat won't have lang, so we have to check
-            set_language(last_data.lang); // set program language
+	set_language(file.get_cfg_value("language")); // set program language
 
         try{
-            dclient->connect(last_data.host, last_data.port, last_data.pass, true);
-            update_status(last_data.host);
+	    dclient->connect(data.host[0], data.port[0], data.pass[0], true);
+	    update_status(data.host[0].c_str());
 
         }catch(client_exception &e){
             if(e.get_id() == 2){ // daemon doesn't allow encryption
@@ -67,7 +73,7 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 
                 if(del == QMessageBox::YesRole){ // connect again
                     try{
-                        dclient->connect(last_data.host, last_data.port, last_data.pass, false);
+			dclient->connect(data.host[0], data.port[0], data.pass[0], false);
                     }catch(client_exception &e){}
                 }
             } // we don't have error message here because it's an auto function

@@ -1,5 +1,4 @@
 #include "ddclient_gui_connect_dialog.h"
-#include "ddclient_gui.h"
 #include <string>
 #include <fstream>
 
@@ -19,21 +18,36 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
     setWindowTitle(p->tsl("Connect to Host"));
 
     // read saved data if it exists
-    string file_name = string(config_dir.toStdString()) + "save.dat";
-    ifstream ifs(file_name.c_str(), fstream::in | fstream::binary); // open file
+    string file_name = string(config_dir.toStdString()) + "ddclient-gui.conf";
+    file.open_cfg_file(file_name, true);
 
-    login_data last_data =  { "", 0, "", ""};
-    if((ifs.rdstate() & ifstream::failbit) == 0){ // file successfully opened
+    data.lang = file.get_cfg_value("language");
+    data.selected = file.get_int_value("selected");
 
-        ifs.read((char *) &last_data,sizeof(login_data));
+    if(data.lang == "")
+	data.lang = "English";
+    int i = 0;
+
+    while(true){
+	stringstream s;
+	s << i;
+	string tmp(file.get_cfg_value("host" + s.str()));
+
+	if(tmp.empty())
+	    break;
+
+	data.host.push_back(tmp);
+	data.port.push_back(file.get_int_value("port" + s.str()));
+	data.pass.push_back(file.get_cfg_value("pass" + s.str()));
+	i++;
     }
-    ifs.close();
 
-    if(strcmp(last_data.host, "") == 0){ // data wasn't read from file => default
-        snprintf(last_data.host, 256, "127.0.0.1");
-        last_data.port = 56789;
-        last_data.pass[0] = '\0';
-        snprintf(last_data.lang, 128, "English");
+    if(data.host.empty()){
+	data.lang = "English";
+	data.selected = 0;
+	data.host.push_back("127.0.0.1");
+	data.port.push_back(56789);
+	data.pass.push_back("");
     }
 
     QGroupBox *connect_box = new QGroupBox(p->tsl("Data"));
@@ -46,11 +60,16 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
     layout->addWidget(button_box);
     this->setLayout(layout);
 
-    host = new QLineEdit(last_data.host);
-    port = new QLineEdit(QString("%1").arg(last_data.port));
+    host = new QComboBox();
+    host->setEditable(true);
+    for(vector<string>::iterator it = data.host.begin(); it != data.host.end(); ++it)
+	host->addItem(it->c_str());
+    host->setCurrentIndex(data.selected);
+
+    port = new QLineEdit(QString("%1").arg(data.port.at(data.selected)));
     port->setMaxLength(5);
     port->setFixedWidth(50);
-    password = new QLineEdit();
+    password = new QLineEdit(data.pass.at(data.selected).c_str());
     password->setEchoMode(QLineEdit::Password);
     language = new QComboBox();
     language->addItem("English");
@@ -60,7 +79,7 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
     button_box->button(QDialogButtonBox::Ok)->setDefault(true);
     button_box->button(QDialogButtonBox::Ok)->setFocus(Qt::OtherFocusReason);
 
-    if(strcmp(last_data.lang, "Deutsch") == 0)
+    if(data.lang == "Deutsch")
         language->setCurrentIndex(1);
     else // English is default
         language->setCurrentIndex(0);
@@ -73,10 +92,30 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
 
     connect(button_box->button(QDialogButtonBox::Ok), SIGNAL(clicked()),this, SLOT(ok()));
     connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()),this, SLOT(reject()));
+    connect(host, SIGNAL(currentIndexChanged(int)), this, SLOT(host_selected()));
 }
 
+
+void connect_dialog::host_selected(){
+    string host = this->host->currentText().toStdString();
+    port->clear();
+    password->clear();
+
+    try{
+	for(size_t i = 0; i != data.host.size(); i++){
+	    if(host == data.host.at(i)){
+		port->insert(QString("%1").arg(data.port.at(i)));
+		password->insert(data.pass.at(i).c_str());
+		break;
+	    }
+	}
+    }catch(...){}
+}
+
+
 void connect_dialog::ok(){
-    string host = this->host->text().toStdString();
+    string host = this->host->currentText().toStdString();
+
     int port = this->port->text().toInt();
     string password = this->password->text().toStdString();
     string language = this->language->currentText().toStdString();
@@ -152,25 +191,42 @@ void connect_dialog::ok(){
     if(!error_occured){
 
         // updated statusbar of parent
-        p->update_status(this->host->text());
+	p->update_status(host.c_str());
 
         // write login_data to a file
         if(save_data->isChecked()){ // user clicked checkbox to save data
 
-            string file_name = string(config_dir.toStdString()) + "save.dat";
-            ofstream ofs(file_name.c_str(), fstream::out | fstream::binary | fstream::trunc); // open file
+	    file.set_cfg_value("language", language);
 
-            login_data last_data;
-            snprintf(last_data.host, 256, "%s", host.c_str());
-            last_data.port = port;
-            snprintf(last_data.pass, 256, "%s", password.c_str());
-            snprintf(last_data.lang, 128, "%s", language.c_str());
+	    bool found = false;
+	    size_t i = 0;
+	    try{
 
-            if(ofs.good()){ // file successfully opened
+		for(; i != data.host.size(); i++){
+		    if(host == data.host.at(i)){
+			stringstream s, port_s;
+			s << i;
+			port_s << port;
+			file.set_cfg_value("selected", s.str());
+			file.set_cfg_value("host" + s.str(), host);
+			file.set_cfg_value("port" + s.str(), port_s.str());
+			file.set_cfg_value("pass" + s.str(), password);
 
-                ofs.write((char *) &last_data, sizeof(login_data));
-            }
-            ofs.close();
+			found = true;
+			break;
+		    }
+		}
+
+		if(!found){ // new host => add a new entry
+		    stringstream s, port_s;
+		    s << i;
+		    port_s << port;
+		    file.set_cfg_value("host" + s.str(), host);
+		    file.set_cfg_value("port" + s.str(), port_s.str());
+		    file.set_cfg_value("pass" + s.str(), password);
+		    file.set_cfg_value("selected", s.str());
+		}
+	    }catch(...){}
         }
 
         emit done(0);

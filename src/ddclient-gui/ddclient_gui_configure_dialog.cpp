@@ -493,13 +493,15 @@ void configure_dialog::ok(){
                         break;
         }
 
-        router_model = model->currentItem()->text().toStdString();
+	int i = model->currentIndex().row();
+	if(i == -1)
+	    i = 0;
+	router_model = model->item(i)->text().toStdString();
 
         router_ip = ip->text().toStdString();
         router_user = username->text().toStdString();
         router_pass = password->text().toStdString();
     }
-
 
     // check connection
     if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))

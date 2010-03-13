@@ -1,3 +1,7 @@
+2010-03-13
+   [susanne]
+	- made ddclient-gui able to save a list of connections (user has to delete file to clear them)
+
 2010-03-10
    [susanne]
         - made configure dialog work at ddcient-gui
