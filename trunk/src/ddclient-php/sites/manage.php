@@ -92,7 +92,7 @@ if($connect != 'SUCCESS') {
 				'T_DL_URL' => '',
 				'T_DL_Class' => '',
 				'T_DL_Status' => '',
-				'T_SITE_URL' => '',
+				'T_SITE_URL' => $tpl_vars['T_SITE_URL'],
 				'L_Activate' => '" style="visibility:hidden',
 				'L_Delete' => '',
 				'L_Move' => $LANG['Move'],
