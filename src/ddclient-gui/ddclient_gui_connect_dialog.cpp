@@ -1,6 +1,7 @@
 #include "ddclient_gui_connect_dialog.h"
 #include <string>
 #include <fstream>
+#include <sstream>
 
 #include <QtGui/QGroupBox>
 #include <QtGui/QFormLayout>

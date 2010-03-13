@@ -13,7 +13,8 @@ SET(ddclient_gui_SRCS   ddclient_gui.cpp
                         ../include/crypt/md5.cpp
                         ../include/language/language.cpp
                         ../include/downloadc/downloadc.cpp
-                        ../include/downloadc/client_exception.cpp)
+                        ../include/downloadc/client_exception.cpp
+			../include/cfgfile/cfgfile.cpp)
 
 SET(moc_headers		ddclient_gui.h
 			ddclient_gui_connect_dialog.h
