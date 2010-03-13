@@ -106,14 +106,17 @@ cd ../version/${VERSION}
 
 echo "cmake_minimum_required (VERSION 2.6)
 project(ddclient-wx)
+SET(VERSION "${VERSION}")
 add_subdirectory(src/ddclient-wx)" > ddclient-wx-${VERSION}/CMakeLists.txt
 
 echo "cmake_minimum_required (VERSION 2.6)
 project(ddclient-gui)
+SET(VERSION "${VERSION}")
 add_subdirectory(src/ddclient-gui)" > ddclient-gui-${VERSION}/CMakeLists.txt
 
 echo "cmake_minimum_required (VERSION 2.6)
 project(ddconsole)
+SET(VERSION "${VERSION}")
 add_subdirectory(src/ddconsole)" > ddconsole-${VERSION}/CMakeLists.txt
 
 echo "removing unneeded files..."

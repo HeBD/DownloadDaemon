@@ -14,13 +14,15 @@
 #include<string>
 #include<sstream>
 #include<vector>
-#ifndef USE_STD_THREAD
-#include <boost/thread.hpp>
-namespace std {
-	using namespace boost;
-}
-#else
-#include <thread>
+#ifndef DDCLIENT_GUI
+    #ifndef USE_STD_THREAD
+	#include <boost/thread.hpp>
+	namespace std {
+	    using namespace boost;
+	}
+    #else
+	#include <thread>
+    #endif
 #endif
 using namespace std;
 
@@ -58,11 +60,17 @@ void cfgfile::open_cfg_file(const std::string &fp, bool open_writeable) {
 }
 
 std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
+#ifndef DDCLIENT_GUI
 	unique_lock<mutex> lock(mx);
+#endif
 	if(!file.is_open() || !file.good()) {
+#ifndef DDCLIENT_GUI
 		lock.unlock();
+#endif
 		reload_file();
+#ifndef DDCLIENT_GUI
 		lock.lock();
+#endif
 	}
 	file.seekg(0);
 	std::string buff, identstr, val;
@@ -101,17 +109,22 @@ long cfgfile::get_int_value(const std::string &cfg_identifier) {
 }
 
 bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string &value) {
-	mx.lock();
+#ifndef DDCLIENT_GUI
+	unique_lock<mutex> lock(mx);
+#endif
 	std::string cfg_value = value;
 	trim(cfg_value);
 	if(!is_writeable) {
-		mx.unlock();
 		return false;
 	}
 	if(!file.is_open() || !file.good()) {
-		mx.unlock();
+#ifndef DDCLIENT_GUI
+		lock.unlock();
+#endif
 		reload_file();
-		mx.lock();
+#ifndef DDCLIENT_GUI
+		lock.lock();
+#endif
 	}
 
 	file.seekg(0);
@@ -127,7 +140,6 @@ bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string
 
 	file.seekg(0);
 	if(file.bad()) {
-		mx.unlock();
 		return false;
 	}
 
@@ -163,8 +175,9 @@ bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string
 			file << '\n';
 		}
 	}
-
-	mx.unlock();
+#ifndef DDCLIENT_GUI
+	lock.unlock();
+#endif
 	reload_file();
 
 	return true;
@@ -179,7 +192,9 @@ void cfgfile::set_comment_token(const std::string &token) {
 }
 
 void cfgfile::reload_file() {
-	mx.lock();
+#ifndef DDCLIENT_GUI
+	lock_guard<mutex> lock(mx);
+#endif
 	if(file.is_open()) {
 		file.close();
 	}
@@ -189,13 +204,13 @@ void cfgfile::reload_file() {
 	} else {
 		file.open(this->filepath.c_str(), fstream::in);
 	}
-	mx.unlock();
 }
 
 void cfgfile::close_cfg_file() {
-	mx.lock();
+#ifndef DDCLIENT_GUI
+	lock_guard<mutex> lock(mx);
+#endif
 	file.close();
-	mx.unlock();
 }
 
 inline bool cfgfile::writeable() const {
@@ -207,9 +222,10 @@ inline std::string cfgfile::get_filepath() const {
 }
 
 bool cfgfile::list_config(std::string& resultstr) {
-	mx.lock();
+#ifndef DDCLIENT_GUI
+	unique_lock<mutex> lock(mx);
+#endif
 	if(!file.is_open()) {
-		mx.unlock();
 		return false;
 	}
 	std::string buff;
@@ -227,9 +243,7 @@ bool cfgfile::list_config(std::string& resultstr) {
 			resultstr += '\n';
 		}
 	}
-	mx.unlock();
 	return true;
-
 }
 
 void cfgfile::trim(std::string &str) const {
