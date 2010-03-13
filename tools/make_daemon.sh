@@ -83,6 +83,7 @@ cd ../version/${VERSION}
 
 echo "cmake_minimum_required (VERSION 2.6)
 project(DownloadDaemon)
+SET(VERSION "${VERSION}")
 add_subdirectory(src/daemon)" > downloaddaemon-${VERSION}/CMakeLists.txt
 
 echo "removing unneeded files..."

@@ -26,6 +26,8 @@ SOURCES += ddclient_gui.cpp \
     ../include/cfgfile/cfgfile.cpp
 INCLUDEPATH += ../include
 DESTDIR = ../../build/bin
+DEFINES += DDCLIENT_GUI
+
 unix:LIBS += -lboost_thread-mt
 win32 { 
     LIBS += -lws2_32

@@ -16,13 +16,15 @@
 #include <fstream>
 #include <string>
 
-#ifndef USE_STD_THREAD
-#include <boost/thread.hpp>
-namespace std {
-	using namespace boost;
-}
-#else
-#include <thread>
+#ifndef DDCLIENT_GUI
+    #ifndef USE_STD_THREAD
+	#include <boost/thread.hpp>
+	namespace std {
+	    using namespace boost;
+	}
+    #else
+	#include <thread>
+    #endif
 #endif
 
 
@@ -131,7 +133,9 @@ private:
 	std::string comment_token;
 	bool is_writeable;
 	char eqtoken;
+#ifndef DDCLIENT_GUI
 	std::mutex mx;
+#endif
 
 };
 

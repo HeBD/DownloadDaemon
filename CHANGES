@@ -1,4 +1,6 @@
 2010-03-13
+   [adrian]
+	- correctly define DDCLIENT_GUI_VERSION to get nice version numbers in the about dialog
    [susanne]
 	- made ddclient-gui able to save a list of connections (user has to delete file to clear them)
 
