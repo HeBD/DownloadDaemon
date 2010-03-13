@@ -32,10 +32,11 @@ struct view_info{
 };
 
 struct login_data{
-    char host[256];
-    int port;
-    char pass[256];
-    char lang[128];
+    std::vector<std::string> host;
+    std::vector<int> port;
+    std::vector<std::string> pass;
+    int selected;
+    std::string lang;
 };
 
 enum error_message{error_none, error_selected, error_connected};

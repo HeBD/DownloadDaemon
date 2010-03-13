@@ -5,6 +5,8 @@
 #include <QtGui/QLineEdit>
 #include <QtGui/QCheckBox>
 #include <QComboBox>
+#include <cfgfile/cfgfile.h>
+#include "ddclient_gui.h"
 
 
 class connect_dialog : public QDialog{
@@ -18,14 +20,17 @@ class connect_dialog : public QDialog{
         connect_dialog(QWidget *parent, QString config_dir);
 
     private:
-        QLineEdit *host;
+	QComboBox *host;
         QLineEdit *port;
         QLineEdit *password;
         QComboBox *language;
         QCheckBox *save_data;
         QString config_dir;
+	cfgfile file;
+	login_data data;
 
     private slots:
+	void host_selected();
         void ok();
 
 };
