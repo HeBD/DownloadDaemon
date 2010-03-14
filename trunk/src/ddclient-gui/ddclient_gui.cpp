@@ -22,6 +22,7 @@
 #include <QtGui/QContextMenuEvent>
 #include <QModelIndex>
 #include <QtGui/QInputDialog>
+#include <QFileDialog>
 //#include <QtGui> // this is only for testing if includes are the problem
 
 using namespace std;
@@ -252,6 +253,10 @@ void ddclient_gui::add_bars(){
     file_menu->addAction(deactivate_download_action);
     file_menu->addSeparator();
 
+    container_action = new QAction(QIcon("img/16_container.png"), tsl("Add Download Container"), this);
+    container_action->setStatusTip(tsl("Add Download Container"));
+    file_menu->addAction(container_action);
+
     add_action = new QAction(QIcon("img/2_add.png"), tsl("Add Download"), this);
     add_action->setShortcut(QString("Alt+I"));
     add_action->setStatusTip(tsl("Add Download"));
@@ -322,6 +327,8 @@ void ddclient_gui::add_bars(){
     connect(deactivate_action, SIGNAL(triggered()), this, SLOT(on_downloading_deactivate()));
     connect(activate_download_action, SIGNAL(triggered()), this, SLOT(on_activate()));
     connect(deactivate_download_action, SIGNAL(triggered()), this, SLOT(on_deactivate()));
+    connect(container_action, SIGNAL(triggered()), this, SLOT(on_load_container()));
+
     connect(add_action, SIGNAL(triggered()), this, SLOT(on_add()));
     connect(delete_action, SIGNAL(triggered()), this, SLOT(on_delete()));
     connect(delete_finished_action, SIGNAL(triggered()), this, SLOT(on_delete_finished()));
@@ -355,6 +362,9 @@ void ddclient_gui::update_bars(){
 
     deactivate_download_action->setText(tsl("Deactivate Download"));
     deactivate_download_action->setStatusTip(tsl("Deactivate the selected Download"));
+
+    container_action->setText(tsl("Add Download Container"));
+    container_action->setStatusTip(tsl("Add Download Container"));
 
     add_action->setText(tsl("Add Download"));
     add_action->setStatusTip(tsl("Add Download"));
@@ -1727,6 +1737,35 @@ void ddclient_gui::on_set_url(){
 }
 
 
+void ddclient_gui::on_load_container(){
+    if(!check_connection(true, "Please connect before adding Containers."))
+        return;
+
+    QFileDialog dialog(this,tsl("Add Download Container"), "", "*.rsdf");
+    dialog.setModal(true);
+    dialog.setFileMode(QFileDialog::ExistingFiles);
+
+    QStringList file_names;
+    if(dialog.exec() == QDialog::Accepted )
+        file_names = dialog.selectedFiles();
+
+    mx.lock();
+    for (int i = 0; i < file_names.size(); ++i){ // loop every file name
+
+        fstream f;
+        f.open(file_names.at(i).toStdString().c_str(), fstream::in);
+        string content;
+        f >> content; // read data into string
+
+        try{
+            dclient->pkg_container("RSDF", content);
+        }catch(client_exception &e){}
+    }
+
+    mx.unlock();
+}
+
+
 void ddclient_gui::on_reload(){
     if(!check_connection()){
         status_connection->setText(tsl("Not connected"));
@@ -1760,6 +1799,8 @@ void ddclient_gui::contextMenuEvent(QContextMenuEvent *event){
     QAction* set_url_action = new QAction(QIcon("img/bullet_black.png"), tsl("Enter URL"), this);
     set_url_action->setStatusTip(tsl("Enter URL"));
 
+    menu.addAction(container_action);
+    menu.addSeparator();
     menu.addAction(activate_download_action);
     menu.addAction(deactivate_download_action);
     menu.addSeparator();
