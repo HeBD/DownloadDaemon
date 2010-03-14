@@ -725,15 +725,18 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 
 		bool first = true;
 		int pkg_id = global_download_list.add_package("");
-		while(result.find("CCF: ") != string::npos) {
+		while(result.find("CCF: ") != string::npos || result.find_first_of("\r\n") != string::npos) {
 			size_t this_ccf = 0;
-			result = result.substr(5);
-			size_t next_ccf = result.find("CCF: ");
+			size_t next_ccf = result.find("CCF: ", 1);
+			if(next_ccf == string::npos) next_ccf = result.find_first_of("\r\n", 1);
 
 			string tmp = result.substr(this_ccf, next_ccf);
 			if(next_ccf != string::npos) {
 				result = result.substr(next_ccf);
 			}
+			replace_all(tmp, "\r", "");
+			replace_all(tmp, "\n", "");
+			replace_all(tmp, "CCF: ", "");
 			download* dl = new download(tmp);
 			global_download_list.add_dl_to_pkg(dl, pkg_id);
 			if(first) {

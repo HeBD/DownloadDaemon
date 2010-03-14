@@ -24,12 +24,12 @@ package_container::package_container() : is_reconnecting(false) {
 	// set the global package to ID -1. It will not be shown. It's just a global container
 	// where containers with an unsecure status are stored (eg. if they get a DELETE command, but the object
 	// still exists)
-	//lock_guard<mutex> lock(mx);
+	//lock_guard<recursive_mutex> lock(mx);
 	//(*package_by_id(pkg_id))->container_id = -1;
 }
 
 package_container::~package_container() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	dump_to_file(false);
 	// only on program termination.. data will have to be cleaned up by the OS.. sadly
 
@@ -78,7 +78,7 @@ int package_container::from_file(const char* filename) {
 }
 
 int package_container::add_package(std::string pkg_name) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	int cnt_id = get_next_id();
 	download_container* cnt = new download_container(cnt_id, pkg_name);
 	packages.push_back(cnt);
@@ -86,7 +86,7 @@ int package_container::add_package(std::string pkg_name) {
 }
 
 int package_container::add_package(std::string pkg_name, download_container* downloads) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	downloads->container_id = get_next_id();
 	downloads->name = pkg_name;
 	packages.push_back(downloads);
@@ -94,7 +94,7 @@ int package_container::add_package(std::string pkg_name, download_container* dow
 }
 
 int package_container::add_dl_to_pkg(download* dl, int pkg_id) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(pkg_id);
 	if(it == packages.end()) {
 		delete dl;
@@ -105,7 +105,7 @@ int package_container::add_dl_to_pkg(download* dl, int pkg_id) {
 }
 
 void package_container::del_package(int pkg_id) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator package = package_by_id(pkg_id);
 	if(package == packages.end()) return;
 
@@ -122,7 +122,7 @@ void package_container::del_package(int pkg_id) {
 }
 
 bool package_container::empty() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	// do not count the general-package which is always there
  	if(packages.size() <= 1) return true;
  	return false;
@@ -130,248 +130,258 @@ bool package_container::empty() {
 
 
 dlindex package_container::get_next_downloadable() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
+	int running_downloads = 0;
+	std::pair<int, int> result(LIST_ID, LIST_ID);
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
-		int ret = (*it)->get_next_downloadable();
-		if(ret != LIST_ID) {
-			return make_pair<int, int>((*it)->container_id, ret);
+		running_downloads += (*it)->running_downloads();
+		if(result.first == LIST_ID && result.second == LIST_ID) {
+			int ret = (*it)->get_next_downloadable();
+			if(ret != LIST_ID) {
+				result.first = (*it)->container_id;
+				result.second = ret;
+			}
 		}
 	}
-	return make_pair<int, int>(LIST_ID, LIST_ID);
+	if(running_downloads < global_config.get_int_value("simultaneous_downloads")) {
+		return result;
+	} else {
+		return make_pair<int, int>(LIST_ID, LIST_ID);
+	}
 }
 
 void package_container::set_url(dlindex dl, std::string url) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_url(dl.second, url);
 }
 
 void package_container::set_title(dlindex dl, std::string title) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_title(dl.second, title);
 }
 
 void package_container::set_add_date(dlindex dl, std::string add_date) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	(*it)->set_add_date(dl.second, add_date);
 }
 
 void package_container::set_downloaded_bytes(dlindex dl, uint64_t bytes) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_downloaded_bytes(dl.second, bytes);
 }
 
 void package_container::set_size(dlindex dl, uint64_t size) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_size(dl.second, size);
 }
 
 void package_container::set_wait(dlindex dl, int seconds) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_wait(dl.second, seconds);
 }
 
 void package_container::set_error(dlindex dl, plugin_status error) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_error(dl.second, error);
 }
 
 void package_container::set_output_file(dlindex dl, std::string output_file) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_output_file(dl.second, output_file);
 }
 
 void package_container::set_running(dlindex dl, bool running) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_running(dl.second, running);
 }
 
 void package_container::set_need_stop(dlindex dl, bool need_stop) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_need_stop(dl.second, need_stop);
 }
 
 void package_container::set_status(dlindex dl, download_status status) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_status(dl.second, status);
 }
 
 void package_container::set_speed(dlindex dl, int speed) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_speed(dl.second, speed);
 }
 
 void package_container::set_can_resume(dlindex dl, bool can_resume) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_can_resume(dl.second, can_resume);
 }
 
 void package_container::set_proxy(dlindex dl, std::string proxy) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_proxy(dl.second, proxy);
 }
 
 std::string package_container::get_proxy(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return "";
 	return (*it)->get_proxy(dl.second);
 }
 
 CURL* package_container::get_handle(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return NULL;
 	return (*it)->get_handle(dl.second);
 }
 
 bool package_container::get_can_resume(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return false;
 	return (*it)->get_can_resume(dl.second);
 }
 
 int package_container::get_speed(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return 0;
 	return (*it)->get_speed(dl.second);
 }
 
 download_status package_container::get_status(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return DOWNLOAD_DELETED;
 	return (*it)->get_status(dl.second);
 }
 
 bool package_container::get_need_stop(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return true;
 	return (*it)->get_need_stop(dl.second);
 }
 
 bool package_container::get_running(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return false;
 	return (*it)->get_running(dl.second);
 }
 
 std::string package_container::get_output_file(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return "";
 	return (*it)->get_output_file(dl.second);
 }
 
 plugin_status package_container::get_error(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return PLUGIN_ERROR;
 	return (*it)->get_error(dl.second);
 }
 
 int package_container::get_wait(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return 0;
 	return (*it)->get_wait(dl.second);
 }
 
 uint64_t package_container::get_size(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return 0;
 	return (*it)->get_size(dl.second);
 }
 
 uint64_t package_container::get_downloaded_bytes(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return 0;
 	return (*it)->get_downloaded_bytes(dl.second);
 }
 
 std::string package_container::get_add_date(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return "";
 	return (*it)->get_add_date(dl.second);
 }
 
 std::string package_container::get_title(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return "";
 	return (*it)->get_title(dl.second);
 }
 
 std::string package_container::get_url(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return "";
 	return (*it)->get_url(dl.second);
 }
 
 void package_container::set_password(int id, const std::string& passwd) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(id);
 	if(it == packages.end()) return;
 	(*it)->set_password(passwd);
 }
 
 std::string package_container::get_password(int id) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(id);
 	if(it == packages.end()) return "";
 	return (*it)->get_password();
 }
 
 void package_container::set_pkg_name(int id, const std::string& name) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(id);
 	if(it == packages.end()) return;
 	(*it)->set_pkg_name(name);
 }
 
 std::string package_container::get_pkg_name(int id) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(id);
 	if(it == packages.end()) return "";
 	return (*it)->get_pkg_name();
 }
 
 std::vector<int> package_container::get_download_list(int id) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	std::vector<int> vec;
 	package_container::iterator it = package_by_id(id);
 	if(it == packages.end()) return vec;
@@ -385,22 +395,22 @@ std::vector<int> package_container::get_download_list(int id) {
 }
 
 std::string package_container::get_host(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	return (*it)->get_host(dl.second);
 }
 
 
 plugin_output package_container::get_hostinfo(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
-	lock_guard<mutex> lockdl((*it)->download_mutex);
+	lock_guard<recursive_mutex> lockdl((*it)->download_mutex);
 	download_container::iterator it2 = (*it)->get_download_by_id(dl.second);
 	return (*it2)->get_hostinfo();
 }
 
 int package_container::total_downloads() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	int total = 0;
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		total += (*it)->total_downloads();
@@ -409,14 +419,14 @@ int package_container::total_downloads() {
 }
 
 void package_container::decrease_waits() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		(*it)->decrease_waits();
 	}
 }
 
 void package_container::purge_deleted() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		(*it)->purge_deleted();
 	}
@@ -436,7 +446,7 @@ void package_container::purge_deleted() {
 }
 
 std::string package_container::create_client_list() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	std::string list;
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		list += "PACKAGE|" + int_to_string((*it)->container_id)  + "|" + (*it)->name + "\n";
@@ -447,7 +457,7 @@ std::string package_container::create_client_list() {
 }
 
 bool package_container::url_is_in_list(std::string url) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		if((*it)->url_is_in_list(url))
 			return true;
@@ -457,7 +467,7 @@ bool package_container::url_is_in_list(std::string url) {
 
 
 void  package_container::move_dl(dlindex dl, package_container::direction d) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	if(d == DIRECTION_UP) (*it)->move_up(dl.second);
@@ -465,7 +475,7 @@ void  package_container::move_dl(dlindex dl, package_container::direction d) {
 }
 
 void  package_container::move_pkg(int dl, package_container::direction d) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	if(dl == -1) return;
 	package_container::iterator it = package_by_id(dl);
 	if(it == packages.end()) return;
@@ -486,7 +496,7 @@ void  package_container::move_pkg(int dl, package_container::direction d) {
 }
 
 bool package_container::reconnect_needed() {
-	unique_lock<mutex> lock(mx);
+	unique_lock<recursive_mutex> lock(mx);
 	std::string reconnect_policy;
 
 	if(!global_config.get_bool_value("enable_reconnect")) {
@@ -570,7 +580,7 @@ bool package_container::reconnect_needed() {
 
 void package_container::do_reconnect() {
 	// to be executed in a seperate thread!
-	unique_lock<mutex> lock(mx);
+	unique_lock<recursive_mutex> lock(mx);
 	if(is_reconnecting) {
 		return;
 	}
@@ -636,10 +646,8 @@ void package_container::do_reconnect() {
 }
 
 void package_container::dump_to_file(bool do_lock) {
-	unique_lock<mutex> lock(mx, defer_lock);
-	if(do_lock) {
-		lock.lock();
-	}
+	lock_guard<recursive_mutex> lock(mx);
+
 	ofstream ofs(list_file.c_str(), ios::trunc);
 	for(package_container::iterator pkg = packages.begin(); pkg != packages.end(); ++pkg) {
 		(*pkg)->download_mutex.lock();
@@ -653,9 +661,9 @@ void package_container::dump_to_file(bool do_lock) {
 }
 
 int package_container::pkg_that_contains_download(int download_id) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
-		lock_guard<mutex> dllock((*it)->download_mutex);
+		lock_guard<recursive_mutex> dllock((*it)->download_mutex);
 		for(download_container::iterator dlit = (*it)->download_list.begin(); dlit != (*it)->download_list.end(); ++dlit) {
 			if((*dlit)->get_id() == download_id) return (*it)->container_id;
 		}
@@ -665,7 +673,7 @@ int package_container::pkg_that_contains_download(int download_id) {
 
 bool package_container::pkg_exists(int id) {
 	if(id < 0) return false;
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		if((*it)->container_id == id) return true;
 	}
@@ -673,9 +681,9 @@ bool package_container::pkg_exists(int id) {
 }
 
 bool package_container::package_finished(int id) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator pkg_it = package_by_id(id);
-	lock_guard<mutex> listlock((*pkg_it)->download_mutex);
+	lock_guard<recursive_mutex> listlock((*pkg_it)->download_mutex);
 	for(download_container::iterator it = (*pkg_it)->download_list.begin(); it != (*pkg_it)->download_list.end(); ++it) {
 		if((*it)->get_status() != DOWNLOAD_FINISHED)
 			return false;
@@ -684,14 +692,14 @@ bool package_container::package_finished(int id) {
 }
 
 download_container* package_container::get_listptr(int id) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator pkg_it = package_by_id(id);
 	if(pkg_it == packages.end()) return NULL;
 	return *pkg_it;
 }
 
 void package_container::do_download(dlindex dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator pkg_it = package_by_id(dl.first);
 	if(pkg_it == packages.end()) return;
 	(*pkg_it)->do_download(dl.second);
@@ -699,12 +707,12 @@ void package_container::do_download(dlindex dl) {
 
 void package_container::extract_package(int id) {
 	if(!global_config.get_bool_value("enable_pkg_extractor")) return;
-	unique_lock<mutex> lock(mx);
+	unique_lock<recursive_mutex> lock(mx);
 	package_container::iterator pkg_it = package_by_id(id);
 	std::string fixed_passwd = (*pkg_it)->get_password();
 	FILE* extractor;
 	string to_exec;
-	unique_lock<mutex> pkg_lock((*pkg_it)->download_mutex);
+	unique_lock<recursive_mutex> pkg_lock((*pkg_it)->download_mutex);
 	download_container::iterator it = (*pkg_it)->download_list.begin();
 	if((*pkg_it)->download_list.size() == 0) return;
 	string output_file = (*it)->get_filename();
@@ -811,6 +819,7 @@ int package_container::get_next_download_id(bool lock_download_mutex) {
 }
 
 package_container::iterator package_container::package_by_id(int pkg_id) {
+	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = packages.begin();
 	for(; it != packages.end(); ++it) {
 		if((*it)->container_id == pkg_id) {
@@ -821,6 +830,7 @@ package_container::iterator package_container::package_by_id(int pkg_id) {
 }
 
 int package_container::get_next_id() {
+	lock_guard<recursive_mutex> lock(mx);
 	int max_id = -1;
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		if((*it)->container_id > max_id) {
@@ -853,7 +863,7 @@ int package_container::get_next_id() {
 }*/
 
 void package_container::correct_invalid_ids() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	// sadly there is no other threadsafe way than looping 3 times - first lock, then do, then unlock
 	// the problem is that get_next_download_id accesses ALL packages. so all of them need to be locked.
 	// it can also lock automatically, but then I'd need to unlock before calling it, which might make

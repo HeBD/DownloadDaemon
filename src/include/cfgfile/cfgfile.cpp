@@ -61,7 +61,7 @@ void cfgfile::open_cfg_file(const std::string &fp, bool open_writeable) {
 
 std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 #ifndef DDCLIENT_GUI
-	unique_lock<mutex> lock(mx);
+	unique_lock<recursive_mutex> lock(mx);
 #endif
 	if(!file.is_open() || !file.good()) {
 #ifndef DDCLIENT_GUI
@@ -110,7 +110,7 @@ long cfgfile::get_int_value(const std::string &cfg_identifier) {
 
 bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string &value) {
 #ifndef DDCLIENT_GUI
-	unique_lock<mutex> lock(mx);
+	unique_lock<recursive_mutex> lock(mx);
 #endif
 	std::string cfg_value = value;
 	trim(cfg_value);
@@ -193,7 +193,7 @@ void cfgfile::set_comment_token(const std::string &token) {
 
 void cfgfile::reload_file() {
 #ifndef DDCLIENT_GUI
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 #endif
 	if(file.is_open()) {
 		file.close();
@@ -208,7 +208,7 @@ void cfgfile::reload_file() {
 
 void cfgfile::close_cfg_file() {
 #ifndef DDCLIENT_GUI
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 #endif
 	file.close();
 }
@@ -223,7 +223,7 @@ inline std::string cfgfile::get_filepath() const {
 
 bool cfgfile::list_config(std::string& resultstr) {
 #ifndef DDCLIENT_GUI
-	unique_lock<mutex> lock(mx);
+	unique_lock<recursive_mutex> lock(mx);
 #endif
 	if(!file.is_open()) {
 		return false;

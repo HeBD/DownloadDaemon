@@ -35,7 +35,7 @@ using namespace std;
 download::download(const std::string& dl_url)
 	: url(dl_url), id(0), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
 	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true), handle(NULL) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	time_t rawtime;
 	struct tm* timeinfo;
 	time(&rawtime);
@@ -52,7 +52,7 @@ download::download(const std::string& dl_url)
 
 #ifndef IS_PLUGIN
 void download::from_serialized(std::string& serializedDL) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	std::string current_entry;
 	size_t curr_pos = 0;
 	size_t entry_num = 0;
@@ -116,7 +116,7 @@ download::download(const download& dl) {
 }
 
 void download::operator=(const download& dl) {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	url = dl.url;
 	comment = dl.comment;
 	add_date = dl.add_date;
@@ -135,7 +135,7 @@ void download::operator=(const download& dl) {
 }
 
 download::~download() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	while(is_running) {
 		need_stop = true;
 		status = DOWNLOAD_DELETED;
@@ -144,7 +144,7 @@ download::~download() {
 }
 
 std::string download::serialize() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	if(status == DOWNLOAD_DELETED) {
 		return "";
 	}
@@ -178,7 +178,7 @@ std::string download::serialize() {
 }
 
 std::string download::get_host(bool do_lock) {
-	unique_lock<mutex> lock(mx, defer_lock);
+	unique_lock<recursive_mutex> lock(mx, defer_lock);
 	if(do_lock) {
 		lock.lock();
 	}
@@ -196,7 +196,7 @@ std::string download::get_host(bool do_lock) {
 }
 
 const char* download::get_error_str() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	switch(error) {
 		case PLUGIN_SUCCESS:
 			return "PLUGIN_SUCCESS";
@@ -223,7 +223,7 @@ const char* download::get_error_str() {
 }
 
 const char* download::get_status_str() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	switch(status) {
 		case DOWNLOAD_PENDING:
 			return "DOWNLOAD_PENDING";
@@ -245,7 +245,7 @@ const char* download::get_status_str() {
 
 #ifndef IS_PLUGIN
 plugin_output download::get_hostinfo() {
-	lock_guard<mutex> lock(mx);
+	lock_guard<recursive_mutex> lock(mx);
 	plugin_input inp;
 	plugin_output outp;
 	outp.allows_resumption = false;
@@ -279,7 +279,7 @@ plugin_output download::get_hostinfo() {
 	}
 
 	// Load the plugin function needed
-	void* l_handle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+	void* l_handle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_LOCAL);
 	if (!l_handle) {
 		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_ERR);
 		return outp;
@@ -305,7 +305,7 @@ plugin_output download::get_hostinfo() {
 
 
 void download::download_me() {
-	unique_lock<mutex> lock(mx);
+	unique_lock<recursive_mutex> lock(mx);
 	need_stop = false;
 	handle = curl_easy_init();
 	lock.unlock();
@@ -363,7 +363,7 @@ void download::download_me_worker() {
 	plugin_output plug_outp;
 	plugin_status success = prepare_download(plug_outp);
 
-	unique_lock<mutex> lock(mx);
+	unique_lock<recursive_mutex> lock(mx);
 
 	std::string dlid_log = int_to_string(id);
 	if(need_stop) {
@@ -459,15 +459,15 @@ void download::download_me_worker() {
 		std::string download_folder = global_config.get_cfg_value("download_folder");
 		correct_path(download_folder);
 		if(global_config.get_bool_value("download_to_subdirs")) {
+			lock.unlock();
 			std::string dl_subfolder = global_download_list.get_pkg_name(parent);
+			lock.lock();
 			make_valid_filename(dl_subfolder);
 			if(dl_subfolder.empty()) {
-				lock.unlock();
 				std::vector<int> dls = global_download_list.get_download_list(parent);
 				if(dls.empty()) return;
 				int first_id = dls[0];
 				dl_subfolder = filename_from_url(global_download_list.get_url(make_pair<int, int>(parent, first_id)));
-				lock.lock();
 				if(dl_subfolder.find(".") != string::npos) {
 					dl_subfolder = dl_subfolder.substr(0, dl_subfolder.find_last_of("."));
 				} else {
@@ -500,16 +500,13 @@ void download::download_me_worker() {
 
 		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file_s;
-		lock.unlock();
 		if(global_download_list.get_hostinfo(dl).allows_resumption && global_config.get_bool_value("enable_resume") &&
 		   stat(output_filename.c_str(), &st) == 0 && (unsigned)st.st_size == downloaded_bytes &&
 		   can_resume) {
-			lock.lock();
 			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, downloaded_bytes);
 			output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
 			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
 		} else {
-			lock.lock();
 			// Check if the file should be overwritten if it exists
 			if(!global_config.get_bool_value("overwrite_files")) {
 				if(stat(final_filename.c_str(), &st) == 0) {
@@ -688,7 +685,7 @@ void download::wait() {
 }
 
 plugin_status download::prepare_download(plugin_output &poutp) {
-	unique_lock<mutex> lock(mx);
+	unique_lock<recursive_mutex> lock(mx);
 
 	plugin_input pinp;
 	string pluginfile(get_plugin_file());
@@ -701,7 +698,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	}
 
 	// Load the plugin function needed
-	void* dlhandle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+	void* dlhandle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_LOCAL);
 	if (!dlhandle) {
 		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
 		return PLUGIN_ERROR;
@@ -782,7 +779,7 @@ std::string download::get_plugin_file() {
 }
 
 int download::set_next_proxy() {
-	//unique_lock<mutex> lock(mx);
+	//unique_lock<recursive_mutex> lock(mx);
 	std::string last_proxy = proxy;
 	std::string proxy_list = global_config.get_cfg_value("proxy_list");
 	size_t n = 0;

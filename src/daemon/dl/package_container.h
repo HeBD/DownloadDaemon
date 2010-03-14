@@ -269,7 +269,7 @@ private:
 	std::vector<download_container*> packages;
 	std::vector<download_container*> packages_to_delete;
 
-	std::mutex mx;
+	std::recursive_mutex mx;
 	std::string list_file;
 	bool is_reconnecting;
 };
