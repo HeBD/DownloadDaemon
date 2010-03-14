@@ -11,6 +11,7 @@
 #include <QtGui/QMessageBox>
 #include <QTabWidget>
 #include <QStringList>
+#include <QtGui/QTextEdit>
 
 using namespace std;
 
@@ -31,6 +32,7 @@ configure_dialog::configure_dialog(QWidget *parent) : QDialog(parent){
     tabs->addTab (create_password_panel(), p->tsl("Password"));
     tabs->addTab (create_logging_panel(), p->tsl("Logging"));
     tabs->addTab (create_reconnect_panel(), p->tsl("Reconnect"));
+    tabs->addTab (create_proxy_panel(), p->tsl("Proxy"));
 
     layout->addWidget(tabs);
     layout->addWidget(button_box);
@@ -364,6 +366,44 @@ QWidget *configure_dialog::create_reconnect_panel(){
 }
 
 
+QWidget *configure_dialog::create_proxy_panel(){
+    ddclient_gui *p = (ddclient_gui *) this->parent();
+
+    QWidget *page = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout();
+    page->setLayout(layout);
+
+    QGroupBox *group_box = new QGroupBox(p->tsl("Proxy"));
+    QFormLayout *form_layout = new QFormLayout();
+    group_box->setLayout(form_layout);
+
+    QLabel *proxy_explanation = new QLabel(p->tsl("You can provide a list of proxys to use proxy-alternation. For hosters with an IP-based"
+                                                  "\nbandwidth-limit, this can bypass such restrictions by using different proxies.\n"
+                                                  "\nOne entry per Line. User, Password and Port are optional."
+                                                  "\nFormat: <user>:<password>@<ip-address>:<port>"
+                                                  "\nFor example: tom:mypass@123.456.7.89:5115 or tom@hello.de:1234 or hello.de"));
+
+    string proxy_list = this->get_var("proxy_list").toStdString();
+    size_t n;
+
+    while((n = proxy_list.find(";")) != std::string::npos){
+        proxy_list.replace(n, 1, "\n");
+    }
+
+
+    QTextEdit *proxy_edit = new QTextEdit();
+    proxy_edit->setFixedHeight(150);
+    proxy = new QTextDocument(proxy_list.c_str(), proxy_edit);
+    proxy_edit->setDocument(proxy);
+
+    form_layout->addRow("", proxy_explanation);
+    form_layout->addRow("", proxy_edit);
+
+    layout->addWidget(group_box);
+    return page;
+}
+
+
 QString configure_dialog::get_var(const string &var, var_type typ){
         ddclient_gui *p = (ddclient_gui *) this->parent();
         downloadc *dclient = p->get_connection();
@@ -505,6 +545,13 @@ void configure_dialog::ok(){
         router_pass = password->text().toStdString();
     }
 
+    string proxy_list = proxy->toPlainText().toStdString();
+    size_t n;
+
+    while((n = proxy_list.find("\n")) != std::string::npos){
+        proxy_list.replace(n, 1, ";");
+    }
+
     // check connection
     if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))
         return;
@@ -543,6 +590,9 @@ void configure_dialog::ok(){
 
         // log activity
         dclient->set_var("log_level", activity_level);
+
+        // proxy_list
+        dclient->set_var("proxy_list", proxy_list);
 
         // reconnect enable
         if(reconnect_enable){

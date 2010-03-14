@@ -7,6 +7,7 @@
 #include <QtGui/QLineEdit>
 #include <QListWidget>
 #include <QtGui/QCheckBox>
+#include <QTextDocument>
 #include <vector>
 
 
@@ -26,6 +27,7 @@ class configure_dialog : public QDialog{
         QWidget *create_password_panel();
         QWidget *create_logging_panel();
         QWidget *create_reconnect_panel();
+        QWidget *create_proxy_panel();
         QString get_var(const std::string &var, var_type typ = NORMAL_T);
 
         // general
@@ -59,6 +61,9 @@ class configure_dialog : public QDialog{
         QLineEdit *ip;
         QLineEdit *username;
         QLineEdit *password;
+
+        // proxy
+        QTextDocument *proxy;
 
     private slots:
         void help();
