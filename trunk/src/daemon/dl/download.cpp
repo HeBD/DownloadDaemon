@@ -279,7 +279,7 @@ plugin_output download::get_hostinfo() {
 	}
 
 	// Load the plugin function needed
-	void* l_handle = dlopen(pluginfile.c_str(), RTLD_LAZY);
+	void* l_handle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 	if (!l_handle) {
 		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_ERR);
 		return outp;
@@ -701,7 +701,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	}
 
 	// Load the plugin function needed
-	void* dlhandle = dlopen(pluginfile.c_str(), RTLD_LAZY);
+	void* dlhandle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 	if (!dlhandle) {
 		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
 		return PLUGIN_ERROR;

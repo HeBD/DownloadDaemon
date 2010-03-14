@@ -110,6 +110,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			  || resultstr.find("our servers are overloaded") != std::string::npos) {
 		set_wait_time(120);
 		return PLUGIN_SERVER_OVERLOADED;
+	} else if(resultstr.find("is already downloading a file.  Please wait until the download is completed.") != std::string::npos) {
+		set_wait_time(120);
+		return PLUGIN_LIMIT_REACHED;
 	} else {
 		if((pos = resultstr.find("var c")) == std::string::npos) {
 			// Unable to get the wait time, will wait 135 seconds
