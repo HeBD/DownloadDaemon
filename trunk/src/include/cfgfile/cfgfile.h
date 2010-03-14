@@ -134,7 +134,7 @@ private:
 	bool is_writeable;
 	char eqtoken;
 #ifndef DDCLIENT_GUI
-	std::mutex mx;
+	std::recursive_mutex mx;
 #endif
 
 };

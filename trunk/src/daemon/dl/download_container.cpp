@@ -41,7 +41,7 @@ download_container::download_container(int id, std::string container_name) : con
 download_container::download_container(const download_container &cnt) : download_list(cnt.download_list), container_id(cnt.container_id), name(cnt.name) {}
 
 download_container::~download_container() {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	#ifndef IS_PLUGIN
 	if(!download_list.empty()) {
 		log_string("Memory leak detected: container deleted, but there are still Downloads in the list. Please report!", LOG_ERR);
@@ -53,18 +53,18 @@ download_container::~download_container() {
 	#else
 		cerr << "Memory leak detected: container deleted, but there are still Downloads in the list. Please report! (happend in a plugin-call)" << endl;
 	#endif
-	//lock_guard<mutex> lock(download_mutex);
+	//lock_guard<recursive_mutex> lock(download_mutex);
 	// download-containers may only be destroyed after the ownage of the pointers is moved to another object
 }
 
 
 int download_container::total_downloads() {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	return download_list.size();
 }
 
 int download_container::add_download(download *dl, int dl_id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	dl->set_id(dl_id);
 	dl->set_parent(container_id);
 	download_list.push_back(dl);
@@ -83,7 +83,7 @@ int download_container::add_download(const std::string& url, const std::string& 
 #endif
 
 int download_container::move_up(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it;
 	int location1 = 0, location2 = 0;
 	for(it = download_list.begin(); it != download_list.end(); ++it) {
@@ -120,7 +120,7 @@ int download_container::move_up(int id) {
 }
 
 int download_container::move_down(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it;
 	int location1 = 0, location2 = 0;
 	for(it = download_list.begin(); it != download_list.end(); ++it) {
@@ -157,7 +157,7 @@ int download_container::move_down(int id) {
 }
 
 int download_container::activate(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end()) {
 		return LIST_ID;
@@ -170,7 +170,7 @@ int download_container::activate(int id) {
 }
 
 int download_container::deactivate(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end()) {
 		return LIST_ID;
@@ -189,7 +189,7 @@ int download_container::deactivate(int id) {
 #ifndef IS_PLUGIN
 
 int download_container::get_next_downloadable(bool do_lock) {
-	unique_lock<mutex> lock(download_mutex, defer_lock);
+	unique_lock<recursive_mutex> lock(download_mutex, defer_lock);
 	if(do_lock) {
 		lock.lock();
 	}
@@ -208,7 +208,7 @@ int download_container::get_next_downloadable(bool do_lock) {
 	}
 
 	download_container::iterator downloadable = download_list.end();
-	if(running_downloads() >= global_config.get_int_value("simultaneous_downloads") || !global_config.get_bool_value("downloading_active")) {
+	if(!global_config.get_bool_value("downloading_active")) {
 		return LIST_ID;
 	}
 
@@ -286,91 +286,91 @@ int download_container::get_next_downloadable(bool do_lock) {
 
 
 void download_container::set_url(int id, std::string url) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_url(url);
 }
 
 void download_container::set_title(int id, std::string title) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_title(title);
 }
 
 void download_container::set_add_date(int id, std::string add_date) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_add_date(add_date);
 }
 
 void download_container::set_downloaded_bytes(int id, uint64_t bytes) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_downloaded_bytes(bytes);
 }
 
 void download_container::set_size(int id, uint64_t size) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_size(size);
 }
 
 void download_container::set_wait(int id, int seconds) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_wait(seconds);
 }
 
 void download_container::set_error(int id, plugin_status error) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_error(error);
 }
 
 void download_container::set_output_file(int id, std::string output_file) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_filename(output_file);
 }
 
 void download_container::set_running(int id, bool running) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_running(running);
 }
 
 void download_container::set_need_stop(int id, bool need_stop) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_need_stop(need_stop);
 }
 
 void download_container::set_status(int id, download_status status) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_status(status);
 }
 
 void download_container::set_speed(int id, int speed) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_speed(speed);
 }
 
 void download_container::set_can_resume(int id, bool can_resume) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_resumable(can_resume);
@@ -378,145 +378,145 @@ void download_container::set_can_resume(int id, bool can_resume) {
 
 
 void download_container::set_proxy(int id, std::string proxy) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_proxy(proxy);
 }
 
 std::string download_container::get_proxy(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return false;
 	return (*dl)->get_proxy();
 }
 
 bool download_container::get_can_resume(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return false;
 	return (*dl)->get_resumable();
 }
 
 download_status download_container::get_status(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return DOWNLOAD_DELETED;
 	return (*dl)->get_status();
 }
 
 bool download_container::get_need_stop(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return true;
 	return (*dl)->get_need_stop();
 }
 
 bool download_container::get_running(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return false;
 	return (*dl)->get_running();
 }
 
 std::string download_container::get_output_file(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return "";
 	return (*dl)->get_filename();
 }
 
 plugin_status download_container::get_error(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return PLUGIN_ERROR;
 	return (*dl)->get_error();
 }
 
 int download_container::get_wait(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return 0;
 	return (*dl)->get_wait();
 }
 
 std::string download_container::get_add_date(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return "";
 	return (*dl)->get_add_date();
 }
 
 std::string download_container::get_title(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return "";
 	return (*dl)->get_title();
 }
 
 std::string download_container::get_url(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return "";
 	return (*dl)->get_url();
 }
 
 uint64_t download_container::get_downloaded_bytes(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return 0;
 	return (*dl)->get_downloaded_bytes();
 }
 
 uint64_t download_container::get_size(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return 0;
 	return (*dl)->get_size();
 }
 
 int download_container::get_speed(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return 0;
 	return (*dl)->get_speed();
 }
 
 CURL* download_container::get_handle(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return NULL;
 	return (*dl)->get_handle();
 }
 
 std::string download_container::get_host(int dl) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(dl);
 	return (*it)->get_host();
 }
 
 void download_container::set_password(const std::string& passwd) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	password = passwd;
 }
 
 std::string download_container::get_password() {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	return password;
 }
 
 void download_container::set_pkg_name(const std::string& pkg_name) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	name = pkg_name;
 }
 
 std::string download_container::get_pkg_name() {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	return name;
 }
 
 void download_container::decrease_waits() {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		size_t wait = (*it)->get_wait();
 		if(wait > 0) {
@@ -529,7 +529,7 @@ void download_container::decrease_waits() {
 }
 
 void download_container::purge_deleted() {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if((*it)->get_status() == DOWNLOAD_DELETED && (*it)->get_running() == false) {
 			remove_download((*it)->get_id());
@@ -539,7 +539,7 @@ void download_container::purge_deleted() {
 }
 
 std::string download_container::create_client_list() {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 
 	std::stringstream ss;
 
@@ -556,7 +556,7 @@ std::string download_container::create_client_list() {
 }
 
 int download_container::stop_download(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end() || (*it)->get_status() == DOWNLOAD_DELETED) {
 		return LIST_ID;
@@ -597,7 +597,7 @@ int download_container::remove_download(int id) {
 }
 
 bool download_container::url_is_in_list(std::string url) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(url == (*it)->get_url()) {
 			return true;
@@ -607,7 +607,7 @@ bool download_container::url_is_in_list(std::string url) {
 }
 
 int download_container::get_list_position(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	int curr_pos = 0;
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if(id == (*it)->get_id()) {
@@ -619,7 +619,7 @@ int download_container::get_list_position(int id) {
 }
 
 void download_container::insert_downloads(int pos, download_container &dl) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator insert_it = download_list.begin();
 	// set input iterator to correct position
 	for(int i = 0; i < pos; ++i) {
@@ -638,7 +638,7 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 
 #ifndef IS_PLUGIN
 void download_container::do_download(int id) {
-	lock_guard<mutex> lock(download_mutex);
+	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
 	if(it == download_list.end()) return;
 	(*it)->set_running(true);
