@@ -1,6 +1,7 @@
 2010-03-14
    [susanne]
 	- reimplemented list reloading of ddclient-gui
+	- added possibility to change proxylist to ddclient-gui
 
 2010-03-13
    [adrian]

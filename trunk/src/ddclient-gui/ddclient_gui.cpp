@@ -1673,7 +1673,6 @@ void ddclient_gui::on_set_name(){
             try{
                 dclient->set_download_var(id, "DL_TITLE", name.toStdString());
             }catch(client_exception &e){
-                int i = e.get_id();
                 if(e.get_id() == 18)
                     QMessageBox::information(this, tsl("Error"), tsl("Running or finished Downloads can't be changed."));
             }

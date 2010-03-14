@@ -75,10 +75,12 @@ Soft->Weich
 Pussy->Paranoid
 HARD cancels all downloads if a reconnect is needed CONTINUE only cancels downloads that can be continued after the reconnect SOFT will wait until all other downloads are finished PUSSY will only reconnect if there is no other choice (no other download can be started without a reconnect)->HART beendet alle Downloads wenn ein Reconnect nötig ist FORTFÜHREN beendet nur Downloads, die nach dem Reconnect fortgesetzt werden können WEICH wartet bis alle laufenden Downloads fertig sind PARANOID reconnectet nur, wenn sonst nichts mehr geht
 
-
 Failed to change Log Procedure.->Ändern der Log Prozedur fehlgeschlagen.
 Password Error->Passwort Fehler
 Failed to reset the Password.->Ändern des Passworts fehlgeschlagen.
+
+Proxy->Proxy
+You can provide a list of proxys to use proxy-alternation. For hosters with an IP-based bandwidth-limit, this can bypass such restrictions by using different proxies. One entry per Line. User, Password and Port are optional. Format: <user>:<password>@<ip-address>:<port> For example: tom:mypass@123.456.7.89:5115 or tom@hello.de:1234 or hello.de->Es kann eine Proxyliste für einen Proxywechsel angegeben werden. Dies kann bei Hostern mit IP-basierendem Downloadlimit diese Restriktionen umgehen, indem verschiedene Proxies benutzt werden. Ein Eintrag pro Zeile. Nutzer, Passwort und Port sind optional. Format: <nutzer>:<passwort>@<ip-adresse>:<port> Zum Beispiel: tom:mypass@123.456.7.89:5115 or tom@hello.de:1234 or hello.de
 
 #connect dialog
 Connect to Host->Mit Host verbinden
