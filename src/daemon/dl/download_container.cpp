@@ -518,10 +518,11 @@ std::string download_container::get_pkg_name() {
 void download_container::decrease_waits() {
 	lock_guard<mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->get_wait() > 0) {
-			(*it)->set_wait((*it)->get_wait() - 1);
+		size_t wait = (*it)->get_wait();
+		if(wait > 0) {
+			(*it)->set_wait(wait - 1);
 			if((*it)->get_status() == DOWNLOAD_INACTIVE) (*it)->set_wait(0);
-		} else if((*it)->get_wait() == 0 && (*it)->get_status() == DOWNLOAD_WAITING) {
+		} else if((*it)->get_status() == DOWNLOAD_WAITING) {
 			(*it)->set_status(DOWNLOAD_PENDING);
 		}
 	}

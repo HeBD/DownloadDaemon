@@ -243,21 +243,22 @@ int main(int argc, char* argv[], char* env[]) {
 		cerr << "Unable to open premium account config file" << endl;
 	}
 
-	std::string dlist_fn = global_config.get_cfg_value("dlist_file");
-	correct_path(dlist_fn);
-
-	// set the daemons umask
-	std::stringstream umask_ss;
-	umask_ss << std::oct;
-	umask_ss << global_config.get_cfg_value("daemon_umask");
-	int umask_i = 0;
-	umask_ss >> umask_i;
-	umask(umask_i);
-
-	global_download_list.from_file(dlist_fn.c_str());
-
-	// Create the needed folders
 	{
+		std::string dlist_fn = global_config.get_cfg_value("dlist_file");
+		correct_path(dlist_fn);
+
+		// set the daemons umask
+		std::stringstream umask_ss;
+		umask_ss << std::oct;
+		umask_ss << global_config.get_cfg_value("daemon_umask");
+		int umask_i = 0;
+		umask_ss >> umask_i;
+		umask(umask_i);
+
+		global_download_list.from_file(dlist_fn.c_str());
+
+		// Create the needed folders
+
 		string dl_folder = global_config.get_cfg_value("download_folder");
 		string log_file = global_config.get_cfg_value("log_file");
 		string dlist = global_config.get_cfg_value("dlist_file");
@@ -266,11 +267,8 @@ int main(int argc, char* argv[], char* env[]) {
 		correct_path(dlist);
 		dlist = dlist.substr(0, dlist.find_last_of('/'));
 		mkdir_recursive(dlist);
-	}
 
-	log_string("DownloadDaemon started successfully", LOG_DEBUG);
-
-	{
+		log_string("DownloadDaemon started successfully", LOG_DEBUG);
 		// putting it in it's own scope will detach the thread right after creation
 		// older boost::thread versions don't have the detach() method but they detach() in the destructor
 		thread mgmt_thread(mgmt_thread_main);
@@ -283,5 +281,6 @@ int main(int argc, char* argv[], char* env[]) {
 	while(true) {
 		sleep(1);
 		once_per_sec_mutex.unlock();
+
 	}
 }
