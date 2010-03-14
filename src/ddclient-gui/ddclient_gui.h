@@ -133,6 +133,7 @@ class ddclient_gui : public QMainWindow{
         QAction *deactivate_action;
         QAction *activate_download_action;
         QAction *deactivate_download_action;
+        QAction *container_action;
         QAction *add_action;
         QAction *delete_action;
         QAction *delete_finished_action;
@@ -163,6 +164,7 @@ class ddclient_gui : public QMainWindow{
         void on_set_password();
         void on_set_name();
         void on_set_url();
+        void on_load_container();
         void on_reload();
 
     protected:

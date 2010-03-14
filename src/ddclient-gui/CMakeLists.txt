@@ -111,6 +111,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/12_quit.p
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/13_about.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/14_select_all.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/15_delete_file.png DESTINATION share/ddclient-gui/img/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/16_container.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/bullet_black.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/bullet_green.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/bullet_red.png DESTINATION share/ddclient-gui/img/)
