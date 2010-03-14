@@ -401,6 +401,7 @@ void ddclient_gui::add_list_components(){
     list->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     double width = list->width();
+    list->setAnimated(true);
 
     list->setColumnWidth(0, 100); // fixed sizes
     list->setColumnWidth(3, 100);
@@ -722,6 +723,239 @@ vector<view_info> ddclient_gui::get_current_view(){
 
     return info;
 }
+
+
+void ddclient_gui::compare_packages(){
+    vector<package>::iterator old_it = content.begin();
+    vector<package>::iterator new_it = new_content.begin();
+    vector<download>::iterator dit;
+    vector<view_info>::iterator vit;
+    int line_nr = 0;
+    bool expanded;
+    string color, status_text, time_left;
+    QStandardItem *pkg;
+    QStandardItem *dl;
+
+    vector<view_info> info = get_current_view();
+    deselect_lines();
+    list->setAnimated(false);
+
+    // loop all packages
+    while((old_it != content.end()) && (new_it != new_content.end())){
+
+        // compare package items
+        QModelIndex index = list_model->index(line_nr, 0, QModelIndex()); // downloads need the parent index
+        expanded = false;
+
+        if(old_it->id != new_it->id){
+            pkg = list_model->item(line_nr, 0);
+            pkg->setText(QString("%1").arg(new_it->id));
+        }
+
+        // recreate expansion and selection
+        for(vit = info.begin(); vit != info.end(); ++vit){
+            if((vit->id == new_it->id) && (vit->package)){
+                if(vit->expanded) // package is expanded
+                    expanded = true;
+
+                if(vit->selected){ // package is selected
+                    for(int i=0; i<5; i++)
+                        selection_model->select(list_model->index(line_nr, i, QModelIndex()), QItemSelectionModel::Select);
+                }
+                break;
+            }
+        }
+
+        // compare downloads
+        compare_downloads(index, new_it, old_it, info);
+
+        if(old_it->name != new_it->name){
+            pkg = list_model->item(line_nr, 1);
+            pkg->setText(QString(new_it->name.c_str()));
+        }
+
+        if(expanded)
+            list->expand(index);
+
+        old_it++;
+        new_it++;
+        line_nr++;
+    }
+
+    if(old_it != content.end()){ // there are more old lines than new ones
+        while(old_it != content.end()){
+
+            // delete packages out of model
+            list_model->removeRow(line_nr);
+            old_it++;
+        }
+
+    }else if(new_it != new_content.end()){ // there are more new lines then old ones
+        while(new_it != new_content.end()){
+            // insert new lines
+
+            pkg = new QStandardItem(QIcon("img/package.png"), QString("%1").arg(new_it->id));
+            pkg->setEditable(false);
+            list_model->setItem(line_nr, 0, pkg);
+
+            QModelIndex index = list_model->index(line_nr, 0, QModelIndex()); // downloads need the parent index
+
+            //insert downloads
+            int dl_line = 0;
+            for(dit = new_it->dls.begin(); dit != new_it->dls.end(); dit++){ // loop all downloads of that package
+                color = build_status(status_text, time_left, *dit);
+
+                dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(dit->id));
+                dl->setEditable(false);
+                pkg->setChild(dl_line, 0, dl);
+
+                dl = new QStandardItem(QString(dit->title.c_str()));
+                dl->setEditable(false);
+                pkg->setChild(dl_line, 1, dl);
+
+                dl = new QStandardItem(QString(dit->url.c_str()));
+                dl->setEditable(false);
+                pkg->setChild(dl_line, 2, dl);
+
+                dl = new QStandardItem(QString(time_left.c_str()));
+                dl->setEditable(false);
+                pkg->setChild(dl_line, 3, dl);
+
+                string colorstring = "img/bullet_" + color + ".png";
+                dl = new QStandardItem(QIcon(colorstring.c_str()), trUtf8(status_text.c_str()));
+                dl->setEditable(false);
+                pkg->setChild(dl_line, 4, dl);
+
+                dl_line++;
+            }
+
+            pkg = new QStandardItem(QString(new_it->name.c_str()));
+            pkg->setEditable(false);
+            list_model->setItem(line_nr, 1, pkg);
+
+            for(int i=2; i<5; i++){
+                pkg = new QStandardItem(QString(""));
+                pkg->setEditable(false);
+                list_model->setItem(line_nr, i, pkg);
+            }
+
+            list->expand(index);
+
+            line_nr++;
+            new_it++;
+        }
+    }
+
+    list->setAnimated(true);
+}
+
+
+void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::iterator &new_it, std::vector<package>::iterator &old_it, vector<view_info> &info){
+    int dl_line = 0;
+    vector<download>::iterator old_dit = old_it->dls.begin();
+    vector<download>::iterator new_dit = new_it->dls.begin();
+    vector<view_info>::iterator vit;
+    QStandardItem *pkg;
+    QStandardItem *dl;
+    string color, status_text, time_left;
+
+    pkg = list_model->itemFromIndex(index);
+
+    // compare every single download of the package
+    while((old_dit != old_it->dls.end()) && (new_dit != new_it->dls.end())){
+        color = build_status(status_text, time_left, *new_dit);
+
+        if(old_dit->id != new_dit->id){
+            dl = pkg->child(dl_line, 0);
+            dl->setText(QString("%1").arg(new_dit->id));
+        }
+
+        if(old_dit->title != new_dit->title){
+            dl = pkg->child(dl_line, 1);
+            dl->setText(QString(new_dit->title.c_str()));
+        }
+
+        if(old_dit->url != new_dit->url){
+            dl = pkg->child(dl_line, 2);
+            dl->setText(QString(new_dit->url.c_str()));
+        }
+
+        if((new_dit->status != old_dit->status) || (new_dit->downloaded != old_dit->downloaded) || (new_dit->size != old_dit->size) ||
+           (new_dit->wait != old_dit->wait) || (new_dit->error != old_dit->error) || (new_dit->speed != old_dit->speed)){
+
+            dl = pkg->child(dl_line, 3);
+            dl->setText(QString(time_left.c_str()));
+
+            string colorstring = "img/bullet_" + color + ".png";
+
+            dl = pkg->child(dl_line, 4);
+            dl->setText(QString(trUtf8(status_text.c_str())));
+            dl->setIcon(QIcon(colorstring.c_str()));
+
+        }
+
+        // recreate selection if existed
+        for(vit = info.begin(); vit != info.end(); ++vit){
+            if((vit->id == new_dit->id) && !(vit->package)){
+                if(vit->selected){ // download is selected
+                    for(int i=0; i<5; i++)
+                        selection_model->select(index.child(dl_line, i), QItemSelectionModel::Select);
+
+                    break;
+                }
+            }
+        }
+
+        old_dit++;
+        new_dit++;
+        dl_line++;
+    }
+
+    if(old_dit != old_it->dls.end()){ // there are more old lines than new ones
+        while(old_dit != old_it->dls.end()){
+
+            // delete packages out of model
+            for(int i=0; i<5; i++){
+                dl = pkg->takeChild(dl_line, i);
+                delete dl;
+            }
+
+            pkg->takeRow(dl_line);
+
+            old_dit++;
+        }
+
+    }else if(new_dit != new_it->dls.end()){ // there are more new lines than old ones
+        while(new_dit != new_it->dls.end()){
+            // insert new lines
+
+            dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(new_dit->id));
+            dl->setEditable(false);
+            pkg->setChild(dl_line, 0, dl);
+
+            dl = new QStandardItem(QString(new_dit->title.c_str()));
+            dl->setEditable(false);
+            pkg->setChild(dl_line, 1, dl);
+
+            dl = new QStandardItem(QString(new_dit->url.c_str()));
+            dl->setEditable(false);
+            pkg->setChild(dl_line, 2, dl);
+
+            dl = new QStandardItem(QString(time_left.c_str()));
+            dl->setEditable(false);
+            pkg->setChild(dl_line, 3, dl);
+
+            string colorstring = "img/bullet_" + color + ".png";
+            dl = new QStandardItem(QIcon(colorstring.c_str()), trUtf8(status_text.c_str()));
+            dl->setEditable(false);
+            pkg->setChild(dl_line, 4, dl);
+
+            dl_line++;
+            new_dit++;
+        }
+    }
+}
+
 
 // slots
 void ddclient_gui::on_about(){
@@ -1439,6 +1673,7 @@ void ddclient_gui::on_set_name(){
             try{
                 dclient->set_download_var(id, "DL_TITLE", name.toStdString());
             }catch(client_exception &e){
+                int i = e.get_id();
                 if(e.get_id() == 18)
                     QMessageBox::information(this, tsl("Error"), tsl("Running or finished Downloads can't be changed."));
             }
@@ -1500,107 +1735,13 @@ void ddclient_gui::on_reload(){
     }
 
     mx.lock();
-    vector<view_info> info = get_current_view();
 
-    bool new_list = false;
-    if(content.size() < 1)
-        new_list = true;
+    compare_packages();
+
     content.clear();
     content = new_content;
 
-    list_model->setRowCount(0); // delete old data
-
-    vector<package>::iterator pit = content.begin();
-    vector<download>::iterator dit;
-    vector<view_info>::iterator vit;
-
-    QStandardItem *pkg;
-    QStandardItem *dl;
-    int line = 0;
-    string color, status_text, time_left;
-    bool expanded;
-
-    for(; pit != content.end(); pit++){ // loop all packages
-        pkg = new QStandardItem(QIcon("img/package.png"), QString("%1").arg(pit->id));
-        pkg->setEditable(false);
-        list_model->setItem(line, 0, pkg);
-
-        QModelIndex index = list_model->index(line, 0, QModelIndex()); // downloads need the parent index
-
-        // recreate expansion and selection
-        expanded = false;
-        for(vit = info.begin(); vit != info.end(); ++vit){
-            if((vit->id == pit->id) && (vit->package)){
-                if(vit->expanded) // package is expanded
-                    expanded = true;
-
-                if(vit->selected){ // package is selected
-                    for(int i=0; i<5; i++)
-                        selection_model->select(list_model->index(line, i, QModelIndex()), QItemSelectionModel::Select);
-                }
-                break;
-            }
-        }
-
-        int dl_line = 0;
-        for(dit = pit->dls.begin(); dit != pit->dls.end(); dit++){ // loop all downloads of that package
-            color = build_status(status_text, time_left, *dit);
-
-            dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(dit->id));
-            dl->setEditable(false);
-            pkg->setChild(dl_line, 0, dl);
-
-            dl = new QStandardItem(QString(dit->title.c_str()));
-            dl->setEditable(false);
-            pkg->setChild(dl_line, 1, dl);
-
-            dl = new QStandardItem(QString(dit->url.c_str()));
-            dl->setEditable(false);
-            pkg->setChild(dl_line, 2, dl);
-
-            dl = new QStandardItem(QString(time_left.c_str()));
-            dl->setEditable(false);
-            pkg->setChild(dl_line, 3, dl);
-
-            string colorstring = "img/bullet_" + color + ".png";
-            dl = new QStandardItem(QIcon(colorstring.c_str()), trUtf8(status_text.c_str()));
-            dl->setEditable(false);
-            pkg->setChild(dl_line, 4, dl);
-
-            // recreate selection if existed
-            for(vit = info.begin(); vit != info.end(); ++vit){
-                if((vit->id == dit->id) && !(vit->package)){
-                    if(vit->selected){ // download is selected
-                        for(int i=0; i<5; i++)
-                            selection_model->select(index.child(dl_line, i), QItemSelectionModel::Select);
-
-                        break;
-                    }
-                }
-            }
-
-            dl_line++;
-        }
-
-        pkg = new QStandardItem(QString(pit->name.c_str()));
-        pkg->setEditable(false);
-        list_model->setItem(line, 1, pkg);
-
-        for(int i=2; i<5; i++){
-            pkg = new QStandardItem(QString(""));
-            pkg->setEditable(false);
-            list_model->setItem(line, i, pkg);
-        }
-
-        if(expanded)
-            list->expand(index);
-
-        line++;
-    }
-
     mx.unlock();
-    if(new_list)
-        list->expandAll();
 }
 
 

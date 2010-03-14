@@ -139,7 +139,9 @@ QWidget *configure_dialog::create_download_panel(){
     QHBoxLayout *inner_o_layout = new QHBoxLayout();
 
     start_time = new QLineEdit(get_var("download_timing_start"));
+    start_time->setFixedWidth(100);
     end_time = new QLineEdit(get_var("download_timing_end"));
+    end_time->setFixedWidth(100);
     folder = new QLineEdit(get_var("download_folder"));
     count = new QLineEdit(get_var("simultaneous_downloads"));
     count->setFixedWidth(50);

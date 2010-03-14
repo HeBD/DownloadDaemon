@@ -108,6 +108,8 @@ class ddclient_gui : public QMainWindow{
         void get_selected_lines();
         static bool sort_selected_info(selected_info i1, selected_info i2);
         std::vector<view_info> get_current_view();
+        void compare_packages();
+        void compare_downloads(QModelIndex &index, std::vector<package>::iterator &new_it, std::vector<package>::iterator &old_it, std::vector<view_info> &info);
 
         QMutex mx;
         downloadc *dclient;
