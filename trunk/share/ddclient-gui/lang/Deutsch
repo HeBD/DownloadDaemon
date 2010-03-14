@@ -22,8 +22,8 @@ Please connect before adding Downloads.->Bitte verbinden Sie bevor sie Downloads
 No Connection to Server->Keine Verbindung zum Server
 At least one inserted URL was invalid.->Mindestens eine hinzugefügte URL war ungültig.
 Invalid URL->Ungültige URL
-Package->Packet
-Failed to create Package.->Packeterstellung fehlgeschlagen.
+Package->Paket
+Failed to create Package.->Paketerstellung fehlgeschlagen.
 
 #configure dialog
 Configure DownloadDaemon->DownloadDaemon konfigurieren
