@@ -1,3 +1,7 @@
+2010-03-14
+   [susanne]
+	- reimplemented list reloading of ddclient-gui
+
 2010-03-13
    [adrian]
 	- correctly define DDCLIENT_GUI_VERSION to get nice version numbers in the about dialog
