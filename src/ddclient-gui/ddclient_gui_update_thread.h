@@ -18,6 +18,7 @@ class update_thread : public QThread{
 
     private:
         ddclient_gui *parent;
+        bool told;
 };
 
 #endif // DDCLIENT_GUI_UPDATE_THREAD_H

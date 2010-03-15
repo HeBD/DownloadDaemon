@@ -42,7 +42,7 @@ about_dialog::about_dialog(QWidget *parent, QString build) : QDialog(parent){
     version += "Version: ";
     version += DDCLIENT_GUI_VERSION;
 
-    QLabel *url = new QLabel("<a href='http://downloaddaemon.sourceforge.net/'>Website</a>");
+    QLabel *url = new QLabel("<a href='http://downloaddaemon.sourceforge.net/'><font color='#7b68ee'>Website</font></a>");
     url->setOpenExternalLinks(true);
 
     QString copyright = "\nCopyright 2009-2010 by the DownloadDaemon team.\nAll rights reserved.\n\n";
