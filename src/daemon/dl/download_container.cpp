@@ -45,14 +45,13 @@ download_container::~download_container() {
 	#ifndef IS_PLUGIN
 	if(!download_list.empty()) {
 		log_string("Memory leak detected: container deleted, but there are still Downloads in the list. Please report!", LOG_ERR);
-		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-			// this is just the last way out to prevent memory-leaking.. usually this should never happen
-			delete *it;
-		}
 	}
-	#else
-		cerr << "Memory leak detected: container deleted, but there are still Downloads in the list. Please report! (happend in a plugin-call)" << endl;
 	#endif
+
+	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+		// this is just the last way out to prevent memory-leaking.. usually this should never happen
+		delete *it;
+	}
 	//lock_guard<recursive_mutex> lock(download_mutex);
 	// download-containers may only be destroyed after the ownage of the pointers is moved to another object
 }
@@ -622,15 +621,15 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator insert_it = download_list.begin();
 	// set input iterator to correct position
-	for(int i = 0; i < pos; ++i) {
-		++insert_it;
-	}
+	advance(insert_it, pos);
+
 	dl.download_mutex.lock();
-	for(download_container::iterator it = dl.download_list.begin(); it != dl.download_list.end(); ++it) {
-		(*it)->set_id(-1); // -1 means that they have to be assigned later
-		(*it)->set_parent(container_id);
-		insert_it = download_list.insert(insert_it, *it);
+	while(dl.download_list.size() > 0) {
+		(*dl.download_list.begin())->set_id(-1);
+		(*dl.download_list.begin())->set_parent(container_id);
+		insert_it = download_list.insert(insert_it, *(dl.download_list.begin()));
 		++insert_it;
+		dl.download_list.erase(dl.download_list.begin());
 	}
 	dl.download_mutex.unlock();
 
