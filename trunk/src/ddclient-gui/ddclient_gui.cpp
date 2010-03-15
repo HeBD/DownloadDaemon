@@ -1769,6 +1769,10 @@ void ddclient_gui::on_load_container(){
 void ddclient_gui::on_reload(){
     if(!check_connection()){
         status_connection->setText(tsl("Not connected"));
+        list_model->setRowCount(0);
+        mx.lock();
+        content.clear();
+        mx.unlock();
         return;
     }
 
