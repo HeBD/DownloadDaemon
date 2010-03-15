@@ -720,8 +720,15 @@ void package_container::extract_package(int id) {
 	download_container::iterator it = (*pkg_it)->download_list.begin();
 	if((*pkg_it)->download_list.size() == 0) return;
 	string output_file = (*it)->get_filename();
-	string extension(output_file.substr(output_file.find_last_of(".")));
-	string output_dir(output_file.substr(0, output_file.find_last_of(".")));
+	string extension;
+	string output_dir;
+	size_t n = output_file.find_last_of(".");
+	if(n != string::npos) {
+		extension = output_file.substr(n);
+		output_dir = output_file.substr(0, n);
+	} else {
+		return;
+	}
 	if(!(*pkg_it)->name.empty()) {
 		string tmp = (*pkg_it)->name;
 		make_valid_filename(tmp);
