@@ -751,9 +751,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	}
 
 	dlclose(dlhandle);
-
 	global_download_list.correct_invalid_ids();
-	lock.lock();
 	return retval;
 }
 
