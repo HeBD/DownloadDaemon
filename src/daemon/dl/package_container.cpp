@@ -64,6 +64,10 @@ int package_container::from_file(const char* filename) {
 			(*package)->password = line.substr(0, line.find("|"));
 			continue;
 		}
+		if(curr_pkg_id == -1) {
+			curr_pkg_id = add_package("imported");
+		}
+
 		download* dl = new download;
 		dl->from_serialized(line);
 		add_dl_to_pkg(dl, curr_pkg_id);
