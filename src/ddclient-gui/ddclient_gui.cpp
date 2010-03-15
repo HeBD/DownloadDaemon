@@ -1755,7 +1755,7 @@ void ddclient_gui::on_load_container(){
         fstream f;
         f.open(file_names.at(i).toStdString().c_str(), fstream::in);
         string content;
-        f >> content; // read data into string
+	for(std::string tmp; getline(f, tmp); content += tmp); // read data into string
 
         try{
             dclient->pkg_container("RSDF", content);

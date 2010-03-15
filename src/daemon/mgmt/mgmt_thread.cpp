@@ -725,22 +725,18 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 
 		bool first = true;
 		int pkg_id = global_download_list.add_package("");
-		while(result.find("CCF: ") != string::npos || result.find_first_of("\r\n") != string::npos) {
-			size_t this_ccf = 0;
-			size_t next_ccf = result.find("CCF: ", 1);
-			if(next_ccf == string::npos) next_ccf = result.find_first_of("\r\n", 1);
+		replace_all(result, "CCF: ", "\r\n");
+		while((n = result.find_first_of("\r\n")) != string::npos) {
+			std::string this_link = result.substr(0, n);
+			result = result.substr(n);
+			trim_string(this_link);
+			trim_string(result);
+			if(this_link.empty()) continue;
 
-			string tmp = result.substr(this_ccf, next_ccf);
-			if(next_ccf != string::npos) {
-				result = result.substr(next_ccf);
-			}
-			replace_all(tmp, "\r", "");
-			replace_all(tmp, "\n", "");
-			replace_all(tmp, "CCF: ", "");
-			download* dl = new download(tmp);
+			download* dl = new download(this_link);
 			global_download_list.add_dl_to_pkg(dl, pkg_id);
 			if(first) {
-				string pkg_name = filename_from_url(tmp);
+				string pkg_name = filename_from_url(this_link);
 				size_t last_dot = pkg_name.find_last_of(".");
 				if(last_dot != 0)
 					pkg_name = pkg_name.substr(0, last_dot);
