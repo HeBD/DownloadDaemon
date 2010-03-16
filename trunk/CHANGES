@@ -5,6 +5,8 @@
 	- added --no-ask-pass option to ddconsole that makes it never ask for a password (useful for scripts, so ddconsole doesn't block)
 	- MANY speed and CPU-usage improvements all over the place, thanks to plugin-info caching and dropping the need of polling 
 	  get_next_downloadable. lets hope it works.
+   [susanne]
+	- added a progressbar to ddclient-gui, showing how many finished downlaods a package has (if it's a package) or how many percent of the file has been downloaded (if it's a download)
 
 2010-03-14
    [susanne]

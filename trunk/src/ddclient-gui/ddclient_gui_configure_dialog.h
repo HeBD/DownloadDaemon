@@ -75,6 +75,7 @@ class configure_dialog : public QDialog{
 
         // proxy
         QTextDocument *proxy;
+        QCheckBox *proxy_retry;
 
     private slots:
         void help();
