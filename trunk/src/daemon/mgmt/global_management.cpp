@@ -26,18 +26,35 @@
 #include <sys/stat.h>
 using namespace std;
 
-std::mutex once_per_sec_mutex;
+namespace global_mgmt {
+	std::mutex ns_mutex;
+	std::mutex once_per_sec_mutex;
+	std::string curr_start_time;
+	std::string curr_end_time;
+	bool downloading_active;
+}
+
 
 void do_once_per_second() {
+	bool was_in_dltime_last = global_download_list.in_dl_time_and_dl_active();
+
 	while(true) {
-		once_per_sec_mutex.lock();
+		global_mgmt::once_per_sec_mutex.lock();
 		global_download_list.purge_deleted();
 		if(global_download_list.total_downloads() > 0) {
 			global_download_list.decrease_waits();
-			dlindex downloadable = global_download_list.get_next_downloadable();
-			if(downloadable.first != LIST_ID) {
-				global_download_list.do_download(downloadable);
-			}
+		}
+
+		bool in_dl_time = global_download_list.in_dl_time_and_dl_active();
+		if(!was_in_dltime_last && in_dl_time) {
+			// we just reached dl_start time
+			global_download_list.start_next_downloadable();
+			was_in_dltime_last = true;
+		}
+
+		if(was_in_dltime_last && !in_dl_time) {
+			// we just left dl_end time
+			was_in_dltime_last = false;
 		}
 	}
 }

@@ -22,7 +22,14 @@ namespace std {
 #include <thread>
 #endif
 
-extern std::mutex once_per_sec_mutex;
+namespace global_mgmt {
+	extern std::mutex ns_mutex;
+	extern std::mutex once_per_sec_mutex;
+	extern std::string curr_start_time;
+	extern std::string curr_end_time;
+	extern bool downloading_active;
+}
+
 
 /** Put things that need to be done once per second here
 */

@@ -256,6 +256,14 @@ class package_container {
 	*/
 	int count_running_waiting_dls_of_host(const std::string& host);
 
+	/** Checks if a new download can be started and starts it in a new strehad */
+	void start_next_downloadable();
+
+	/** Checks if we are in Download time and if downloading is activated
+	*	@returns true if yes
+	*/
+	bool in_dl_time_and_dl_active();
+
 
 private:
 	typedef std::vector<download_container*>::iterator iterator;

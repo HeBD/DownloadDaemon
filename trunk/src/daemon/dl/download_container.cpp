@@ -22,11 +22,13 @@
 #include "download.h"
 #include "../plugins/captcha.h"
 
+
 #ifndef IS_PLUGIN
 	#include <cfgfile/cfgfile.h>
 	#include "../tools/helperfunctions.h"
 	#include "../reconnect/reconnect_parser.h"
 	#include "../global.h"
+	#include "../mgmt/global_management.h"
 #endif
 
 #ifndef HAVE_UINT64_T
@@ -196,68 +198,8 @@ int download_container::get_next_downloadable(bool do_lock) {
 	if(download_list.empty()) {
 		return LIST_ID;
 	}
-	int pending_downloads = 0;
-	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->get_status() == DOWNLOAD_PENDING) {
-			++pending_downloads;
-		}
-	}
-	if(pending_downloads == 0) {
-		return LIST_ID;
-	}
 
 	download_container::iterator downloadable = download_list.end();
-	if(!global_config.get_bool_value("downloading_active")) {
-		return LIST_ID;
-	}
-
-	// Checking if we are in download-time...
-	std::string dl_start(global_config.get_cfg_value("download_timing_start"));
-	if(global_config.get_cfg_value("download_timing_start").find(':') != std::string::npos && global_config.get_cfg_value("download_timing_end").find(':') != std::string::npos ) {
-		time_t rawtime;
-		struct tm * current_time;
-		time ( &rawtime );
-		current_time = localtime ( &rawtime );
-		int starthours, startminutes, endhours, endminutes;
-		starthours = atoi(global_config.get_cfg_value("download_timing_start").substr(0, global_config.get_cfg_value("download_timing_start").find(':')).c_str());
-		endhours = atoi(global_config.get_cfg_value("download_timing_end").substr(0, global_config.get_cfg_value("download_timing_end").find(':')).c_str());
-		startminutes = atoi(global_config.get_cfg_value("download_timing_start").substr(global_config.get_cfg_value("download_timing_start").find(':') + 1).c_str());
-		endminutes = atoi(global_config.get_cfg_value("download_timing_end").substr(global_config.get_cfg_value("download_timing_end").find(':') + 1).c_str());
-		// we have a 0:00 shift
-		if(starthours > endhours) {
-			if(current_time->tm_hour < starthours && current_time->tm_hour > endhours) {
-				return LIST_ID;
-			}
-			if(current_time->tm_hour == starthours) {
-				if(current_time->tm_min < startminutes) {
-					return LIST_ID;
-				}
-			} else if(current_time->tm_hour == endhours) {
-				if(current_time->tm_min > endminutes) {
-					return LIST_ID;
-				}
-			}
-		// download window are just a few minutes
-		} else if(starthours == endhours) {
-			if(current_time->tm_min < startminutes || current_time->tm_min > endminutes) {
-				return LIST_ID;
-			}
-		// no 0:00 shift
-		} else if(starthours < endhours) {
-			if(current_time->tm_hour < starthours || current_time->tm_hour > endhours) {
-				return LIST_ID;
-			}
-			if(current_time->tm_hour == starthours) {
-				if(current_time->tm_min < startminutes) {
-					return LIST_ID;
-				}
-			} else if(current_time->tm_hour == endhours) {
-				if(current_time->tm_min > endminutes) {
-					return LIST_ID;
-				}
-			}
-		}
-	}
 
 	for(iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if((*it)->get_status() == DOWNLOAD_PENDING && (*it)->get_wait() == 0 && !(*it)->get_running() && (*it)->get_id() >= 0) {
@@ -515,6 +457,9 @@ void download_container::decrease_waits() {
 			if((*it)->get_status() == DOWNLOAD_INACTIVE) (*it)->set_wait(0);
 		} else if((*it)->get_status() == DOWNLOAD_WAITING) {
 			(*it)->set_status(DOWNLOAD_PENDING);
+			#ifndef IS_PLUGIN
+			global_download_list.start_next_downloadable();
+			#endif
 		}
 	}
 }

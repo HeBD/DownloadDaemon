@@ -20,7 +20,6 @@
 					<Add option="-Wall" />
 					<Add option="-ansi" />
 					<Add option="-g" />
-					<Add option="-std=c++0x" />
 					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>
@@ -210,6 +209,12 @@
 			<Option target="Daemon" />
 		</Unit>
 		<Unit filename="src/daemon/dl/package_container.h">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/dl/plugin_container.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/dl/plugin_container.h">
 			<Option target="Daemon" />
 		</Unit>
 		<Unit filename="src/daemon/dl/recursive_parser.cpp">
