@@ -16,8 +16,6 @@
 
 
 class status_bar : public QItemDelegate{
-     Q_OBJECT
-
     public:
         /** Defaultconstructor */
         status_bar(QObject *parent);

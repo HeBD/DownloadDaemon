@@ -9,6 +9,7 @@ SET(ddclient_gui_SRCS   ddclient_gui.cpp
 			ddclient_gui_update_thread.cpp
 			ddclient_gui_about_dialog.cpp
 			ddclient_gui_configure_dialog.cpp
+			ddclient_gui_status_bar.cpp
                         ../include/netpptk/netpptk.cpp
                         ../include/crypt/md5.cpp
                         ../include/language/language.cpp
