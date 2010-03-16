@@ -262,20 +262,12 @@ int download_container::get_next_downloadable(bool do_lock) {
 	for(iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if((*it)->get_status() == DOWNLOAD_PENDING && (*it)->get_wait() == 0 && !(*it)->get_running() && (*it)->get_id() >= 0) {
 			std::string current_host((*it)->get_host());
-			bool can_attach = true;
-			for(download_container::iterator it2 = download_list.begin(); it2 != download_list.end(); ++it2) {
-				if((*it)->get_wait() > 0 || it == it2) {
-					continue;
-				}
-				if((*it2)->get_host() == current_host && ((*it2)->get_status() == DOWNLOAD_RUNNING || (*it2)->get_status() == DOWNLOAD_WAITING || (*it2)->get_running())
-				   && !(*it2)->get_hostinfo().allows_multiple) {
-					can_attach = false;
-					break;
-				}
+
+			plugin_output hinfo = (*it)->get_hostinfo();
+			if(!hinfo.allows_multiple && global_download_list.count_running_waiting_dls_of_host((*it)->get_host()) > 0) {
+				continue;
 			}
-			if(can_attach) {
-				return (*it)->get_id();
-			}
+			return (*it)->get_id();
 		}
 	}
 	return LIST_ID;

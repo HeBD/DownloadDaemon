@@ -992,7 +992,7 @@ void target_router_list(std::string &data, tkSock *sock) {
 		content.push_back(current);
 	}
 
-	(void) closedir (dp);
+	closedir (dp);
 	sort(content.begin(), content.end(), CompareNoCase);
 	std::string to_send;
 	for(vector<std::string>::iterator it = content.begin(); it != content.end(); ++it) {

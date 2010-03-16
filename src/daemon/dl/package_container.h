@@ -250,6 +250,12 @@ class package_container {
 	/** Does the real work when reconnecting */
 	void do_reconnect();
 
+	/** counts how many running and waiting downloads exist for a given host
+	*	@param host Host to check for
+	*	@returns number of running and waiting downloads for that host
+	*/
+	int count_running_waiting_dls_of_host(const std::string& host);
+
 
 private:
 	typedef std::vector<download_container*>::iterator iterator;

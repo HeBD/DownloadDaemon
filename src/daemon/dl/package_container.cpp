@@ -851,28 +851,6 @@ int package_container::get_next_id() {
 	return max_id + 1;
 }
 
-/*std::string package_container::get_plugin_file(download_container::iterator dlit) {
-	// TODO: delete
-	std::string host((*dlit)->get_host());
-	if(host == "") {
-		return "";
-	}
-
-	std::string plugindir = program_root + "/plugins/";
-	correct_path(plugindir);
-	plugindir += '/';
-
-
-	std::string pluginfile(plugindir + "lib" + host + ".so");
-
-	struct stat st;
-
-	if(stat(pluginfile.c_str(), &st) != 0) {
-		return "";
-	}
-	return pluginfile;
-}*/
-
 void package_container::correct_invalid_ids() {
 	lock_guard<recursive_mutex> lock(mx);
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
@@ -884,6 +862,21 @@ void package_container::correct_invalid_ids() {
 		}
 		(*it)->download_mutex.unlock();
 	}
+}
+
+int package_container::count_running_waiting_dls_of_host(const std::string& host) {
+	lock_guard<recursive_mutex> lock(mx);
+	int count = 0;
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
+		(*it)->download_mutex.lock();
+		for(download_container::iterator dlit = (*it)->download_list.begin(); dlit != (*it)->download_list.end(); ++dlit) {
+			if(((*dlit)->get_running() || (*dlit)->get_status() == DOWNLOAD_WAITING) && (*dlit)->get_host() == host) {
+				++count;
+			}
+		}
+		(*it)->download_mutex.unlock();
+	}
+	return count;
 }
 
 

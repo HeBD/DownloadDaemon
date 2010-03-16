@@ -1,3 +1,8 @@
+2010-03-16
+   [adrian]
+	- fixed get_next_downloadable not searching for other running downloads over all containers
+	- made it possible to use one plugin for all subdomains (makes it possible to download http://rs***.rapidshare.com/... urls)
+
 2010-03-14
    [susanne]
 	- reimplemented list reloading of ddclient-gui

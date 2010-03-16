@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dlfcn.h>
+#include <dirent.h>
 
 #include "download.h"
 #include "download_container.h"
@@ -253,25 +254,12 @@ plugin_output download::get_hostinfo() {
 	outp.offers_premium = false;
 
 	std::string host(get_host(false));
-	std::string plugindir = program_root + "/plugins/";
-	correct_path(plugindir);
+	std::string pluginfile(get_plugin_file());
 	if(host == "") {
 		return outp;
 	}
 
-	struct stat st;
-	if(stat(plugindir.c_str(), &st) != 0) {
-		return outp;
-	}
-
-	std::string pluginfile(plugindir + "/lib" + host + ".so");
-	bool use_generic = false;
-	if(stat(pluginfile.c_str(), &st) != 0) {
-		use_generic = true;
-	}
-
-	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
-	if(use_generic) {
+	if(pluginfile.empty()) {
 		log_string("No plugin found, using generic download", LOG_WARNING);
 		outp.allows_multiple = true;
 		outp.allows_resumption = true;
@@ -760,20 +748,41 @@ std::string download::get_plugin_file() {
 	if(host == "") {
 		return "";
 	}
+	for(size_t i = 0; i < host.size(); ++i) host[i] = tolower(host[i]);
 
 	std::string plugindir = program_root + "/plugins/";
 	correct_path(plugindir);
 	plugindir += '/';
 
-
-	std::string pluginfile(plugindir + "lib" + host + ".so");
-
-	struct stat st;
-
-	if(stat(pluginfile.c_str(), &st) != 0) {
+	DIR *dp;
+	struct dirent *ep;
+	dp = opendir(plugindir.c_str());
+	if (dp == NULL) {
+		log_string("Could not open plugin directory!", LOG_ERR);
 		return "";
 	}
-	return pluginfile;
+
+	std::string result;
+	std::string current;
+	while ((ep = readdir(dp))) {
+		if(ep->d_name[0] == '.') {
+			continue;
+		}
+		current = ep->d_name;
+		for(size_t i = 0; i < current.size(); ++i) current[i] = tolower(current[i]);
+		if(current.find("lib") != 0) continue;
+		current = current.substr(3);
+		if(current.find(".so") == string::npos) continue;
+		current = current.substr(0, current.find(".so"));
+		if(host.find(current) != string::npos) {
+			result = plugindir + ep->d_name;
+			break;
+		}
+	}
+
+	closedir(dp);
+
+	return result;
 }
 
 int download::set_next_proxy() {
