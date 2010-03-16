@@ -388,6 +388,11 @@ QWidget *configure_dialog::create_proxy_panel(){
     QFormLayout *form_layout = new QFormLayout();
     group_box->setLayout(form_layout);
 
+    QLabel *proxy_retry_explanation = new QLabel(p->tsl("If a connection to a server fails when using a proxy, should DownloadDaemon retry with\nanother proxy?"));
+    proxy_retry = new QCheckBox(p->tsl("retry"));
+    if(get_var("assume_proxys_online") == "1")
+        proxy_retry->setChecked(true);
+
     QLabel *proxy_explanation = new QLabel(p->tsl("You can provide a list of proxys to use proxy-alternation. For hosters with an IP-based"
                                                   "\nbandwidth-limit, this can bypass such restrictions by using different proxies.\n"
                                                   "\nOne entry per Line. User, Password and Port are optional."
@@ -403,10 +408,13 @@ QWidget *configure_dialog::create_proxy_panel(){
 
 
     QTextEdit *proxy_edit = new QTextEdit();
-    proxy_edit->setFixedHeight(150);
+    proxy_edit->setFixedHeight(100);
     proxy = new QTextDocument(proxy_list.c_str(), proxy_edit);
     proxy_edit->setDocument(proxy);
 
+    form_layout->addRow("", proxy_retry_explanation);
+    form_layout->addRow("", proxy_retry);
+    form_layout->addRow("", new QLabel(""));
     form_layout->addRow("", proxy_explanation);
     form_layout->addRow("", proxy_edit);
 
@@ -556,6 +564,7 @@ void configure_dialog::ok(){
         router_pass = password->text().toStdString();
     }
 
+    bool proxy_online = this->proxy_retry->isChecked();
     string proxy_list = proxy->toPlainText().toStdString();
     size_t n;
 
@@ -602,8 +611,11 @@ void configure_dialog::ok(){
         // log activity
         dclient->set_var("log_level", activity_level);
 
-        // proxy_list
-        dclient->set_var("proxy_list", proxy_list);
+        // assume proxys online
+        if(proxy_online)
+            dclient->set_var("assume_proxys_online", "1");
+        else
+            dclient->set_var("assume_proxys_online", "0");
 
         // reconnect enable
         if(reconnect_enable){

@@ -15,6 +15,7 @@
 #include "ddclient_gui_about_dialog.h"
 #include "ddclient_gui_configure_dialog.h"
 #include "ddclient_gui_connect_dialog.h"
+#include "ddclient_gui_status_bar.h"
 
 #include <sstream>
 #include <fstream>
@@ -225,6 +226,27 @@ void ddclient_gui::clear_last_error_message(){
     last_error_message = error_none;
 }
 
+
+int ddclient_gui::calc_package_progress(int package_row){
+    int progress = 0, downloads = 0, finished = 0;
+
+    try{
+        downloads = content.at(package_row).dls.size();
+        for(int i = 0; i < downloads; ++i){
+            if(content.at(package_row).dls.at(i).status == "DOWNLOAD_FINISHED")
+                finished++;
+        }
+
+        if(downloads != 0) // we don't want x/0
+            progress = (finished * 100) / downloads;
+
+
+    }catch(...){}
+
+    return progress;
+}
+
+
 void ddclient_gui::add_bars(){
     // menubar
     file_menu = menuBar()->addMenu("&" + tsl("File"));
@@ -420,16 +442,9 @@ void ddclient_gui::add_list_components(){
     list->setSelectionModel(selection_model);
     list->setSelectionMode(QAbstractItemView::ExtendedSelection);
     list->setSelectionBehavior(QAbstractItemView::SelectRows);
-
-    double width = list->width();
+    status_bar *status_bar_delegate = new status_bar(this);
+    list->setItemDelegateForColumn(4, status_bar_delegate);
     list->setAnimated(true);
-
-    list->setColumnWidth(0, 100); // fixed sizes
-    list->setColumnWidth(3, 100);
-    width -= 100;
-    list->setColumnWidth(1, 0.25*width);
-    list->setColumnWidth(2, 0.3*width);
-    list->setColumnWidth(4, 0.45*width);
 
     setCentralWidget(list);
 }
@@ -1844,7 +1859,15 @@ void ddclient_gui::resizeEvent(QResizeEvent* event){
     width -= 250;
     list->setColumnWidth(0, 100); // fixed sizes
     list->setColumnWidth(3, 100);
-    list->setColumnWidth(1, 0.25*width);
-    list->setColumnWidth(2, 0.3*width);
-    list->setColumnWidth(4, 0.45*width);
+
+    if(width > 600){ // use different ratio if window is a bit bigger then normal
+        list->setColumnWidth(4, 260);
+        width -= 260;
+        list->setColumnWidth(1, 0.3*width);
+        list->setColumnWidth(2, 0.7*width);
+    }else{
+        list->setColumnWidth(1, 0.23*width);
+        list->setColumnWidth(2, 0.3*width);
+        list->setColumnWidth(4, 0.47*width);
+    }
 }

@@ -104,6 +104,12 @@ class ddclient_gui : public QMainWindow{
         /** Clears the error message cache, so that they will be shown again */
         void clear_last_error_message();
 
+        /** Calculates the packages progress by comparing the number of all package downloads and finished package downloads
+        *   @param package_row row where the package is stored in the view
+        *   @returns package progress in %
+        */
+        int calc_package_progress(int package_row);
+
     signals:
         void do_reload();
 

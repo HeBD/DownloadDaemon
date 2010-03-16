@@ -10,7 +10,8 @@ HEADERS += ddclient_gui.h \
     ddclient_gui_add_dialog.h \
     ddclient_gui_about_dialog.h \
     ddclient_gui_configure_dialog.h \
-    ../include/cfgfile/cfgfile.h
+    ../include/cfgfile/cfgfile.h \
+    ddclient_gui_status_bar.h
 SOURCES += ddclient_gui.cpp \
     main.cpp \
     ../include/downloadc/downloadc.cpp \
@@ -23,11 +24,11 @@ SOURCES += ddclient_gui.cpp \
     ddclient_gui_add_dialog.cpp \
     ddclient_gui_about_dialog.cpp \
     ddclient_gui_configure_dialog.cpp \
-    ../include/cfgfile/cfgfile.cpp
+    ../include/cfgfile/cfgfile.cpp \
+    ddclient_gui_status_bar.cpp
 INCLUDEPATH += ../include
 DESTDIR = ../../build/bin
 DEFINES += DDCLIENT_GUI
-
 unix:LIBS += -lboost_thread-mt
 win32 { 
     LIBS += -lws2_32
