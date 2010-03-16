@@ -25,6 +25,10 @@ void trim_string(std::string &str);
 void connect_request(tkSock &sock, std::string &host, const std::string &port, std::string &password);
 void send_command(tkSock &sock, const std::string &command);
 
+namespace global {
+	bool ask_for_password = true;
+}
+
 int main(int argc, char* argv[]) {
 	setlocale(LC_ALL, "");
 	vector<string> args;
@@ -36,6 +40,7 @@ int main(int argc, char* argv[]) {
 	string port("56789");
 	string password;
 	string command;
+
 	for(vector<string>::iterator it = args.begin(); it != args.end(); ++it) {
 		if(*it == "--help") {
 			cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -44,6 +49,7 @@ int main(int argc, char* argv[]) {
 			cout << "\t--port <port>\t\t Specifies the port to use [56789]" << endl;
 			cout << "\t--password <password>\t Specifies the password to connect" << endl;
 			cout << "\t--command <command(s)>\t Specifies a command to send after connectiong. The client will close after execution." << endl;
+			cout << "\t--no-ask-pass\t\t Forces ddconsole to never block asking for a password" << endl;
 			cout << "\t\t\t\t To find out about possible commands, type \"help\" in the console or visit" << endl;
 			cout << "\t\t\t\t http://downloaddaemon.sourceforge.net for more information." << endl;
 			return 0;
@@ -51,15 +57,17 @@ int main(int argc, char* argv[]) {
 		if(*it == "--host") {
 			++it;
 			host = *it;
-		} else if (*it == "--port") {
+		} else if(*it == "--port") {
 			++it;
 			port = *it;
-		} else if (*it == "--password") {
+		} else if(*it == "--password") {
 			++it;
 			password = *it;
 		} else if(*it == "--command") {
 			++it;
 			command = *it;
+		} else if(*it == "--no-ask-pass") {
+			global::ask_for_password = false;
 		}
 	}
 
@@ -201,7 +209,7 @@ void connect_request(tkSock &sock, std::string &host, const std::string &port, s
 	if(snd.find("100") == 0) {
 		cout << "No Password." << endl;
 	} else if (snd.find("102") == 0) {
-		if(password.empty()) {
+		if(password.empty() && global::ask_for_password) {
 			cout << "Password: ";
 			getline(cin, password);
 		}
