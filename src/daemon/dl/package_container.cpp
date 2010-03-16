@@ -6,6 +6,7 @@
 #include "../tools/helperfunctions.h"
 #include "../plugins/captcha.h"
 #include "../reconnect/reconnect_parser.h"
+#include "../mgmt/global_management.h"
 
 #include <string>
 
@@ -135,8 +136,14 @@ bool package_container::empty() {
 
 dlindex package_container::get_next_downloadable() {
 	lock_guard<recursive_mutex> lock(mx);
-	int running_downloads = 0;
 	std::pair<int, int> result(LIST_ID, LIST_ID);
+
+	if(!in_dl_time_and_dl_active()) {
+		return result;
+	}
+
+	int running_downloads = 0;
+
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		running_downloads += (*it)->running_downloads();
 		if(result.first == LIST_ID && result.second == LIST_ID) {
@@ -870,7 +877,7 @@ int package_container::count_running_waiting_dls_of_host(const std::string& host
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		(*it)->download_mutex.lock();
 		for(download_container::iterator dlit = (*it)->download_list.begin(); dlit != (*it)->download_list.end(); ++dlit) {
-			if(((*dlit)->get_running() || (*dlit)->get_status() == DOWNLOAD_WAITING) && (*dlit)->get_host() == host) {
+			if((*dlit)->get_host() == host && ((*dlit)->get_running() || (*dlit)->get_status() == DOWNLOAD_WAITING)) {
 				++count;
 			}
 		}
@@ -879,5 +886,74 @@ int package_container::count_running_waiting_dls_of_host(const std::string& host
 	return count;
 }
 
+void package_container::start_next_downloadable() {
+	if(total_downloads() > 0) {
+		while(true) {
+			dlindex downloadable = get_next_downloadable();
+			if(downloadable.first != LIST_ID) {
+				do_download(downloadable);
+			} else {
+				break;
+			}
+		}
+	}
+}
+
+bool package_container::in_dl_time_and_dl_active() {
+	unique_lock<mutex> global_mgmt_lock(global_mgmt::ns_mutex);
+
+	if(!global_mgmt::downloading_active) {
+		return false;
+	}
+
+	// Checking if we are in download-time...
+	std::string dl_start(global_mgmt::curr_start_time);
+	if(global_mgmt::curr_start_time.find(':') != std::string::npos && global_mgmt::curr_end_time.find(':') != std::string::npos ) {
+		time_t rawtime;
+		struct tm * current_time;
+		time ( &rawtime );
+		current_time = localtime ( &rawtime );
+		int starthours, startminutes, endhours, endminutes;
+		starthours = atoi(global_mgmt::curr_start_time.substr(0, global_mgmt::curr_start_time.find(':')).c_str());
+		endhours = atoi(global_mgmt::curr_end_time.substr(0, global_mgmt::curr_end_time.find(':')).c_str());
+		startminutes = atoi(global_mgmt::curr_start_time.substr(global_mgmt::curr_start_time.find(':') + 1).c_str());
+		endminutes = atoi(global_mgmt::curr_end_time.substr(global_mgmt::curr_end_time.find(':') + 1).c_str());
+		// we have a 0:00 shift
+		if(starthours > endhours) {
+			if(current_time->tm_hour < starthours && current_time->tm_hour > endhours) {
+				return false;
+			}
+			if(current_time->tm_hour == starthours) {
+				if(current_time->tm_min < startminutes) {
+					return false;
+				}
+			} else if(current_time->tm_hour == endhours) {
+				if(current_time->tm_min > endminutes) {
+					return false;
+				}
+			}
+		// download window are just a few minutes
+		} else if(starthours == endhours) {
+			if(current_time->tm_min < startminutes || current_time->tm_min > endminutes) {
+				return false;
+			}
+		// no 0:00 shift
+		} else if(starthours < endhours) {
+			if(current_time->tm_hour < starthours || current_time->tm_hour > endhours) {
+				return false;
+			}
+			if(current_time->tm_hour == starthours) {
+				if(current_time->tm_min < startminutes) {
+					return false;
+				}
+			} else if(current_time->tm_hour == endhours) {
+				if(current_time->tm_min > endminutes) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
 
 

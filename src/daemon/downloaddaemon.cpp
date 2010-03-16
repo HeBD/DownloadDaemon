@@ -275,12 +275,19 @@ int main(int argc, char* argv[], char* env[]) {
 		mgmt_thread.detach();
 	}
 
+	global_mgmt::ns_mutex.lock();
+	global_mgmt::curr_start_time = global_config.get_cfg_value("download_timing_start");
+	global_mgmt::curr_end_time = global_config.get_cfg_value("download_timing_end");
+	global_mgmt::downloading_active = global_config.get_bool_value("downloading_active");
+	global_mgmt::ns_mutex.unlock();
+	global_download_list.start_next_downloadable();
+
 	// tick download counters, start new downloads, etc each second
 	thread once_per_sec_thread(do_once_per_second);
 	once_per_sec_thread.detach();
+
 	while(true) {
 		sleep(1);
-		once_per_sec_mutex.unlock();
-
+		global_mgmt::once_per_sec_mutex.unlock();
 	}
 }

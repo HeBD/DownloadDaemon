@@ -3,6 +3,8 @@
 	- fixed get_next_downloadable not searching for other running downloads over all containers
 	- made it possible to use one plugin for all subdomains (makes it possible to download http://rs***.rapidshare.com/... urls)
 	- added --no-ask-pass option to ddconsole that makes it never ask for a password (useful for scripts, so ddconsole doesn't block)
+	- MANY speed and CPU-usage improvements all over the place, thanks to plugin-info caching and dropping the need of polling 
+	  get_next_downloadable. lets hope it works.
 
 2010-03-14
    [susanne]

@@ -23,6 +23,11 @@
 #include "../global.h"
 #include "recursive_parser.h"
 #include "../plugins/captcha.h"
+#include "plugin_container.h"
+namespace {
+	plugin_container plugin_cache;
+}
+
 #endif
 
 #include <string>
@@ -30,6 +35,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
+
 
 using namespace std;
 
@@ -247,48 +253,9 @@ const char* download::get_status_str() {
 #ifndef IS_PLUGIN
 plugin_output download::get_hostinfo() {
 	lock_guard<recursive_mutex> lock(mx);
-	plugin_input inp;
-	plugin_output outp;
-	outp.allows_resumption = false;
-	outp.allows_multiple = false;
-	outp.offers_premium = false;
 
-	std::string host(get_host(false));
-	std::string pluginfile(get_plugin_file());
-	if(host == "") {
-		return outp;
-	}
+	return plugin_cache.get_info(get_host(), plugin_container::P_HOST);
 
-	if(pluginfile.empty()) {
-		log_string("No plugin found, using generic download", LOG_WARNING);
-		outp.allows_multiple = true;
-		outp.allows_resumption = true;
-		return outp;
-	}
-
-	// Load the plugin function needed
-	void* l_handle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_LOCAL);
-	if (!l_handle) {
-		log_string(std::string("Unable to open library file: ") + dlerror() + '/' + pluginfile, LOG_ERR);
-		return outp;
-	}
-
-	dlerror();	// Clear any existing error
-
-	void (*plugin_getinfo)(plugin_input&, plugin_output&);
-	plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(l_handle, "plugin_getinfo");
-
-	char* l_error;
-	if ((l_error = dlerror()) != NULL)  {
-		log_string(std::string("Unable to get plugin information: ") + l_error, LOG_ERR);
-		dlclose(l_handle);
-		return outp;
-	}
-	inp.premium_user = global_premium_config.get_cfg_value(get_host(false) + "_user");
-	inp.premium_password = global_premium_config.get_cfg_value(get_host(false) + "_password");
-	plugin_getinfo(inp, outp);
-	dlclose(l_handle);
-	return outp;
 }
 
 
@@ -345,6 +312,8 @@ void download::download_me() {
 
 	need_stop = false;
 	is_running = false;
+	lock.unlock();
+	global_download_list.start_next_downloadable();
 }
 
 void download::download_me_worker() {
@@ -488,7 +457,7 @@ void download::download_me_worker() {
 
 		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file_s;
-		if(global_download_list.get_hostinfo(dl).allows_resumption && global_config.get_bool_value("enable_resume") &&
+		if(get_hostinfo().allows_resumption && global_config.get_bool_value("enable_resume") &&
 		   stat(output_filename.c_str(), &st) == 0 && (unsigned)st.st_size == downloaded_bytes &&
 		   can_resume) {
 			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, downloaded_bytes);
@@ -668,7 +637,7 @@ void download::download_me_worker() {
 
 void download::wait() {
 	while(get_wait() > 0) {
-		usleep(500);
+		sleep(1);
 	}
 }
 
