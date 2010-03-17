@@ -45,8 +45,8 @@ PATHS_DDCONSOLE=("src/" "src/include/" "src/include/crypt/" "src/include/")
 FILES_DDCLIENTPHP=("../src/ddclient-php" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
 PATHS_DDCLIENTPHP=("")
 
-FILES_DDCLIENTGUI=("../src/ddclient-gui" "../src/include/netpptk" "../src/include/crypt/md5.*" "../src/include/language" "../src/include/downloadc" "../share/applications/ddclient-gui.desktop" "../share/ddclient-gui" "../share/pixmaps/ddclient-gui*" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
-PATHS_DDCLIENTGUI=("src/" "src/include/" "src/include/crypt/" "src/include/" "src/include/" "share/applications" "share/" "share/pixmaps")
+FILES_DDCLIENTGUI=("../src/ddclient-gui" "../src/include/cfgfile" "../src/include/netpptk" "../src/include/crypt/md5.*" "../src/include/language" "../src/include/downloadc" "../share/applications/ddclient-gui.desktop" "../share/ddclient-gui" "../share/pixmaps/ddclient-gui*" "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
+PATHS_DDCLIENTGUI=("src/" "src/include/" "src/include" "src/include/crypt/" "src/include/" "src/include/" "share/applications" "share/" "share/pixmaps")
 
 
 
