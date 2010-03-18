@@ -75,7 +75,7 @@ std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 	file.seekg(0);
 	std::string buff, identstr, val;
 	size_t eqloc;
-	while(getline(file, buff) && file.good()) {
+        while(file.good() && getline(file, buff)) {
 		buff = buff.substr(0, buff.find(comment_token));
 		eqloc = buff.find(eqtoken);
 		identstr = buff.substr(0, eqloc);
@@ -103,7 +103,7 @@ bool cfgfile::get_bool_value(const std::string &cfg_identifier) {
 long cfgfile::get_int_value(const std::string &cfg_identifier) {
 	std::stringstream ss;
 	ss << get_cfg_value(cfg_identifier);
-	long res;
+        long res = 0;
 	ss >> res;
 	return res;
 }
