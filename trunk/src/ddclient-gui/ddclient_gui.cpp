@@ -964,6 +964,7 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
     }else if(new_dit != new_it->dls.end()){ // there are more new lines than old ones
         while(new_dit != new_it->dls.end()){
             // insert new lines
+	    color = build_status(status_text, time_left, *new_dit);
 
             dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(new_dit->id));
             dl->setEditable(false);
