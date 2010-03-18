@@ -36,6 +36,8 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
     data.lang = file.get_cfg_value("language");
     data.selected = file.get_int_value("selected");
 
+    bool used_default = false; // inserted default values because there were no entries
+
     if(data.lang == "")
 	data.lang = "English";
     int i = 0;
@@ -43,7 +45,7 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
     while(true){
 	stringstream s;
 	s << i;
-	string tmp(file.get_cfg_value("host" + s.str()));
+        string tmp(file.get_cfg_value("host" + s.str()));
 
 	if(tmp.empty())
 	    break;
@@ -60,6 +62,7 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
 	data.host.push_back("127.0.0.1");
 	data.port.push_back(56789);
 	data.pass.push_back("");
+        used_default = true;
     }
 
     QGroupBox *connect_box = new QGroupBox(p->tsl("Data"));
@@ -105,6 +108,12 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
     connect(button_box->button(QDialogButtonBox::Ok), SIGNAL(clicked()),this, SLOT(ok()));
     connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()),this, SLOT(reject()));
     connect(host, SIGNAL(currentIndexChanged(int)), this, SLOT(host_selected()));
+
+    if(used_default){ // we have to clear it or the save function will be confused
+        data.host.clear();
+        data.port.clear();
+        data.pass.clear();
+    }
 }
 
 
