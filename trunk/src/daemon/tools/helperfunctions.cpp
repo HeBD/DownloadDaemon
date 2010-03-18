@@ -314,22 +314,22 @@ bool CompareNoCase( const std::string& s1, const std::string& s2 ) {
 }
 
 void make_valid_filename(std::string &fn) {
-	replace_all(fn, "\r\n", " ");
-	replace_all(fn, "\r", " ");
-	replace_all(fn, "\n", " ");
-	replace_all(fn, "/", " ");
-	replace_all(fn, "\\", " ");
-	replace_all(fn, ":", " ");
-	replace_all(fn, "*", " ");
-	replace_all(fn, "?", " ");
-	replace_all(fn, "\"", " ");
-	replace_all(fn, "<", " ");
-	replace_all(fn, ">", " ");
-	replace_all(fn, "|", " ");
-	replace_all(fn, "@", " ");
-	replace_all(fn, "'", " ");
-	replace_all(fn, "\"", " ");
-	replace_all(fn, ";", " ");
+	replace_all(fn, "\r\n", "");
+	replace_all(fn, "\r", "");
+	replace_all(fn, "\n", "");
+	replace_all(fn, "/", "");
+	replace_all(fn, "\\", "");
+	replace_all(fn, ":", "");
+	replace_all(fn, "*", "");
+	replace_all(fn, "?", "");
+	replace_all(fn, "\"", "");
+	replace_all(fn, "<", "");
+	replace_all(fn, ">", "");
+	replace_all(fn, "|", "");
+	replace_all(fn, "@", "");
+	replace_all(fn, "'", "");
+	replace_all(fn, "\"", "");
+	replace_all(fn, ";", "");
 }
 
 std::string ascii_hex_to_bin(std::string ascii_hex) {
