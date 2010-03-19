@@ -421,10 +421,13 @@ void download::download_me_worker() {
 			lock.lock();
 			make_valid_filename(dl_subfolder);
 			if(dl_subfolder.empty()) {
+				lock.unlock();
 				std::vector<int> dls = global_download_list.get_download_list(parent);
+
 				if(dls.empty()) return;
 				int first_id = dls[0];
 				dl_subfolder = filename_from_url(global_download_list.get_url(make_pair<int, int>(parent, first_id)));
+				lock.lock();
 				if(dl_subfolder.find(".") != string::npos) {
 					dl_subfolder = dl_subfolder.substr(0, dl_subfolder.find_last_of("."));
 				} else {
@@ -589,6 +592,7 @@ void download::download_me_worker() {
 				} else {
 					output_file = final_filename;
 				}
+				lock.unlock();
 				//global_download_list.post_process_download(dl); TODO
 				return;
 			case CURLE_OPERATION_TIMEDOUT:
