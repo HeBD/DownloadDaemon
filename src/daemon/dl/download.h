@@ -180,6 +180,10 @@ private:
 	int set_next_proxy();
 
 	plugin_status prepare_download(plugin_output &poutp);
+	#ifndef IS_PLUGIN
+	/** post-processes a finished download by calling the plugin and do what it says */
+	void post_process_download();
+	#endif
 	std::string get_plugin_file();
 	void wait();
 

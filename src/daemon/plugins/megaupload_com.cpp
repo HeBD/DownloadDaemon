@@ -168,7 +168,7 @@ void post_process_download(plugin_input &inp) {
 		string tmp;
 		getline(ifs, tmp);
 		if(tmp.find("</HEAD><BODY>Download limit exceeded</BODY></HTML>") != string::npos) {
-			set_wait_time(30);
+			set_wait_time(120);
 			dl_list->set_status(dlid, DOWNLOAD_WAITING);
 			dl_list->set_error(dlid, PLUGIN_LIMIT_REACHED);
 		}

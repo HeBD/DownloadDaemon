@@ -593,7 +593,7 @@ void download::download_me_worker() {
 					output_file = final_filename;
 				}
 				lock.unlock();
-				//global_download_list.post_process_download(dl); TODO
+				post_process_download();
 				return;
 			case CURLE_OPERATION_TIMEDOUT:
 			case CURLE_COULDNT_RESOLVE_HOST:
@@ -714,6 +714,48 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	dlclose(dlhandle);
 	global_download_list.correct_invalid_ids();
 	return retval;
+}
+
+void download::post_process_download() {
+	unique_lock<recursive_mutex> lock(mx);
+	plugin_input pinp;
+
+	std::string host(get_host());
+	std::string pluginfile(get_plugin_file());
+
+	if(pluginfile.empty()) {
+		return;
+	}
+
+	// Load the plugin function needed
+	void* dlhandle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_LOCAL);
+	if (!dlhandle) {
+		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
+		return;
+	}
+
+	dlerror();	// Clear any existing error
+
+	void (*post_process_func)(download_container& dlc, int id, plugin_input& pinp);
+	post_process_func = (void (*)(download_container& dlc, int id, plugin_input& pinp))dlsym(dlhandle, "post_process_dl_init");
+
+	char *dl_error;
+	if ((dl_error = dlerror()) != NULL)  {
+	    dlclose(dlhandle);
+		return;
+	}
+
+	pinp.premium_user = global_premium_config.get_cfg_value(get_host() + "_user");
+	pinp.premium_password = global_premium_config.get_cfg_value(get_host() + "_password");
+	trim_string(pinp.premium_user);
+	trim_string(pinp.premium_password);
+	lock.unlock();
+
+	try {
+		post_process_func(*global_download_list.get_listptr(parent), id, pinp);
+	} catch(...) {}
+
+	dlclose(dlhandle);
 }
 
 std::string download::get_plugin_file() {

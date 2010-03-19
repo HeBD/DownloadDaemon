@@ -160,11 +160,6 @@ class package_container {
 	*/
 	plugin_output get_hostinfo(dlindex dl);
 
-	/** post-processes a finished download by calling the plugin and do what it says
-	*	@param id ID of the download
-	*/
-	void post_process_download(dlindex dl);
-
 	/** returns the total number of downloads
 	*	@returns the number
 	*/
