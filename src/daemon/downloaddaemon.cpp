@@ -38,10 +38,16 @@ namespace std {
 #include <sys/types.h>
 #include <dlfcn.h>
 #include <pwd.h>
+#include <grp.h>
 
 #ifndef HAVE_UINT64_T
 	#warning You do not have the type uint64_t. this is pretty bad and you might get problems when you download big files.
 	#warning This includes that DownloadDaemon may display wrong download sizes/progress. But downloading should work.. maybe...
+#endif
+
+#ifndef HAVE_INITGROUPS
+	#warning "Your compiler doesn't offer the initgroups() function. This is a problem if you make downloaddaemon should download to a folder that"\
+			 "is only writeable for a supplementary group of the downloadd user, but not to the downloadd user itsself."
 #endif
 
 #define DAEMON_USER "downloadd"
@@ -66,18 +72,31 @@ char** env_vars;
 
 int main(int argc, char* argv[], char* env[]) {
 	env_vars = env;
+
 	// Drop user if there is one, and we were run as root
 	if (getuid() == 0 || geteuid() == 0) {
 		struct passwd *pw = getpwnam(DAEMON_USER /* "downloadd" */);
-		if ( pw && setgid(pw->pw_gid) == 0 && setuid(pw->pw_uid) == 0) {
-		} else {
+		if(!pw) {
 			std::cerr << "Never run DownloadDaemon as root!" << endl;
 			std::cerr << "In order to run DownloadDaemon, please execute these commands as root:" << endl;
 			std::cerr << "   addgroup --system " DAEMON_USER << endl;
 			std::cerr << "   adduser --system --ingroup " DAEMON_USER " --home " DD_CONF_DIR " " DAEMON_USER << endl;
 			std::cerr << "   chown -R " DAEMON_USER ":" DAEMON_USER " " DD_CONF_DIR " /var/downloads" << endl;
-			std::cerr << "then rerun DownloadDaemon." << endl;
-			exit(0);
+			std::cerr << "then rerun DownloadDaemon. It will automatically change its permissions to the ones of " DAEMON_USER "." << endl;
+			exit(-1);
+		}
+
+		#ifdef HAVE_INITGROUPS
+		if(initgroups(DAEMON_USER, pw->pw_gid)) {
+			std::cerr << "Setting the groups of the DownloadDaemon user failed. This is a problem if you make downloaddaemon should download to a folder that "
+					  << " is only writeable for a supplementary group of DownloadDaemon, but not to the " DAEMON_USER " user itsself." << endl;
+		}
+		#endif
+
+		if(setgid(pw->pw_gid) != 0 || setuid(pw->pw_uid) != 0) {
+			std::cerr << "Failed to set user-id or group-id. Please run DownloadDaemon as a user manually." << endl;
+			exit(-1);
+
 		}
 	}
 

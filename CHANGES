@@ -1,3 +1,8 @@
+2010-03-19
+   [adrian]
+	- DownloadDaemon now correctly gets the permission of supplementary groups of the downloadd user
+	  which makes it possible to download to folders which are only writeable by a supplementary group of the downloadd user, but NOT by the user itsself
+
 2010-03-16
    [adrian]
 	- fixed get_next_downloadable not searching for other running downloads over all containers

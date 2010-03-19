@@ -5,5 +5,6 @@
 #define DD_CONF_DIR "/etc/downloaddaemon/"
 #define HAVE_UINT64_T
 #define HAVE_SYSLOG_H
+#define HAVE_INITGROUPS
 
 #endif // CONFIG_H

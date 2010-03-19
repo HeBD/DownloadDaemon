@@ -452,7 +452,7 @@ std::string download_container::get_pkg_name() {
 }
 
 void download_container::decrease_waits() {
-	lock_guard<recursive_mutex> lock(download_mutex);
+	unique_lock<recursive_mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		size_t wait = (*it)->get_wait();
 		if(wait > 0) {
