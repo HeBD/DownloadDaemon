@@ -29,6 +29,7 @@ using namespace std;
 namespace global_mgmt {
 	std::mutex ns_mutex;
 	std::mutex once_per_sec_mutex;
+	std::condition_variable once_per_sec_cond;
 	std::string curr_start_time;
 	std::string curr_end_time;
 	bool downloading_active;
@@ -37,9 +38,9 @@ namespace global_mgmt {
 
 void do_once_per_second() {
 	bool was_in_dltime_last = global_download_list.in_dl_time_and_dl_active();
-
+    unique_lock<mutex> lock(global_mgmt::once_per_sec_mutex);
 	while(true) {
-		global_mgmt::once_per_sec_mutex.lock();
+        global_mgmt::once_per_sec_cond.wait(lock);
 		global_download_list.purge_deleted();
 		if(global_download_list.total_downloads() > 0) {
 			global_download_list.decrease_waits();

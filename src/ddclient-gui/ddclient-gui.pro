@@ -26,7 +26,7 @@ SOURCES += ddclient_gui.cpp \
     ddclient_gui_configure_dialog.cpp \
     ../include/cfgfile/cfgfile.cpp \
     ddclient_gui_status_bar.cpp
-INCLUDEPATH += ../include
+INCLUDEPATH += ../include C:\Boost\include\boost-1_42
 DESTDIR = ../../build/bin
 DEFINES += DDCLIENT_GUI
 unix:LIBS += -lboost_thread-mt
