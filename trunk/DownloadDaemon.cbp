@@ -103,7 +103,6 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
-					<Add option="-DHAVE_STD_THREAD" />
 					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>
@@ -121,7 +120,6 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
-					<Add option="-DHAVE_STD_THREAD" />
 					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>
@@ -139,7 +137,6 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
-					<Add option="-DHAVE_STD_THREAD" />
 					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>
@@ -157,7 +154,6 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
-					<Add option="-DHAVE_STD_THREAD" />
 					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>
@@ -175,7 +171,6 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fPIC" />
-					<Add option="-DHAVE_STD_THREAD" />
 					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>

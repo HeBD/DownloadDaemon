@@ -124,7 +124,7 @@ find -name .svn | xargs rm -rf
 find -name "*~" | xargs rm -f
 find -name "*.o" | xargs rm -f
 cd ddclient-gui-${VERSION}/src/ddclient-gui
-rm Makefile *.user
+rm Makefile *.user moc_*.cpp
 cd ../../..
 
 

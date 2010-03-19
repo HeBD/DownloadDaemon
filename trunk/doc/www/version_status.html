@@ -33,86 +33,60 @@
 
 	<h1>Version Status and Release notes</h1>
 
-	<h2>DownloadDaemon and Clients version 0.9:</h2>
-	<p>The Current status of version 0.9 is, as of 2010-03-02, as follows:</p>
-	<h2 id="Features">Features:</h2>
-	<table style="text-align: center; border: 1"><tbody><tr><td colspan="2" style="text-align: center"><strong>x</strong></td>
-  		<td><strong>|DownloadDaemon|</strong></td>
-  		<td><strong>|ddclient-wx|</strong></td>
-		<td><strong>|ddclient-php|</strong></td>
-  		<td><strong>|ddconsole|</strong></td>
-	</tr>
-	<tr><td colspan="2" style="text-align: center">More/better Plugins:</td>
-		<td style="background-color: green; text-align: center">Done</td>
-		<td style="background-color: lightgray; text-align: center">N/A</td>
-		<td style="background-color: lightgray; text-align: center">N/A</td>
-		<td style="background-color: lightgray; text-align: center">N/A</td>
-	</tr>
-	<tr><td colspan="2" style="text-align: center">Automatic Extraction:</td>
-		<td style="background-color: green; text-align: center">Done</td>
-		<td style="background-color: lightgray; text-align: center">N/A</td>
-		<td style="background-color: lightgray; text-align: center">N/A</td>
-		<td style="background-color: lightgray; text-align: center">N/A</td>
-	</tr>
-	<tr><td colspan="2" style="text-align: center">Download list restructuring:</td>
-		<td style="background-color: green; text-align: center">Done</td>
-		<td style="background-color: green; text-align: center">Done</td>
-		<td style="background-color: green; text-align: center">Done</td>
-		<td style="background-color: green; text-align: center">Done</td>
-	</tr>
-	<tr><td colspan="2" style="text-align: center">ddclient-wx rewrite in Qt:</td>
-		<td style="background-color: lightgray; text-align: center">N/A</td>
-		<td style="background-color: green; text-align: center">Done</td>
-		<td style="background-color: lightgray; text-align: center">N/A</td>
-		<td style="background-color: lightgray; text-align: center">N/A</td>
-	</tr>
-	<tr><td colspan="2" style="text-align: center">Multilanguage support:</td>
-		<td style="background-color: lightgray; text-align: center">N/A</td>
-		<td style="background-color: green; text-align: center">Done</td>
-		<td style="background-color: lightgray; text-align: center">Postponed</td>
-		<td style="background-color: lightgray; text-align: center">Postponed</td>
-	</tr>
-	<tr><td colspan="2" style="text-align: center">Final Testing and fixing:</td>
-		<td style="background-color: yellow; text-align: center">WIP</td>
-		<td style="background-color: yellow; text-align: center">WIP</td>
-		<td style="background-color: yellow; text-align: center">WIP</td>
-		<td style="background-color: yellow; text-align: center">WIP</td>
-	</tr>
-	</tbody></table>
-	<br><br>
+	<h2>DownloadDaemon and Clients version 1.0:</h2>
+	<p>The Current status of version 1.0 is, as of 2010-03-19, as follows:</p>
+	<h2 id="Features">Features: The aims for version 1.0 are not yet decided.</h2>
+
 	
-	<h2>DownloadDaemon and Clients version 0.8:</h2>
-	<p>Version 0.8 has been released on 2010-02-10. The important changes are as follows:</p>
+	<h2>DownloadDaemon and Clients version 0.9:</h2>
+	<p>Version 0.8 has been released on 2010-03-19. The important changes are as follows:</p>
 	<br>
 
 	<h3>Changes:</h3>
 	<ul>
-		<li>fixed group-setting for downloaded files (was root, is now downloadd)</li>
-		<li>fixed permissions for created directories</li>
-		<li>added possibillity to recursively download ftp-folders (#2931619)</li>
-		<li>fixed download resumption: if resumption is impossible, start from beginning</li>
-		<li>permissions of config-files will now be set to 600 when installing</li>
-		<li>added possibility to delete file without deleting download entry at right click menu of ddclient-wx</li>
-		<li>DD now uses JDownloader reconnect scripts for reconnecting</li>
-		<li>added over 400 reconnect scripts</li>
-		<li>sort router-list serverside (case insensitive)</li>
-		<li>added plugin to download youtube videos (including playlist download)</li>
-		<li>replaced added column with time left column at ddclient-wx</li>
-		<li>better handling of CURLE_COULDNT_RESOLVE_HOST</li>
-		<li>extended plugin api</li>
-		<li>made some config variables not remote-changeable for more security</li>
-		<li>added support for captcha-reading for hosters using gocr (including a wrapper to make it safe and comfortable)</li>
-		<li>added support for free download from netload.in</li>
-		<li>made downloaddaemon configuration movable. Specifie -DDD_CONF_DIR=&lt;desired path&gt; to let DownloadDaemon get its configuration files from there instead of /etc/downloaddaemon</li>
-		<li>fixed some race conditions</li>
-		<li>removed setting for plugin_dir in favour of security</li>
-		<li>reject a download folder beginning with /etc</li>
-		<li>fixed some wait-on-error timers</li>
-		<li>fixed crash when moving running downloads up or down</li>
-		<li>brought rapidshare.com free download plugin up to date (new page layout)</li>
-		<li>fixed small memory leak in uploaded.to and rapidshare.com plugin</li>
-		<li>fixed ddclient-php screwing up the router and hoster list</li>
-		<li>use asynchroneous count-down sleep to make it more accurate</li>
+		<li>DownloadDaemon now correctly gets the permission of supplementary groups of the downloadd user which makes it possible to download to folders which are only writeable by a supplementary group of the downloadd user, but NOT by the user itsself</li>
+		<li>made it possible to use one plugin for all subdomains (makes it possible to download http://rs***.rapidshare.com/... urls)</li>
+		<li>added --no-ask-pass option to ddconsole that makes it never ask for a password (useful for scripts, so ddconsole doesn't block)</li>
+		<li>MANY speed and CPU-usage improvements all over the place, thanks to plugin-info caching and dropping the need of polling get_next_downloadable.</li>
+		<li>correctly define DDCLIENT_GUI_VERSION to get nice version numbers in the about dialog</li>
+		<li>made auto-refresh in ddclient-php configurable (idea from here: https://sourceforge.net/projects/downloaddaemon/forums/forum/1007820/topic/3585763)</li>
+		<li>auto-refresh only refreshs if there are downloads with the status DOWNLOAD_RUNNING or DOWNLOAD_WAITING</li>
+		<li>init script now checks for root permissions</li>
+		<li>correctly link libdl to DownloadDaemon on older g++ versions</li>
+		<li>better handling of -DDD_CONF_DIR when compiling DownloadDaemon</li>
+		<li>added experimental support for netload.in premium accounts (UNTESTED! please test it if you have an account!)</li>
+		<li>added experimental support for uploaded.to premium. It's untested, so please test it!</li>
+		<li>Added support for megaupload.com</li>
+		<li>DownloadDaemon now checks the Content-Disposition header to find out the correct filename for downloaded files.</li>
+		<li>added support for RSDF containers</li>
+		<li>finished implementation of the untar/unrar functionality</li>
+		<li>extended mgmt-api, made setting/getting of single download and package properties possible</li>
+		<li>DownloadDaemon now downloads into a subfolder called like the package title, if there is one</li>
+		<li>made ddclient-php package-compatible</li>
+		<li>fixed problem in ddclient-php that makes logging in impossible if the server time is a few years in the past</li>
+		<li>DownloadDaemon now checks if syslog.h and stdint.h exist, and compiles without those headers if they don't</li>
+		<li>DownloadDaemon now deletes a downloaded file if its size is 0 bytes</li>
+		<li>DownloadDaemon can now also handle "false", "no", "true", "yes", ... in config files, instead of just 0 and 1 </li>
+		<li>DownloadDaemon now supports alternating proxies. set a list of proxys to bypass IP-based download-limits.</li>
+		<li>DownloadDaemon now caches data when downloading for about half a second before writing it to file</li>
+		<li>the download-list is now not a simple list any more, but is seperated into packages. THIS BREAKS CLIENT COMPATIBILITY! THE CLIENTS HAVE TO BE UPDATED (except for ddconsole)</li>
+		<li>updated ddconsole help</li>
+		<li>updated ddclient-php to be ready for the new package-based download list</li>
+		<li>fixed downloading of https:// urls</li>
+		<li>fixed error-timeouts (again...)</li>
+		<li>fixed translation bugs in ddclient-php</li>
+		<li>DownloadDaemon now works with c++0x's std::thread which can already replace boost::thread. CMake will automatically detect if std::thread is available and use it. Only tested with g++ 4.4.1.</li>
+		<li>fixed ddclient-php not running correctly if it was installed to the web-server root folder</li>
+		<li>mostly translatable configuration in ddclient-php</li>
+		<li>added german language file for ddclient-php</li>
+		<li>Complete rewrite of ddclient-wx using Qt. It already offers a lot more functionality and looks a lot better. Use this instead. See the CHANGES file for details or just check it out.</li>
+		<li>updated ddclient-wx to be compatible with the new packages. THIS WILL BE THE LAST DDCLIENT-WX RELEASE! IT IS DEPRECATED!</li>
+		<li>Added german translation to ddclient-wx (and ddclient-gui)</li>
+		<li>bugfix: removed race condition where ddclient-wx killed itself when dd was killed</li>
+		<li>made ddclient-gui able to save a list of connections (user has to delete file to clear them)</li>
+		<li>added possibiliy to set package password to ddcient-gui</li>
+		<li>added lib (downloadc) to simplify communication for clients with daemon (incl new packages support)</li>
+
 	</ul>
 	<br>
 
