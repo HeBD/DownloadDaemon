@@ -108,7 +108,7 @@ cp -rf ../downloaddaemon-${VERSION} .
 
 cd downloaddaemon-${VERSION}
 echo "Settings for DownloadDaemon:"
-dh_make -s -c gpl -e ${EMAIL}
+dh_make -m -c gpl -e ${EMAIL}
 cd debian
 cd ../..
 
