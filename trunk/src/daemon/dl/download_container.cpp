@@ -206,9 +206,12 @@ int download_container::get_next_downloadable(bool do_lock) {
 			std::string current_host((*it)->get_host());
 
 			plugin_output hinfo = (*it)->get_hostinfo();
+			if(do_lock) lock.unlock();
 			if(!hinfo.allows_multiple && global_download_list.count_running_waiting_dls_of_host((*it)->get_host()) > 0) {
+				if(do_lock) lock.lock();
 				continue;
 			}
+			if(do_lock) lock.lock();
 			return (*it)->get_id();
 		}
 	}
@@ -458,7 +461,9 @@ void download_container::decrease_waits() {
 		} else if((*it)->get_status() == DOWNLOAD_WAITING) {
 			(*it)->set_status(DOWNLOAD_PENDING);
 			#ifndef IS_PLUGIN
+			lock.unlock();
 			global_download_list.start_next_downloadable();
+			lock.lock();
 			#endif
 		}
 	}
