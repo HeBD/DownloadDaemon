@@ -305,6 +305,6 @@ int main(int argc, char* argv[], char* env[]) {
 
 	while(true) {
 		sleep(1);
-		global_mgmt::once_per_sec_mutex.unlock();
+		global_mgmt::once_per_sec_cond.notify_one();
 	}
 }
