@@ -51,7 +51,7 @@ $LANG = array(
 			     an end time in the format hours:minutes.<br /> Leave this fields empty if you want to allow DownloadDaemon to download permanently.',
 	'st_time' => 'Start Time:',
 	'end_time' => 'End Time:',
-	'dl_dir_desc' => 'This option specifies where finished downloads should be safed on the server.',
+	'dl_dir_desc' => 'This option specifies where finished downloads should be saved on the server.',
 	'dl_dir' => 'Download directory:',
 	'simul_dl_desc' => 'Here you can specify how many downloads may run at the same time.',
 	'simul_dl' => 'Simultaneous downloads:',
