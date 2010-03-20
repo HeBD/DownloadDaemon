@@ -736,6 +736,8 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 		bool first = true;
 		int pkg_id = global_download_list.add_package("");
 		replace_all(result, "CCF: ", "\r\n");
+		trim_string(result);
+		result.append("\r\n");
 		while((n = result.find_first_of("\r\n")) != string::npos) {
 			std::string this_link = result.substr(0, n);
 			result = result.substr(n);
