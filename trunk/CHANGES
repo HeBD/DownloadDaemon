@@ -1,3 +1,8 @@
+2010-03-20
+   [adrian]
+	- fixed rsdf support (sometimes the last url in the file was missing)
+	- fixed downloading if a plugin is needed and the URL contained "www." somewhere in the filename
+
 ----- 2010-03-19 - VERSION 0.9 RELEASED
 
 2010-03-19

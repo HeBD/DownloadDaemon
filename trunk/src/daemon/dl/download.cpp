@@ -189,17 +189,19 @@ std::string download::get_host(bool do_lock) {
 	if(do_lock) {
 		lock.lock();
 	}
-	size_t startpos = 0;
-
-	if(url.find("www.") != std::string::npos) {
-		startpos = url.find('.') + 1;
-	} else if(url.find("http://") != std::string::npos || url.find("ftp://") != std::string::npos || url.find("https://") != std::string::npos) {
-		startpos = url.find('/') + 2;
-	} else {
+	std::string result = url;
+	try {
+		if(result.find("http://") == 0 || result.find("ftp://") == 0 || result.find("https://") == 0) {
+			result = result.substr(result.find('/') + 2);
+		}
+		if(url.find("www.") == 0) {
+			result = result.substr(4);
+		}
+		result = result.substr(0, result.find_first_of("/\\"));
+	} catch(...) {
 		return "";
 	}
-	return url.substr(startpos, url.find('/', startpos) - startpos);
-
+	return result;
 }
 
 const char* download::get_error_str() {
@@ -303,12 +305,15 @@ void download::download_me() {
 	}
 	curl_easy_cleanup(handle);
 
-	lock.unlock();
-	if(global_download_list.package_finished(parent)) {
-		thread t(bind(&package_container::extract_package, &global_download_list, parent));
-		t.detach();
+
+	if(status == DOWNLOAD_FINISHED) {
+		lock.unlock();
+		if(global_download_list.package_finished(parent)) {
+			thread t(bind(&package_container::extract_package, &global_download_list, parent));
+			t.detach();
+		}
+		lock.lock();
 	}
-	lock.lock();
 
 	need_stop = false;
 	is_running = false;
