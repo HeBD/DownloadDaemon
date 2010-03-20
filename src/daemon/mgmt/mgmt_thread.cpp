@@ -743,6 +743,7 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 			result = result.substr(n);
 			trim_string(this_link);
 			trim_string(result);
+			result.append("\r\n");
 			if(this_link.empty()) continue;
 
 			download* dl = new download(this_link);
