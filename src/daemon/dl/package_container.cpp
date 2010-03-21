@@ -628,8 +628,8 @@ void package_container::do_reconnect() {
 
 	std::string reconnect_script = program_root + "/reconnect/" + reconnect_plugin;
 	correct_path(reconnect_script);
-	struct stat st;
-	if(stat(reconnect_script.c_str(), &st) != 0) {
+	struct stat64 st;
+	if(stat64(reconnect_script.c_str(), &st) != 0) {
 		log_string("Reconnect plugin for selected router model not found!", LOG_ERR);
 		is_reconnecting = false;
 		return;
