@@ -34,7 +34,7 @@ enum property { DL_ID = 0, DL_DOWNLOADED_BYTES, DL_SIZE, DL_WAIT_SECONDS, DL_PLU
 				DL_IS_RUNNING, DL_NEED_STOP, DL_SPEED, DL_CAN_RESUME };
 enum string_property { DL_URL = 20, DL_COMMENT, DL_ADD_DATE, DL_OUTPUT_FILE };
 enum pointer_property { DL_HANDLE = 40 };
-enum { LIST_SUCCESS = -20, LIST_PERMISSION, LIST_ID, LIST_PROPERTY };
+enum return_status { LIST_SUCCESS = -20, LIST_PERMISSION, LIST_ID, LIST_PROPERTY };
 
 class download_container {
 	friend class package_container;
