@@ -2,6 +2,7 @@
    [adrian]
 	- fixed compilation on older gcc 4.0 compilers that diddn't allow anonymous enums as template arguments
 	- fixed small bug in download-serialization
+	- improvements for downloaded files with a size of > 2GB by using stat64 instead of stat
 
 2010-03-20
    [adrian]

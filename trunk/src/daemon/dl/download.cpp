@@ -266,8 +266,8 @@ void download::download_me() {
 	download_me_worker();
 	lock.lock();
 
-	struct stat st;
-	stat(output_file.c_str(), &st);
+	struct stat64 st;
+	stat64(output_file.c_str(), &st);
 	if(st.st_size == 0) {
 		remove(output_file.c_str());
 		output_file = "";
@@ -458,12 +458,12 @@ void download::download_me_worker() {
 		std::string final_filename(output_filename);
 		output_filename += ".part";
 
-		struct stat st;
+		struct stat64 st;
 
 		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file_s;
 		if(get_hostinfo().allows_resumption && global_config.get_bool_value("enable_resume") &&
-		   stat(output_filename.c_str(), &st) == 0 && (unsigned)st.st_size == downloaded_bytes &&
+		   stat64(output_filename.c_str(), &st) == 0 && (unsigned)st.st_size == downloaded_bytes &&
 		   can_resume) {
 			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, downloaded_bytes);
 			output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
@@ -471,7 +471,7 @@ void download::download_me_worker() {
 		} else {
 			// Check if the file should be overwritten if it exists
 			if(!global_config.get_bool_value("overwrite_files")) {
-				if(stat(final_filename.c_str(), &st) == 0) {
+				if(stat64(final_filename.c_str(), &st) == 0) {
 					status = DOWNLOAD_INACTIVE;
 					error = PLUGIN_WRITE_FILE_ERROR;
 					return;
