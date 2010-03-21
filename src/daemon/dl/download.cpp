@@ -158,22 +158,19 @@ std::string download::serialize() {
 
 	string dl_bytes;
 	string dl_size;
+	stringstream conv1, conv2;
 	#ifndef HAVE_UINT64_T
-		stringstream double_conv;
-		double_conv << downloaded_bytes;
-		string tmp = double_conv.str();
+		conv1 << downloaded_bytes;
+		string tmp = conv1.str();
 		dl_bytes = tmp.substr(0, tmp.find("."));
-		double_conv.clear();
-		double_conv << size;
-		tmp = double_conv.str();
+		conv2 << size;
+		tmp = conv2.str();
 		dl_size = tmp.substr(0, tmp.find("."));
 	#else
-		stringstream conv;
-		conv << downloaded_bytes;
-		dl_bytes = conv.str();
-		conv.clear();
-		conv << size;
-		dl_size = conv.str();
+		conv1 << downloaded_bytes;
+		dl_bytes = conv1.str();
+		conv2 << size;
+		dl_size = conv2.str();
 	#endif
 	while(dl_bytes.size() > 1 && dl_bytes[0] == '0') dl_bytes.erase(0, 1);
 	while(dl_size.size() > 1 && dl_size[0] == '0') dl_size.erase(0, 1);
