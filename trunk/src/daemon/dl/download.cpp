@@ -24,9 +24,6 @@
 #include "recursive_parser.h"
 #include "../plugins/captcha.h"
 #include "plugin_container.h"
-namespace {
-	plugin_container plugin_cache;
-}
 
 #endif
 

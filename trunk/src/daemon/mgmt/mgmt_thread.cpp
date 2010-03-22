@@ -1118,6 +1118,7 @@ void target_premium(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_premium_set(data, sock);
+		plugin_cache.clear_cache();
 	}
 }
 

@@ -1,3 +1,8 @@
+2010-03-22
+   [adrian]
+	- correctly reload plugin-cache if premium credetials have changed
+	- correctly get the premium-credetials, even if its a subdomain URL
+
 2010-03-21
    [adrian]
 	- fixed compilation on older gcc 4.0 compilers that diddn't allow anonymous enums as template arguments
