@@ -70,12 +70,18 @@ plugin_output plugin_container::get_info(const std::string& info, p_info kind) {
 		dlclose(l_handle);
 		return outp;
 	}
-	inp.premium_user = global_premium_config.get_cfg_value(info + "_user");
-	inp.premium_password = global_premium_config.get_cfg_value(info + "_password");
-	plugin_getinfo(inp, outp);
-	dlclose(l_handle);
 
 	try {
+		string real_host = plugin_file;
+		real_host = real_host.substr(real_host.find_last_of("/"));
+		real_host = real_host.substr(real_host.find("lib") + 3);
+		real_host = real_host.substr(0, real_host.find(".so"));
+
+		inp.premium_user = global_premium_config.get_cfg_value(real_host + "_user");
+		inp.premium_password = global_premium_config.get_cfg_value(real_host + "_password");
+		plugin_getinfo(inp, outp);
+		dlclose(l_handle);
+
 		plugin new_p;
 		new_p.allows_multiple = outp.allows_multiple;
 		new_p.allows_resumption = outp.allows_resumption;
@@ -146,4 +152,9 @@ std::pair<bool, plugin> plugin_container::search_info_in_cache(const std::string
 	}
 	plugin p;
 	return make_pair<bool, plugin>(false, p);
+}
+
+void plugin_container::clear_cache() {
+	unique_lock<recursive_mutex> lock(mx);
+	plugin_cache.clear();
 }

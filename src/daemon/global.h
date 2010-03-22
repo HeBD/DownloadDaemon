@@ -16,9 +16,11 @@
 #include <vector>
 #include <cfgfile/cfgfile.h>
 #include "dl/package_container.h"
+#include "dl/plugin_container.h"
 
 // The downloadcontainer is just needed everywhere in the program, so let's make it global
 extern package_container global_download_list;
+extern plugin_container plugin_cache;
 
 // configuration variables are also used a lot, so global too
 extern cfgfile global_config;

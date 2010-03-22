@@ -42,6 +42,8 @@ public:
 
 	plugin_output get_info(const std::string& info, p_info kind);
 
+	void clear_cache();
+
 
 private:
 	std::string plugin_file_from_host(std::string host);
