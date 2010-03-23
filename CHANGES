@@ -1,3 +1,7 @@
+2010-03-23
+   [susanne]
+	- added spanish translation file for ddclient-gui (thanks to anonymous translator)
+
 2010-03-22
    [adrian]
 	- correctly reload plugin-cache if premium credetials have changed
