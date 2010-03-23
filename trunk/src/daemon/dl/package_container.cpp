@@ -670,17 +670,21 @@ void package_container::do_reconnect() {
 
 void package_container::dump_to_file(bool do_lock) {
 	lock_guard<recursive_mutex> lock(mx);
-
-	ofstream ofs(list_file.c_str(), ios::trunc);
-	for(package_container::iterator pkg = packages.begin(); pkg != packages.end(); ++pkg) {
-		(*pkg)->download_mutex.lock();
-		ofs << "PKG|" << (*pkg)->container_id << "|" << (*pkg)->name << "|" << (*pkg)->password << endl;
-		for(download_container::iterator it = (*pkg)->download_list.begin(); it != (*pkg)->download_list.end(); ++it) {
-			ofs << (*it)->serialize();
+	try {
+		ofstream ofs;
+		ofs.exceptions(ofstream::eofbit | ofstream::failbit | ofstream::badbit);
+		ofs.open(list_file.c_str(), ios::trunc);
+		for(package_container::iterator pkg = packages.begin(); pkg != packages.end(); ++pkg) {
+			(*pkg)->download_mutex.lock();
+			ofs << "PKG|" << (*pkg)->container_id << "|" << (*pkg)->name << "|" << (*pkg)->password << endl;
+			for(download_container::iterator it = (*pkg)->download_list.begin(); it != (*pkg)->download_list.end(); ++it) {
+				ofs << (*it)->serialize();
+			}
+			(*pkg)->download_mutex.unlock();
 		}
-		(*pkg)->download_mutex.unlock();
+	} catch(std::exception &e) {
+		log_string(string("Failed to write the dlist file: ") + e.what(), LOG_ERR);
 	}
-
 }
 
 int package_container::pkg_that_contains_download(int download_id) {

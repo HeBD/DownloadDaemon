@@ -3,6 +3,7 @@
 	- improved unpacking functionality and made it more deadlock-secure. still some more testing required
 	- implemented support for extracting zip-archives using the "unzip" program
 	- added spanish language file for ddclient-php (https://sourceforge.net/tracker/?func=detail&aid=2975094&group_id=278029&atid=1180473)
+	- added better checks when writing to the dlist file. You will get a logged error now
    [susanne]
 	- added spanish translation file for ddclient-gui (thanks to anonymous translator)
 	- added client configuration to configuration dialog at ddclient-gui (language and update interval)
