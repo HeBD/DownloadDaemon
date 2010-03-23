@@ -79,7 +79,8 @@ Password Error->Contraseña incorrecta
 Failed to reset the Password.->No se ha podido establecer la contraseña.
 
 Proxy->Proxy
-You can provide a list of proxys to use proxy-alternation. For hosters with an IP-based\nbandwidth-limit, this can bypass such restrictions by using different proxies.\n\nOne entry per Line. User, Password and Port are optional.\nFormat: <user>:<password>@<ip-address>:<port>\nFor example: tom:mypass@123.456.7.89:5115 or tom@hello.de:1234 or hello.de->Lista de proxies para descarga desde sitios con limite de ancho de banda basado en IP,\npermite saltarse las restricciones usando los proxies.\nUna entrada por línea. El usuario, contraseña y puerto so opcionales.\nFormato: <usuario>:<contraseña>@<dirección-ip>:<puerto>\nPor ejemplo: manolo:clave@11.22.33.44:555 o dominio.ext
+You can provide a list of proxys to use proxy-alternation. For hosters with an IP-based\nbandwidth-limit, this can bypass such restrictions by using different proxies.\n\nOne entry per Line. User, Password and Port are optional.\nFormat: <user>:<password>@<ip-address>:<port>\nFor example: tom:mypass@123.456.7.89:5115 or tom@hello.de:1234 or hello.de->Lista de proxies para descarga desde sitios con limite de ancho de banda basado en\nIP,permite saltarse las restricciones usando los proxies.\nUna entrada por línea. El usuario, contraseña y puerto so opcionales.\nFormato: <usuario>:<contraseña>@<dirección-ip>:<puerto>\nPor ejemplo: manolo:clave@11.22.33.44:555 o manolo@hi.ext:555 o dominio.ext
+If a connection to a server fails when using a proxy, should DownloadDaemon retry with\nanother proxy?->Si falla la conexión a un servidor usando un proxy, ¿Debe intentarlo\nDownloadDaemon con otro proxy?
 retry->Reintentar
 
 #connect dialog
