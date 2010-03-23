@@ -206,6 +206,12 @@
 		<Unit filename="src/daemon/dl/package_container.h">
 			<Option target="Daemon" />
 		</Unit>
+		<Unit filename="src/daemon/dl/package_extractor.cpp">
+			<Option target="Daemon" />
+		</Unit>
+		<Unit filename="src/daemon/dl/package_extractor.h">
+			<Option target="Daemon" />
+		</Unit>
 		<Unit filename="src/daemon/dl/plugin_container.cpp">
 			<Option target="Daemon" />
 		</Unit>
