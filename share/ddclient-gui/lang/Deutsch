@@ -83,6 +83,9 @@ You can provide a list of proxys to use proxy-alternation. For hosters with an I
 If a connection to a server fails when using a proxy, should DownloadDaemon retry with\nanother proxy?->Wenn die Verbindung zu einem Server mit einem Proxy fehlschlägt, soll Downloaddaemon\nes mit einem anderen Proxy erneut versuchen?
 retry->erneut versuchen
 
+Client->Client
+Update Interval in s->Update Intervall in s
+
 #connect dialog
 Connect to Host->Mit Host verbinden
 Please insert Host Data->Bitte Hostdaten eingeben

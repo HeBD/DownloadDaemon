@@ -21,15 +21,22 @@ class update_thread : public QThread{
     public:
         /** Constructor
         *   @param parent Pointer to MainWindow
+        *   @param interval Update Interval
         */
-        update_thread(ddclient_gui *parent);
+        update_thread(ddclient_gui *parent, int interval);
 
         /** Defaultmethod to start Thread*/
         void run();
 
+        /** Setter for Update Interval
+        *    @param interval Interval to set
+        */
+        void set_update_interval(int interval);
+
     private:
         ddclient_gui *parent;
         bool told;
+        int interval;
 };
 
 #endif // DDCLIENT_GUI_UPDATE_THREAD_H

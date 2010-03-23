@@ -29,7 +29,7 @@ class configure_dialog : public QDialog{
         /** Constructor
         *   @param parent MainWindow, which calls the dialog
         */
-        configure_dialog(QWidget *parent);
+        configure_dialog(QWidget *parent, QString config_dir);
 
     private:
         enum var_type {NORMAL_T, ROUTER_T, PREMIUM_T};
@@ -39,7 +39,10 @@ class configure_dialog : public QDialog{
         QWidget *create_logging_panel();
         QWidget *create_reconnect_panel();
         QWidget *create_proxy_panel();
+        QWidget *create_client_panel();
         QString get_var(const std::string &var, var_type typ = NORMAL_T);
+
+        QString config_dir;
 
         // general
         QComboBox *premium_host;
@@ -76,6 +79,10 @@ class configure_dialog : public QDialog{
         // proxy
         QTextDocument *proxy;
         QCheckBox *proxy_retry;
+
+        // client
+        QComboBox *language;
+        QLineEdit *update_interval;
 
     private slots:
         void help();

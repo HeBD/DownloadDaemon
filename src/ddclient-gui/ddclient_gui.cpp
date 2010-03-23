@@ -94,8 +94,15 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
     }
 
     connect(this, SIGNAL(do_reload()), this, SLOT(on_reload()));
-    update_thread *thread = new update_thread(this);
+
+    int interval = file.get_int_value("update_interval");
+
+    if(interval == 0)
+        interval = 2;
+
+    update_thread *thread = new update_thread(this, interval);
     thread->start();
+    this->thread = thread;
 }
 
 
@@ -177,6 +184,11 @@ void ddclient_gui::set_language(std::string lang_to_set){
 
     update_bars();
     update_list_components();
+}
+
+
+void ddclient_gui::set_update_interval(int interval){
+    ((update_thread *) thread)->set_update_interval(interval);
 }
 
 
@@ -1535,7 +1547,7 @@ void ddclient_gui::on_configure(){
     if(!check_connection(true, "Please connect before configurating DownloadDaemon."))
         return;
 
-    configure_dialog dialog(this);
+    configure_dialog dialog(this, config_dir);
     dialog.setModal(true);
     dialog.exec();
 }
@@ -1862,13 +1874,13 @@ void ddclient_gui::resizeEvent(QResizeEvent* event){
     list->setColumnWidth(3, 100);
 
     if(width > 600){ // use different ratio if window is a bit bigger then normal
-        list->setColumnWidth(4, 260);
-        width -= 260;
+        list->setColumnWidth(4, 300);
+        width -= 300;
         list->setColumnWidth(1, 0.3*width);
         list->setColumnWidth(2, 0.7*width);
     }else{
-        list->setColumnWidth(1, 0.23*width);
+        list->setColumnWidth(1, 0.2*width);
         list->setColumnWidth(2, 0.3*width);
-        list->setColumnWidth(4, 0.47*width);
+        list->setColumnWidth(4, 0.5*width);
     }
 }
