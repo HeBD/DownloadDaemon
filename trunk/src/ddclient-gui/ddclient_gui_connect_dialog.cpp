@@ -89,6 +89,7 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
     language = new QComboBox();
     language->addItem("English");
     language->addItem("Deutsch");
+    language->addItem(trUtf8("Español"));
     save_data = new QCheckBox();
     save_data->setChecked(true);
     button_box->button(QDialogButtonBox::Ok)->setDefault(true);
@@ -96,6 +97,8 @@ connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(pa
 
     if(data.lang == "Deutsch")
         language->setCurrentIndex(1);
+    else if(data.lang == "Espanol")
+        language->setCurrentIndex(2);
     else // English is default
         language->setCurrentIndex(0);
 
@@ -140,6 +143,9 @@ void connect_dialog::ok(){
     int port = this->port->text().toInt();
     string password = this->password->text().toStdString();
     string language = this->language->currentText().toStdString();
+
+    if(language == trUtf8("Español").toStdString())
+        language = "Espanol";
 
     bool error_occured = false;
     ddclient_gui *p = (ddclient_gui *) parent();

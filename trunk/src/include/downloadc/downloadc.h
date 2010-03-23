@@ -50,7 +50,9 @@ struct package{
     std::vector<download> dls;
 };
 
-enum file_delete { del_file, dont_delete, dont_know };
+/** Enum file_delete, manages the three options for deleting a file */
+enum file_delete{ del_file, dont_delete, dont_know };
+
 
 /** DownloadClient Class, makes communication with DownloadDaemon easier */
 class downloadc{

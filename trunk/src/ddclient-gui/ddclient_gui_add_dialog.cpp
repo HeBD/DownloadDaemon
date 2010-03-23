@@ -105,6 +105,7 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
     connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
 }
 
+
 void add_dialog::ok(){
     ddclient_gui *p = (ddclient_gui *) parent();
     downloadc *dclient = p->get_connection();
