@@ -34,9 +34,9 @@ pkg_extractor::extract_status pkg_extractor::extract_package(const std::string& 
 }
 
 pkg_extractor::tool pkg_extractor::required_tool(std::string filename) {
-	size_t n = filename.find_first_of("\\/");
+	size_t n = filename.find_last_of("\\/");
 	if(n != string::npos) {
-		filename = filename.substr(n);
+		filename = filename.substr(n + 1);
 	}
 
 	// we also have to check for string::npos, because size() - x could be -1, which equals string::npos

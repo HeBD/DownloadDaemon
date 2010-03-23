@@ -749,7 +749,7 @@ void package_container::extract_package(int id) {
 		pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, password);
 
 		if(ret == pkg_extractor::PKG_ERROR || ret == pkg_extractor::PKG_INVALID) return;
-		if(pkg_extractor::PKG_PASSWORD) {
+		if(ret == pkg_extractor::PKG_PASSWORD) {
 			// next password
 			if(!fixed_passwd.empty()) return;
 			if(password_list.empty()) return;
