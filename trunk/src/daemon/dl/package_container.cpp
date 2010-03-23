@@ -18,6 +18,7 @@
 #include "../plugins/captcha.h"
 #include "../reconnect/reconnect_parser.h"
 #include "../mgmt/global_management.h"
+#include "../dl/package_extractor.h"
 
 #include <string>
 
@@ -732,90 +733,44 @@ void package_container::extract_package(int id) {
 	unique_lock<recursive_mutex> lock(mx);
 	package_container::iterator pkg_it = package_by_id(id);
 	std::string fixed_passwd = (*pkg_it)->get_password();
-	FILE* extractor;
-	string to_exec;
 	unique_lock<recursive_mutex> pkg_lock((*pkg_it)->download_mutex);
 	download_container::iterator it = (*pkg_it)->download_list.begin();
 	if((*pkg_it)->download_list.size() == 0) return;
 	string output_file = (*it)->get_filename();
-	string extension;
-	string output_dir;
-	size_t n = output_file.find_last_of(".");
-	if(n != string::npos) {
-		extension = output_file.substr(n);
-		output_dir = output_file.substr(0, n);
-	} else {
-		return;
-	}
-	if(!(*pkg_it)->name.empty()) {
-		string tmp = (*pkg_it)->name;
-		make_valid_filename(tmp);
-		if(!tmp.empty()) {
-			output_dir = output_dir.substr(0, output_dir.find_last_of("/\\"));
-			output_dir += "/" + tmp;
-		}
-	}
-
 	pkg_lock.unlock();
 	lock.unlock();
+
 	string password_list = global_config.get_cfg_value("pkg_extractor_passwords");
 	string password = fixed_passwd;
-	std::string unrar_path = global_config.get_cfg_value("unrar_path");
-	std::string tar_path = global_config.get_cfg_value("tar_path");
+
 	while(true) {
 		trim_string(password);
-		if(extension == ".rar") {
-			if(unrar_path.empty()) return;
-			to_exec = unrar_path + " x";
-			if(!password.empty())
-				to_exec += " -p" + password;
-			else
-				to_exec += " -p-";
-			to_exec += " -o+ -y '" + output_file + "' '" + output_dir + "'";
-		//} else if(extension == ".zip") {
-		//	to_exec = "unzip -o -qq";
-		//	if(!password.empty())
-		//		to_exec += " -P " + password;
-		//	to_exec += "'" + output_file + "' -d '" + output_dir + "'";
-		} else if(extension == ".gz" && output_file.find(".tar.gz") == output_file.size() - 7 && !tar_path.empty()) {
-			to_exec = "tar xzf '" + output_file + "' -C '" + output_dir + "'";
-		} else if(extension == ".bz2" && output_file.find(".tar.bz2") == output_file.size() - 8 && !tar_path.empty()) {
-			to_exec = "tar xjf '" + output_file + "' -C '" + output_dir + "'";
-		}
-		if(to_exec.empty()) return;
-		to_exec += " 2>&1";
+		log_string("Trying to extract... " + output_file, LOG_DEBUG);
+		pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, password);
 
-		mkdir_recursive(output_dir);
-		log_string("Trying to extract... " + to_exec, LOG_DEBUG);
-		extractor = popen(to_exec.c_str(), "r");
-		if(extractor == NULL) {
-			log_string("Unable to open pipe to extractor of file: " + output_file, LOG_WARNING);
-			return;
-		}
-		string result;
-		int c;
-		do{
-			c = fgetc(extractor);
-			if(c != EOF) result.push_back(c);
-		} while(c != EOF);
-		int retval = pclose(extractor);
-		if(result.find("password incorrect") != string::npos) {
+		if(ret == pkg_extractor::PKG_ERROR || ret == pkg_extractor::PKG_INVALID) return;
+		if(pkg_extractor::PKG_PASSWORD) {
 			// next password
-			log_string("extraction failed. Password incorrect?", LOG_DEBUG);
 			if(!fixed_passwd.empty()) return;
 			if(password_list.empty()) return;
 			if(password.empty()) {
 				password = password_list.substr(0, password_list.find(";"));
 				continue;
 			}
-			if(password_list.find(";") != string::npos)
-				password_list = password_list.substr(password_list.find(";") + 1);
-			password = password_list.substr(0, password_list.find(";"));
+			try {
+				if(password_list.find(";") != string::npos) {
+					password_list = password_list.substr(password_list.find(";") + 1);
+				}
+				password = password_list.substr(0, password_list.find(";"));
+			} catch(...) {
+				password = password_list.substr(0, password_list.find(";"));
+				password_list = "";
+			} // ignore errors
 			if(password.empty()) return;
 			continue;
 		}
 
-		if(retval == 0 && global_config.get_bool_value("delete_extracted_archives")) {
+		if(ret == pkg_extractor::PKG_SUCCESS && global_config.get_bool_value("delete_extracted_archives")) {
 			// success, let's delete the files.
 			log_string("Successfully extracted package " + int_to_string(id) + ". Removing archives...", LOG_DEBUG);
 			pkg_lock.lock();

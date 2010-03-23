@@ -14,6 +14,7 @@ SET(daemon_SRCS downloaddaemon.cpp
 		dl/download_container.cpp
 		dl/package_container.cpp
 		dl/plugin_container.cpp
+		dl/package_extractor.cpp
 		 ../include/crypt/md5.cpp
 		reconnect/reconnect_parser.cpp
 		../include/crypt/AES/aes_cbc.cpp
