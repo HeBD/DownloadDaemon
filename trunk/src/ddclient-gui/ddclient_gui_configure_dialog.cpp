@@ -13,6 +13,7 @@
 #include "ddclient_gui.h"
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <cfgfile/cfgfile.h>
 
 #include <QtGui/QFormLayout>
