@@ -13,6 +13,7 @@
 #include "ddclient_gui.h"
 #include <string>
 #include <fstream>
+#include <cfgfile/cfgfile.h>
 
 #include <QtGui/QFormLayout>
 #include <QtGui/QVBoxLayout>
@@ -27,7 +28,7 @@
 using namespace std;
 
 
-configure_dialog::configure_dialog(QWidget *parent) : QDialog(parent){
+configure_dialog::configure_dialog(QWidget *parent, QString config_dir) : QDialog(parent), config_dir(config_dir){
     ddclient_gui *p = (ddclient_gui *) parent;
 
     setWindowTitle(p->tsl("Configure DownloadDaemon"));
@@ -44,6 +45,7 @@ configure_dialog::configure_dialog(QWidget *parent) : QDialog(parent){
     tabs->addTab (create_logging_panel(), p->tsl("Logging"));
     tabs->addTab (create_reconnect_panel(), p->tsl("Reconnect"));
     tabs->addTab (create_proxy_panel(), p->tsl("Proxy"));
+    tabs->addTab (create_client_panel(), p->tsl("Client"));
 
     layout->addWidget(tabs);
     layout->addWidget(button_box);
@@ -423,6 +425,55 @@ QWidget *configure_dialog::create_proxy_panel(){
 }
 
 
+QWidget *configure_dialog::create_client_panel(){
+    ddclient_gui *p = (ddclient_gui *) this->parent();
+
+    QWidget *page = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout();
+    page->setLayout(layout);
+
+    QGroupBox *group_box = new QGroupBox(p->tsl("Client"));
+    QFormLayout *form_layout = new QFormLayout();
+    group_box->setLayout(form_layout);
+
+    // read saved language if it exists
+    string file_name = string(config_dir.toStdString()) + "ddclient-gui.conf";
+    cfgfile file;
+    file.open_cfg_file(file_name, true);
+
+    string lang = file.get_cfg_value("language");
+    int interval = file.get_int_value("update_interval");
+
+    if(lang == "")
+        lang = "English";
+
+    if(interval == 0)
+        interval = 2;
+
+    language = new QComboBox();
+    language->setFixedWidth(100);
+    language->addItem("English");
+    language->addItem("Deutsch");
+    language->addItem(trUtf8("Español"));
+
+    if(lang == "Deutsch")
+        language->setCurrentIndex(1);
+    else if(lang == "Espanol")
+        language->setCurrentIndex(2);
+    else // English is default
+        language->setCurrentIndex(0);
+
+    update_interval = new QLineEdit(QString("%1").arg(interval));
+    update_interval->setFixedWidth(100);
+
+    form_layout->addRow(new QLabel(p->tsl("Language")), language);
+    form_layout->addRow(new QLabel(p->tsl("Update Interval in s")), update_interval);
+
+    layout->addWidget(group_box);
+    return page;
+}
+
+
 QString configure_dialog::get_var(const string &var, var_type typ){
         ddclient_gui *p = (ddclient_gui *) this->parent();
         downloadc *dclient = p->get_connection();
@@ -572,6 +623,12 @@ void configure_dialog::ok(){
         proxy_list.replace(n, 1, ";");
     }
 
+    string language = this->language->currentText().toStdString();
+    if(language == trUtf8("Español").toStdString())
+        language = "Espanol";
+
+    int update_interval = this->update_interval->text().toInt();
+
     // check connection
     if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))
         return;
@@ -645,6 +702,19 @@ void configure_dialog::ok(){
         }
     }
     mx->unlock();
+
+    p->set_language(language);
+    p->set_update_interval(update_interval);
+
+    // save data to config file
+    string file_name = string(config_dir.toStdString()) + "ddclient-gui.conf";
+    stringstream s;
+    s << update_interval;
+    cfgfile file;
+    file.open_cfg_file(file_name, true);
+
+    file.set_cfg_value("language", language);
+    file.set_cfg_value("update_interval", s.str());
 
     emit done(0);
 }

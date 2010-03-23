@@ -16,6 +16,7 @@
 #include <downloadc/downloadc.h>
 #include <language/language.h>
 #include <vector>
+#include <QThread>
 
 #include <QMainWindow>
 #include <QString>
@@ -86,6 +87,11 @@ class ddclient_gui : public QMainWindow{
         */
         void set_language(std::string lang_to_set);
 
+        /** Setter for Update Interval
+        *    @param interval Interval to set
+        */
+        void set_update_interval(int interval);
+
         /** Getter for Download-Client Object (used for Communication with Daemon)
         *    @returns Download-Client Object
         */
@@ -136,6 +142,7 @@ class ddclient_gui : public QMainWindow{
         std::vector<package> content;
         std::vector<package> new_content;
         QString config_dir;
+        QThread *thread;
 
         QTreeView *list;
         QStandardItemModel *list_model;

@@ -11,7 +11,7 @@
 
 #include "ddclient_gui_update_thread.h"
 
-update_thread::update_thread(ddclient_gui *parent) : parent(parent){
+update_thread::update_thread(ddclient_gui *parent, int interval) : parent(parent), interval(interval){
     told = false;
 }
 
@@ -28,6 +28,13 @@ void update_thread::run(){
         }
 
         parent->clear_last_error_message();
-        sleep(2); // reload every two seconds
+
+        for(int i = 0; i < interval; i++)
+            sleep(1); // wait till update intervall is finished
     }
+}
+
+
+void update_thread::set_update_interval(int interval){
+    this->interval = interval;
 }
