@@ -1,3 +1,7 @@
+2010-03-24
+   [adrian]
+	- some fixes and improvements in filename-validtaion for downloaded files
+
 2010-03-23
    [adrian]
 	- improved unpacking functionality and made it more deadlock-secure. still some more testing required

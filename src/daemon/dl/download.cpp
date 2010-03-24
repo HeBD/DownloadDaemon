@@ -449,6 +449,7 @@ void download::download_me_worker() {
 			}
 		} else {
 			output_filename += download_folder;
+			make_valid_filename(plug_outp.download_filename);
 			output_filename += '/' + plug_outp.download_filename;
 		}
 
