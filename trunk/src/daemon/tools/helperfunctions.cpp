@@ -296,8 +296,9 @@ std::string filename_from_url(const std::string &url) {
 	std::string fn;
 	if(url.find("/") != std::string::npos) {
 		fn = url.substr(url.find_last_of("/\\"));
-		fn = fn.substr(1, fn.find('?'));
+		fn = fn.substr(1, fn.find('?') - 1);
 	}
+	make_valid_filename(fn);
 	return fn;
 }
 
