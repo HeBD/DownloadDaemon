@@ -436,7 +436,12 @@ void download::download_me_worker() {
 			download_folder += "/" + dl_subfolder;
 		}
 
-		mkdir_recursive(download_folder);
+		if(!mkdir_recursive(download_folder)) {
+			log_string("Failed to create the download target directory for Download " + int_to_string(id), LOG_ERR);
+			status = DOWNLOAD_INACTIVE;
+			error = PLUGIN_WRITE_FILE_ERROR;
+			return;
+		}
 		if(plug_outp.download_filename == "") {
 			if(plug_outp.download_url != "") {
 				std::string fn = filename_from_url(plug_outp.download_url);
@@ -468,13 +473,10 @@ void download::download_me_worker() {
 			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
 		} else {
 			// Check if the file should be overwritten if it exists
-			if(!global_config.get_bool_value("overwrite_files")) {
-				if(stat64(final_filename.c_str(), &st) == 0) {
+			if(!global_config.get_bool_value("overwrite_files") && stat64(final_filename.c_str(), &st) == 0) {
 					status = DOWNLOAD_INACTIVE;
 					error = PLUGIN_WRITE_FILE_ERROR;
 					return;
-
-				}
 			}
 			output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::trunc);
 		}
