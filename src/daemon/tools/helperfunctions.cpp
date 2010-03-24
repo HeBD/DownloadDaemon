@@ -272,7 +272,7 @@ void substitute_env_vars(std::string &str) {
 	}
 }
 
-void mkdir_recursive(std::string dir) {
+bool mkdir_recursive(std::string dir) {
 	size_t len = dir.length();
 	if(dir[len -1] == '/') {
 		dir[len - 1] = 0;
@@ -283,13 +283,17 @@ void mkdir_recursive(std::string dir) {
 	}
 
 	string tmp;
-
+	struct stat st;
 	for(size_t index = 0; index < len; ++index) {
 		if(dir[index] == '/') {
 			tmp = dir.substr(0, dir.find('/', index + 1));
-			mkdir(tmp.c_str(), 0777);
+			if(stat(tmp.c_str(), &st) == 0) continue;
+			if(mkdir(tmp.c_str(), 0777) != 0) {
+				return false;
+			}
 		}
 	}
+	return true;
 }
 
 std::string filename_from_url(const std::string &url) {

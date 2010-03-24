@@ -102,8 +102,9 @@ void substitute_env_vars(std::string &str);
 
 /** Recursively creates a directory path specified in dir
 *	@param path to create
+*	@returns if all directories were created successfully
 */
-void mkdir_recursive(std::string dir);
+bool mkdir_recursive(std::string dir);
 
 /** detects the name of a file if you give a URL or an empty string if it's a directory (url ending with /) ex.: http://blah.com/asdf?q=1 will return "asdf"
 *	@param url URL from which to get the filename
