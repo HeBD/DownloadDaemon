@@ -259,6 +259,12 @@ void download::download_me() {
 	unique_lock<recursive_mutex> lock(mx);
 	need_stop = false;
 	handle = curl_easy_init();
+	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
+	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 60);
+	long dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
+	if(dl_speed > 0) {
+		curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
+	}
 	lock.unlock();
 	download_me_worker();
 	lock.lock();
@@ -526,7 +532,7 @@ void download::download_me_worker() {
 		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &dl);
 		// set timeouts
 		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
-		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
+		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 60);
 		long dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
 		if(dl_speed > 0) {
 			curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
