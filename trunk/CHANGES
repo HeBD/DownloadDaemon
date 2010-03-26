@@ -1,3 +1,7 @@
+2010-03-26
+   [adrian]
+	- hopefully fixed the problem that sometimes, when downloading many files from rapidshare, the process suddenly stops when starting the next download
+
 2010-03-24
    [adrian]
 	- some fixes and improvements in filename-validtaion for downloaded files
