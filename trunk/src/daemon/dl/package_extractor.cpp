@@ -106,8 +106,8 @@ pkg_extractor::tool pkg_extractor::get_unrar_type() {
 		while((num = read(pipe_conn[0], buf, 256)) > 0) {
 			help_result.append(buf, num);
 		}
-
-		close(pipe_conn[0]);
+		int ret;
+		waitpid(child_id, &ret, 0);
 		if(help_result.empty()) return NONE;
 
 		if(help_result.find("  p-") != string::npos) {
@@ -182,7 +182,8 @@ pkg_extractor::extract_status pkg_extractor::extract_rar(const std::string& file
 				break;
 			}
 		}
-
+		int process_ret;
+		waitpid(child_id, &process_ret, 0);
 		// parse result
 		extract_status ret = PKG_SUCCESS;
 		if(t == GNU_UNRAR && result.find(" Failed") != string::npos) {
@@ -191,7 +192,7 @@ pkg_extractor::extract_status pkg_extractor::extract_rar(const std::string& file
 			ret = PKG_PASSWORD;
 		}
 
-		if(result.find("ERROR") != string::npos  || (t == RARLAB_UNRAR && result.find("All OK") == string::npos)) {
+		if(process_ret != 0 || result.find("ERROR") != string::npos  || (t == RARLAB_UNRAR && result.find("All OK") == string::npos)) {
 			ret = PKG_ERROR;
 		}
 
