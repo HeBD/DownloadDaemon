@@ -105,6 +105,14 @@ void replace_html_special_chars(std::string& s);
 template <class PARAM>
 std::string convert_to_string(PARAM p1);
 
+#include <vector>
+/** Splits a string into many strings, seperating them with the seperator
+ *  @param inp_string string to split
+ *	@param seperator Seperator to use for splitting
+ *	@returns Vector of all the strings
+ */
+std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator);
+
 
 /////////////////////// IMPLEMENTATION ////////////////////////
 
@@ -206,7 +214,19 @@ std::string convert_to_string(PARAM p1) {
 	return ss.str();
 }
 
+std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator) {
+	std::vector<std::string> ret;
+	size_t n = 0, last_n = 0;
+	while(true) {
+		n = inp_string.find(seperator, n);
+		ret.push_back(inp_string.substr(last_n, n - last_n));
+		if(n == std::string::npos) break;
+		n += seperator.size();
+		last_n = n;
 
+	}
+	return ret;
+}
 
 // I know, this looks ugly, but it does the job and seems to be okay in this case
 #include "../dl/download_container.cpp"
