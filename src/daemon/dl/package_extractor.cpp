@@ -308,6 +308,7 @@ pkg_extractor::extract_status pkg_extractor::extract_zip(const std::string& file
 		} else {
 			execlp(unzip_path, unzip_path, "-o", fn_path, "-d", target_dir, NULL);
 		}
+		exit(-1);
 
 	} else {
 		// parent
