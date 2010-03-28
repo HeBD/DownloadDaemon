@@ -1,3 +1,8 @@
+2010-03-28
+   [adrian]
+	- fixed bug in reconnect parser, that posted post-data in the header, if it would also be valid 
+	  (e.g. post-data is "login:xxxxx", it would be interpreted as a header)
+
 2010-03-27
    [adrian]
 	- Added plugin for netfolder.in
