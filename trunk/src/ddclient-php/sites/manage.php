@@ -149,6 +149,10 @@ if($connect != 'SUCCESS') {
 			case 'DOWNLOAD_FINISHED':
 				$dl_status .= 'Download Finished';
 				break;
+			case 'DOWNLOAD_RECONNECTING':
+				$any_download_running = true;
+				$dl_status .= 'Reconnecting...';
+				break;
 			default:
 				$dl_status .= 'Status not detected';	
 		}
