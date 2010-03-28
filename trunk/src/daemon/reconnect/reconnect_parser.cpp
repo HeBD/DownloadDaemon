@@ -134,9 +134,13 @@ void reconnect::request() {
 	curl_easy_setopt(handle, CURLOPT_URL, string("http://" + host).c_str());
 	struct curl_slist *header = NULL;
 
+	bool this_is_data = false;
 	while(!curr_line.empty() || getline(file, curr_line)) {
 		trim_string(curr_line);
-		if(curr_line.empty()) continue;
+		if(curr_line.empty()) {
+			this_is_data = true;
+			continue;
+		}
 		std::string cmd;
 		cmd = curr_line.substr(0, curr_line.find("[[["));
 		if(curr_line.find("[[[") != string::npos) {
@@ -150,7 +154,6 @@ void reconnect::request() {
 				curl_easy_setopt(handle, CURLOPT_HTTPHEADER, header);
 
 			if(!curr_post_data.empty()) {
-				curl_easy_setopt(handle, CURLOPT_POST, 1);
 				curl_easy_setopt(handle, CURLOPT_POSTFIELDS, curr_post_data.c_str());
 			}
 			curl_easy_perform(handle);
@@ -177,16 +180,19 @@ void reconnect::request() {
 				cmd = cmd.substr(0, cmd.find_first_of(" \t\n"));
 				cmd = "http://" + host + cmd;
 				curl_easy_setopt(handle, CURLOPT_URL, cmd.c_str());
+				if(cmd.find("POST") == 0)
+					curl_easy_setopt(handle, CURLOPT_POST, true);
 				continue;
 			}
 
-			if(cmd.find(':') == string::npos) {
-				curr_post_data = cmd;
+			if(cmd.find(':') == string::npos || this_is_data) {
+				curr_post_data += cmd;
 				continue;
 			}
 			struct curl_slist *tmp_slist = curl_slist_append(header, cmd.c_str());
 			if(tmp_slist == 0) {
 				curr_post_data = cmd;
+				this_is_data = true;
 			} else {
 				header = tmp_slist;
 			}
