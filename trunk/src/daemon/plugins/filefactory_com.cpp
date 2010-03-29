@@ -58,9 +58,17 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	}
 	n = result.find("<a href=\"", n) + 9;
 	outp.download_url = result.substr(n, result.find("\"", n) - n);
-	set_wait_time(30);
-	return PLUGIN_SUCCESS;
-
+	n = result.find("link will be available below in ") + 32;
+	n = result.find(">", n) + 1;
+	string wait_string = result.substr(n, result.find("<", n) - n);
+	int wait_seconds = atoi(wait_string.c_str());
+	if(wait_seconds <= 31) {
+		set_wait_time(30);
+		return PLUGIN_SUCCESS;
+	} else {
+		set_wait_time(wait_seconds);
+		return PLUGIN_LIMIT_REACHED;
+	}
 }
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {

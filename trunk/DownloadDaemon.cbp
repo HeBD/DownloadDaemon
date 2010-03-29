@@ -194,6 +194,23 @@
 					<Add library="curl" />
 				</Linker>
 			</Target>
+			<Target title="filefactory_com">
+				<Option platforms="Unix;Mac;" />
+				<Option output="build/share/downloaddaemon/plugins/libfilefactory.com.so" prefix_auto="0" extension_auto="0" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-pedantic" />
+					<Add option="-std=c++0x" />
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-fPIC" />
+					<Add directory="src/include/" />
+				</Compiler>
+				<Linker>
+					<Add library="curl" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
@@ -265,6 +282,9 @@
 		<Unit filename="src/daemon/plugins/captcha.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="src/daemon/plugins/filefactory_com.cpp">
+			<Option target="filefactory_com" />
+		</Unit>
 		<Unit filename="src/daemon/plugins/megaupload_com.cpp">
 			<Option target="megaupload_com" />
 		</Unit>
@@ -281,6 +301,7 @@
 			<Option target="netload_in" />
 			<Option target="megaupload_com" />
 			<Option target="netfolder_in" />
+			<Option target="filefactory_com" />
 		</Unit>
 		<Unit filename="src/daemon/plugins/rapidshare_com.cpp">
 			<Option target="rapidshare_com" />
