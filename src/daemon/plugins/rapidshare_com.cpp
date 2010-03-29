@@ -35,7 +35,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
 		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
 		curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, false);
-		curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "/dev/null");
+		curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
 		int res = curl_easy_perform(handle);
 		if(res == 0) {
 			if(result.find("Forgotten your password?") != string::npos) {

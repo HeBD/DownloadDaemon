@@ -1,3 +1,7 @@
+2010-03-29
+   [adrian]
+	- Added plugin for filefactory.com. Its not yet fully functional, but can download already
+
 2010-03-28
    [adrian]
 	- fixed bug in reconnect parser, that posted post-data in the header, if it would also be valid 
