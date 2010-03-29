@@ -23,6 +23,7 @@
 					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>
+					<Add option="-rdynamic" />
 					<Add library="curl" />
 					<Add library="boost_thread-mt" />
 				</Linker>

@@ -40,6 +40,7 @@ namespace std {
 #include <dlfcn.h>
 #include <pwd.h>
 #include <grp.h>
+#include <signal.h>
 
 #ifndef HAVE_UINT64_T
 	#warning You do not have the type uint64_t. this is pretty bad and you might get problems when you download big files.
@@ -75,6 +76,11 @@ char** env_vars;
 
 int main(int argc, char* argv[], char* env[]) {
 	env_vars = env;
+	#ifdef BACKTRACE_ON_CRASH
+	signal(SIGSEGV, print_backtrace);
+
+
+	#endif
 
 	// Drop user if there is one, and we were run as root
 	if (getuid() == 0 || geteuid() == 0) {
