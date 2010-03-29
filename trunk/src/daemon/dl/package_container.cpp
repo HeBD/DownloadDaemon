@@ -683,7 +683,6 @@ void package_container::dump_to_file(bool do_lock) {
 			(*pkg)->download_mutex.unlock();
 		}
 	} catch(std::exception &e) {
-		log_string(string("Failed to write the dlist file: ") + e.what(), LOG_ERR);
 	}
 }
 
