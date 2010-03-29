@@ -9,11 +9,14 @@
 #cmakedefine HAVE_UINT64_T
 #cmakedefine HAVE_SYSLOG_H
 #cmakedefine HAVE_INITGROUPS
+#cmakedefine BACKTRACE_ON_CRASH
 
 #ifdef __CYGWIN__
 	#ifndef RTLD_LOCAL
 		#define RTLD_LOCAL 0
 	#endif
 #endif
+
+
 
 #endif // CONFIG_H

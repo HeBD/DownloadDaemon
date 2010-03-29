@@ -130,4 +130,8 @@ void make_valid_filename(std::string &fn);
 */
 std::string ascii_hex_to_bin(std::string ascii_hex);
 
+#ifdef BACKTRACE_ON_CRASH
+void print_backtrace(int sig);
+#endif
+
 #endif /*HELPERFUNCTIONS_H_*/

@@ -1,6 +1,7 @@
 2010-03-29
    [adrian]
 	- Added plugin for filefactory.com. Its not yet fully functional, but can download already
+	- added compile flag -DBACKTRACE_ON_CRASH, which will make downloaddaemon print a backtrace if it gets a sigsegv
 
 2010-03-28
    [adrian]

@@ -347,3 +347,19 @@ std::string ascii_hex_to_bin(std::string ascii_hex) {
 	}
 	return result;
 }
+
+#ifdef BACKTRACE_ON_CRASH
+#include <execinfo.h>
+
+void print_backtrace(int sig) {
+  void *array[50];
+  size_t size;
+
+  // get void*'s for all entries on the stack
+  size = backtrace(array, 50);
+
+  // print out all the frames to stderr
+  backtrace_symbols_fd(array, size, 2);
+  exit(1);
+}
+#endif

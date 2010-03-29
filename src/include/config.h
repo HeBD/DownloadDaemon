@@ -6,5 +6,7 @@
 #define HAVE_UINT64_T
 #define HAVE_SYSLOG_H
 #define HAVE_INITGROUPS
+#define BACKTRACE_ON_CRASH
+
 
 #endif // CONFIG_H
