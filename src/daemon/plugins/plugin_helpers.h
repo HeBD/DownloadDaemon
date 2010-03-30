@@ -150,12 +150,12 @@ extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, pl
 }
 
 #ifdef PLUGIN_CAN_PRECHECK
-void get_file_status(plugin_input &inp, plugin_output &outp);
-extern "C" void get_file_status_init(download_container &dlc, int id, plugin_input &inp, plugin_output &outp) {
+bool get_file_status(plugin_input &inp, plugin_output &outp);
+extern "C" bool get_file_status_init(download_container &dlc, int id, plugin_input &inp, plugin_output &outp) {
 	std::lock_guard<std::mutex> lock(p_mutex);
 	dl_list = &dlc;
 	dlid = id;
-	get_file_status(inp, outp);
+	return get_file_status(inp, outp);
 }
 #endif
 

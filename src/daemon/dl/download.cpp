@@ -759,6 +759,7 @@ void download::post_process_download() {
 	pinp.url = url;
 	trim_string(pinp.premium_user);
 	trim_string(pinp.premium_password);
+	is_running = true;
 	lock.unlock();
 
 	try {
@@ -766,6 +767,8 @@ void download::post_process_download() {
 	} catch(...) {}
 
 	dlclose(dlhandle);
+	lock.lock();
+	is_running = false;
 }
 
 void download::preset_file_status() {
@@ -795,10 +798,12 @@ void download::preset_file_status() {
 		// set timeouts
 		curl_easy_setopt(precheck_handle, CURLOPT_LOW_SPEED_LIMIT, 100);
 		curl_easy_setopt(precheck_handle, CURLOPT_LOW_SPEED_TIME, 60);
+		is_running = true;
 
 		lock.unlock();
 		int curlsucces = curl_easy_perform(precheck_handle);
 		lock.lock();
+		is_running = false;
 		curl_easy_cleanup(precheck_handle);
 
 		long http_code;
@@ -836,8 +841,8 @@ void download::preset_file_status() {
 
 	plugin_input pinp;
 
-	void (*file_status_func)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp);
-	file_status_func = (void (*)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp))dlsym(dlhandle, "get_file_status_init");
+	bool (*file_status_func)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp);
+	file_status_func = (bool (*)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp))dlsym(dlhandle, "get_file_status_init");
 	char *dl_error;
 	if ((dl_error = dlerror()) != NULL)  {
 	    dlclose(dlhandle);
@@ -849,19 +854,26 @@ void download::preset_file_status() {
 	pinp.url = url;
 	trim_string(pinp.premium_user);
 	trim_string(pinp.premium_password);
+	is_running = true;
 	lock.unlock();
 
+	bool is_host = true;
 	try {
-		file_status_func(*global_download_list.get_listptr(parent), id, pinp, outp);
+		is_host = file_status_func(*global_download_list.get_listptr(parent), id, pinp, outp);
 	} catch(...) {}
-
 	dlclose(dlhandle);
-	lock.lock();
-	size = outp.file_size;
-	error = outp.file_online;
-	if(error == PLUGIN_FILE_NOT_FOUND) {
-		set_status(DOWNLOAD_INACTIVE);
+	if(!is_host) {
+		thread t(&download::download_me, this);
+		t.detach();
+	} else {
+		lock.lock();
+		size = outp.file_size;
+		error = outp.file_online;
+		if(error == PLUGIN_FILE_NOT_FOUND) {
+			set_status(DOWNLOAD_INACTIVE);
+		}
 	}
+	is_running = false;
 }
 
 std::string download::get_plugin_file() {
