@@ -38,16 +38,24 @@ enum plugin_status { PLUGIN_SUCCESS = 1, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLU
 					 PLUGIN_INVALID_HOST, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR, PLUGIN_AUTH_FAIL };
 
 struct plugin_output {
+	plugin_output() : allows_resumption(true), allows_multiple(true), offers_premium(false), file_size(0), file_online(PLUGIN_SUCCESS) {}
 	std::string download_url;
 	std::string download_filename;
 	bool allows_resumption;
 	bool allows_multiple;
 	bool offers_premium;
+	#ifdef HAVE_UINT64_T
+	uint64_t file_size;
+	#else
+	double file_size;
+	#endif
+	plugin_status file_online;
 };
 
 struct plugin_input {
 	std::string premium_user;
 	std::string premium_password;
+	std::string url;
 };
 
 class download {
@@ -168,7 +176,12 @@ public:
 	int get_parent() const						{ std::lock_guard<std::recursive_mutex> lock(mx); return parent; }
 	void set_parent(int p)						{ std::lock_guard<std::recursive_mutex> lock(mx); parent = p; }
 
+	bool get_prechecked() const					{ std::lock_guard<std::recursive_mutex> lock(mx); return already_prechecked; }
 
+	/** This function calls the plugin and checks if 1: the download is online and 2: what size it has.
+	*	Then it sets the PLUGIN_* error and the filesize for the download
+	*/
+	void preset_file_status();
 
 private:
 	/** Sets the next proxy from list to the download
@@ -207,6 +220,8 @@ private:
 	bool can_resume;
 	CURL* handle;
 	std::string proxy;
+
+	bool already_prechecked;
 
 	int parent;
 	mutable std::recursive_mutex mx;

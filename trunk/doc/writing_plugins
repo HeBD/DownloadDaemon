@@ -16,6 +16,17 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp)
 The extern "C" is required in order to make execution possible. The plugin will fail if this is missing.
 in order to get the needed types from above, you need to include plugin_helpers.h. View that file to see what variables the structs contain.
 
+optionally, the following functions can also be defined:
+void post_process_download(plugin_input &inp)
+void get_file_status(plugin_input &inp, plugin_output &outp)
+If you want to use them, you have to #define
+PLUGIN_CAN_PRECHECK
+and
+PLUGIN_WANTS_POST_PROCESSING
+respectively BEFORE including plugin_helpers.h.
+At least the PLUGIN_CAN_PRECHECK function is recommended. See below for more info.
+
+
 the first function, plugin_exec is the main plugin function. The parameters are as follows:
 
 plugin_input &inp:
@@ -85,6 +96,14 @@ Check the netload.in or the megaupload.com plugin for an example. Basically, you
 Then you can define a function with this prototype:
 void post_process_download(plugin_input &inp),
 which will be called if the download succeeded.
+
+
+DownloadDaemon supports getting the status of a file (online, unreachable, deleted, file size ...) before downloading should actually start.
+Many one-click-hosters allow getting such data without starting the download. So if you want to define the void get_file_status(plugin_input &inp, plugin_output &outp)
+function, go for it.
+Just connect to the URL passed to you by get_url(), check its condition, and return the result in the outp parameter.
+You only need to/should fill the outp.file_size and the outp.file_online members.
+For an example, see the rapidshare.com plugin
 
 
 If you need more functionality to support your specific hoster, please write me, Adrian Batzill (see AUTHORS file) an email. I will then implement it.

@@ -223,6 +223,9 @@ public:
 
 	void do_download(int id);
 
+	/** Presets the file-status for all downloads in the list that don't have it yet. */
+	void preset_file_status();
+
 private:
 	typedef std::list<download*>::iterator iterator;
 	/** get an iterator to a download by giving an ID

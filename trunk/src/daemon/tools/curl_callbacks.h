@@ -15,5 +15,7 @@
 size_t write_file	(void *buffer, size_t size, size_t nmemb, void *userp);
 int report_progress	(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow);
 size_t parse_header	(void *ptr, size_t size, size_t nmemb, void *clientp);
+int get_size_progress_callback(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow);
+size_t pretend_write_file(void *buffer, size_t size, size_t nmemb, void *userp);
 
 #endif /*CURL_CALLBACKS_H_*/

@@ -38,7 +38,7 @@ using namespace std;
 
 download::download(const std::string& dl_url)
 	: url(dl_url), id(0), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
-	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true), handle(NULL) {
+	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true), handle(NULL), already_prechecked(false) {
 	lock_guard<recursive_mutex> lock(mx);
 	time_t rawtime;
 	struct tm* timeinfo;
@@ -112,6 +112,7 @@ void download::from_serialized(std::string& serializedDL) {
 	speed = 0;
 	can_resume = true;
 	handle = NULL;
+	already_prechecked = false;
 }
 #endif
 
@@ -136,6 +137,7 @@ void download::operator=(const download& dl) {
 	can_resume = dl.can_resume;
 	need_stop = dl.need_stop;
 	handle = dl.handle;
+	already_prechecked = dl.already_prechecked;
 }
 
 download::~download() {
@@ -659,7 +661,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 
 	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
 	if(pluginfile.empty()) {
-		log_string("No plugin found, using generic download", LOG_WARNING);
+		log_string("No plugin found, using generic download", LOG_DEBUG);
 		poutp.download_url = url;
 		return PLUGIN_SUCCESS;
 	}
@@ -685,6 +687,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 
 	pinp.premium_user = global_premium_config.get_cfg_value(get_host(false) + "_user");
 	pinp.premium_password = global_premium_config.get_cfg_value(get_host(false) + "_password");
+	pinp.url = url;
 	trim_string(pinp.premium_user);
 	trim_string(pinp.premium_password);
 
@@ -753,6 +756,7 @@ void download::post_process_download() {
 
 	pinp.premium_user = global_premium_config.get_cfg_value(get_host() + "_user");
 	pinp.premium_password = global_premium_config.get_cfg_value(get_host() + "_password");
+	pinp.url = url;
 	trim_string(pinp.premium_user);
 	trim_string(pinp.premium_password);
 	lock.unlock();
@@ -762,6 +766,99 @@ void download::post_process_download() {
 	} catch(...) {}
 
 	dlclose(dlhandle);
+}
+
+void download::preset_file_status() {
+	unique_lock<recursive_mutex> lock(mx);
+	already_prechecked = true;
+	std::string pluginfile(get_plugin_file());
+	plugin_output outp;
+
+	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
+	if(pluginfile.empty()) {
+		log_string("No plugin found, using generic downloadtp preset the file-status", LOG_DEBUG);
+		CURL* precheck_handle = curl_easy_init();
+		curl_easy_setopt(precheck_handle, CURLOPT_URL, url.c_str());
+		// set url
+		curl_easy_setopt(precheck_handle, CURLOPT_FOLLOWLOCATION, 1);
+		// set file-writing function as callback
+		curl_easy_setopt(precheck_handle, CURLOPT_WRITEFUNCTION, pretend_write_file);
+		// show progress
+		curl_easy_setopt(precheck_handle, CURLOPT_NOPROGRESS, 0);
+		#ifdef HAVE_UINT64_T
+		uint64_t new_size;
+		#else
+		double new_size;
+		#endif
+		curl_easy_setopt(precheck_handle, CURLOPT_PROGRESSFUNCTION, get_size_progress_callback);
+		curl_easy_setopt(precheck_handle, CURLOPT_PROGRESSDATA, &new_size);
+		// set timeouts
+		curl_easy_setopt(precheck_handle, CURLOPT_LOW_SPEED_LIMIT, 100);
+		curl_easy_setopt(precheck_handle, CURLOPT_LOW_SPEED_TIME, 60);
+
+		lock.unlock();
+		int curlsucces = curl_easy_perform(precheck_handle);
+		lock.lock();
+		curl_easy_cleanup(precheck_handle);
+
+		long http_code;
+		curl_easy_getinfo(precheck_handle, CURLINFO_RESPONSE_CODE, &http_code);
+
+		switch(http_code) {
+			case 401:
+			case 530:
+				status = DOWNLOAD_INACTIVE;
+				error = PLUGIN_AUTH_FAIL;
+			break;
+			case 404:
+				status = DOWNLOAD_INACTIVE;
+				error = PLUGIN_FILE_NOT_FOUND;
+			break;
+		}
+
+		if(curlsucces == CURLE_ABORTED_BY_CALLBACK) {
+			size = new_size;
+		}
+		return;
+	}
+
+	// Load the plugin function needed
+	void* dlhandle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_LOCAL);
+	if (!dlhandle) {
+		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
+		return;
+	}
+
+	dlerror();	// Clear any existing error
+
+	plugin_input pinp;
+
+	void (*file_status_func)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp);
+	file_status_func = (void (*)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp))dlsym(dlhandle, "get_file_status_init");
+	char *dl_error;
+	if ((dl_error = dlerror()) != NULL)  {
+	    dlclose(dlhandle);
+		return;
+	}
+
+	pinp.premium_user = global_premium_config.get_cfg_value(get_host() + "_user");
+	pinp.premium_password = global_premium_config.get_cfg_value(get_host() + "_password");
+	pinp.url = url;
+	trim_string(pinp.premium_user);
+	trim_string(pinp.premium_password);
+	lock.unlock();
+
+	try {
+		file_status_func(*global_download_list.get_listptr(parent), id, pinp, outp);
+	} catch(...) {}
+
+	dlclose(dlhandle);
+	lock.lock();
+	size = outp.file_size;
+	error = outp.file_online;
+	if(error == PLUGIN_FILE_NOT_FOUND) {
+		set_status(DOWNLOAD_INACTIVE);
+	}
 }
 
 std::string download::get_plugin_file() {
