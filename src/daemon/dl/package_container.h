@@ -270,6 +270,10 @@ class package_container {
 	*/
 	bool in_dl_time_and_dl_active();
 
+	/** presets the file-status for all downloads that still require it
+	*/
+	void preset_file_status();
+
 
 private:
 	typedef std::vector<download_container*>::iterator iterator;

@@ -925,4 +925,9 @@ bool package_container::in_dl_time_and_dl_active() {
 	return true;
 }
 
-
+void package_container::preset_file_status() {
+	lock_guard<recursive_mutex> lock(mx);
+	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
+		(*it)->preset_file_status();
+	}
+}

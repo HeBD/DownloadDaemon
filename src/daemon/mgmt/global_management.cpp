@@ -44,6 +44,7 @@ void do_once_per_second() {
 		global_download_list.purge_deleted();
 		if(global_download_list.total_downloads() > 0) {
 			global_download_list.decrease_waits();
+			global_download_list.preset_file_status();
 		}
 
 		bool in_dl_time = global_download_list.in_dl_time_and_dl_active();

@@ -29,11 +29,18 @@ struct plugin_output {
 	bool allows_resumption;
 	bool allows_multiple;
 	bool offers_premium;
+	#ifdef HAVE_UINT64_T
+	uint64_t file_size;
+	#else
+	double file_size;
+	#endif
+	plugin_status file_online;
 };
 
 struct plugin_input {
 	std::string premium_user;
 	std::string premium_password;
+	std::string url;
 };
 
 You also might be interested in checking ../dl/download_container.h to see what you can do with the result of get_dl_container().
@@ -141,6 +148,16 @@ extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, pl
 	share_directory = root_dir;
 	return plugin_exec(pinp, poutp);
 }
+
+#ifdef PLUGIN_CAN_PRECHECK
+void get_file_status(plugin_input &inp, plugin_output &outp);
+extern "C" void get_file_status_init(download_container &dlc, int id, plugin_input &inp, plugin_output &outp) {
+	std::lock_guard<std::mutex> lock(p_mutex);
+	dl_list = &dlc;
+	dlid = id;
+	get_file_status(inp, outp);
+}
+#endif
 
 #ifdef PLUGIN_WANTS_POST_PROCESSING
 void post_process_download(plugin_input&);

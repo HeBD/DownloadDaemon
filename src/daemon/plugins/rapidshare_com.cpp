@@ -9,6 +9,7 @@
  * GNU General Public License for more details.
  */
 
+#define PLUGIN_CAN_PRECHECK
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -138,6 +139,42 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		curl_easy_setopt(handle, CURLOPT_POST, 1);
 		curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "mirror=on&x=66&y=61");
 		return PLUGIN_SUCCESS;
+	}
+}
+
+void get_file_status(plugin_input &inp, plugin_output &outp) {
+	std::string url = get_url();
+	std::string result;
+	CURL* handle = curl_easy_init();
+	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
+	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
+	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+	int res = curl_easy_perform(handle);
+	curl_easy_cleanup(handle);
+	if(res != 0) {
+		outp.file_online = PLUGIN_CONNECTION_LOST;
+		return;
+	}
+	try {
+		size_t n = result.find("<p class=\"downloadlink\">");
+		if(n == string::npos) {
+			outp.file_online = PLUGIN_FILE_NOT_FOUND;
+			return;
+		}
+		n = result.find("| ", n);
+		if(n == string::npos) {
+			outp.file_online = PLUGIN_FILE_NOT_FOUND;
+			return;
+		}
+		n += 2;
+		size_t end = result.find(" ", n);
+		int size = atoi(result.substr(n, end - n).c_str()); // int is enough. rapidshare files are max. 200 MB
+		size *= 1024;
+		outp.file_online = PLUGIN_SUCCESS;
+		outp.file_size = size;
+	} catch(...) {
+		outp.file_online = PLUGIN_FILE_NOT_FOUND;
 	}
 }
 

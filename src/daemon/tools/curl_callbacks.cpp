@@ -91,3 +91,26 @@ size_t parse_header( void *ptr, size_t size, size_t nmemb, void *clientp) {
 	}
 	return nmemb;
 }
+
+int get_size_progress_callback(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
+	#ifdef HAVE_UINT64_T
+		uint64_t *result = (uint64_t*)clientp;
+		if(dltotal < 1 && *result < 1) { // the first time this function is called, dltotal is 0. We have to try again. But only once
+			*result = 2;				 // because dltotal might be 0 through the whole download process, if curl fails to get the size.
+			return 0;					 // So we set *result to 2 to indicate that the first round has been done already.
+		}
+		*result = (uint64_t)dltotal + 0.5;
+	#else
+		double *result = (double*)clientp;
+		if(dltotal < 1 && result < 1) { // see comment above
+			*result = 2;
+			return 0;
+		}
+		*result = dltotal;
+	#endif
+	return -1;
+}
+
+size_t pretend_write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
+	return nmemb;
+}
