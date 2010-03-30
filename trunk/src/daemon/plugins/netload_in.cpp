@@ -10,6 +10,7 @@
  */
 
 #define PLUGIN_WANTS_POST_PROCESSING
+#define PLUGIN_CAN_PRECHECK
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -159,6 +160,52 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	}
 
 	return PLUGIN_SUCCESS;
+}
+
+bool get_file_status(plugin_input &inp, plugin_output &outp) {
+	std::string url = get_url();
+	std::string result;
+	CURL* handle = curl_easy_init();
+	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
+	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
+	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, true);
+	int res = curl_easy_perform(handle);
+	curl_easy_cleanup(handle);
+	if(res != 0) {
+		outp.file_online = PLUGIN_CONNECTION_LOST;
+		return true;
+	}
+	try {
+		size_t n;
+		if((n = result.find("dl_first_filename")) == string::npos) {
+			outp.file_online = PLUGIN_FILE_NOT_FOUND;
+			return true;
+		}
+		n = result.find(">, ", n) + 3;
+		size_t end = n;
+		while(!isspace(result[++end]));
+		string value = result.substr(n, end - n);
+		n = end + 1;
+		end = result.find("<", n);
+		string unit = result.substr(n, end - n);
+		trim_string(value);
+		trim_string(unit);
+		const char * oldlocale = setlocale(LC_NUMERIC, "C");
+		double value_d = strtod(value.c_str(), NULL);
+		setlocale(LC_NUMERIC, oldlocale);
+		if(unit == "MB")
+			value_d *= 1024*1024;
+		else if(unit == "KB")
+			value_d *= 1024;
+
+		outp.file_size = value_d;
+
+	} catch(...) {
+		outp.file_online = PLUGIN_FILE_NOT_FOUND;
+	}
+	return true;
 }
 
 
