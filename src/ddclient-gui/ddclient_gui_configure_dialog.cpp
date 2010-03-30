@@ -124,8 +124,16 @@ QWidget *configure_dialog::create_general_panel(){
     refuse_existing = new QCheckBox(p->tsl("refuse existing Links"));
     refuse_existing->setChecked(enable);
 
+    enable = false;
+    if(get_var("precheck_links") == "1")
+        enable = true;
+
+    size_existing = new QCheckBox(p->tsl("check Size and Availability on adding"));
+    size_existing->setChecked(enable);
+
     general_layout->addRow("", overwrite);
     general_layout->addRow("", refuse_existing);
+    general_layout->addRow("", size_existing);
 
     connect(button_box->button(QDialogButtonBox::Save), SIGNAL(clicked()),this, SLOT(save_premium()));
     connect(premium_host, SIGNAL(currentIndexChanged(int)),this, SLOT(premium_host_changed()));
@@ -556,6 +564,7 @@ void configure_dialog::ok(){
     // getting user input
     bool overwrite = this->overwrite->isChecked();
     bool refuse_existing = this->refuse_existing->isChecked();
+    bool precheck_links = size_existing->isChecked();
 
     string start_time = this->start_time->text().toStdString();
     string end_time = this->end_time->text().toStdString();
@@ -649,6 +658,12 @@ void configure_dialog::ok(){
             dclient->set_var("refuse_existing_links", "1");
         else
             dclient->set_var("refuse_existing_links", "0");
+
+        // precheck_links
+        if(precheck_links)
+            dclient->set_var("precheck_links", "1");
+        else
+            dclient->set_var("precheck_links", "0");
 
         // download times
         dclient->set_var("download_timing_start", start_time);

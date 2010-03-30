@@ -39,6 +39,7 @@ Please connect before configurating DownloadDaemon.->Bitte verbinden Sie bevor S
 No Connection to Downloaddaemon->Keine Verbindung
 overwrite existing Files->existierende Dateien überschreiben
 refuse existing Links->existierende Links nicht akzeptieren
+check Size and Availability on adding->Größe und Verfügbarkeit beim Hinzufügen testen
 
 Download Time->Download Zeitraum
 Download Folder->Download Ordner
