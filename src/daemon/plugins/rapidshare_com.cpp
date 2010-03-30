@@ -170,7 +170,7 @@ void get_file_status(plugin_input &inp, plugin_output &outp) {
 		n += 2;
 		size_t end = result.find(" ", n);
 		int size = atoi(result.substr(n, end - n).c_str()); // int is enough. rapidshare files are max. 200 MB
-		size *= 1024;
+		size *= 1000; // yes, rapidshare uses this factor.
 		outp.file_online = PLUGIN_SUCCESS;
 		outp.file_size = size;
 	} catch(...) {

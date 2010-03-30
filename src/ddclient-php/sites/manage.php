@@ -138,6 +138,9 @@ if($connect != 'SUCCESS') {
 				if($exp_dls[$i][8] == 'PLUGIN_SUCCESS') {
 					$dl_status .= 'Download Pending';
 					$display_ddinactive_warn = true;
+					if($exp_dls[$i][6] > 0) {
+						$dl_status .= ' Size: ' . number_format($exp_dls[$i][6] / 1048576, 1) . 'MB';
+					}
 				} else {
 					$dl_status .= 'Error: ' . $exp_dls[$i][8];
 				}
