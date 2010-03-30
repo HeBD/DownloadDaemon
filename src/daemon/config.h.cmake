@@ -15,6 +15,7 @@
 	#ifndef RTLD_LOCAL
 		#define RTLD_LOCAL 0
 	#endif
+	#define stat64 stat
 #endif
 
 
