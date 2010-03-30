@@ -18,7 +18,7 @@ in order to get the needed types from above, you need to include plugin_helpers.
 
 optionally, the following functions can also be defined:
 void post_process_download(plugin_input &inp)
-void get_file_status(plugin_input &inp, plugin_output &outp)
+bool get_file_status(plugin_input &inp, plugin_output &outp)
 If you want to use them, you have to #define
 PLUGIN_CAN_PRECHECK
 and
@@ -99,11 +99,15 @@ which will be called if the download succeeded.
 
 
 DownloadDaemon supports getting the status of a file (online, unreachable, deleted, file size ...) before downloading should actually start.
-Many one-click-hosters allow getting such data without starting the download. So if you want to define the void get_file_status(plugin_input &inp, plugin_output &outp)
+Many one-click-hosters allow getting such data without starting the download. So if you want to define the bool get_file_status(plugin_input &inp, plugin_output &outp)
 function, go for it.
 Just connect to the URL passed to you by get_url(), check its condition, and return the result in the outp parameter.
 You only need to/should fill the outp.file_size and the outp.file_online members.
 For an example, see the rapidshare.com plugin
+The return value more or less defines if this plugin can really check the availability of the file. Only return "false", if this plugin is a decrypter for a container-page
+like netfolder.in. If you return no, DownloadDaemon will call the plugin normally to get the real downloads (the plugin should call replace_this_download if its a decrypter).
+Then, when the plugin-call finished, there are many new downloads in the list that can now be prechecked.
+So basic rule: If your plugin is a decrypter, return false. Else, check the status, fil in the plugin_output struct, return true.
 
 
 If you need more functionality to support your specific hoster, please write me, Adrian Batzill (see AUTHORS file) an email. I will then implement it.

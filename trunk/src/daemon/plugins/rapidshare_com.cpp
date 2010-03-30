@@ -142,7 +142,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	}
 }
 
-void get_file_status(plugin_input &inp, plugin_output &outp) {
+bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	std::string url = get_url();
 	std::string result;
 	CURL* handle = curl_easy_init();
@@ -154,18 +154,18 @@ void get_file_status(plugin_input &inp, plugin_output &outp) {
 	curl_easy_cleanup(handle);
 	if(res != 0) {
 		outp.file_online = PLUGIN_CONNECTION_LOST;
-		return;
+		return true;
 	}
 	try {
 		size_t n = result.find("<p class=\"downloadlink\">");
 		if(n == string::npos) {
 			outp.file_online = PLUGIN_FILE_NOT_FOUND;
-			return;
+			return true;
 		}
 		n = result.find("| ", n);
 		if(n == string::npos) {
 			outp.file_online = PLUGIN_FILE_NOT_FOUND;
-			return;
+			return true;
 		}
 		n += 2;
 		size_t end = result.find(" ", n);
@@ -176,6 +176,7 @@ void get_file_status(plugin_input &inp, plugin_output &outp) {
 	} catch(...) {
 		outp.file_online = PLUGIN_FILE_NOT_FOUND;
 	}
+	return true;
 }
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {

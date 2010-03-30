@@ -3,6 +3,7 @@
 	- mostly implemented feature request #2977846 to get the file-size and status before actually running the download.
 	  you can also disable this functionality in the config-file. Right now, it only works for generic downloads and rapidshare.com
 	- ddclient-php now correctly displays prechecked size of pending downloads
+	- some race-condition fixes if a download is deleted while a POST_PROCESS_DOWNLOAD plugin is active
 
 2010-03-29
    [adrian]
