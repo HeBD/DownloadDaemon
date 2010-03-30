@@ -177,6 +177,7 @@ public:
 	void set_parent(int p)						{ std::lock_guard<std::recursive_mutex> lock(mx); parent = p; }
 
 	bool get_prechecked() const					{ std::lock_guard<std::recursive_mutex> lock(mx); return already_prechecked; }
+	void set_prechecked(bool p)					{ std::lock_guard<std::recursive_mutex> lock(mx); already_prechecked = p; }
 
 	/** This function calls the plugin and checks if 1: the download is online and 2: what size it has.
 	*	Then it sets the PLUGIN_* error and the filesize for the download

@@ -591,10 +591,12 @@ void download_container::do_download(int id) {
 void download_container::preset_file_status() {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(!(*it)->get_prechecked() && (*it)->get_size() < 2 && global_config.get_bool_value("precheck_links")) {
+		if(!(*it)->get_prechecked() && (*it)->get_size() < 2 && (*it)->get_status() == DOWNLOAD_PENDING && global_config.get_bool_value("precheck_links")) {
 			thread t(bind(&download::preset_file_status, *it));
 			t.detach();
 		}
+		// we set prechecked here to make HDD spin-down possible. If we don't do this, it can happen that the config-value is checked every round.
+		(*it)->set_prechecked(true);
 	}
 }
 
