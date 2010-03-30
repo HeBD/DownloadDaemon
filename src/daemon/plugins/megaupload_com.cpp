@@ -10,6 +10,7 @@
  */
 
 #define PLUGIN_WANTS_POST_PROCESSING
+#define PLUGIN_CAN_PRECHECK
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -139,6 +140,48 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	return PLUGIN_SUCCESS;
 }
 
+bool get_file_status(plugin_input &inp, plugin_output &outp) {
+	std::string url = get_url();
+	std::string result;
+	CURL* handle = curl_easy_init();
+	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
+	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
+	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, true);
+	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+	int res = curl_easy_perform(handle);
+	curl_easy_cleanup(handle);
+	if(res != 0) {
+		outp.file_online = PLUGIN_CONNECTION_LOST;
+		return true;
+	}
+	try {
+		size_t n = result.find("File size:");
+		if(n == string::npos) {
+			outp.file_online = PLUGIN_FILE_NOT_FOUND;
+			return true;
+		}
+		n = result.find("13px;\">", n) + 7;
+		size_t end = result.find("</font>", n) - 1;
+
+		vector<string> value = split_string(result.substr(n, end - n), " ");
+
+		const char * oldlocale = setlocale(LC_NUMERIC, "C");
+
+		size_t size = 0;
+		if(value[1].find("KB") != string::npos)
+			size = strtod(value[0].c_str(), NULL) * 1024;
+		else if(value[1].find("MB") != string::npos)
+			size = strtod(value[0].c_str(), NULL) * (1024*1024);
+
+		setlocale(LC_NUMERIC, oldlocale);
+
+		outp.file_size = size;
+	} catch(...) {
+		outp.file_online = PLUGIN_FILE_NOT_FOUND;
+	}
+	return true;
+}
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
@@ -150,7 +193,6 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 	}
 	outp.offers_premium = false; // no login support yet
 }
-
 
 void post_process_download(plugin_input &inp) {
 	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {

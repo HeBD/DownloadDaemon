@@ -584,8 +584,12 @@ void download_container::do_download(int id) {
 	if(it == download_list.end()) return;
 	(*it)->set_running(true);
 	(*it)->set_status(DOWNLOAD_RUNNING);
-	thread t(bind(&download::download_me, *it));
-	t.detach();
+	try {
+		thread t(bind(&download::download_me, *it));
+		t.detach();
+	} catch(...) {
+		log_string("Failed to start download-thread. There are probably too many running threads.", LOG_ERR);
+	}
 }
 
 void download_container::preset_file_status() {
