@@ -594,7 +594,15 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
         time_left = "";
 
         if(dl.error == "PLUGIN_SUCCESS"){
-            status_text = lang["Download Pending."];
+
+            if(dl.size > 0){
+                stringstream text;
+                text << lang["Download Pending."] << " " << lang["Size"] << ": ";
+                text << setprecision(1) << fixed << (float)dl.size / 1048576 << " MB";
+                status_text = text.str();
+            }else{
+                status_text = lang["Download Pending."];
+            }
 
         }else{ //error occured
             color = "red";

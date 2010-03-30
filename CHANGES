@@ -4,6 +4,8 @@
 	  you can also disable this functionality in the config-file. Right now, it only works for generic downloads, rapidshare.com, netfolder.in, netload.in
 	- ddclient-php now correctly displays prechecked size of pending downloads
 	- some race-condition fixes if a download is deleted while a POST_PROCESS_DOWNLOAD plugin is active
+   [susanne]
+	- ddclient-gui now correctly displays prechecked size of pending downloads
 
 2010-03-29
    [adrian]

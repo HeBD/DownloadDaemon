@@ -175,6 +175,7 @@ Connection failed->No se ha podido conectar
 Server overloaded->Servidor sobrecargado
 Authentication failed->No se ha podido autenticar
 Unknown plugin error - please report->Error en el plugin - por favor informar
+Size->Tamaño
 
 Please connect before deleting Downloads.->Hay que conectarse para poder eliminar Descargas.
 Do you really want to delete\nthe selected Download(s)?->¿Estas seguro de que desea eliminar las Descargas seleccionadas?
