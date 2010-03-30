@@ -4,6 +4,7 @@
 	  you can also disable this functionality in the config-file. It already works for all plugins besides the youtube-plugin
 	- ddclient-php now correctly displays prechecked size of pending downloads
 	- some race-condition fixes if a download is deleted while a POST_PROCESS_DOWNLOAD plugin is active
+	- added plugin for depositfiles.com free download!
    [susanne]
 	- ddclient-gui now correctly displays prechecked size of pending downloads
 	- added possibility to configure precheck_links with ddclient-gui
