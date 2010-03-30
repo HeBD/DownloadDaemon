@@ -37,7 +37,7 @@
 using namespace std;
 
 download::download(const std::string& dl_url)
-	: url(dl_url), id(0), downloaded_bytes(0), size(1), wait_seconds(0), error(PLUGIN_SUCCESS),
+	: url(dl_url), id(0), downloaded_bytes(0), size(0), wait_seconds(0), error(PLUGIN_SUCCESS),
 	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true), handle(NULL), already_prechecked(false) {
 	lock_guard<recursive_mutex> lock(mx);
 	time_t rawtime;
@@ -818,6 +818,9 @@ void download::preset_file_status() {
 
 		if(curlsucces == CURLE_ABORTED_BY_CALLBACK) {
 			size = new_size;
+		} else if(curlsucces != 0) {
+			error = PLUGIN_FILE_NOT_FOUND;
+			status = DOWNLOAD_INACTIVE;
 		}
 		return;
 	}
