@@ -590,13 +590,24 @@ void download_container::do_download(int id) {
 
 void download_container::preset_file_status() {
 	lock_guard<recursive_mutex> lock(download_mutex);
-	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if(!(*it)->get_prechecked() && (*it)->get_size() < 2 && (*it)->get_status() == DOWNLOAD_PENDING && global_config.get_bool_value("precheck_links")) {
-			thread t(bind(&download::preset_file_status, *it));
-			t.detach();
+	try {
+		size_t calls = 0;
+		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+			if(!(*it)->get_prechecked() && (*it)->get_size() < 2 && (*it)->get_status() == DOWNLOAD_PENDING && global_config.get_bool_value("precheck_links")) {
+				thread t(bind(&download::preset_file_status, *it));
+				t.detach();
+				++calls;
+			}
+			// we set prechecked here to make HDD spin-down possible. If we don't do this, it can happen that the config-value is checked every round.
+			(*it)->set_prechecked(true);
+			if(calls >=3) {
+				// we start 3 threads per second as a maximum, so we don't get problems with boost::thread_resource_error
+				return;
+			}
 		}
-		// we set prechecked here to make HDD spin-down possible. If we don't do this, it can happen that the config-value is checked every round.
-		(*it)->set_prechecked(true);
+	} catch(...) {
+		// boost might throw a thread_resource_error if too many threads are created at the same time. We just ignore it
+		// and retry in a second, when this function is called again. Maybe some threads have closed then.
 	}
 }
 
