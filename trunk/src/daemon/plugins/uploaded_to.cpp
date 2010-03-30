@@ -9,6 +9,7 @@
  * GNU General Public License for more details.
  */
 
+#define PLUGIN_CAN_PRECHECK
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -122,6 +123,49 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	filename += filetype;
 	outp.download_filename = filename;
 	return PLUGIN_SUCCESS;
+}
+
+bool get_file_status(plugin_input &inp, plugin_output &outp) {
+	std::string url = get_url();
+	std::string result;
+	CURL* handle = curl_easy_init();
+	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
+	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
+	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, true);
+	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+	int res = curl_easy_perform(handle);
+	curl_easy_cleanup(handle);
+	if(res != 0) {
+		outp.file_online = PLUGIN_CONNECTION_LOST;
+		return true;
+	}
+	try {
+		size_t n = result.find(">Filesize:");
+		if(n == string::npos) {
+			outp.file_online = PLUGIN_FILE_NOT_FOUND;
+			return true;
+		}
+		n = result.find("<td>", n) + 4;
+		size_t end = result.find("</td>", n) - 1;
+		string size_str = result.substr(n, end - n);
+		trim_string(size_str);
+
+		const char * oldlocale = setlocale(LC_NUMERIC, "C");
+
+		size_t size = 0;
+		if(size_str.find("KB") != string::npos)
+			size = strtod(size_str.c_str(), NULL) * 1024;
+		else if(size_str.find("MB") != string::npos)
+			size = strtod(size_str.c_str(), NULL) * (1024*1024);
+
+		setlocale(LC_NUMERIC, oldlocale);
+
+		outp.file_size = size;
+	} catch(...) {
+		outp.file_online = PLUGIN_FILE_NOT_FOUND;
+	}
+	return true;
 }
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {

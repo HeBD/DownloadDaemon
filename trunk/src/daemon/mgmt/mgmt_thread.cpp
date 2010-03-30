@@ -74,7 +74,7 @@ void mgmt_thread_main() {
 			thread t(bind(connection_handler, connection));
 			t.detach();
 		} catch(...) {
-			log_string("Failed to create socket", LOG_ERR);
+			log_string("Failed to create socket or connection-thread", LOG_ERR);
 		}
 	}
 }

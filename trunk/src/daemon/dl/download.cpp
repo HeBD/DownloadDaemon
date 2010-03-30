@@ -289,8 +289,12 @@ void download::download_me() {
 		} else if(ret == 2 || ret == 3) {
 			lock.unlock();
 			if(global_download_list.reconnect_needed()) {
-				thread t(bind(&package_container::do_reconnect, &global_download_list));
-				t.detach();
+				try {
+					thread t(bind(&package_container::do_reconnect, &global_download_list));
+					t.detach();
+				} catch(...) {
+					log_string("Failed to start the reconnect-thread. There are probably too many running threads.", LOG_ERR);
+				}
 			}
 			lock.lock();
 		}
@@ -309,8 +313,12 @@ void download::download_me() {
 	if(status == DOWNLOAD_FINISHED) {
 		lock.unlock();
 		if(global_download_list.package_finished(parent)) {
-			thread t(bind(&package_container::extract_package, &global_download_list, parent));
-			t.detach();
+			try {
+				thread t(bind(&package_container::extract_package, &global_download_list, parent));
+				t.detach();
+			} catch(...) {
+				log_string("Failed to start extractor-thread. There are probably too many running threads.", LOG_ERR);
+			}
 		}
 		lock.lock();
 	}
@@ -863,8 +871,12 @@ void download::preset_file_status() {
 	} catch(...) {}
 	dlclose(dlhandle);
 	if(!is_host) {
-		thread t(&download::download_me, this);
-		t.detach();
+		try {
+			thread t(&download::download_me, this);
+			t.detach();
+		} catch(...) {
+			log_string("Failed to start decrypter-thread. There are probably too many running threads.", LOG_ERR);
+		}
 	} else {
 		lock.lock();
 		size = outp.file_size;
