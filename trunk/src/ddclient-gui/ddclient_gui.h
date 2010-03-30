@@ -151,6 +151,7 @@ class ddclient_gui : public QMainWindow{
 
         QMenu *file_menu;
         QMenu *help_menu;
+        QMenu *download_menu;
         QAction *connect_action;
         QAction *configure_action;
         QAction *activate_action;
@@ -163,6 +164,7 @@ class ddclient_gui : public QMainWindow{
         QAction *delete_finished_action;
         QAction *select_action;
         QAction *copy_action;
+        QAction *paste_action;
         QAction *quit_action;
         QAction *about_action;
         QAction *down_action;
@@ -185,6 +187,7 @@ class ddclient_gui : public QMainWindow{
         void on_downloading_activate();
         void on_downloading_deactivate();
         void on_copy();
+        void on_paste();
         void on_set_password();
         void on_set_name();
         void on_set_url();

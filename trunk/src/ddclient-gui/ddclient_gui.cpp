@@ -287,37 +287,39 @@ void ddclient_gui::add_bars(){
     deactivate_action->setEnabled(false);
     file_menu->addSeparator();
 
+    download_menu = file_menu->addMenu(tsl("Download"));
+
     activate_download_action = new QAction(QIcon("img/5_start.png"), tsl("Activate Download"), this);
     activate_download_action->setShortcut(QString("Alt+A"));
     activate_download_action->setStatusTip(tsl("Activate the selected Download"));
-    file_menu->addAction(activate_download_action);
+    download_menu->addAction(activate_download_action);
 
     deactivate_download_action = new QAction(QIcon("img/4_stop.png"), tsl("Deactivate Download"), this);
     deactivate_download_action->setShortcut(QString("Alt+D"));
     deactivate_download_action->setStatusTip(tsl("Deactivate the selected Download"));
-    file_menu->addAction(deactivate_download_action);
-    file_menu->addSeparator();
+    download_menu->addAction(deactivate_download_action);
+    download_menu->addSeparator();
 
     container_action = new QAction(QIcon("img/16_container.png"), tsl("Add Download Container"), this);
     container_action->setStatusTip(tsl("Add Download Container"));
-    file_menu->addAction(container_action);
+    download_menu->addAction(container_action);
 
     add_action = new QAction(QIcon("img/2_add.png"), tsl("Add Download"), this);
     add_action->setShortcut(QString("Alt+I"));
     add_action->setStatusTip(tsl("Add Download"));
-    file_menu->addAction(add_action);
+    download_menu->addAction(add_action);
 
     delete_action = new QAction(QIcon("img/3_delete.png"), tsl("Delete Download"), this);
     delete_action->setShortcut(QString("DEL"));
     delete_action->setStatusTip(tsl("Delete Download"));
-    file_menu->addAction(delete_action);
+    download_menu->addAction(delete_action);
 
     delete_finished_action = new QAction(QIcon("img/10_delete_finished.png"), tsl("Delete finished Downloads"), this);
     delete_finished_action->setShortcut(QString("Ctrl+DEL"));
     delete_finished_action->setStatusTip(tsl("Delete finished Downloads"));
-    file_menu->addAction(delete_finished_action);
-    file_menu->addSeparator();
+    download_menu->addAction(delete_finished_action);
 
+    file_menu->addSeparator();
     select_action = new QAction(QIcon("img/14_select_all.png"), tsl("Select all"), this);
     select_action->setShortcut(QString("Ctrl+A"));
     select_action->setStatusTip(tsl("Select all"));
@@ -327,6 +329,11 @@ void ddclient_gui::add_bars(){
     copy_action->setShortcut(QString("Ctrl+C"));
     copy_action->setStatusTip(tsl("Copy URL"));
     file_menu->addAction(copy_action);
+
+    paste_action = new QAction(QIcon("img/11_copy_url.png"), tsl("Paste URL"), this);
+    paste_action->setShortcut(QString("Ctrl+V"));
+    paste_action->setStatusTip(tsl("Paste URL"));
+    file_menu->addAction(paste_action);
     file_menu->addSeparator();
 
     quit_action = new QAction(QIcon("img/12_quit.png"), "&" + tsl("Quit"), this);
@@ -379,6 +386,7 @@ void ddclient_gui::add_bars(){
     connect(delete_finished_action, SIGNAL(triggered()), this, SLOT(on_delete_finished()));
     connect(select_action, SIGNAL(triggered()), this, SLOT(on_select()));
     connect(copy_action, SIGNAL(triggered()), this, SLOT(on_copy()));
+    connect(paste_action, SIGNAL(triggered()), this, SLOT(on_paste()));
     connect(quit_action, SIGNAL(triggered()), qApp, SLOT(quit()));
     connect(about_action, SIGNAL(triggered()), this, SLOT(on_about()));
     connect(up_action, SIGNAL(triggered()), this, SLOT(on_priority_up()));
@@ -389,6 +397,7 @@ void ddclient_gui::add_bars(){
 void ddclient_gui::update_bars(){
     file_menu->setTitle("&" + tsl("File"));
     help_menu->setTitle("&" + tsl("Help"));
+    download_menu->setTitle( tsl("Download"));
 
     connect_action->setText("&" + tsl("Connect"));
     connect_action->setStatusTip(tsl("Connect to a DownloadDaemon Server"));
@@ -425,6 +434,9 @@ void ddclient_gui::update_bars(){
 
     copy_action->setText(tsl("Copy URL"));
     copy_action->setStatusTip(tsl("Copy URL"));
+
+    paste_action->setText(tsl("Paste URL"));
+    paste_action->setStatusTip(tsl("Paste URL"));
 
     quit_action->setText("&" + tsl("Quit"));
     quit_action->setStatusTip(tsl("Quit"));
@@ -1640,6 +1652,73 @@ void ddclient_gui::on_copy(){
 }
 
 
+void ddclient_gui::on_paste(){
+    if(!check_connection(true, "Please connect before adding Downloads."))
+        return;
+
+    string text = QApplication::clipboard()->text().toStdString();
+    mx.lock();
+
+    bool error_occured = false;
+    size_t lineend = 1, urlend;
+    int package = -1, error = 0;
+    string line, url, title;
+
+    // parse lines
+    while(text.length() > 0 && lineend != string::npos){
+        lineend = text.find("\n"); // termination character for line
+
+        if(lineend == string::npos){ // this is the last line (which ends without \n)
+            line = text.substr(0, text.length());
+            text = "";
+
+        }else{ // there is still another line after this one
+            line = text.substr(0, lineend);
+            text = text.substr(lineend+1);
+        }
+
+        // parse url and title
+        urlend = line.find("|");
+
+        if(urlend != string::npos){ // we have a title
+            url = line.substr(0, urlend);
+            line = line.substr(urlend+1);
+
+            urlend = line.find("|");
+            while(urlend != string::npos){ // exchange every | with a blank (there can be some | inside the title too)
+                line.at(urlend) = ' ';
+                urlend = line.find("|");
+            }
+            title = line;
+
+        }else{ // no title
+            url = line;
+            title = "";
+        }
+
+        // send a single download
+        try{
+            if(package == -1) // create a new package
+                package = dclient->add_package();
+
+            dclient->add_download(package, url, title);
+        }catch(client_exception &e){
+            error_occured = true;
+            error = e.get_id();
+        }
+    }
+
+    mx.unlock();
+
+    if(error_occured){
+        if(error == 6)
+            QMessageBox::warning(this,  tsl("Error"), tsl("Failed to create Package."));
+        else if(error == 13)
+            QMessageBox::warning(this,  tsl("Invalid URL"), tsl("At least one inserted URL was invalid."));
+    }
+}
+
+
 void ddclient_gui::on_set_password(){
     if(!check_connection(true, "Please connect before changing Packages."))
         return;
@@ -1889,6 +1968,6 @@ void ddclient_gui::resizeEvent(QResizeEvent* event){
     }else{
         list->setColumnWidth(1, 0.2*width);
         list->setColumnWidth(2, 0.3*width);
-        list->setColumnWidth(4, 0.5*width);
+        list->setColumnWidth(4, 0.55*width);
     }
 }

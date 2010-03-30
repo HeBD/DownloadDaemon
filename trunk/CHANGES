@@ -8,6 +8,7 @@
    [susanne]
 	- ddclient-gui now correctly displays prechecked size of pending downloads
 	- added possibility to configure precheck_links with ddclient-gui
+	- added function to insert urls via ctrl+v to ddclient-gui
 
 2010-03-29
    [adrian]

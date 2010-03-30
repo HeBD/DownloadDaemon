@@ -124,6 +124,7 @@ Connect->Verbinden
 Configure->Konfigurieren
 Activate Downloading->Downloaden aktivieren
 Deactivate Downloading->Downloaden deaktivieren
+Download->Download
 Activate Download->Download aktivieren
 Deactivate Download->Download deaktivieren
 Add Download->Download hinzufügen
@@ -131,6 +132,7 @@ Delete Download->Download löschen
 Delete finished Downloads->fertige Downloads löschen
 Select all->Alles markieren
 Copy URL->URL kopieren
+Paste URL->URL einfügen
 Quit->Beenden
 File->Datei
 About->Über
