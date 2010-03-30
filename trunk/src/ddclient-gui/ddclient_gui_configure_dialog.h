@@ -48,6 +48,7 @@ class configure_dialog : public QDialog{
         QComboBox *premium_host;
         QCheckBox *overwrite;
         QCheckBox *refuse_existing;
+        QCheckBox *size_existing;
         QLineEdit *premium_user;
         QLineEdit *premium_password;
 

@@ -6,6 +6,7 @@
 	- some race-condition fixes if a download is deleted while a POST_PROCESS_DOWNLOAD plugin is active
    [susanne]
 	- ddclient-gui now correctly displays prechecked size of pending downloads
+	- added possibility to configure precheck_links with ddclient-gui
 
 2010-03-29
    [adrian]
