@@ -123,6 +123,7 @@ Connect->Conectar
 Configure->Configurar
 Activate Downloading->Activar Descarga Global
 Deactivate Downloading->Desactivar Descarga Global
+Download->Descarga
 Activate Download->Activar Descarga
 Deactivate Download->Desactivar Descarga
 Add Download->Añadir Descarga
@@ -130,6 +131,7 @@ Delete Download->Eliminar Descarga
 Delete finished Downloads->Eliminar Descargas Finalizadas
 Select all->Seleccionar Todo
 Copy URL->Copiar Enlace
+Paste URL->Pasta Enlace
 Quit->Salir
 File->Archivo
 About->Acerca de
