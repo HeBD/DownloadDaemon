@@ -161,13 +161,8 @@ int main(int argc, char* argv[], char* env[]) {
 		wd += '/';
 		wd += argv0;
 		//
-		char* real_path = realpath(wd.c_str(), 0);
-		if(real_path == 0) {
-			cerr << "Unable to locate executable!" << endl;
-			exit(-1);
-		}
-		program_root = real_path;
-		free(real_path);
+		program_root = wd;
+		correct_path(program_root);
 	} else if(argv0.find('/') == string::npos && argv0.find('\\') == string::npos && !argv0.empty()) {
 		// It's in $PATH... let's go!
 		std::string env_path(get_env_var("PATH"));
@@ -201,14 +196,8 @@ int main(int argc, char* argv[], char* env[]) {
 		if(found) {
 			// successfully located the file..
 			// resolve symlinks, etc
-			char* real_path = realpath(curr_path.c_str(), 0);
-			if(real_path == NULL) {
-				cerr << "Unable to locate executable!" << endl;
-				exit(-1);
-			} else {
-				program_root = real_path;
-				free(real_path);
-			}
+			program_root = curr_path;
+			correct_path(program_root);
 		} else {
 			cerr << "Unable to locate executable!" << endl;
 			exit(-1);

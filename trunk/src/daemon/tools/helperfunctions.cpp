@@ -232,11 +232,9 @@ void correct_path(std::string &path) {
 		path.insert(0, program_root);
 	}
 
-	char* real_path = realpath(path.c_str(), 0);
-	if(real_path != 0) {
-		path = real_path;
-		free(real_path);
-	}
+	char real_path[PATH_MAX];
+	realpath(path.c_str(), real_path);
+	path = real_path;
 
 	// remove slashes at the end
 	while(*(path.end() - 1) == '/' || *(path.end() - 1) == '\\') {
