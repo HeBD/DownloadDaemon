@@ -176,6 +176,7 @@ Connection failed->Verbindung fehlgeschlagen
 Server overloaded->Server überlastet
 Authentication failed->Authentifizierung fehlgeschlagen
 Unknown plugin error - please report->Unbekannter Pluginfehler, bitte melden
+Size->Größe
 
 Please connect before deleting Downloads.->Bitte verbinden Sie bevor Sie Downloads löschen.
 Do you really want to delete the selected Download(s)?->Wollen Sie wirklich die markierten Download(s) löschen?
