@@ -28,6 +28,7 @@ namespace std {
 #endif
 
 #include <sys/stat.h>
+#include <sys/param.h>
 #ifdef HAVE_SYSLOG_H
 	#include <syslog.h>
 #endif
@@ -232,9 +233,18 @@ void correct_path(std::string &path) {
 		path.insert(0, program_root);
 	}
 
-	char real_path[PATH_MAX];
+	int path_max;
+	#ifdef PATH_MAX
+  	path_max = PATH_MAX;
+	#else
+  	path_max = pathconf (path, _PC_PATH_MAX);
+	if(path_max <= 0)
+    	path_max = 4096;
+	#endif
+	char* real_path = new char[path_max];
 	realpath(path.c_str(), real_path);
 	path = real_path;
+	delete real_path;
 
 	// remove slashes at the end
 	while(*(path.end() - 1) == '/' || *(path.end() - 1) == '\\') {
