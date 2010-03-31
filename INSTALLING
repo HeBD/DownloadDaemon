@@ -1,5 +1,5 @@
 This guide is seperated in 5 parts:
-1: Things that you always have to do
+1: General information
 2: Things you have to do if you got this guide in a .tar.gz or .tar.bz2 source package
 3: Things you have to do if you are building from SVN
 4: Installing the ARM/armel package (a bit more complicated)
@@ -16,7 +16,16 @@ This guide is seperated in 5 parts:
 	To build ddclient-wx, you need to have libboost-thread (at least version 1.36.0) and wxWidgets development packages installed.
 	To build ddclient-gui, the successor of ddclient-wx (ddclient-wx will have its last release in version 0.9), you only need
 	to have the Qt-development files installed.
-	You also need cmake in order to build any of the packages
+	You also need cmake in order to build any of the packages.
+	There are also some features that require additional programs. If you want them, you have to install that programs. If you
+	don't care about them, forget about it.
+	for all one-click-hoster plugins that require captchas (as netload.in and megaupload.com), you need to install "gocr" and "netpbm-progs".
+	then set the path to the gocr executable in your downloaddaemon.conf.
+	to use automatic package-extraction, DownloadDaemon can use the following programs:
+	"unrar" to extract rar-packages (in 0.9, rarlab's unrar should be prefered over GNU unrar. as of version 1.0, it doesn't matter).
+	"unzip" to extract zip-archives
+	"tar" to extract .tar and .tar.gz packages. If you have bzip2 installed, DD can also extract .tar.bz2.
+	Please don't forget to set the paths to all those programs in your downloaddaemon.conf file.
 
 2:	Building a package from a source package is pretty simple. Extract the archive (if you read this, this should be done by now)
 	and cd to the new folder. now simply run 
