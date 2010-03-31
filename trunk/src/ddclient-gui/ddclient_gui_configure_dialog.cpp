@@ -690,6 +690,8 @@ void configure_dialog::ok(){
         else
             dclient->set_var("assume_proxys_online", "0");
 
+        dclient->set_var("proxy_list", proxy_list);
+
         // reconnect enable
         if(reconnect_enable){
             dclient->set_var("enable_reconnect", "1");
