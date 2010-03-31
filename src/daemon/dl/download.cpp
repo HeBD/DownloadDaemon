@@ -479,9 +479,15 @@ void download::download_me_worker() {
 
 		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file_s;
+		#ifdef HAVE_UIN64_t
+		uint64_t resume_size = 0;
+		#else
+		double resume_size = 0;
+		#endif
 		if(get_hostinfo().allows_resumption && global_config.get_bool_value("enable_resume") &&
 		   stat64(output_filename.c_str(), &st) == 0 && (unsigned)st.st_size == downloaded_bytes &&
 		   can_resume) {
+		   	resume_size = downloaded_bytes;
 			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, downloaded_bytes);
 			output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
 			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
@@ -537,7 +543,12 @@ void download::download_me_worker() {
 		// show progress
 		curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0);
 		curl_easy_setopt(handle, CURLOPT_PROGRESSFUNCTION, report_progress);
-		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &dl);
+		#ifdef HAVE_UINT64_T
+		std::pair<dlindex, uint64_t> progressdata(dl, resume_size);
+		#else
+		std::pair<dlindex, double> progressdata(dl, resume_size);
+		#endif
+		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &progressdata);
 		// set timeouts
 		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
 		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 60);
