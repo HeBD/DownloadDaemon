@@ -1,3 +1,7 @@
+2010-03-31
+   [adrian]
+	- fixed bug #2979924, which reports that after stopping and starting a running download, the download size will not be correct
+
 2010-03-30
    [adrian]
 	- mostly implemented feature request #2977846 to get the file-size and status before actually running the download.

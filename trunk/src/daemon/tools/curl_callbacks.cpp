@@ -40,16 +40,21 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 int report_progress(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
-	dlindex id = *(dlindex*)clientp;
+	#ifdef HAVE_UINT64_T
+	std::pair<dlindex, uint64_t> *prog_data = (std::pair<dlindex, uint64_t>*)clientp;
+	#else
+	std::pair<dlindex, double> *prog_data = (std::pair<dlindex, double>*)clientp;
+	#endif
+	dlindex id = prog_data->first;
 	CURL* curr_handle = global_download_list.get_handle(id);
 
 	double curr_speed_param;
 	curl_easy_getinfo(curr_handle, CURLINFO_SPEED_DOWNLOAD, &curr_speed_param);
 	#ifdef HAVE_UINT64_T
-	uint64_t size_conv = (uint64_t)(dltotal + 0.5);
+	uint64_t size_conv = (uint64_t)(dltotal + 0.5) + prog_data->second;
 	uint64_t speed_conv = (uint64_t)(curr_speed_param);
 	#else
-	double size_conf = dltotal;
+	double size_conf = dltotal + prog_data->second;
 	double speed_conv = curr_speed_param;
 	#endif
 	global_download_list.set_size(id, size_conv);
