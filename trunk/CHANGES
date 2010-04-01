@@ -1,3 +1,7 @@
+2010-04-01
+   [susanne]
+	- added donation button to about dialog at ddclient-gui
+
 2010-03-31
    [adrian]
 	- fixed bug #2979924, which reports that after stopping and starting a running download, the download size will not be correct
