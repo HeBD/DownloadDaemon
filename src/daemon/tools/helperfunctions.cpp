@@ -243,7 +243,8 @@ void correct_path(std::string &path) {
 	#endif
 	char* real_path = new char[path_max];
 	realpath(path.c_str(), real_path);
-	path = real_path;
+	if(real_path[0] != '\0')
+		path = real_path;
 	delete real_path;
 
 	// remove slashes at the end
@@ -253,7 +254,8 @@ void correct_path(std::string &path) {
 
     std::string::iterator it = path.begin();
 #ifdef __CYGWIN__
-    ++it; // required to make network-paths possible that start with \\ or //
+	if(it != path.end())
+		++it; // required to make network-paths possible that start with \\ or //
 #endif // __CYGWIN__
 
 	for(; it != path.end(); ++it) {
