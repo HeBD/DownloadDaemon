@@ -1741,9 +1741,9 @@ void ddclient_gui::on_set_password(){
             id = content.at(it->row).id;
 
             bool ok;
-            stringstream s;
-            s << id;
-            QString pass = QInputDialog::getText(this, tsl("Enter Package Password"), tsl("Enter Package Password"), QLineEdit::Normal, "", &ok);
+	    string old_pass = dclient->get_package_var(id, "PKG_PASSWORD");
+
+	    QString pass = QInputDialog::getText(this, tsl("Enter Package Password"), tsl("Enter Package Password"), QLineEdit::Normal, old_pass.c_str(), &ok);
             if(!ok){
                 mx.unlock();
                 return;
