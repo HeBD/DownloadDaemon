@@ -124,7 +124,8 @@ if($connect != 'SUCCESS') {
 			);
 
 			if($exp_dls[$i][3] != "") {
-				$tpl_manage_vars['T_DL_Title'] = "<img src=\"".$tpl_vars['T_SITE_URL']."/templates/default/css/images/key.png\" alt=\"".$LANG['L_PASS_SET']."\">" . $exp_dls[$i][2];
+				$tpl_manage_vars['T_DL_Title'] = "<img src=\"".$tpl_vars['T_SITE_URL']."/templates/default/css/images/key.png\" alt=\"".$LANG['L_PASS_SET']."\" 
+								  title=\"".$LANG['L_PASS_SET']."\" />" . $exp_dls[$i][2];
 			}
 
 			$dl_list .= template_parse('manage_line', $tpl_manage_vars);
@@ -233,7 +234,7 @@ $tpl_vars['L_Date'] = $LANG['Date'];
 $tpl_vars['L_Status'] = $LANG['Status'];
 $tpl_vars['T_List'] = $dl_list;
 if(AUTO_REFRESH && $any_download_running) {
-	$tpl_vars['T_META'] = '<meta http-equiv="refresh" content="5; URL=index.php?site=manage">';
+	$tpl_vars['T_META'] = '<meta http-equiv="refresh" content="5; URL=index.php?site=manage" />';
 }
 
 ?>
