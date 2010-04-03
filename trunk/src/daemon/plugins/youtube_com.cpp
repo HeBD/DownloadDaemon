@@ -74,21 +74,17 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			int added_downloads_this_round = 0;
 
 			size_t pos = 0;
-			while((pos = result.find("href=\"/watch?v=", pos + 1)) != string::npos) {
+			while((pos = result.find("video-main-content", pos + 1)) != string::npos) {
+				pos = result.find("href=\"", pos) + 6;
 				string curr_url = "http://www.youtube.com";
-				pos += 6;
 				curr_url += result.substr(pos, result.find("\"", pos) - pos);
-				//curr_url = curr_url.substr(0, curr_url.find("&"));
-				if(curr_url.find("&playnext") != string::npos) {
-					continue;
-				}
 
 				if(!urls.url_is_in_list(curr_url)) {
 					string title;
-					size_t title_pos = result.find("<img title=\"", pos);
+					size_t title_pos = result.find("title=\"", pos);
 					if(title_pos != string::npos) {
-						title_pos += 12;
-						title = result.substr(title_pos, result.find("\" ", title_pos) - title_pos);
+						title_pos += 7;
+						title = result.substr(title_pos, result.find("\" rel=", title_pos) - title_pos);
 						replace_html_special_chars(title);
 					}
 

@@ -1,4 +1,10 @@
 2010-04-03
+   [adrian]
+	- added possibility to set package title/password and download title/url in ddclient-php
+	- some general ddclient-php improvements
+	- improvements in DL SET (DL_URL) command which reported incorrect SUCCESS status
+	- fixed youtube.com playlist download
+
    [susanne]
 	- fixed wrong display of very big download sizes (>2 GB)
 	- ddclient-gui now shows if a package password is set via key icon in title column (feature request ID: 2980573)

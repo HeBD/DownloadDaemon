@@ -499,15 +499,16 @@ void target_dl_set(std::string &data, tkSock *sock) {
 	}
 	trim_string(option);
 	trim_string(value);
+	dlindex index = make_pair<int, int>(pkg_id, id);
 	if(option == "DL_URL") {
-		if(validate_url(value)) {
-			global_download_list.set_url(make_pair<int, int>(pkg_id, id), value);
+		if(validate_url(value) && (!global_download_list.get_running(index) || global_download_list.get_url(index) == value)) {
+			global_download_list.set_url(index, value);
 			*sock << "100 SUCCESS";
 		} else {
 			*sock << "103 URL";
 		}
 	} else if(option == "DL_TITLE") {
-		global_download_list.set_title(make_pair<int, int>(pkg_id, id), value);
+		global_download_list.set_title(index, value);
 		*sock << "100 SUCCESS";
 	} else {
 		*sock << "101 PROTOCOL";

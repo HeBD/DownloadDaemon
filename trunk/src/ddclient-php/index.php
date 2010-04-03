@@ -1,7 +1,5 @@
 <?php
 include 'inc/_config.inc.php';
-include 'inc/functions.inc.php';
-include 'inc/template.inc.php';
 
 //Language File
 if(file_exists('lang/'.LANG.'.php')){
@@ -9,6 +7,9 @@ if(file_exists('lang/'.LANG.'.php')){
 }else{
 	include 'lang/en.php';	
 }
+
+include 'inc/template.inc.php';
+include 'inc/functions.inc.php';
 
 //Logged in?
 if(isset($_COOKIE['ddclient_host'])){
@@ -31,6 +32,7 @@ if(!isset($_SERVER['HTTPS']) || strtolower($_SERVER['HTTPS']) == "off") {
 	$site_url = "https://";
 }
 
+$err_message='';
 $tpl_vars = array(
 	'T_SITE_URL' => $site_url . $_SERVER['HTTP_HOST'] . substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], "/")+1),
 	'T_DEFAULT_LANG' => LANG,
@@ -46,6 +48,8 @@ $tpl_vars = array(
 );
 
 include 'sites/'.$site.'.php';
+
+$tpl_vars['err_message'] = $err_message;
 
 echo template_parse_site($site, $tpl_vars);
 ?>

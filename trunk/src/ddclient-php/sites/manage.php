@@ -13,7 +13,7 @@ if($connect != 'SUCCESS') {
 }else{
 	if(isset($_GET['action'])){
 		switch ($_GET['action']) {
-    		case 'activate':
+    			case 'activate':
 				send_all($socket, "DDP DL ACTIVATE " . $_GET['id']);
 				$buf = "";
 				recv_all($socket, $buf);
@@ -21,7 +21,7 @@ if($connect != 'SUCCESS') {
 					$err_message .= msg_generate($LANG['ERR_DL_ACTIVATE'], 'error');
 				}
         		break;
-    		case 'deactivate':
+    			case 'deactivate':
 				send_all($socket, "DDP DL DEACTIVATE " . $_GET['id']);
 				$buf = "";
 				recv_all($socket, $buf);
@@ -29,7 +29,7 @@ if($connect != 'SUCCESS') {
 					$err_message .= msg_generate($LANG['ERR_DL_DEACTIVATE'], 'error');
 				}
         		break;
-    		case 'delete':
+    			case 'delete':
 				$buf = "";
 				if($_GET['pkg_id'] != "") {
 					send_all($socket, "DDP PKG DEL " . $_GET['pkg_id']);
@@ -41,7 +41,7 @@ if($connect != 'SUCCESS') {
 					$err_message .= msg_generate($LANG['ERR_DL_DEL'], 'error');
 				}
         		break;
-    		case 'del_file':
+    			case 'del_file':
 				send_all($socket, "DDP FILE DEL " . $_GET['id']);
 				$buf = "";
 				recv_all($socket, $buf);
@@ -49,7 +49,7 @@ if($connect != 'SUCCESS') {
 					$err_message .= msg_generate($LANG['ERR_FILE_DEL'], 'error');
 				}
     			break;
-    		case 'move':
+    			case 'move':
 				$buf = "";
 				if($_GET['pkg_id'] != "") {
 					send_all($socket, "DDP PKG UP " . $_GET['pkg_id']);
@@ -61,6 +61,30 @@ if($connect != 'SUCCESS') {
 					$err_message .= msg_generate($LANG['ERR_DL_UP'], 'error');
 				}
     			break;
+			case 'edit':
+				$buf = "";
+				if($_GET['pkg_id'] != "") {
+					send_all($socket, "DDP PKG SET " . $_GET['pkg_id'] . " PKG_NAME = " . $_POST['pkg_edit_name']);
+					recv_all($socket, $buf);
+					if(mb_substr($buf, 0, 3) != "100") {
+						$err_message .= msg_generate($LANG['ERR_EDIT'], 'error');
+						break;
+					}
+					send_all($socket, "DDP PKG SET " . $_GET['pkg_id'] . " PKG_PASSWORD = " . $_POST['pkg_edit_passwd']);
+				} else {
+					send_all($socket, "DDP DL SET " . $_GET['id'] . " DL_TITLE = " . $_POST['dl_edit_title']);
+					recv_all($socket, $buf);
+					if(mb_substr($buf, 0, 3) != "100") {
+						$err_message .= msg_generate($LANG['ERR_EDIT'], 'error');
+						break;
+					}
+					send_all($socket, "DDP DL SET " . $_GET['id'] . " DL_URL = " . $_POST['dl_edit_url']);
+				}
+				recv_all($socket, $buf);
+				if(mb_substr($buf, 0, 3) != "100") {
+					$err_message .= msg_generate($LANG['ERR_EDIT'], 'error');
+				}					
+			break;
     		default:
     			break;
 		}
@@ -74,13 +98,12 @@ if($connect != 'SUCCESS') {
 
 	$exp_dls[] = array();
 	for($i = 0; $i < count($download_index); $i++) {
-		$exp_dls[$i] = explode ( '|'  , $download_index[$i] );
+		$exp_dls[$i] = explode ('|', $download_index[$i]);
 	}
 
 	for($i = 0; $i < count($exp_dls); $i++) {
 		if($exp_dls[$i][0] == "") continue;
 		if($exp_dls[$i][0] == "PACKAGE") {
-
 			$tpl_manage_vars = array(
 				'T_Activate_Button' => '',
 				'T_DelFile_Button' => '',
@@ -96,9 +119,14 @@ if($connect != 'SUCCESS') {
 				'L_Activate' => '" style="visibility:hidden',
 				'L_Delete' => '',
 				'L_Move' => $LANG['Move'],
-				'L_Delete_File' => ''
+				'L_Delete_File' => '',
+				'T_EDIT_SITE' => 'pkg_edit',
 			);
-	
+
+			if($exp_dls[$i][3] != "") {
+				$tpl_manage_vars['T_DL_Title'] = "<img src=\"".$tpl_vars['T_SITE_URL']."/templates/default/css/images/key.png\" alt=\"".$LANG['L_PASS_SET']."\">" . $exp_dls[$i][2];
+			}
+
 			$dl_list .= template_parse('manage_line', $tpl_manage_vars);
 			continue;
 		}
@@ -190,7 +218,8 @@ if($connect != 'SUCCESS') {
 		'L_Activate' => $LANG['Activate'],
 		'L_Delete' => $LANG['Delete'],
 		'L_Move' => $LANG['Move'],
-		'L_Delete_File' => $LANG['Delete_File']
+		'L_Delete_File' => $LANG['Delete_File'],
+		'T_EDIT_SITE' => 'dl_edit',
 	);
 	
 	$dl_list .= template_parse('manage_line', $tpl_manage_vars);
@@ -203,9 +232,8 @@ $tpl_vars['L_ID'] = $LANG['ID'];
 $tpl_vars['L_Date'] = $LANG['Date'];
 $tpl_vars['L_Status'] = $LANG['Status'];
 $tpl_vars['T_List'] = $dl_list;
-$tpl_vars['err_message'] = $err_message;
 if(AUTO_REFRESH && $any_download_running) {
-	$tpl_vars['T_META'] = '<meta http-equiv="refresh" content="5">';
+	$tpl_vars['T_META'] = '<meta http-equiv="refresh" content="5; URL=index.php?site=manage">';
 }
 
 ?>

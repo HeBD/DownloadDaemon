@@ -11,8 +11,12 @@ function template_get($file){
 
 function template_parse($file, $array){
 	$temp = template_get($file);
+	global $LANG;
 	if($temp){
 		foreach ($array as $key => $value){
+			$temp = str_replace('{'.$key.'}', $value, $temp);
+		}
+		foreach ($LANG as $key => $value){
 			$temp = str_replace('{'.$key.'}', $value, $temp);
 		}
 	}else{
@@ -25,8 +29,12 @@ function template_parse_site($file, $array){
 	$temp = template_get('header');
 	$temp .= template_get($file);
 	$temp .= template_get('footer');
+	global $LANG;
 	if($temp){
 		foreach ($array as $key => $value){
+			$temp = str_replace('{'.$key.'}', $value, $temp);
+		}
+		foreach ($LANG as $key => $value){
 			$temp = str_replace('{'.$key.'}', $value, $temp);
 		}
 	}else{
