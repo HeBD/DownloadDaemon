@@ -837,8 +837,12 @@ void ddclient_gui::compare_packages(){
         // compare downloads
         compare_downloads(index, new_it, old_it, info);
 
-        if(old_it->name != new_it->name){
+        if((old_it->name != new_it->name) || (old_it->password != new_it->password)){
             pkg = list_model->item(line_nr, 1);
+            if(new_it->password != "")
+                pkg->setIcon(QIcon("img/key.png"));
+            else if(old_it->password  != "")
+                pkg->setIcon(QIcon(""));
             pkg->setText(QString(new_it->name.c_str()));
         }
 
@@ -899,6 +903,8 @@ void ddclient_gui::compare_packages(){
 
             pkg = new QStandardItem(QString(new_it->name.c_str()));
             pkg->setEditable(false);
+            if(new_it->password != "")
+                pkg->setIcon(QIcon("img/key.png"));
             list_model->setItem(line_nr, 1, pkg);
 
             for(int i=2; i<5; i++){

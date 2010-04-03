@@ -177,6 +177,7 @@ std::vector<package> downloadc::get_list(){
     package mypackage;
     mypackage.id = 0;
     mypackage.name = "";
+    mypackage.password = "";
     bool empty_package = true;
 
     if(new_content.size() == 0)
@@ -194,6 +195,7 @@ std::vector<package> downloadc::get_list(){
                 pkg.push_back(mypackage);
                 mypackage.id = 0;
                 mypackage.name = "";
+                mypackage.password = "";
                 mypackage.dls.clear();
             }else
                 empty_package = false;
@@ -203,6 +205,12 @@ std::vector<package> downloadc::get_list(){
                 mypackage.name = (*content_it).at(2);
             }catch(...){
                 mypackage.name = "";
+            }
+
+            try{
+                mypackage.password = (*content_it).at(3);
+            }catch(...){
+                mypackage.password = "";
             }
 
         }else{ // we have a download line
