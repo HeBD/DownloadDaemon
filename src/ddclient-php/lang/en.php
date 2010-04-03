@@ -12,6 +12,8 @@ $LANG = array(
 	'Logout' => 'Log Out',
 	'Login' => 'Login',
 	'Manager' => 'Manager',
+	'Dl_edit' => 'Download properties',
+	'Pkg_edit' => 'Package properties',
 
 // Login Site
 	'Host' => 'Host',
@@ -39,6 +41,14 @@ $LANG = array(
 	'Move' => 'Move up',
 	'Activate' => 'Activate / Deactivate',
 	'Delete_File' => 'Delete File',
+	'L_Edit' => 'Edit',
+	'L_PASS_SET' => 'Extractor-password set.',
+
+// download and package edit pages
+	'L_DL_TITLE' => 'Download Title',
+	'L_DL_URL' => 'Download URL',
+	'L_PKG_NAME' => 'Package name',
+	'L_PKG_PASS' => 'Package password',
 
 //Config
 	'Change_PWD' => 'Change Password',
@@ -71,5 +81,6 @@ $LANG = array(
 	'ERR_FILE_DEL' => 'Unable to delete this file.',
 	'ERR_DL_UP' => 'The Download could not be moved.',
 	'ERR_PKG_OR_DL_NAM' => 'Invalid package name or Download title.',
+	'ERR_EDIT' => 'Failed to save changes.',
 )
 ?>

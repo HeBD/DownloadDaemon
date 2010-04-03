@@ -130,13 +130,13 @@ fieldset {
 	border-radius: 8px;
 	-moz-border-radius: 8px;
 }
-
+/*
 legend {
 	position: absolute;
 	top: -8px;
 	left: 8px;
 }
-
+*/
 label {
 	display: block;
 	float: left;
