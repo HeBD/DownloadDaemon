@@ -472,7 +472,7 @@ std::string package_container::create_client_list() {
 	lock_guard<recursive_mutex> lock(mx);
 	std::string list;
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
-		list += "PACKAGE|" + int_to_string((*it)->container_id)  + "|" + (*it)->name + "\n";
+		list += "PACKAGE|" + int_to_string((*it)->container_id)  + "|" + (*it)->name + "|" + (*it)->get_password() + "\n";
 		list += (*it)->create_client_list();
 	}
 	trim_string(list);
