@@ -121,6 +121,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/bullet_wh
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/bullet_yellow.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/package.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/download_package.png DESTINATION share/ddclient-gui/img/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/key.png DESTINATION share/ddclient-gui/img/)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-gui.png DESTINATION share/pixmaps)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-gui.xpm DESTINATION share/pixmaps)

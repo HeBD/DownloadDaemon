@@ -60,7 +60,7 @@ about_dialog::about_dialog(QWidget *parent, QString build) : QDialog(parent){
     copyright += "The program is provided AS IS with NO WARRANTY\nOF ANY KIND, INCLUDING THE WARRANTY ";
     copyright += "OF DESIGN,\nMERCHANTABILITY AND FITNESS FOR A PARTICULAR\nPURPOSE.";
 
-    QLabel *support_label = new QLabel("<a href=\"http://sourceforge.net/donate/index.php?group_id=278029\"><img src=\"img/project-support.jpg\""
+    QLabel *support_label = new QLabel("<br><a href=\"http://sourceforge.net/donate/index.php?group_id=278029\"><img src=\"img/project-support.jpg\""
 				       "width=\"88\" height=\"32\" border=\"0\" alt=\"Support This Project\" /></a>");
     support_label->setOpenExternalLinks(true);
 

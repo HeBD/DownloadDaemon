@@ -48,6 +48,7 @@ struct package{
     int id;
     std::string name;
     std::vector<download> dls;
+    std::string password;
 };
 
 /** Enum file_delete, manages the three options for deleting a file */

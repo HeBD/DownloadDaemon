@@ -1,6 +1,7 @@
 2010-04-03
    [susanne]
 	- fixed wrong display of very big download sizes (>2 GB)
+	- ddclient-gui now shows if a package password is set via key icon in title column (feature request ID: 2980573)
 
 2010-04-01
    [susanne]
