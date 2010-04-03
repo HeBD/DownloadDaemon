@@ -1,3 +1,7 @@
+2010-04-03
+   [susanne]
+	- fixed wrong display of very big download sizes (>2 GB)
+
 2010-04-01
    [susanne]
 	- added donation button to about dialog at ddclient-gui
