@@ -548,7 +548,7 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
             stream_buffer << lang["Running"];
 
             if(dl.speed != 0 && dl.speed != -1) // download speed known
-                stream_buffer << "@" << setprecision(1) << fixed << (float)dl.speed / 1024 << " kb/s";
+                stream_buffer << "@" << setprecision(1) << fixed << (double)dl.speed / 1024 << " kb/s";
 
             stream_buffer << ": ";
 
@@ -559,11 +559,11 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
                 if(dl.downloaded == 0 || dl.downloaded == 1) // nothing downloaded yet
                     stream_buffer << "0.00 MB/ 0.00 MB";
                 else // something downloaded
-                    stream_buffer << setprecision(1) << fixed << (float)dl.downloaded / 1048576 << " MB/ 0.00 MB";
+                    stream_buffer << setprecision(1) << fixed << (double)dl.downloaded / 1048576 << " MB/ 0.00 MB";
 
             }else{ // download size known
                 if(dl.downloaded == 0 || dl.downloaded == 1){ // nothing downloaded yet
-                    stream_buffer << "0.00% - 0.00 MB/ " << fixed << (float)dl.size / 1048576 << " MB";
+                    stream_buffer << "0.00% - 0.00 MB/ " << fixed << (double)dl.size / 1048576 << " MB";
 
                     if(dl.speed != 0 && dl.speed != -1){ // download speed known => calc time left
                         time_buffer << (int)(dl.size / dl.speed);
@@ -573,9 +573,9 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
                         time_left = "";
 
                 }else{ // download size known and something downloaded
-                    stream_buffer << setprecision(1) << fixed << (float)dl.downloaded / (float)dl.size * 100 << "% - ";
-                    stream_buffer << setprecision(1) << fixed << (float)dl.downloaded / 1048576 << " MB/ ";
-                    stream_buffer << setprecision(1) << fixed << (float)dl.size / 1048576 << " MB";
+                    stream_buffer << setprecision(1) << fixed << (double)dl.downloaded / (double)dl.size * 100 << "% - ";
+                    stream_buffer << setprecision(1) << fixed << (double)dl.downloaded / 1048576 << " MB/ ";
+                    stream_buffer << setprecision(1) << fixed << (double)dl.size / 1048576 << " MB";
 
                     if(dl.speed != 0 && dl.speed != -1){ // download speed known => calc time left
                         time_buffer << (int)((dl.size - dl.downloaded) / dl.speed);
@@ -610,7 +610,7 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
             if(dl.size > 0){
                 stringstream text;
                 text << lang["Download Pending."] << " " << lang["Size"] << ": ";
-                text << setprecision(1) << fixed << (float)dl.size / 1048576 << " MB";
+                text << setprecision(1) << fixed << (double)dl.size / 1048576 << " MB";
                 status_text = text.str();
             }else{
                 status_text = lang["Download Pending."];

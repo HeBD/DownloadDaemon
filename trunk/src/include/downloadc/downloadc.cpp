@@ -226,8 +226,8 @@ std::vector<package> downloadc::get_list(){
                 dl.title = (*content_it).at(2);
                 dl.url = (*content_it).at(3);
                 dl.status = (*content_it).at(4);
-                dl.downloaded = atol((*content_it).at(5).c_str());
-                dl.size = atol((*content_it).at(6).c_str());
+                dl.downloaded = std::strtod((*content_it).at(5).c_str(), NULL);
+                dl.size = std::strtod((*content_it).at(6).c_str(), NULL);
                 dl.wait = atoi((*content_it).at(7).c_str());
                 dl.error = (*content_it).at(8);
                 dl.speed = atoi((*content_it).at(9).c_str());
