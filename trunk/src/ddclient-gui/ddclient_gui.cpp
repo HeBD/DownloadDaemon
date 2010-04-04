@@ -142,8 +142,10 @@ void ddclient_gui::update_status(QString server){
         // should never be reached
     }
 
-    if(server != QString("")) // sometimes the function is called to update the toolbar, not the status text => server is empty
+    if(server != QString("")){ // sometimes the function is called to update the toolbar, not the status text => server is empty
         status_connection->setText(tsl("Connected to") + " " + server);
+        this->server = server;
+    }
 }
 
 
@@ -547,8 +549,11 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
             stringstream stream_buffer, time_buffer;
             stream_buffer << lang["Running"];
 
-            if(dl.speed != 0 && dl.speed != -1) // download speed known
+            if(dl.speed != 0 && dl.speed != -1){ // download speed known
                 stream_buffer << "@" << setprecision(1) << fixed << (double)dl.speed / 1024 << " kb/s";
+
+                download_speed += (double)dl.speed / 1024;
+            }
 
             stream_buffer << ": ";
 
@@ -565,6 +570,8 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
                 if(dl.downloaded == 0 || dl.downloaded == 1){ // nothing downloaded yet
                     stream_buffer << "0.00% - 0.00 MB/ " << fixed << (double)dl.size / 1048576 << " MB";
 
+                    not_downloaded_yet += (double)dl.size / 1048576;
+
                     if(dl.speed != 0 && dl.speed != -1){ // download speed known => calc time left
                         time_buffer << (int)(dl.size / dl.speed);
                         time_left = time_buffer.str();
@@ -576,6 +583,8 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
                     stream_buffer << setprecision(1) << fixed << (double)dl.downloaded / (double)dl.size * 100 << "% - ";
                     stream_buffer << setprecision(1) << fixed << (double)dl.downloaded / 1048576 << " MB/ ";
                     stream_buffer << setprecision(1) << fixed << (double)dl.size / 1048576 << " MB";
+
+                    not_downloaded_yet += ((double)dl.size / 1048576) - (double)dl.downloaded / 1048576;
 
                     if(dl.speed != 0 && dl.speed != -1){ // download speed known => calc time left
                         time_buffer << (int)((dl.size - dl.downloaded) / dl.speed);
@@ -612,6 +621,9 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
                 text << lang["Download Pending."] << " " << lang["Size"] << ": ";
                 text << setprecision(1) << fixed << (double)dl.size / 1048576 << " MB";
                 status_text = text.str();
+
+                not_downloaded_yet += (double)dl.size / 1048576;
+
             }else{
                 status_text = lang["Download Pending."];
             }
@@ -975,6 +987,7 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
                     for(int i=0; i<5; i++)
                         selection_model->select(index.child(dl_line, i), QItemSelectionModel::Select);
 
+                    selected_downloads_size += (double)new_dit->size / 1048576;
                     break;
                 }
             }
@@ -1910,10 +1923,23 @@ void ddclient_gui::on_reload(){
 
     mx.lock();
 
+    // update download list
+    download_speed = 0;
+    not_downloaded_yet = 0;
+    selected_downloads_size = 0;
+
     compare_packages();
 
     content.clear();
     content = new_content;
+
+    // update statusbar
+    if(selected_downloads_size != 0){ // something is selected and the total size is known
+        status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size));
+    }else{
+        status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
+                                   " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet));
+    }
 
     mx.unlock();
 }

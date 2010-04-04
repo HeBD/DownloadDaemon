@@ -1,3 +1,7 @@
+2010-04-04
+   [susanne]
+	- added display of download information to statusbar (feature request ID: 2979928)
+
 2010-04-03
    [adrian]
 	- added possibility to set package title/password and download title/url in ddclient-php

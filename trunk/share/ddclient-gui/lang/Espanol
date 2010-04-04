@@ -118,6 +118,9 @@ Please reconnect.->Por favor vuelve a conectar
 No Connection to Server->No hay conexión con el Servidor
 Not connected->Desconectado
 Connected to->Conectado a
+Selected Size->Tamaño seleccionados
+Total Speed->Velocidad total
+Pending Queue Size->Tamaño pendiente
 
 Connect->Conectar
 Configure->Configurar
