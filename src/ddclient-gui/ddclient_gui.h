@@ -137,6 +137,10 @@ class ddclient_gui : public QMainWindow{
         QMutex mx;
         downloadc *dclient;
         language lang;
+        QString server;
+        uint64_t not_downloaded_yet;
+        uint64_t selected_downloads_size;
+        double download_speed;
         error_message last_error_message;
         std::vector<selected_info> selected_lines;
         std::vector<package> content;

@@ -119,6 +119,9 @@ Please reconnect.->Bitte erneut verbinden.
 No Connection to Server->Keine Verbindung zum Server
 Not connected->Nicht verbunden
 Connected to->Verbunden mit
+Selected Size->markierte Größe
+Total Speed->Geschwindigkeit
+Pending Queue Size->anstehende Downloads
 
 Connect->Verbinden
 Configure->Konfigurieren
