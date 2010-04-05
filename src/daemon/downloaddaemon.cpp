@@ -78,8 +78,7 @@ int main(int argc, char* argv[], char* env[]) {
 	env_vars = env;
 	#ifdef BACKTRACE_ON_CRASH
 	signal(SIGSEGV, print_backtrace);
-
-
+	signal(SIGPIPE, SIG_IGN);
 	#endif
 
 	// Drop user if there is one, and we were run as root
