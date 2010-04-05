@@ -236,8 +236,14 @@ bool ddclient_gui::check_connection(bool tell_user, string individual_message){
             if(tell_user && (last_error_message != error_connected)){
                 QMessageBox::information(this, tsl("No Connection to Server"), tsl(individual_message));
                 last_error_message = error_connected;
+
+                if(!this->isVisible()){ // workaround: if the user closes an error message and there is no window visible the whole programm closes!
+                    this->show();
+                    this->hide();
+                }
             }
             mx.unlock();
+
             return false;
         }
     }
