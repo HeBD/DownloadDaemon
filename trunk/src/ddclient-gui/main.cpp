@@ -108,8 +108,7 @@ int main(int argc, char *argv[])
 
     ddclient_gui c(config_dir.c_str());
 
-    if(!QSystemTrayIcon::isSystemTrayAvailable())
-        c.show(); // only show client when there is no tray icon available
+    c.show();
     return a.exec();
 }
 
