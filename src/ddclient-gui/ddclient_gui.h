@@ -206,7 +206,6 @@ class ddclient_gui : public QMainWindow{
     protected:
         void contextMenuEvent(QContextMenuEvent *event);
         void resizeEvent(QResizeEvent *event);
-        void closeEvent(QCloseEvent *event);
 };
 
 #endif // DDCLIENT_GUI_H

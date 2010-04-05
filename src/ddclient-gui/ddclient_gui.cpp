@@ -2087,11 +2087,3 @@ void ddclient_gui::resizeEvent(QResizeEvent* event){
         list->setColumnWidth(4, 0.55*width);
     }
 }
-
-
-void ddclient_gui::closeEvent(QCloseEvent *event){
-    if(QSystemTrayIcon::isSystemTrayAvailable()){
-        this->hide();
-        event->ignore();
-    }
-}
