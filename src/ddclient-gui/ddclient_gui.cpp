@@ -55,6 +55,9 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
     add_bars();
     add_list_components();
 
+    if(QSystemTrayIcon::isSystemTrayAvailable())
+        add_tray_icon();
+
     // connect if logindata was saved
     string file_name = config_dir.toStdString() + "ddclient-gui.conf";
     cfgfile file;
@@ -186,6 +189,13 @@ void ddclient_gui::set_language(std::string lang_to_set){
 
     update_bars();
     update_list_components();
+
+    mx.lock();
+    content.clear();
+    mx.unlock();
+
+    // send event to reload list
+    emit do_reload();
 }
 
 
@@ -483,6 +493,27 @@ void ddclient_gui::update_list_components(){
 }
 
 
+void ddclient_gui::add_tray_icon(){
+    tray_menu = new QMenu(this);
+    tray_menu->addAction(connect_action);
+    tray_menu->addAction(configure_action);
+    tray_menu->addSeparator();
+    tray_menu->addAction(activate_action);
+    tray_menu->addAction(deactivate_action);
+    tray_menu->addSeparator();
+    tray_menu->addAction(paste_action);
+    tray_menu->addSeparator();
+    tray_menu->addAction(about_action);
+    tray_menu->addAction(quit_action);
+
+    tray_icon = new QSystemTrayIcon(QIcon("img/logoDD.png"), this);
+    tray_icon->setContextMenu(tray_menu);
+    tray_icon->show();
+
+    connect(tray_icon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(on_activate_tray_icon(QSystemTrayIcon::ActivationReason)));
+}
+
+
 void ddclient_gui::cut_time(string &time_left){
     long time_span = atol(time_left.c_str());
     int hours = 0, mins = 0, secs = 0;
@@ -601,7 +632,11 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
         if(dl.error == "PLUGIN_SUCCESS"){
             color = "yellow";
 
-            status_text = lang["Download Inactive."];
+            if(dl.size == dl.downloaded && dl.size != 0) // download is finished but got inactivated!
+                status_text = lang["Download Inactive and Finished."];
+            else
+                status_text = lang["Download Inactive."];
+
             time_left = "";
 
         }else{ // error occured
@@ -1041,6 +1076,7 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
             dl_line++;
             new_dit++;
         }
+        list->expand(index);
     }
 }
 
@@ -1057,6 +1093,11 @@ void ddclient_gui::on_about(){
     about_dialog dialog(this, build);
     dialog.setModal(true);
     dialog.exec();
+
+    if(!this->isVisible()){ // workaround: if the user closes an error message and there is no window visible the whole programm closes!
+        this->show();
+        this->hide();
+    }
 }
 
 
@@ -1070,6 +1111,7 @@ void ddclient_gui::on_select(){
 
 
 void ddclient_gui::on_connect(){
+    this->show();
     connect_dialog dialog(this, config_dir);
     dialog.setModal(true);
     dialog.exec();
@@ -1589,6 +1631,11 @@ void ddclient_gui::on_configure(){
     configure_dialog dialog(this, config_dir);
     dialog.setModal(true);
     dialog.exec();
+
+    if(!this->isVisible()){ // workaround: if the user closes an error message and there is no window visible the whole programm closes!
+        this->show();
+        this->hide();
+    }
 }
 
 
@@ -1608,6 +1655,11 @@ void ddclient_gui::on_downloading_activate(){
     downloading_menu->removeAction(activate_action);
     downloading_menu->removeAction(deactivate_action); // just to be save
     downloading_menu->addAction(deactivate_action);
+
+    if(!this->isVisible()){ // workaround: if the user closes an error message and there is no window visible the whole programm closes!
+        this->show();
+        this->hide();
+    }
 }
 
 
@@ -1627,6 +1679,11 @@ void ddclient_gui::on_downloading_deactivate(){
     downloading_menu->removeAction(activate_action);
     downloading_menu->removeAction(deactivate_action); // just to be save
     downloading_menu->addAction(activate_action);
+
+    if(!this->isVisible()){ // workaround: if the user closes an error message and there is no window visible the whole programm closes!
+        this->show();
+        this->hide();
+    }
 }
 
 
@@ -1734,6 +1791,11 @@ void ddclient_gui::on_paste(){
             QMessageBox::warning(this,  tsl("Error"), tsl("Failed to create Package."));
         else if(error == 13)
             QMessageBox::warning(this,  tsl("Invalid URL"), tsl("At least one inserted URL was invalid."));
+
+        if(!this->isVisible()){ // workaround: if the user closes an error message and there is no window visible the whole programm closes!
+            this->show();
+            this->hide();
+        }
     }
 }
 
@@ -1911,6 +1973,22 @@ void ddclient_gui::on_load_container(){
 }
 
 
+void ddclient_gui::on_activate_tray_icon(QSystemTrayIcon::ActivationReason reason){
+    switch (reason) {
+    case QSystemTrayIcon::Trigger:
+    case QSystemTrayIcon::DoubleClick:
+        if(this->isVisible())
+            this->hide();
+        else
+            this->show();
+        break;
+    default:
+        ;
+    }
+
+}
+
+
 void ddclient_gui::on_reload(){
     if(!check_connection()){
         status_connection->setText(tsl("Not connected"));
@@ -2001,5 +2079,13 @@ void ddclient_gui::resizeEvent(QResizeEvent* event){
         list->setColumnWidth(1, 0.2*width);
         list->setColumnWidth(2, 0.3*width);
         list->setColumnWidth(4, 0.55*width);
+    }
+}
+
+
+void ddclient_gui::closeEvent(QCloseEvent *event){
+    if(QSystemTrayIcon::isSystemTrayAvailable()){
+        this->hide();
+        event->ignore();
     }
 }

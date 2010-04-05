@@ -27,6 +27,7 @@
 #include <QItemSelectionModel>
 #include <QMutex>
 #include <QClipboard>
+#include <QSystemTrayIcon>
 
 
 struct selected_info{
@@ -124,6 +125,7 @@ class ddclient_gui : public QMainWindow{
         void update_bars();
         void add_list_components();
         void update_list_components();
+        void add_tray_icon();
         void cut_time(std::string &time_left);
         std::string build_status(std::string &status_text, std::string &time_left, download &dl);
         bool check_selected();
@@ -174,6 +176,8 @@ class ddclient_gui : public QMainWindow{
         QAction *down_action;
         QAction *up_action;
         QToolBar *downloading_menu;
+        QMenu *tray_menu;
+        QSystemTrayIcon *tray_icon;
 
     private slots:
         void on_about();
@@ -196,11 +200,13 @@ class ddclient_gui : public QMainWindow{
         void on_set_name();
         void on_set_url();
         void on_load_container();
+        void on_activate_tray_icon(QSystemTrayIcon::ActivationReason reason);
         void on_reload();
 
     protected:
         void contextMenuEvent(QContextMenuEvent *event);
-        void resizeEvent(QResizeEvent* event);
+        void resizeEvent(QResizeEvent *event);
+        void closeEvent(QCloseEvent *event);
 };
 
 #endif // DDCLIENT_GUI_H

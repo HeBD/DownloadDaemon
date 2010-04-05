@@ -165,6 +165,7 @@ Error->Error
 Retrying soon.->Reintentando en breve
 Running->Iniciado
 Download Inactive.->Descarga Inactiva.
+Download Inactive and Finished.->Descarga Inactiva e Finalizada.
 Inactive. Error->Inactivo. Error
 Download Pending.->Descarga Pendiente.
 Have to wait.->Hay que esperar.
