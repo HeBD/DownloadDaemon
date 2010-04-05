@@ -1,3 +1,7 @@
+2010-04-05
+   [susanne]
+	- ddclient-gui now starts as tray icon and only shows gui if user clicks on this icon (right click shows a menu)
+
 2010-04-04
    [susanne]
 	- added display of download information to statusbar (feature request ID: 2979928)

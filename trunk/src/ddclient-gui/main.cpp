@@ -107,7 +107,9 @@ int main(int argc, char *argv[])
     a.installTranslator(&qtTranslator);
 
     ddclient_gui c(config_dir.c_str());
-    c.show();
+
+    if(!QSystemTrayIcon::isSystemTrayAvailable())
+        c.show(); // only show client when there is no tray icon available
     return a.exec();
 }
 
