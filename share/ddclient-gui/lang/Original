@@ -47,7 +47,7 @@ Additional Download Options->Zusätzliche Download Optionen
 You can force DownloadDaemon to only download at specific times by entering a start and end time in the format hours:minutes. Leave these fields empty if you want to allow DownloadDaemon to download permanently.->Wenn man eine Start- und Endzeit im Format Stunden:Minuten angibt läd DownloadDaemon nur zu diesen Zeiten herunter. Lassen Sie diese Felder leer, wenn DownloadDaemon immer herunterladen soll.
 Start Time->Startzeit
 End Time->Endzeit
-This option specifies where finished downloads should be safed on the server.->Diese Option spezifiziert wo Downloads auf dem Server gespeichert werden sollen.
+This option specifies where finished downloads should be saved on the server.->Diese Option spezifiziert wo Downloads auf dem Server gespeichert werden sollen.
 Here you can specify how many downloads may run at the same time and regulate the download speed for each download (overall max speed is download number * max speed).->Hier kann man festlegen wieviele Downloads gleichzeitig laufen dürfen und die Download Geschwindigkeit für jeden Download (Gesamtgeschwindigkeit = Anzahl * Geschwindigkeit).
 Simultaneous Downloads->Gleichzeitige Downloads
 Maximal Speed in kb/s->Maximale Geschwindigkeit in kb/s
