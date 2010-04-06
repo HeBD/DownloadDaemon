@@ -181,7 +181,7 @@ QWidget *configure_dialog::create_download_panel(){
     inner_t_layout->addWidget(new QLabel(p->tsl("End Time")));
     inner_t_layout->addWidget(end_time);
 
-    f_layout->addRow("", new QLabel(p->tsl("This option specifies where finished downloads should be safed on the server.")));
+    f_layout->addRow("", new QLabel(p->tsl("This option specifies where finished downloads should be saved on the server.")));
     f_layout->addRow("", folder);
 
     o_layout->addWidget(new QLabel(p->tsl("Here you can specify how many downloads may run at the same time and regulate the"
