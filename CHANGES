@@ -1,3 +1,7 @@
+2010-04-11
+   [adrian]
+	- fixed youtube.com plugin (video download)
+
 2010-04-05
    [susanne]
 	- ddclient-gui now starts as tray icon and only shows gui if user clicks on this icon (right click shows a menu)
