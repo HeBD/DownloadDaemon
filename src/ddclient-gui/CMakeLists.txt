@@ -129,5 +129,6 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-gui.xpm D
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/applications/ddclient-gui.desktop DESTINATION share/applications/)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/lang/Deutsch DESTINATION share/ddclient-gui/lang/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/lang/Espanol DESTINATION share/ddclient-gui/lang/)
 
 

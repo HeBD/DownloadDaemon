@@ -34,58 +34,49 @@
 	<h1>Version Status and Release notes</h1>
 
 	<h2>DownloadDaemon and Clients version 1.0:</h2>
-	<p>The Current status of version 1.0 is, as of 2010-03-19, as follows:</p>
-	<h2 id="Features">Features: The aims for version 1.0 are not yet decided.</h2>
-
-	
-	<h2>DownloadDaemon and Clients version 0.9:</h2>
-	<p>Version 0.9 has been released on 2010-03-19. The important changes are as follows:</p>
-
-	<h3>Changes:</h3>
+	<p>The Current status of version 1.0 is, as of 2010-04-11:</p>
+	<p>DownloadDaemon 1.0rc1 has just been released. This should already be more stable than version 0.9.
+	   Hopefully, a completely stable version can be released in 1-2 Weeks. Please report any Bug you find.
+	   The RC1 already contains all features that will be in 1.0. Right now, we only do bug-fixing.</p>
+	   Changelog 0.9->1.0:
 	<ul>
-		<li>DownloadDaemon now correctly gets the permission of supplementary groups of the downloadd user which makes it possible to download to folders which are only writeable by a supplementary group of the downloadd user, but NOT by the user itsself</li>
-		<li>made it possible to use one plugin for all subdomains (makes it possible to download http://rs***.rapidshare.com/... urls)</li>
-		<li>added --no-ask-pass option to ddconsole that makes it never ask for a password (useful for scripts, so ddconsole doesn't block)</li>
-		<li>MANY speed and CPU-usage improvements all over the place, thanks to plugin-info caching and dropping the need of polling get_next_downloadable.</li>
-		<li>correctly define DDCLIENT_GUI_VERSION to get nice version numbers in the about dialog</li>
-		<li>made auto-refresh in ddclient-php configurable (idea from here: https://sourceforge.net/projects/downloaddaemon/forums/forum/1007820/topic/3585763)</li>
-		<li>auto-refresh only refreshs if there are downloads with the status DOWNLOAD_RUNNING or DOWNLOAD_WAITING</li>
-		<li>init script now checks for root permissions</li>
-		<li>correctly link libdl to DownloadDaemon on older g++ versions</li>
-		<li>better handling of -DDD_CONF_DIR when compiling DownloadDaemon</li>
-		<li>added experimental support for netload.in premium accounts (UNTESTED! please test it if you have an account!)</li>
-		<li>added experimental support for uploaded.to premium. It's untested, so please test it!</li>
-		<li>Added support for megaupload.com</li>
-		<li>DownloadDaemon now checks the Content-Disposition header to find out the correct filename for downloaded files.</li>
-		<li>added support for RSDF containers</li>
-		<li>finished implementation of the untar/unrar functionality</li>
-		<li>extended mgmt-api, made setting/getting of single download and package properties possible</li>
-		<li>DownloadDaemon now downloads into a subfolder called like the package title, if there is one</li>
-		<li>made ddclient-php package-compatible</li>
-		<li>fixed problem in ddclient-php that makes logging in impossible if the server time is a few years in the past</li>
-		<li>DownloadDaemon now checks if syslog.h and stdint.h exist, and compiles without those headers if they don't</li>
-		<li>DownloadDaemon now deletes a downloaded file if its size is 0 bytes</li>
-		<li>DownloadDaemon can now also handle "false", "no", "true", "yes", ... in config files, instead of just 0 and 1 </li>
-		<li>DownloadDaemon now supports alternating proxies. set a list of proxys to bypass IP-based download-limits.</li>
-		<li>DownloadDaemon now caches data when downloading for about half a second before writing it to file</li>
-		<li>the download-list is now not a simple list any more, but is seperated into packages. THIS BREAKS CLIENT COMPATIBILITY! THE CLIENTS HAVE TO BE UPDATED (except for ddconsole)</li>
-		<li>updated ddconsole help</li>
-		<li>updated ddclient-php to be ready for the new package-based download list</li>
-		<li>fixed downloading of https:// urls</li>
-		<li>fixed error-timeouts (again...)</li>
-		<li>fixed translation bugs in ddclient-php</li>
-		<li>DownloadDaemon now works with c++0x's std::thread which can already replace boost::thread. CMake will automatically detect if std::thread is available and use it. Only tested with g++ 4.4.1.</li>
-		<li>fixed ddclient-php not running correctly if it was installed to the web-server root folder</li>
-		<li>mostly translatable configuration in ddclient-php</li>
-		<li>added german language file for ddclient-php</li>
-		<li>Complete rewrite of ddclient-wx using Qt. It already offers a lot more functionality and looks a lot better. Use this instead. See the CHANGES file for details or just check it out.</li>
-		<li>updated ddclient-wx to be compatible with the new packages. THIS WILL BE THE LAST DDCLIENT-WX RELEASE! IT IS DEPRECATED!</li>
-		<li>Added german translation to ddclient-wx (and ddclient-gui)</li>
-		<li>bugfix: removed race condition where ddclient-wx killed itself when dd was killed</li>
-		<li>made ddclient-gui able to save a list of connections (user has to delete file to clear them)</li>
-		<li>added possibiliy to set package password to ddcient-gui</li>
-		<li>added lib (downloadc) to simplify communication for clients with daemon (incl new packages support)</li>
-
+		<li>ddclient-gui now starts as tray icon and only shows gui if user clicks on this icon (right click shows a menu)</li>
+		<li>added display of download information to statusbar (feature request ID: 2979928)</li>
+		<li>added possibility to set package title/password and download title/url in ddclient-php</li>
+		<li>some general ddclient-php improvements</li>
+		<li>improvements in DL SET (DL_URL) command which reported incorrect SUCCESS status</li>
+		<li>fixed youtube.com playlist download</li>
+		<li>fixed wrong display of very big download sizes (>2 GB)</li>
+		<li>ddclient-gui now shows if a package password is set via key icon in title column (feature request ID: 2980573)</li>
+		<li>added donation button to about dialog at ddclient-gui</li>
+		<li>fixed bug #2979924, which reports that after stopping and starting a running download, the download size will not be correct</li>
+		<li>fixed youtube.com plugin (video download)</li>
+		<li>implemented feature request #2977846 to get the file-size and status before actually running the download. you can also disable this functionality in the config-file. It already works for all plugins besides the youtube-plugin</li>
+		<li>ddclient-php now correctly displays prechecked size of pending downloads</li>
+		<li>some race-condition fixes if a download is deleted while a POST_PROCESS_DOWNLOAD plugin is active</li>
+		<li>added plugin for depositfiles.com free download!</li>
+		<li>ddclient-gui now correctly displays prechecked size of pending downloads</li>
+		<li>added possibility to configure precheck_links with ddclient-gui</li>
+		<li>added function to insert urls via ctrl+v to ddclient-gui</li>
+		<li>Added plugin for filefactory.com free download</li>
+		<li>added compile flag -DBACKTRACE_ON_CRASH, which will make downloaddaemon print a backtrace if it gets a sigsegv</li>
+		<li>fixed bug in reconnect parser, that posted post-data in the header, if it would also be valid (e.g. post-data is "login:xxxxx", it would be interpreted as a header)</li>
+		<li>Added plugin for netfolder.in</li>
+		<li>hopefully fixed the problem that sometimes, when downloading many files from rapidshare, the process suddenly stops when starting the next download</li>
+		<li>some fixes and improvements in filename-validtaion for downloaded files</li>
+		<li>improved unpacking functionality and made it more deadlock-secure. still some more testing required</li>
+		<li>implemented support for extracting zip-archives using the "unzip" program</li>
+		<li>added spanish language file for ddclient-php (https://sourceforge.net/tracker/?func=detail&aid=2975094&group_id=278029&atid=1180473)</li>
+		<li>added better checks when writing to the dlist file. You will get a logged error now</li>
+		<li>added spanish translation file for ddclient-gui (thanks to anonymous translator)</li>
+		<li>added client configuration to configuration dialog at ddclient-gui (language and update interval)</li>
+		<li>correctly reload plugin-cache if premium credetials have changed</li>
+		<li>correctly get the premium-credetials, even if its a subdomain URL</li>
+		<li>fixed compilation on older gcc 4.0 compilers that diddn't allow anonymous enums as template arguments</li>
+		<li>fixed small bug in download-serialization</li>
+		<li>improvements for downloaded files with a size of > 2GB by using stat64 instead of stat</li>
+		<li>fixed rsdf support (sometimes the last url in the file was missing)</li>
+		<li>fixed downloading if a plugin is needed and the URL contained "www." somewhere in the filename</li>
 	</ul>
 	<br>
 

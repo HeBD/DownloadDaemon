@@ -126,7 +126,7 @@ cd debs_${VERSION}
 rm -rf ddconsole-${VERSION} ddclient-gui-${VERSION}
 cp -rf ../ddconsole-${VERSION} ../ddclient-gui-${VERSION} .
 
-cd ../../ddclient-gui-${VERSION}
+cd ddclient-gui-${VERSION}
 echo "Settings for ddclient-gui:"
 dh_make -s -c gpl -e ${EMAIL}
 cd debian
