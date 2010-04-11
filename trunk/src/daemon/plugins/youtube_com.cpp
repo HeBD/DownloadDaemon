@@ -40,12 +40,12 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		size_t pos = url.find("v=") + 2;
 		std::string video_id = url.substr(pos, url.find("&", pos) - pos);
 
-		pos = result.find("\"t\": \"");
+		pos = result.find("&t=");
 		if(pos == string::npos) {
 			return PLUGIN_FILE_NOT_FOUND;
 		}
-		pos += 6;
-		std::string t = result.substr(pos, result.find("\"", pos) - pos);
+		pos += 3;
+		std::string t = result.substr(pos, result.find("&", pos) - pos);
 
 		pos = result.find("<meta name=\"title\" content=\"");
 		if(pos == string::npos) {
