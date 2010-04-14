@@ -189,7 +189,7 @@ pkg_extractor::extract_status pkg_extractor::extract_rar(const std::string& file
 		if(t == GNU_UNRAR && result.find(" Failed") != string::npos) {
 			ret = PKG_PASSWORD;
 		} else if(t == RARLAB_UNRAR && (result.find("password incorrect") != string::npos || result.find("No files to extract") != string::npos)) {
-			ret = PKG_PASSWORD;
+			return PKG_PASSWORD;
 		}
 
 		if(process_ret != 0 || result.find("ERROR") != string::npos  || (t == RARLAB_UNRAR && result.find("All OK") == string::npos)) {
