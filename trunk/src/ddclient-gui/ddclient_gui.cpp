@@ -684,6 +684,9 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
         time_left =  time.str();
         cut_time(time_left);
 
+        if(dl.size > 0)
+            not_downloaded_yet += ((double)dl.size / 1048576);
+
     }else if(dl.status == "DOWNLOAD_FINISHED"){
         color = "star";
 
