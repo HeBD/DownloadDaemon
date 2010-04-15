@@ -489,24 +489,37 @@ QString configure_dialog::get_var(const string &var, var_type typ){
 
         string answer;
 
-        if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))
-                return QString("");
+        if(!p->check_connection(false))
+            return QString("");
 
         QMutex *mx = p->get_mutex();
         mx->lock();
 
         try{
-                if(typ == NORMAL_T) // get normal var
-                        answer = dclient->get_var(var);
-                else if(typ == ROUTER_T)  // get router var
-                        answer = dclient->get_router_var(var);
-                else // get premium var
-                        answer = dclient->get_premium_var(var);
+            if(typ == NORMAL_T) // get normal var
+                answer = dclient->get_var(var);
+            else if(typ == ROUTER_T)  // get router var
+                answer = dclient->get_router_var(var);
+            else // get premium var
+                answer = dclient->get_premium_var(var);
         }catch(client_exception &e){}
 
         mx->unlock();
 
         return QString(answer.c_str());
+}
+
+
+void configure_dialog::set_var(const string &var, const std::string &value, var_type typ){
+        ddclient_gui *p = (ddclient_gui *) this->parent();
+        downloadc *dclient = p->get_connection();
+
+        try{
+            if(typ == NORMAL_T) // set normal var
+                dclient->set_var(var, value);
+            else if(typ == ROUTER_T)  // set router var
+                dclient->set_router_var(var, value);
+        }catch(client_exception &e){}
 }
 
 
@@ -646,79 +659,76 @@ void configure_dialog::ok(){
     QMutex *mx = p->get_mutex();
     mx->lock();
 
-    try{
-        // overwrite files
-        if(overwrite)
-            dclient->set_var("overwrite_files", "1");
-        else
-            dclient->set_var("overwrite_files", "0");
+    // overwrite files
+    if(overwrite)
+        set_var("overwrite_files", "1");
+    else
+        set_var("overwrite_files", "0");
 
-        // refuse existing links
-        if(refuse_existing)
-            dclient->set_var("refuse_existing_links", "1");
-        else
-            dclient->set_var("refuse_existing_links", "0");
+    // refuse existing links
+    if(refuse_existing)
+        set_var("refuse_existing_links", "1");
+    else
+        set_var("refuse_existing_links", "0");
 
-        // precheck_links
-        if(precheck_links)
-            dclient->set_var("precheck_links", "1");
-        else
-            dclient->set_var("precheck_links", "0");
+    // precheck_links
+    if(precheck_links)
+        set_var("precheck_links", "1");
+    else
+        set_var("precheck_links", "0");
 
-        // download times
-        dclient->set_var("download_timing_start", start_time);
-        dclient->set_var("download_timing_end", end_time);
+    // download times
+    set_var("download_timing_start", start_time);
+    set_var("download_timing_end", end_time);
 
-        // download folder
-        dclient->set_var("download_folder", save_dir);
+    // download folder
+    set_var("download_folder", save_dir);
 
-        // download count
-        dclient->set_var("simultaneous_downloads", count);
+    // download count
+    set_var("simultaneous_downloads", count);
 
-        // download speed
-        dclient->set_var("max_dl_speed", speed);
+    // download speed
+    set_var("max_dl_speed", speed);
 
-        // log output
-        dclient->set_var("log_procedure", log_output);
+    // log output
+    set_var("log_procedure", log_output);
 
-        // log activity
-        dclient->set_var("log_level", activity_level);
+    // log activity
+    set_var("log_level", activity_level);
 
-        // assume proxys online
-        if(proxy_online)
-            dclient->set_var("assume_proxys_online", "1");
-        else
-            dclient->set_var("assume_proxys_online", "0");
+    // assume proxys online
+    if(proxy_online)
+        set_var("assume_proxys_online", "1");
+    else
+        set_var("assume_proxys_online", "0");
 
-        dclient->set_var("proxy_list", proxy_list);
+    set_var("proxy_list", proxy_list);
 
-        // reconnect enable
-        if(reconnect_enable){
-            dclient->set_var("enable_reconnect", "1");
+    // reconnect enable
+    if(reconnect_enable){
+        set_var("enable_reconnect", "1");
 
-            // policy
-            dclient->set_router_var("reconnect_policy", policy);
+        // policy
+        set_var("reconnect_policy", policy, ROUTER_T);
 
+        try{
             // router model
             dclient->set_router_model(router_model);
+        }catch(client_exception &e){}
 
-            // router ip
-            dclient->set_router_var("router_ip", router_ip);
+        // router ip
+        set_var("router_ip", router_ip, ROUTER_T);
 
-            // router user
-            dclient->set_router_var("router_username", router_user);
+        // router user
+        set_var("router_username", router_user, ROUTER_T);
 
-            // user pass
-            dclient->set_router_var("router_password", router_pass);
+        // user pass
+        set_var("router_password", router_pass, ROUTER_T);
 
-        }else{
-            dclient->set_var("enable_reconnect", "0");
-        }
-    }catch(client_exception &e){
-        if(e.get_id() == 10){ //connection lost
-            QMessageBox::information(this, p->tsl("No Connection to Server"), p->tsl("Please connect before configurating DownloadDaemon."));
-        }
+    }else{
+        dclient->set_var("enable_reconnect", "0");
     }
+    
     mx->unlock();
 
     p->set_language(language);

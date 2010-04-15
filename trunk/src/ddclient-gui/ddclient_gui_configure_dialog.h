@@ -41,6 +41,7 @@ class configure_dialog : public QDialog{
         QWidget *create_proxy_panel();
         QWidget *create_client_panel();
         QString get_var(const std::string &var, var_type typ = NORMAL_T);
+        void set_var(const std::string &var, const std::string &value, var_type typ = NORMAL_T);
 
         QString config_dir;
 
