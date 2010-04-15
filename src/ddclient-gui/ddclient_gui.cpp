@@ -2015,6 +2015,9 @@ void ddclient_gui::on_reload(){
     not_downloaded_yet = 0;
     selected_downloads_size = 0;
 
+    if(content.size() == 0) // the content gets deleted whenever the language changes
+        list_model->setRowCount(0);
+
     compare_packages();
 
     content.clear();
