@@ -28,6 +28,30 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	CURL* handle = get_handle();
 	string result;
+	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+		curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
+		curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
+		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
+		curl_easy_setopt(handle, CURLOPT_URL, "http://www.megaupload.com/?c=login&setlang=en");
+		curl_easy_setopt(handle, CURLOPT_POST, 1);
+		string to_post = "login=1&redir=1&username=" + inp.premium_user + "&password=" + inp.premium_password;
+		curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, to_post.c_str());
+		int res = curl_easy_perform(handle);
+		if(res != 0) {
+			return PLUGIN_CONNECTION_ERROR;
+		}
+
+		curl_easy_setopt(handle, CURLOPT_POST, 0);
+		if(result.find("Username and password do not match") != string::npos) {
+			return PLUGIN_AUTH_FAIL;
+		}
+
+		outp.download_url = get_url();
+
+		return PLUGIN_SUCCESS;
+	}
+
 	bool done = false;
 	// so we can never get in an infinite loop..
 	int while_tries = 0;
@@ -191,7 +215,7 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 		outp.allows_resumption = false;
 		outp.allows_multiple = false;
 	}
-	outp.offers_premium = false; // no login support yet
+	outp.offers_premium = true;
 }
 
 void post_process_download(plugin_input &inp) {
