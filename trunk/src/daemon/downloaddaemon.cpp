@@ -257,6 +257,10 @@ int main(int argc, char* argv[], char* env[]) {
 		cerr << "Unable to open premium account config file" << endl;
 	}
 
+	global_config.set_default_config(program_root + "/dd_default.conf");
+	global_router_config.set_default_config(program_root + "/router_default.conf");
+	global_premium_config.set_default_config(program_root + "/premium_default.conf");
+
 	{
 		std::string dlist_fn = global_config.get_cfg_value("dlist_file");
 		correct_path(dlist_fn);
