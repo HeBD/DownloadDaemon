@@ -1,3 +1,8 @@
+2010-04-20
+   [adrian]
+	- removed the need of replacing the config file when updating DD. instead, there is a
+          default-config as a fallback if there are missing variables in the conf-file
+
 2010-04-18
    [adrian]
 	- experimental support for megaupload.com premium download. has to be tested.

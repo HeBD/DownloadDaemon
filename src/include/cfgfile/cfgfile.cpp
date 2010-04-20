@@ -87,7 +87,15 @@ std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 		}
 	}
 
-	return "";
+	// get the value from the default-config
+	if(default_config.empty()) return "";
+
+	cfgfile defconf(default_config, false);
+	val = defconf.get_cfg_value(cfg_identifier);
+	if(!val.empty() && is_writeable) {
+		set_cfg_value(cfg_identifier, val);
+	}
+	return val;
 }
 
 bool cfgfile::get_bool_value(const std::string &cfg_identifier) {
@@ -253,4 +261,18 @@ void cfgfile::trim(std::string &str) const {
 	while(str.length() > 0 && isspace(*(str.end() - 1))) {
 		str.erase(str.end() -1);
 	}
+}
+
+void cfgfile::set_default_config(const std::string &defconf) {
+#ifndef DDCLIENT_GUI
+	lock_guard<recursive_mutex> lock(mx);
+#endif
+	default_config = defconf;
+}
+
+std::string cfgfile::get_default_config() {
+#ifndef DDCLIENT_GUI
+	lock_guard<recursive_mutex> lock(mx);
+#endif
+	return default_config;
 }

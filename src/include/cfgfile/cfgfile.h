@@ -55,6 +55,19 @@ public:
 	/** Destructor - closes the file */
 	~cfgfile();
 
+	/** sets a default config file. If something isn't found in the normal config file
+	*   we will use this to get the value and then save it in the normal config file if
+	*   it is writeable
+	*	@param defconf filename of the default config file
+	*/
+	void set_default_config(const std::string &defconf);
+
+	/** read the filename of the default config file
+	*	@returns the filename
+	*/
+	std::string get_default_config();
+
+
 	/** Opens the cfgfile, if the object was constructed without specifying one.
  	*  Also, the file can be changed, if there is already one opened.
  	*	@param fp Path to the config-file
@@ -133,6 +146,7 @@ private:
 	std::string comment_token;
 	bool is_writeable;
 	char eqtoken;
+	std::string default_config; // a config-file with default-values, if something isn't found in the main cfg
 #ifndef DDCLIENT_GUI
 	std::recursive_mutex mx;
 #endif
