@@ -130,10 +130,10 @@ IF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/downloaddaemon.conf")
 OWNER_WRITE)
 ENDIF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/downloaddaemon.conf")
 
-IF(NOT EXISTS "$ENV{DESTDIR}/{DD_CONF_DIR}/routerinfo.conf")
+IF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/routerinfo.conf")
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/routerinfo.conf DESTINATION ${DD_CONF_DIR} PERMISSIONS OWNER_READ
 OWNER_WRITE)
-ENDIF(NOT EXISTS "$ENV{DESTDIR}/{DD_CONF_DIR}/routerinfo.conf")
+ENDIF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/routerinfo.conf")
 
 IF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/premium_accounts.conf")
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/premium_accounts.conf DESTINATION ${DD_CONF_DIR} PERMISSIONS OWNER_READ
@@ -142,17 +142,11 @@ ENDIF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/premium_accounts.conf")
 
 
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/downloaddaemon.conf DESTINATION share/downloaddaemon/dd_default.conf PERMISSIONS 
-OWNER_READ
-OWNER_WRITE)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/downloaddaemon.conf DESTINATION share/downloaddaemon RENAME dd_default.conf)
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/routerinfo.conf DESTINATION share/downloaddaemon/router_default.conf PERMISSIONS 
-OWNER_READ
-OWNER_WRITE)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/routerinfo.conf DESTINATION share/downloaddaemon RENAME router_default.conf)
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/premium_accounts.conf DESTINATION share/downloaddaemon/premium_default.conf 
-PERMISSIONS OWNER_READ
-OWNER_WRITE)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/premium_accounts.conf DESTINATION share/downloaddaemon RENAME premium_default.conf)
 
 
 
