@@ -48,10 +48,10 @@ int main(int argc, char* argv[]) {
 			cout << "\t--host <host>\t\t Specifies the host to connect to [localhost]" << endl;
 			cout << "\t--port <port>\t\t Specifies the port to use [56789]" << endl;
 			cout << "\t--password <password>\t Specifies the password to connect" << endl;
-			cout << "\t--command <command(s)>\t Specifies a command to send after connectiong. The client will close after execution." << endl;
-			cout << "\t--no-ask-pass\t\t Forces ddconsole to never block asking for a password" << endl;
-			cout << "\t\t\t\t To find out about possible commands, type \"help\" in the console or visit" << endl;
-			cout << "\t\t\t\t http://downloaddaemon.sourceforge.net for more information." << endl;
+			cout << "\t--command <command(s)>\t Specifies a command to send after connectiong.\n\t\t\t\t The client will close after execution." << endl;
+			cout << "\t--no-ask-pass\t\t Forces ddconsole to never block asking for a\n\t\t\t\t password" << endl;
+			cout << "\t\t\t\t To find out about possible commands, type \n\t\t\t\t \"help\" in the console or visit" << endl;
+			cout << "\t\t\t\t http://downloaddaemon.sourceforge.net for more\n\t\t\t\t information." << endl;
 			return 0;
 		}
 		if(*it == "--host") {
@@ -140,7 +140,7 @@ int main(int argc, char* argv[]) {
 			cout << setw(30) << left << "connect <host> [port]" << "Connect to DownloadDaemon (port is optional)\n" << endl;
 			cout << "Commands to be sent to DownloadDaemon (command is not case sensitive, parameters are case sensitive):" << endl;
 			cout << "General command structure: <target> <command> <parameters> " << endl;
-			cout << "Targets are DL for downloads, PKG for packages, VAR for configuration variables, FILE for downloaded files, " << endl;
+			cout << "Targets are DL for downloads, PKG for packages, VAR for configuration variables, FILE for downloaded files, ";
 			cout << "ROUTER for router configuration and PREMIUM for premium account setup" << endl;
 			cout << "Possible commands:" << endl;
 			cout << setw(30) << left << "DL LIST" << "Dumps the current download list" << endl;
