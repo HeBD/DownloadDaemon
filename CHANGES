@@ -1,3 +1,7 @@
+2010-04-25
+   [adrian]
+	- added experimental plugin for hotfile.com free-download
+
 2010-04-20
    [adrian]
 	- removed the need of replacing the config file when updating DD. instead, there is a
