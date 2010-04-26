@@ -3,3 +3,6 @@
 - handle container formats of other downloaders (mainly ccf and rsdf. won't support DLC because it's not open-source friendly)
 - improve speed regulation
 - Make a multiuser-system out of downloaddaemon with partly individual configuration (download-folder) and administration...
+- remotely solve captchas if they can't be solved automatically
+- auto-updater for plugins and reconnect scripts
+
