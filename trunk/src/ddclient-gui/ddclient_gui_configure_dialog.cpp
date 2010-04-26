@@ -565,8 +565,10 @@ void configure_dialog::premium_host_changed(){
     premium_user->clear();
     premium_password->clear();
 
-    if(host != "")
+    if(host != ""){
         premium_user->insert(get_var(host, PREMIUM_T));
+        premium_password->insert("...");
+    }
 }
 
 
