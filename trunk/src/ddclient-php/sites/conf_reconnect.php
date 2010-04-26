@@ -102,7 +102,11 @@ if($buf == '1' || $buf == 'true') {
 	send_all($socket, 'DDP ROUTER GET router_username');
 	recv_all($socket, $buf);
 	$content .= 'Username: <input type="text" name="router_username" value="' . $buf . '" /><br />';
-	$content .= 'Password: <input type="text" name="router_password" /><br />';
+	$content .= 'Password: <input type="text" name="router_password" ';
+	if(strlen($buf) > 0) {
+		$content .= 'value="****" ';
+	}
+	$content .=  '/><br />';
 	$content .= '<br /><input type="submit" name="apply" value="Apply" id="apply" class="submit" /><br />';
 }
 
