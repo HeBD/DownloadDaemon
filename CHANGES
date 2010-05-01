@@ -1,3 +1,7 @@
+2010-05-01
+   [adrian]
+	- fixed bug #2995009. You can now store multiple archive-packages in one DD-package and DD will (probably) extract them all
+
 2010-04-25
    [adrian]
 	- added experimental plugin for hotfile.com free-download

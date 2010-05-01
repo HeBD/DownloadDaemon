@@ -29,8 +29,10 @@ SOURCES += ddclient_gui.cpp \
 INCLUDEPATH += ../include C:\Boost\include\boost-1_42
 DESTDIR = ../../build/bin
 DEFINES += DDCLIENT_GUI
-unix:LIBS += -lboost_thread-mt
+
 win32 { 
     LIBS += -lws2_32
     RC_FILE = ddgui.rc
 }
+
+QMAKE_CXXFLAGS += -std=c++0x

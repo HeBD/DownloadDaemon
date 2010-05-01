@@ -15,7 +15,7 @@
 #include <config.h>
 #include "download.h"
 #include <string>
-#include <list>
+#include <vector>
 
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
@@ -208,11 +208,6 @@ public:
 	*/
 	void insert_downloads(int pos, download_container &dl);
 
-	/** wait for a download and return if the wait-time is set to something else while waiting
-	*	@param id the Download-id
-	*/
-	//void wait(int id);
-
 	/** Sets the next proxy from list to the download
 	*	@param id ID of the download
 	*	@returns 1 If the next proxy has been set
@@ -226,8 +221,11 @@ public:
 	/** Presets the file-status for all downloads in the list that don't have it yet. */
 	void preset_file_status();
 
+	/** extracts this package */
+	void extract_package();
+
 private:
-	typedef std::list<download*>::iterator iterator;
+	typedef std::vector<download*>::iterator iterator;
 	/** get an iterator to a download by giving an ID
 	*	@param id download ID to search for
 	*	@returns Iterator to this id
@@ -254,7 +252,7 @@ private:
 
 
 
-	std::list<download*> download_list;
+	std::vector<download*> download_list;
 	std::recursive_mutex download_mutex;
 	//std::mutex plugin_mutex; // makes sure that you don't call the same plugin multiple times at the same time
 				   // because it would bring thread-safety problems
