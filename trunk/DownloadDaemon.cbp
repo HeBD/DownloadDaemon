@@ -20,6 +20,7 @@
 					<Add option="-Wall" />
 					<Add option="-ansi" />
 					<Add option="-g" />
+					<Add option="-std=c++0x" />
 					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>
