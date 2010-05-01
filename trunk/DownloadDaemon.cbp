@@ -25,7 +25,6 @@
 				<Linker>
 					<Add option="-rdynamic" />
 					<Add library="curl" />
-					<Add library="boost_thread-mt" />
 				</Linker>
 			</Target>
 			<Target title="DDConsole">

@@ -735,58 +735,8 @@ void package_container::extract_package(int id) {
 	if(!global_config.get_bool_value("enable_pkg_extractor")) return;
 	unique_lock<recursive_mutex> lock(mx);
 	package_container::iterator pkg_it = package_by_id(id);
-	std::string fixed_passwd = (*pkg_it)->get_password();
-	unique_lock<recursive_mutex> pkg_lock((*pkg_it)->download_mutex);
-	download_container::iterator it = (*pkg_it)->download_list.begin();
-	if((*pkg_it)->download_list.size() == 0) return;
-	string output_file = (*it)->get_filename();
-	pkg_lock.unlock();
-	lock.unlock();
-
-	string password_list = global_config.get_cfg_value("pkg_extractor_passwords");
-	string password = fixed_passwd;
-
-	while(true) {
-		trim_string(password);
-		log_string("Trying to extract... " + output_file, LOG_DEBUG);
-		pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, password);
-
-		if(ret == pkg_extractor::PKG_ERROR || ret == pkg_extractor::PKG_INVALID) return;
-		if(ret == pkg_extractor::PKG_PASSWORD) {
-			// next password
-			if(!fixed_passwd.empty()) return;
-			if(password_list.empty()) return;
-			if(password.empty()) {
-				password = password_list.substr(0, password_list.find(";"));
-				continue;
-			}
-			try {
-				if(password_list.find(";") != string::npos) {
-					password_list = password_list.substr(password_list.find(";") + 1);
-				}
-				password = password_list.substr(0, password_list.find(";"));
-			} catch(...) {
-				password = password_list.substr(0, password_list.find(";"));
-				password_list = "";
-			} // ignore errors
-			if(password.empty()) return;
-			continue;
-		}
-
-		if(ret == pkg_extractor::PKG_SUCCESS && global_config.get_bool_value("delete_extracted_archives")) {
-			// success, let's delete the files.
-			log_string("Successfully extracted package " + int_to_string(id) + ". Removing archives...", LOG_DEBUG);
-			pkg_lock.lock();
-			for(it = (*pkg_it)->download_list.begin(); it != (*pkg_it)->download_list.end(); ++it) {
-				remove((*it)->get_filename().c_str());
-				(*it)->set_filename("");
-			}
-			pkg_lock.unlock();
-		} else {
-			log_string("Successfully extracted package " + int_to_string(id), LOG_DEBUG);
-		}
-		break;
-	}
+	if (pkg_it == packages.end()) return;
+	(*pkg_it)->extract_package();
 }
 
 int package_container::get_next_download_id(bool lock_download_mutex) {
