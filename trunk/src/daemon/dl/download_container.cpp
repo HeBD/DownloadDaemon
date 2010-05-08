@@ -472,10 +472,10 @@ void download_container::decrease_waits() {
 
 void download_container::purge_deleted() {
 	lock_guard<recursive_mutex> lock(download_mutex);
-	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->get_status() == DOWNLOAD_DELETED && (*it)->get_running() == false) {
-			remove_download((*it)->get_id());
-			it = download_list.begin();
+	for(size_t i = 0; i < download_list.size(); ++i) {
+		if(download_list[i]->get_status() == DOWNLOAD_DELETED && download_list[i]->get_running() == false) {
+			remove_download(download_list[i]->get_id());
+			--i;
 		}
 	}
 }
