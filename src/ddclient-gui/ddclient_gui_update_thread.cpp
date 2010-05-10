@@ -13,21 +13,25 @@
 
 update_thread::update_thread(ddclient_gui *parent, int interval) : parent(parent), interval(interval){
     told = false;
+    update = true;
 }
 
 
 void update_thread::run(){
     while(true){ // thread will live till program cancel
 
-        if(!(parent->check_connection(false)) && (told == false)){ // connection failed for the first time => we're calling get_content to update the gui
-            parent->get_content();
-            told = true;
-        }else if(parent->check_connection(false)){ // connection is valid
-            parent->get_content();
-            told = false;
-        }
+        if(update){
 
-        parent->clear_last_error_message();
+            if(!(parent->check_connection(false)) && (told == false)){ // connection failed for the first time => we're calling get_content to update the gui
+                parent->get_content();
+                told = true;
+            }else if(parent->check_connection(false)){ // connection is valid
+                parent->get_content();
+                told = false;
+            }
+
+            parent->clear_last_error_message();
+        }
 
         for(int i = 0; i < interval; i++)
             sleep(1); // wait till update intervall is finished
@@ -37,4 +41,9 @@ void update_thread::run(){
 
 void update_thread::set_update_interval(int interval){
     this->interval = interval;
+}
+
+
+void update_thread::toggle_updating(){
+    update = !update;
 }

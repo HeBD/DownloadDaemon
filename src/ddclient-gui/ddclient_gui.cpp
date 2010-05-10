@@ -92,7 +92,7 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 			dclient->connect(data.host[0], data.port[0], data.pass[0], false);
                     }catch(client_exception &e){}
                 }
-            } // we don't have error message here because it's an auto function
+            } // we don't have an error message here because it's an auto function
         }
     }
 
@@ -112,6 +112,8 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 ddclient_gui::~ddclient_gui(){
     mx.lock();
     delete dclient;
+    thread->terminate();
+    thread->wait();
     mx.unlock();
 }
 
@@ -1990,11 +1992,13 @@ void ddclient_gui::on_activate_tray_icon(QSystemTrayIcon::ActivationReason reaso
             this->hide();
         else
             this->show();
+
+        //((update_thread *) thread)->toggle_updating(); // sets updating on or off, sadly this makes the tooltip a bit useless
         break;
     default:
         ;
-    }
 
+    }
 }
 
 
@@ -2026,9 +2030,13 @@ void ddclient_gui::on_reload(){
     // update statusbar
     if(selected_downloads_size != 0){ // something is selected and the total size is known
         status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size));
+        tray_icon->setToolTip(tsl("Connected to") + " " + server + " \n " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size));
+
     }else{
         status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
                                    " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet));
+        tray_icon->setToolTip(tsl("Connected to") + " " + server + " \n " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
+                              " \n " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet));
     }
 
     mx.unlock();

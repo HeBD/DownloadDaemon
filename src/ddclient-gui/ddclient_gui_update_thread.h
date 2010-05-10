@@ -33,9 +33,14 @@ class update_thread : public QThread{
         */
         void set_update_interval(int interval);
 
+        /** Toggles updating */
+        void toggle_updating();
+
+
     private:
         ddclient_gui *parent;
         bool told;
+        bool update;
         int interval;
 };
 
