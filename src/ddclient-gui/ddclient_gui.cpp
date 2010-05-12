@@ -114,6 +114,7 @@ ddclient_gui::~ddclient_gui(){
     delete dclient;
     thread->terminate();
     thread->wait();
+    delete thread;
     mx.unlock();
 }
 
