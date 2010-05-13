@@ -1155,7 +1155,7 @@ void target_premium_list(std::string &data, tkSock *sock) {
 			dlerror();	// Clear any existing error
 			void (*plugin_getinfo)(plugin_input&, plugin_output&);
 			plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(handle, "plugin_getinfo");
-			char *l_error;
+			const char *l_error;
 			if ((l_error = dlerror()) != NULL)  {
 				log_string(std::string("Unable to get plugin information: ") + l_error, LOG_ERR);
 				dlclose(handle);
