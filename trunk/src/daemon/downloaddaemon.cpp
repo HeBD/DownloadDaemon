@@ -146,7 +146,7 @@ int main(int argc, char* argv[], char* env[]) {
 	#endif
 
 
-	struct stat64 st;
+	struct pstat st;
 
 	// getting working dir
 	std::string argv0 = argv[0];
@@ -174,7 +174,7 @@ int main(int argc, char* argv[], char* env[]) {
 			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
 			curr_path += '/';
 			curr_path += argv[0];
-			if(stat64(curr_path.c_str(), &st) == 0) {
+			if(pstat(curr_path.c_str(), &st) == 0) {
 				found = true;
 				break;
 			}
@@ -187,7 +187,7 @@ int main(int argc, char* argv[], char* env[]) {
 			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
 			curr_path += '/';
 			curr_path += argv[0];
-			if(stat64(curr_path.c_str(), &st) == 0) {
+			if(pstat(curr_path.c_str(), &st) == 0) {
 				found = true;
 			}
 		}
@@ -210,7 +210,7 @@ int main(int argc, char* argv[], char* env[]) {
 	program_root = program_root.substr(0, program_root.find_last_of("/\\"));
 	program_root.append("/share/downloaddaemon/");
 
-	if(stat64(program_root.c_str(), &st) != 0) {
+	if(pstat(program_root.c_str(), &st) != 0) {
 		#ifdef __CYGWIN__
 			if(program_root.find("/usr/share/") != string::npos) {
 				program_root = "/share/downloaddaemon/";
@@ -229,7 +229,7 @@ int main(int argc, char* argv[], char* env[]) {
 
 
 	// check again - will fail if the conf file does not exist at all
-	if(stat64(dd_conf_path.c_str(), &st) != 0) {
+	if(pstat(dd_conf_path.c_str(), &st) != 0) {
 		cerr << "Could not locate configuration file!" << endl;
 		exit(-1);
 	}

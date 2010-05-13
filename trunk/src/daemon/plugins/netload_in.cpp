@@ -226,8 +226,8 @@ void post_process_download(plugin_input &inp) {
 		return;
 	} else {
 		string filename = dl_list->get_output_file(dlid);
-		struct stat64 st;
-		if(stat64(filename.c_str(), &st) != 0) {
+		struct pstat st;
+		if(pstat(filename.c_str(), &st) != 0) {
 			return;
 		}
 		if(st.st_size > 1024 * 1024 /* 1 mb */ ) {
