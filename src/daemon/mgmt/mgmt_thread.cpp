@@ -895,8 +895,8 @@ void target_file_del(std::string &data, tkSock *sock) {
 		return;
 	}
 	std::string fn = global_download_list.get_output_file(id);
-	struct stat64 st;
-	if(fn.empty() || stat64(fn.c_str(), &st) != 0) {
+	struct pstat st;
+	if(fn.empty() || pstat(fn.c_str(), &st) != 0) {
 		*sock << "109 FILE";
 		return;
 	}
@@ -924,8 +924,8 @@ void target_file_getpath(std::string &data, tkSock *sock) {
 		return;
 	}
 	std::string output_file = global_download_list.get_output_file(id);
-	struct stat64 st;
-	if(stat64(output_file.c_str(), &st) != 0) {
+	struct pstat st;
+	if(pstat(output_file.c_str(), &st) != 0) {
 		*sock << "";
 		return;
 	}
@@ -946,8 +946,8 @@ void target_file_getsize(std::string &data, tkSock *sock) {
 	}
 	std::string output_file = global_download_list.get_output_file(id);
 
-	struct stat64 st;
-	if(stat64(output_file.c_str(), &st) != 0) {
+	struct pstat st;
+	if(pstat(output_file.c_str(), &st) != 0) {
 		log_string(std::string("Failed to get size of file ID: ") + data, LOG_WARNING);
 		*sock << "-1";
 		return;

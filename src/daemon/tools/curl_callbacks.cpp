@@ -64,8 +64,8 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 
 	global_download_list.set_speed(id, speed_conv);
 
-	struct stat64 st;
-	if(stat64(output_file.c_str(), &st) == 0) {
+	struct pstat st;
+	if(pstat(output_file.c_str(), &st) == 0) {
 		global_download_list.set_downloaded_bytes(id, st.st_size);
 	}
 

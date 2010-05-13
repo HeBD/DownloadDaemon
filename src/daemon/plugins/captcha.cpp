@@ -22,8 +22,8 @@ std::string captcha::process_image(std::string gocr_options, std::string img_typ
 	if(retry_count > max_retrys) {
 		throw e;
 	}
-	struct stat64 st;
-	if(gocr.empty() || stat64(gocr.c_str(), &st) != 0) {
+	struct pstat st;
+	if(gocr.empty() || pstat(gocr.c_str(), &st) != 0) {
 		throw e;
 	}
 
