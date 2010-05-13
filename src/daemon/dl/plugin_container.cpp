@@ -64,7 +64,7 @@ plugin_output plugin_container::get_info(const std::string& info, p_info kind) {
 	void (*plugin_getinfo)(plugin_input&, plugin_output&);
 	plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(l_handle, "plugin_getinfo");
 
-	char* l_error;
+	const char* l_error;
 	if ((l_error = dlerror()) != NULL)  {
 		log_string(std::string("Unable to get plugin information: ") + l_error, LOG_ERR);
 		dlclose(l_handle);

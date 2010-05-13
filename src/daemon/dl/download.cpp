@@ -697,7 +697,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	plugin_status (*plugin_exec_func)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string);
 	plugin_exec_func = (plugin_status (*)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string))dlsym(dlhandle, "plugin_exec_wrapper");
 
-	char *dl_error;
+	const char *dl_error;
 	if ((dl_error = dlerror()) != NULL)  {
 		log_string(std::string("Unable to execute plugin: ") + dl_error, LOG_ERR);
 		dlclose(dlhandle);
@@ -767,7 +767,7 @@ void download::post_process_download() {
 	void (*post_process_func)(download_container& dlc, int id, plugin_input& pinp);
 	post_process_func = (void (*)(download_container& dlc, int id, plugin_input& pinp))dlsym(dlhandle, "post_process_dl_init");
 
-	char *dl_error;
+	const char *dl_error;
 	if ((dl_error = dlerror()) != NULL)  {
 	    dlclose(dlhandle);
 		return;
@@ -862,7 +862,7 @@ void download::preset_file_status() {
 
 	bool (*file_status_func)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp);
 	file_status_func = (bool (*)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp))dlsym(dlhandle, "get_file_status_init");
-	char *dl_error;
+	const char *dl_error;
 	if ((dl_error = dlerror()) != NULL)  {
 	    dlclose(dlhandle);
 		return;
