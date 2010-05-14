@@ -29,6 +29,11 @@ namespace global_mgmt {
 	extern std::string curr_start_time;
 	extern std::string curr_end_time;
 	extern bool downloading_active;
+        // for sync signal handling
+        extern std::condition_variable sig_handle_cond;
+        extern int curr_sig;
+        extern char **backtrace;
+	extern int backtrace_size;
 }
 
 
@@ -36,5 +41,6 @@ namespace global_mgmt {
 */
 void do_once_per_second();
 
-
+/** thread for sync signal-handling */
+void sig_handle_thread();
 #endif /*GLOBAL_MANAGEMENT_H_*/

@@ -361,16 +361,20 @@ std::string ascii_hex_to_bin(std::string ascii_hex) {
 
 #ifdef BACKTRACE_ON_CRASH
 #include <execinfo.h>
-
+#include "../mgmt/global_management.h"
 void print_backtrace(int sig) {
-  void *array[50];
-  size_t size;
+	void *array[50];
+	size_t size;
+	size = backtrace(array, 50);
+	global_mgmt::backtrace = backtrace_symbols(array, size);
 
-  // get void*'s for all entries on the stack
-  size = backtrace(array, 50);
-
+	//size = backtrace(_mgmt::backtrace, 50);
+	global_mgmt::curr_sig = sig;
+	global_mgmt::backtrace_size = size;
+	//global_mgmt::backtrace_size = size;
+	global_mgmt::sig_handle_cond.notify_one();
   // print out all the frames to stderr
-  backtrace_symbols_fd(array, size, 2);
-  exit(1);
+  //backtrace_symbols_fd(array, size, 2);
+  //exit(1);
 }
 #endif

@@ -303,7 +303,8 @@ int main(int argc, char* argv[], char* env[]) {
 	// tick download counters, start new downloads, etc each second
 	thread once_per_sec_thread(do_once_per_second);
 	once_per_sec_thread.detach();
-
+	thread sync_sig_handler(sig_handle_thread);
+	sync_sig_handler.detach();
 	while(true) {
 		sleep(1);
 		global_mgmt::once_per_sec_cond.notify_one();
