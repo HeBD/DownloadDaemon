@@ -12,6 +12,7 @@
 #include <config.h>
 #include <vector>
 #include <string>
+#include <sstream>
 
 #include <curl/curl.h>
 
@@ -24,6 +25,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <signal.h>
 using namespace std;
 
 namespace global_mgmt {
@@ -33,6 +35,11 @@ namespace global_mgmt {
 	std::string curr_start_time;
 	std::string curr_end_time;
 	bool downloading_active;
+	// for sync signal handling
+	std::condition_variable sig_handle_cond;
+	int curr_sig = -1;
+	char **backtrace;
+	int backtrace_size = 0;
 }
 
 
@@ -59,4 +66,29 @@ void do_once_per_second() {
 			was_in_dltime_last = false;
 		}
 	}
+}
+
+void sig_handle_thread() {
+	mutex sig_handle_mutex;
+	unique_lock<mutex> lock(sig_handle_mutex);
+	while(true) {
+		global_mgmt::sig_handle_cond.wait(lock);
+		switch(global_mgmt::curr_sig) {
+			case SIGSEGV:
+				#ifdef BACKTRACE_ON_CRASH
+				log_string("DOWNLOADDAEMON CRASH DETECTED. BACKTRACE:", LOG_ERR);				
+				for (int i = 0; i < global_mgmt::backtrace_size; ++i) {
+					log_string(global_mgmt::backtrace[i], LOG_ERR);
+				}
+				global_mgmt::curr_sig = -1;
+				#endif
+				exit(-1);
+			break;
+
+		}
+
+	}
+
+
+
 }
