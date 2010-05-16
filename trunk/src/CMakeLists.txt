@@ -9,8 +9,8 @@ project (ddconsole)
 add_subdirectory (ddconsole)
 #add_subdirectory (lib)
 
-project (ddclient-wx)
-add_subdirectory (ddclient-wx)
+#project (ddclient-wx)
+#add_subdirectory (ddclient-wx)
 #add_subdirectory (lib)
 
 project (ddclient-gui)
