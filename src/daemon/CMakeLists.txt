@@ -94,8 +94,8 @@ ENDIF(BACKTRACE_ON_CRASH)
 
 CHECK_FUNCTION_EXISTS(stat64 HAVE_STAT64)
 
-CONFIGURE_FILE(config.h.cmake ${CMAKE_BINARY_DIR}/include/config.h)
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/ ../include)
+CONFIGURE_FILE(config.h.cmake ${CMAKE_BINARY_DIR}/include_downloadd/config.h)
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include_downloadd/ ../include)
 
 
 CHECK_FUNCTION_EXISTS(popen HAVE_POPEN)

@@ -7,10 +7,10 @@ INCLUDE(CheckTypeSize)
 INCLUDE(CheckCXXCompilerFlag)
 INCLUDE(CheckCXXSourceCompiles)
 
-SET(DD_CONF_DIR "\"/etc/downloaddaemon/\"")
-SET(${DD_CONF_DIR}_OPTION "ON")
+#SET(DD_CONF_DIR "\"/etc/downloaddaemon/\"")
+#SET(${DD_CONF_DIR}_OPTION "ON")
 
-CHECK_INCLUDE_FILE_CXX (syslog.h HAVE_SYSLOG_H)
+#CHECK_INCLUDE_FILE_CXX (syslog.h HAVE_SYSLOG_H)
 CHECK_CXX_COMPILER_FLAG(-std=c++0x HAVE_STD_CXX0X)
 
 IF(HAVE_STD_CXX0X)
@@ -26,8 +26,8 @@ IF(NOT HAVE_UINT64_T)
 	#set(HAVE_STD_INT false)
 ENDIF(NOT HAVE_UINT64_T)
 
-CONFIGURE_FILE(../config.h.cmake ${CMAKE_BINARY_DIR}/include/config.h)
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/ ../include)
+CONFIGURE_FILE(../config.h.cmake ${CMAKE_BINARY_DIR}/include_downloadd-plugins/config.h)
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include_downloadd-plugins/ ../include)
 
 
 CHECK_FUNCTION_EXISTS(popen HAVE_POPEN)
