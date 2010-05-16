@@ -72,8 +72,8 @@ IF(NOT VERSION)
 ENDIF(NOT VERSION)
 SET(DDCLIENT_GUI_VERSION "ON")
 
-CONFIGURE_FILE(config.h.cmake ${CMAKE_BINARY_DIR}/include/config.h)
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/ ../include)
+CONFIGURE_FILE(config.h.cmake ${CMAKE_BINARY_DIR}/include_ddclient-gui/config.h)
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include_ddclient-gui/ ../include)
 
 
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
