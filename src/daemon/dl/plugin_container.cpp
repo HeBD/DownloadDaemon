@@ -139,7 +139,29 @@ std::string plugin_container::plugin_file_from_host(std::string host) {
 	closedir(dp);
 
 	return result;
+}
 
+const std::vector<plugin>& plugin_container::get_all_infos() {
+    DIR *dp;
+    struct dirent *ep;
+	std::string plugindir = program_root + "/plugins/";
+	correct_path(plugindir);
+	plugindir += '/';
+    dp = opendir(plugindir.c_str());
+    if(!dp) {
+        log_string("Could not open plugin directory!", LOG_ERR);
+        return plugin_cache;
+    }
+    while((ep = readdir(dp))) {
+        if(ep->d_name[0] == '.') {
+            continue;
+        }
+        string current = ep->d_name;
+        if(current.find("lib") == string::npos || current.find(".so") == string::npos) continue;
+        current = plugindir + current;
+        get_info(current, P_FILE);
+    }
+    return plugin_cache;
 }
 
 std::pair<bool, plugin> plugin_container::search_info_in_cache(const std::string& info, p_info kind) {

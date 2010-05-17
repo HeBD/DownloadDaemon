@@ -983,6 +983,14 @@ void target_router(std::string &data, tkSock *sock) {
 	} else {
 		*sock << "101 PROTOCOL";
 	}
+    if(global_download_list.reconnect_needed()) {
+        try {
+            thread t(bind(&package_container::do_reconnect, &global_download_list));
+            t.detach();
+        } catch(...) {
+            log_string("Failed to start the reconnect-thread. There are probably too many running threads.", LOG_ERR);
+        }
+    }
 }
 
 void target_router_list(std::string &data, tkSock *sock) {
@@ -1124,57 +1132,11 @@ void target_premium(std::string &data, tkSock *sock) {
 }
 
 void target_premium_list(std::string &data, tkSock *sock) {
-	DIR *dp;
-	struct dirent *ep;
-	vector<std::string> content;
-	std::string current;
-	std::string path = program_root + "/plugins/";
-	correct_path(path);
-	path += '/';
-	dp = opendir (path.c_str());
-	if (dp == NULL) {
-		log_string("Could not open Plugin directory", LOG_ERR);
-		*sock << "";
-		return;
-	}
-	plugin_input inp;
-	plugin_output outp;
-
-	while ((ep = readdir (dp))) {
-		if(ep->d_name[0] == '.') {
-			continue;
-		}
-		current = ep->d_name;
-		if(current.find("lib") == 0 && current.find(".so") != string::npos) {
-			// open each plugin and check if it supports premium stuff
-			void* handle = dlopen((path + current).c_str(), RTLD_LAZY);
-			if (!handle) {
-				log_string(std::string("Unable to open library file: ") + dlerror() + '/' + current, LOG_ERR);
-				continue;
-			}
-			dlerror();	// Clear any existing error
-			void (*plugin_getinfo)(plugin_input&, plugin_output&);
-			plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(handle, "plugin_getinfo");
-			const char *l_error;
-			if ((l_error = dlerror()) != NULL)  {
-				log_string(std::string("Unable to get plugin information: ") + l_error, LOG_ERR);
-				dlclose(handle);
-				continue;
-			}
-			outp.offers_premium = false;
-			plugin_getinfo(inp, outp);
-			dlclose(handle);
-			if(outp.offers_premium) {
-				current = current.substr(3, current.length() - 6);
-				content.push_back(current);
-			}
-
-		}
-	}
-	(void) closedir (dp);
-	std::string to_send;
-	for(vector<std::string>::iterator it = content.begin(); it != content.end(); ++it) {
-		to_send.append(*it);
+    vector<plugin> plugs = plugin_cache.get_all_infos();
+    string to_send;
+	for(vector<plugin>::const_iterator it = plugs.begin(); it != plugs.end(); ++it) {
+	    if (!it->offers_premium) continue;
+		to_send.append(it->host);
 		to_send.append("\n");
 	}
 	if(!to_send.empty()) {

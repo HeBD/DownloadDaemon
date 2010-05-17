@@ -246,6 +246,23 @@
 					<Add library="curl" />
 				</Linker>
 			</Target>
+			<Target title="plugin_testing">
+				<Option platforms="Unix;Mac;" />
+				<Option output="build/share/downloaddaemon/plugins/libplugin-test.com.so" prefix_auto="0" extension_auto="0" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-pedantic" />
+					<Add option="-std=c++0x" />
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-fPIC" />
+					<Add directory="src/include/" />
+				</Compiler>
+				<Linker>
+					<Add library="curl" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
@@ -345,6 +362,10 @@
 			<Option target="filefactory_com" />
 			<Option target="depositfiles_com" />
 			<Option target="hotfile_com" />
+			<Option target="plugin_testing" />
+		</Unit>
+		<Unit filename="src/daemon/plugins/plugin_testing.cpp">
+			<Option target="plugin_testing" />
 		</Unit>
 		<Unit filename="src/daemon/plugins/rapidshare_com.cpp">
 			<Option target="rapidshare_com" />

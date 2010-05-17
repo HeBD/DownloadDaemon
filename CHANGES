@@ -1,3 +1,9 @@
+2010-05-17
+   [adrian]
+	- if router-variables are changed, DD now checks if a reconnect is needed and executes it
+	- hopefully fixed the reconnect-polcies besides "pussy" (continue, etc)
+	- added a developer-testpluging, whcih can be influenced with the premium user (not built with cmake, only from IDE)
+
 2010-05-14
    [adrian]
 	- DownloadDaemon now dumps a backtrace to the logger if it crashes by default if execinfo.h/backtrace() is available
