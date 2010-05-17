@@ -32,9 +32,6 @@
 	#include "../mgmt/global_management.h"
 #endif
 
-#ifndef HAVE_UINT64_T
-	#define uint64_t double
-#endif
 #include <iostream>
 using namespace std;
 
@@ -243,14 +240,14 @@ void download_container::set_add_date(int id, std::string add_date) {
 	(*dl)->set_add_date(add_date);
 }
 
-void download_container::set_downloaded_bytes(int id, uint64_t bytes) {
+void download_container::set_downloaded_bytes(int id, filesize_t bytes) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
 	(*dl)->set_downloaded_bytes(bytes);
 }
 
-void download_container::set_size(int id, uint64_t size) {
+void download_container::set_size(int id, filesize_t size) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return;
@@ -398,14 +395,14 @@ std::string download_container::get_url(int id) {
 	return (*dl)->get_url();
 }
 
-uint64_t download_container::get_downloaded_bytes(int id) {
+filesize_t download_container::get_downloaded_bytes(int id) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return 0;
 	return (*dl)->get_downloaded_bytes();
 }
 
-uint64_t download_container::get_size(int id) {
+filesize_t download_container::get_size(int id) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return 0;

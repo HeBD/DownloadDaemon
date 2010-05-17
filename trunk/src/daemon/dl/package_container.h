@@ -18,9 +18,6 @@
 #include "download.h"
 #include "download_container.h"
 
-#ifndef HAVE_UINT64_T
-	#define uint64_t double
-#endif
 
 typedef std::pair<int, int> dlindex;
 
@@ -84,11 +81,11 @@ class package_container {
 	void set_add_date(dlindex dl, std::string add_date);
 	std::string get_add_date(dlindex dl);
 
-	void set_downloaded_bytes(dlindex dl, uint64_t bytes);
-	uint64_t get_downloaded_bytes(dlindex dl);
+	void set_downloaded_bytes(dlindex dl, filesize_t bytes);
+	filesize_t get_downloaded_bytes(dlindex dl);
 
-	void set_size(dlindex dl, uint64_t size);
-	uint64_t get_size(dlindex dl);
+	void set_size(dlindex dl, filesize_t size);
+	filesize_t get_size(dlindex dl);
 
 	void set_wait(dlindex dl, int seconds);
 	int get_wait(dlindex dl);

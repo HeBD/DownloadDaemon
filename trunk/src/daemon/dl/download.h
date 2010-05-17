@@ -27,11 +27,6 @@ namespace std {
 #include <thread>
 #endif
 
-#ifndef HAVE_UINT64_T
-	// cstdint will exist in c++0x, we use stdint.h (C99) to be compatible with older compilers
-	#include <stdint.h>
-	#define uint64_t double
-#endif
 
 enum download_status { DOWNLOAD_PENDING = 1, DOWNLOAD_INACTIVE, DOWNLOAD_FINISHED, DOWNLOAD_RUNNING, DOWNLOAD_WAITING, DOWNLOAD_DELETED, DOWNLOAD_RECONNECTING };
 enum plugin_status { PLUGIN_SUCCESS = 1, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,
@@ -44,11 +39,7 @@ struct plugin_output {
 	bool allows_resumption;
 	bool allows_multiple;
 	bool offers_premium;
-	#ifdef HAVE_UINT64_T
-	uint64_t file_size;
-	#else
-	double file_size;
-	#endif
+	filesize_t file_size;
 	plugin_status file_online;
 };
 
@@ -135,11 +126,11 @@ public:
 	int get_id() const							{ std::lock_guard<std::recursive_mutex> lock(mx); return id; }
 	void set_id(int new_id) 					{ std::lock_guard<std::recursive_mutex> lock(mx); id = new_id; }
 
-	uint64_t get_downloaded_bytes() const		{ std::lock_guard<std::recursive_mutex> lock(mx); return downloaded_bytes; }
-	void set_downloaded_bytes(uint64_t b) 		{ std::lock_guard<std::recursive_mutex> lock(mx); downloaded_bytes = b; }
+	filesize_t get_downloaded_bytes() const		{ std::lock_guard<std::recursive_mutex> lock(mx); return downloaded_bytes; }
+	void set_downloaded_bytes(filesize_t b) 		{ std::lock_guard<std::recursive_mutex> lock(mx); downloaded_bytes = b; }
 
-	uint64_t get_size() const					{ std::lock_guard<std::recursive_mutex> lock(mx); return size; }
-	void set_size(uint64_t b) 					{ std::lock_guard<std::recursive_mutex> lock(mx); size = b; }
+	filesize_t get_size() const					{ std::lock_guard<std::recursive_mutex> lock(mx); return size; }
+	void set_size(filesize_t b) 					{ std::lock_guard<std::recursive_mutex> lock(mx); size = b; }
 
 	int get_wait() const						{ std::lock_guard<std::recursive_mutex> lock(mx); return wait_seconds; }
 	void set_wait(int w) 						{ std::lock_guard<std::recursive_mutex> lock(mx); wait_seconds = w; }
@@ -207,8 +198,8 @@ private:
 
 	std::string add_date;
 	int id;
-	uint64_t downloaded_bytes;
-	uint64_t size;
+	filesize_t downloaded_bytes;
+	filesize_t size;
 	int wait_seconds;
 	plugin_status error;
 

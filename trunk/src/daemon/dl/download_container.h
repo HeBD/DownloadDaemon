@@ -26,10 +26,6 @@ namespace std {
 #include <thread>
 #endif
 
-#ifndef HAVE_UINT64_T
-	#define uint64_t double
-#endif
-
 enum property { DL_ID = 0, DL_DOWNLOADED_BYTES, DL_SIZE, DL_WAIT_SECONDS, DL_PLUGIN_STATUS, DL_STATUS,
 				DL_IS_RUNNING, DL_NEED_STOP, DL_SPEED, DL_CAN_RESUME };
 enum string_property { DL_URL = 20, DL_COMMENT, DL_ADD_DATE, DL_OUTPUT_FILE };
@@ -119,11 +115,11 @@ public:
 	void set_add_date(int id, std::string add_date);
 	std::string get_add_date(int id);
 
-	void set_downloaded_bytes(int id, uint64_t bytes);
-	uint64_t get_downloaded_bytes(int id);
+	void set_downloaded_bytes(int id, filesize_t bytes);
+	filesize_t get_downloaded_bytes(int id);
 
-	void set_size(int id, uint64_t size);
-	uint64_t get_size(int id);
+	void set_size(int id, filesize_t size);
+	filesize_t get_size(int id);
 
 	void set_wait(int id, int seconds);
 	int get_wait(int id);

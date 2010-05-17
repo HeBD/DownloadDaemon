@@ -28,7 +28,6 @@ SOURCES += ddclient_gui.cpp \
     ddclient_gui_status_bar.cpp
 INCLUDEPATH += ../include C:\Boost\include\boost-1_42
 DESTDIR = ../../build/bin
-DEFINES += DDCLIENT_GUI
 
 win32 { 
     LIBS += -lws2_32

@@ -25,4 +25,10 @@
         #define pstat stat
 #endif
 
+#ifdef HAVE_UNIT64_T
+	typedef uint64_t filesize_t;
+#else
+	typedef double filesize_t;
+#endif
+
 #endif // CONFIG_H
