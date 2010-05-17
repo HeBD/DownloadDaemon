@@ -630,10 +630,16 @@ void configure_dialog::ok(){
                         break;
         }
 
-	int i = model->currentIndex().row();
+        QList<QListWidgetItem *> list = model->selectedItems();
+        if(list.size() > 0) // there is only one or no item selected
+            router_model = list[0]->text().toStdString();
+        else
+            router_model = "";
+
+        /*int i = model->currentIndex().row();
 	if(i == -1)
 	    i = 0;
-	router_model = model->item(i)->text().toStdString();
+        router_model = model->item(i)->text().toStdString();*/
 
         router_ip = ip->text().toStdString();
         router_user = username->text().toStdString();
