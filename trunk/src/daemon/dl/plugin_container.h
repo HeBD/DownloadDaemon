@@ -41,6 +41,7 @@ public:
 	enum p_info { P_HOST, P_FILE };
 
 	plugin_output get_info(const std::string& info, p_info kind);
+	const std::vector<plugin>& get_all_infos();
 
 	void clear_cache();
 
