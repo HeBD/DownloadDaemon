@@ -28,5 +28,11 @@
 #define DDCLIENT_GUI
 #define DDCLIENT_GUI_VERSION "r753"
 
+#ifdef HAVE_UINT64_T
+    #include <stdint.h>
+    typedef uint64_t filesize_t;
+#else
+    typedef double filesize_t;
+#endif
 
 #endif // CONFIG_H

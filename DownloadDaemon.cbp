@@ -9,7 +9,6 @@
 			<Target title="Daemon">
 				<Option platforms="Unix;Mac;" />
 				<Option output="build/bin/DownloadDaemon" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -18,9 +17,7 @@
 					<Add option="-Wredundant-decls" />
 					<Add option="-std=c++0x" />
 					<Add option="-Wall" />
-					<Add option="-ansi" />
 					<Add option="-g" />
-					<Add option="-std=c++0x" />
 					<Add directory="src/include/" />
 				</Compiler>
 				<Linker>

@@ -29,11 +29,7 @@ struct plugin_output {
 	bool allows_resumption;
 	bool allows_multiple;
 	bool offers_premium;
-	#ifdef HAVE_UINT64_T
-	uint64_t file_size;
-	#else
-	double file_size;
-	#endif
+	filesize_t file_size;
 	plugin_status file_online;
 };
 

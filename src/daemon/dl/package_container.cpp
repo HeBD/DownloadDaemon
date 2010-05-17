@@ -26,9 +26,6 @@
 #include <sys/stat.h>
 #include <dlfcn.h>
 
-#ifndef HAVE_UINT64_T
-	#define uint64_t double
-#endif
 
 using namespace std;
 
@@ -193,14 +190,14 @@ void package_container::set_add_date(dlindex dl, std::string add_date) {
 	(*it)->set_add_date(dl.second, add_date);
 }
 
-void package_container::set_downloaded_bytes(dlindex dl, uint64_t bytes) {
+void package_container::set_downloaded_bytes(dlindex dl, filesize_t bytes) {
 	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_downloaded_bytes(dl.second, bytes);
 }
 
-void package_container::set_size(dlindex dl, uint64_t size) {
+void package_container::set_size(dlindex dl, filesize_t size) {
 	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
@@ -340,14 +337,14 @@ int package_container::get_wait(dlindex dl) {
 	return (*it)->get_wait(dl.second);
 }
 
-uint64_t package_container::get_size(dlindex dl) {
+filesize_t package_container::get_size(dlindex dl) {
 	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return 0;
 	return (*it)->get_size(dl.second);
 }
 
-uint64_t package_container::get_downloaded_bytes(dlindex dl) {
+filesize_t package_container::get_downloaded_bytes(dlindex dl) {
 	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return 0;

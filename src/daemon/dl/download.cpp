@@ -14,6 +14,8 @@
 #include <dlfcn.h>
 #include <dirent.h>
 
+#include <config.h>
+
 #include "download.h"
 #include "download_container.h"
 #ifndef IS_PLUGIN
@@ -479,14 +481,14 @@ void download::download_me_worker() {
 
 		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file_s;
-		#ifdef HAVE_UIN64_t
-		uint64_t resume_size = 0;
-		#else
-		double resume_size = 0;
-		#endif
+		filesize_t resume_size = 0;
 		if(get_hostinfo().allows_resumption && global_config.get_bool_value("enable_resume") &&
-		   pstat(output_filename.c_str(), &st) == 0 && (unsigned)st.st_size == downloaded_bytes &&
-		   can_resume) {
+		   pstat(output_filename.c_str(), &st) == 0 &&
+           #ifdef HAVE_UINT64_T
+           st.st_size == (int64_t)downloaded_bytes && can_resume) {
+           #else
+           st.st_size == (unsigned long)(downloaded_bytes + .5) && can_resume) {
+           #endif
 		   	resume_size = downloaded_bytes;
 			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, downloaded_bytes);
 			output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
@@ -543,11 +545,9 @@ void download::download_me_worker() {
 		// show progress
 		curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0);
 		curl_easy_setopt(handle, CURLOPT_PROGRESSFUNCTION, report_progress);
-		#ifdef HAVE_UINT64_T
-		std::pair<dlindex, uint64_t> progressdata(dl, resume_size);
-		#else
-		std::pair<dlindex, double> progressdata(dl, resume_size);
-		#endif
+
+		std::pair<dlindex, filesize_t> progressdata(dl, resume_size);
+
 		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &progressdata);
 		// set timeouts
 		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
@@ -807,11 +807,9 @@ void download::preset_file_status() {
 		curl_easy_setopt(precheck_handle, CURLOPT_WRITEFUNCTION, pretend_write_file);
 		// show progress
 		curl_easy_setopt(precheck_handle, CURLOPT_NOPROGRESS, 0);
-		#ifdef HAVE_UINT64_T
-		uint64_t new_size;
-		#else
-		double new_size;
-		#endif
+
+		filesize_t new_size;
+
 		curl_easy_setopt(precheck_handle, CURLOPT_PROGRESSFUNCTION, get_size_progress_callback);
 		curl_easy_setopt(precheck_handle, CURLOPT_PROGRESSDATA, &new_size);
 		// set timeouts
