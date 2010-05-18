@@ -726,6 +726,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 
     curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
     curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
+    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
 
 	lock.unlock();
 
