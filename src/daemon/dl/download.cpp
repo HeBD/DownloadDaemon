@@ -550,9 +550,9 @@ void download::download_me_worker() {
 
 		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &progressdata);
 		// set timeouts
-		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
-		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 60);
-		long dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
+		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 10);
+		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
+		curl_off_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
 		if(dl_speed > 0) {
 			curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
 		}
@@ -724,6 +724,9 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 			log_string("Setting proxy: " + proxy_str + " for " + url, LOG_DEBUG);
 		}
 	}
+
+    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 10);
+    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
 
 	lock.unlock();
 
