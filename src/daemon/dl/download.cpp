@@ -261,9 +261,8 @@ void download::download_me() {
 	unique_lock<recursive_mutex> lock(mx);
 	need_stop = false;
 	handle = curl_easy_init();
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 60);
-	long dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
+
+	curl_off_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
 	if(dl_speed > 0) {
 		curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
 	}
@@ -490,7 +489,7 @@ void download::download_me_worker() {
            st.st_size == (unsigned long)(downloaded_bytes + .5) && can_resume) {
            #endif
 		   	resume_size = downloaded_bytes;
-			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, downloaded_bytes);
+			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, (long)downloaded_bytes);
 			output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
 			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
 		} else {
@@ -550,8 +549,8 @@ void download::download_me_worker() {
 
 		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &progressdata);
 		// set timeouts
-		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 10);
-		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
+		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
+		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
 		curl_off_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
 		if(dl_speed > 0) {
 			curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
@@ -725,8 +724,8 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 		}
 	}
 
-    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 10);
-    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
+    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
+    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
 
 	lock.unlock();
 
