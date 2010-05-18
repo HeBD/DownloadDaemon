@@ -72,6 +72,10 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	replace_all(url, "/pt/", "/en/");
 	std::string result;
 	CURL* handle = curl_easy_init();
+    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
+    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
+    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
+    curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
 	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
 	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");

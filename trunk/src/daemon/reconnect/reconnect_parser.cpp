@@ -20,6 +20,10 @@ reconnect::reconnect(const std::string &path_p, const std::string &host_p, const
 	variables.insert(pair<string, string>("%user%", user));
 	variables.insert(pair<string, string>("%pass%", pass));
 	variables.insert(pair<string, string>("%routerip%", host));
+	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)1024);
+    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
+    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)1024);
+    curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
 }
 
 reconnect::~reconnect() {
@@ -28,6 +32,10 @@ reconnect::~reconnect() {
 
 std::string reconnect::get_current_ip() {
 	CURL* ip_handle = curl_easy_init();
+	curl_easy_setopt(ip_handle, CURLOPT_LOW_SPEED_LIMIT, (long)1024);
+    curl_easy_setopt(ip_handle, CURLOPT_LOW_SPEED_TIME, (long)20);
+    curl_easy_setopt(ip_handle, CURLOPT_CONNECTTIMEOUT, (long)1024);
+    curl_easy_setopt(ip_handle, CURLOPT_NOSIGNAL, 1);
 	curl_easy_setopt(ip_handle, CURLOPT_URL, "http://www.whatismyip.com/automation/n09230945.asp");
 	std::string resultstr;
 	curl_easy_setopt(ip_handle, CURLOPT_WRITEFUNCTION, reconnect::write_data);
