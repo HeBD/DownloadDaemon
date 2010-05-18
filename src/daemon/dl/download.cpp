@@ -261,6 +261,10 @@ void download::download_me() {
 	unique_lock<recursive_mutex> lock(mx);
 	need_stop = false;
 	handle = curl_easy_init();
+    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
+    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
+    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
+    curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
 
 	curl_off_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
 	if(dl_speed > 0) {
@@ -724,10 +728,6 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 		}
 	}
 
-    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
-    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
-    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
-
 	lock.unlock();
 
 	plugin_status retval;
@@ -803,6 +803,10 @@ void download::preset_file_status() {
 	if(pluginfile.empty()) {
 		log_string("No plugin found, using generic downloadtp preset the file-status", LOG_DEBUG);
 		CURL* precheck_handle = curl_easy_init();
+        curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
+        curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
+        curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
+        curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
 		curl_easy_setopt(precheck_handle, CURLOPT_URL, url.c_str());
 		// set url
 		curl_easy_setopt(precheck_handle, CURLOPT_FOLLOWLOCATION, 1);
@@ -815,9 +819,6 @@ void download::preset_file_status() {
 
 		curl_easy_setopt(precheck_handle, CURLOPT_PROGRESSFUNCTION, get_size_progress_callback);
 		curl_easy_setopt(precheck_handle, CURLOPT_PROGRESSDATA, &new_size);
-		// set timeouts
-		curl_easy_setopt(precheck_handle, CURLOPT_LOW_SPEED_LIMIT, 100);
-		curl_easy_setopt(precheck_handle, CURLOPT_LOW_SPEED_TIME, 60);
 		is_running = true;
 
 		lock.unlock();
