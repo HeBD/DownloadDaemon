@@ -238,6 +238,7 @@ bool cfgfile::list_config(std::string& resultstr) {
 	}
 	std::string buff;
 	resultstr = "";
+	file.seekg(0);
 	while(!file.eof() && file.good()) {
 		getline(file, buff);
 		trim(buff);
