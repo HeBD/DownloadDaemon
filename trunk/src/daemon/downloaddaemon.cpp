@@ -278,7 +278,7 @@ int main(int argc, char* argv[], char* env[]) {
 		// Create the needed folders
 
 		string dl_folder = global_config.get_cfg_value("download_folder");
-		string log_file = global_config.get_cfg_value("log_file");
+		//string log_file = global_config.get_cfg_value("log_file");
 		string dlist = global_config.get_cfg_value("dlist_file");
 		correct_path(dl_folder);
 		mkdir_recursive(dl_folder);

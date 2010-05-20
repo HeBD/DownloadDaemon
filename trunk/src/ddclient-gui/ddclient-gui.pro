@@ -34,4 +34,4 @@ win32 {
     RC_FILE = ddgui.rc
 }
 
-QMAKE_CXXFLAGS += -std=c++0x
+QMAKE_CXXFLAGS += -std=c++0x -DDDCLIENT_GUI
