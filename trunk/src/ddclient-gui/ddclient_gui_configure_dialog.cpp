@@ -401,7 +401,7 @@ QWidget *configure_dialog::create_proxy_panel(){
 
     QLabel *proxy_retry_explanation = new QLabel(p->tsl("If a connection to a server fails when using a proxy, should DownloadDaemon retry with\nanother proxy?"));
     proxy_retry = new QCheckBox(p->tsl("retry"));
-    if(get_var("assume_proxys_online") == "1")
+    if(get_var("assume_proxys_online") == "0")
         proxy_retry->setChecked(true);
 
     QLabel *proxy_explanation = new QLabel(p->tsl("You can provide a list of proxys to use proxy-alternation. For hosters with an IP-based"
@@ -701,9 +701,9 @@ void configure_dialog::ok(){
 
     // assume proxys online
     if(proxy_online)
-        set_var("assume_proxys_online", "1");
-    else
         set_var("assume_proxys_online", "0");
+    else
+        set_var("assume_proxys_online", "1");
 
     set_var("proxy_list", proxy_list);
 
