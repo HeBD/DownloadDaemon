@@ -139,22 +139,13 @@ void connection_handler(tkSock *sock) {
 		*sock << "100 SUCCESS";
 	}
 	while(*sock) {
-		// dump after each command
-		global_download_list.dump_to_file();
-
-		// tell the global_mgmt thread that the times changes. This is needed that it doesn't access the HD more often than needed.
-		global_mgmt::ns_mutex.lock();
-		global_mgmt::curr_start_time = global_config.get_cfg_value("download_timing_start");
-		global_mgmt::curr_end_time = global_config.get_cfg_value("download_timing_end");
-		global_mgmt::downloading_active = global_config.get_bool_value("downloading_active");
-		global_mgmt::ns_mutex.unlock();
-		global_download_list.start_next_downloadable();
-
 		if(sock->recv(data) == 0) {
 			*sock << "101 PROTOCOL";
 			break;
 		}
 		trim_string(data);
+		// the command before any processing took place
+		string original_command = data;
 
 		if(data.length() < 8 || data.find("DDP") != 0 || !isspace(data[3])) {
 			if(*sock) *sock << "101 PROTOCOL";
@@ -213,6 +204,21 @@ void connection_handler(tkSock *sock) {
 			target_premium(data, sock);
 		} else {
 			*sock << "101 PROTOCOL";
+			continue;
+		}
+
+		// dump after each (valid) command except for DL LIST
+		if(original_command.find("LIST") == string::npos ) {
+			global_download_list.dump_to_file();
+			global_download_list.start_next_downloadable();
+			if(original_command.find("VAR") != string::npos) {
+				// tell the global_mgmt thread that the times changes. This is needed that it doesn't access the HD more often than needed.
+				global_mgmt::ns_mutex.lock();
+				global_mgmt::curr_start_time = global_config.get_cfg_value("download_timing_start");
+				global_mgmt::curr_end_time = global_config.get_cfg_value("download_timing_end");
+				global_mgmt::downloading_active = global_config.get_bool_value("downloading_active");
+				global_mgmt::ns_mutex.unlock();
+			}
 		}
 	}
 	delete sock;

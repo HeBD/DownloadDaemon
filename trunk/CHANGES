@@ -1,3 +1,8 @@
+2010-05-23
+   [adrian]
+	- introduced new log-level "INFO"
+	- improved performance of DD when just watching the list (DL LIST), everything will be a bit faster.
+
 2010-05-17
    [adrian]
 	- if router-variables are changed, DD now checks if a reconnect is needed and executes it
