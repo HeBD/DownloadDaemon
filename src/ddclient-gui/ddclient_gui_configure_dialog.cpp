@@ -259,6 +259,7 @@ QWidget *configure_dialog::create_logging_panel(){
     // log activity
     activity = new QComboBox();
     activity->addItem(p->tsl("Debug"));
+    activity->addItem(p->tsl("Info"));
     activity->addItem(p->tsl("Warning"));
     activity->addItem(p->tsl("Severe"));
     activity->addItem(p->tsl("Off"));
@@ -267,12 +268,14 @@ QWidget *configure_dialog::create_logging_panel(){
 
     if(old_activity == "DEBUG")
         activity->setCurrentIndex(0);
-    else if(old_activity == "WARNING")
+    else if(old_activity == "INFO")
         activity->setCurrentIndex(1);
-    else if(old_activity == "SEVERE")
+    else if(old_activity == "WARNING")
         activity->setCurrentIndex(2);
-    else if(old_activity == "OFF")
+    else if(old_activity == "SEVERE")
         activity->setCurrentIndex(3);
+    else if(old_activity == "OFF")
+        activity->setCurrentIndex(4);
 
     p_form_layout->addRow("", new QLabel(p->tsl("This option specifies how logging should be done\n(Standard output, Standard error"
                                                 "output, Syslog-daemon).")));
@@ -605,11 +608,13 @@ void configure_dialog::ok(){
     switch (selection){
         case 0:     activity_level = "DEBUG";
                     break;
-        case 1:     activity_level = "WARNING";
+        case 1:     activity_level = "INFO";
+                break;
+        case 2:     activity_level = "WARNING";
                     break;
-        case 2:     activity_level = "SEVERE";
+        case 3:     activity_level = "SEVERE";
                     break;
-        case 3:     activity_level = "OFF";
+        case 4:     activity_level = "OFF";
                     break;
     }
 
