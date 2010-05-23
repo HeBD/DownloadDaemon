@@ -95,6 +95,8 @@ void log_string(const std::string logstr, int level) {
 		desiredLogLevelInt = LOG_WARNING;
 	} else if (desiredLogLevel == "DEBUG") {
 		desiredLogLevelInt = LOG_DEBUG;
+	} else if(desiredLogLevel == "INFO") {
+		desiredLogLevelInt = LOG_INFO;
 	}
 
 	if(desiredLogLevelInt < level) {
@@ -118,6 +120,9 @@ void log_string(const std::string logstr, int level) {
 	} else if(level == LOG_DEBUG) {
 		to_log << "DEBUG: ";
 		to_syslog << "DEBUG: ";
+	} else if(level == LOG_INFO) {
+		to_log << "INFO: ";
+		to_syslog << "INFO: ";
 	}
 
 	to_log << logstr << '\n';
