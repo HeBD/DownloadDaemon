@@ -74,8 +74,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	url = "http://hotfile.com" + resultstr.substr(pos, end - pos);
 	url += "&lang=en";
 
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
 	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(handle, CURLOPT_POST, 1);
 	//curl_easy_setopt(prepare_handle, CURLOPT_COPYPOSTFIELDS, "dl.start=\"Free\"");
