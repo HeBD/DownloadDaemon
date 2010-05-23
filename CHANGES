@@ -3,6 +3,7 @@
 	- introduced new log-level "INFO"
 	- improved performance of DD when just watching the list (DL LIST), everything will be a bit faster.
 	- implemented caching of config-variables to reduce I/O
+	- made the FILE GETPATH call in ddclient-php's download list optional to reduce a LOT of I/O
 	
 2010-05-17
    [adrian]

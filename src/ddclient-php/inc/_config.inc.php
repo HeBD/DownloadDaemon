@@ -26,4 +26,17 @@ define('LANG', 'en');
  prevent the machine where DownloadDaemon runs on from spinning down the hard-disk.
 */
 define('AUTO_REFRESH', true);
+
+/*
+ If this is set to true, ddclient-php will check for the file-status of each file in the download
+ list when updating. This can take a long time. Generally, you should only set this to true if your server
+ runs on fast hardware or you usually only use small download lists (up to ~50 downloads at once).
+ If you have larger lists, the server will be overloaded pretty fast.
+ The advantage of setting this to true, however, is, that you will only get the "delete file" button
+ on the manage-site if there really is a file to delete. If you set it to false, the "delete file" button
+ will always show up, and file-deletion will simply fail if you press it and there is no file.
+*/
+define('CHECK_FILE_STATUS', false);
+
+
 ?>
