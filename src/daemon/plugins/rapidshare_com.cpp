@@ -88,8 +88,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	url = resultstr.substr(pos, end - pos);
 
 	resultstr.clear();
-	curl_easy_setopt(prepare_handle, CURLOPT_LOW_SPEED_LIMIT, 100);
-	curl_easy_setopt(prepare_handle, CURLOPT_LOW_SPEED_TIME, 20);
 	curl_easy_setopt(prepare_handle, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(prepare_handle, CURLOPT_POST, 1);
 	curl_easy_setopt(prepare_handle, CURLOPT_COPYPOSTFIELDS, "dl.start=\"Free\"");

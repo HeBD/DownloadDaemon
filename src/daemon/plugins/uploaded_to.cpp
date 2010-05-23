@@ -68,8 +68,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	CURL* handle = get_handle();
 	std::string resultstr;
 	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 100);
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 20);
 	curl_easy_setopt(handle, CURLOPT_URL, get_url());
 	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
@@ -130,9 +128,9 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	std::string result;
 	CURL* handle = curl_easy_init();
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
-    curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
-    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
-    curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
+	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
+	curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
+	curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
 	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
 	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
