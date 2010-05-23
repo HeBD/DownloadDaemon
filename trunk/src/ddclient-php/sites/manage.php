@@ -194,11 +194,12 @@ if($connect != 'SUCCESS') {
 	} else {
 		$activate_button = 'de';
 	}
-
-	send_all($socket, "DDP FILE GETPATH " . $exp_dls[$i][0]);
 	$buf = "";
-	recv_all($socket, $buf);
-	if($buf != "") {
+	if(CHECK_FILE_STATUS) {
+		send_all($socket, "DDP FILE GETPATH " . $exp_dls[$i][0]);
+		recv_all($socket, $buf);
+	}
+	if($buf != "" || !CHECK_FILE_STATUS) {
 		$del_file = '<a href="index.php?site=manage&amp;action=del_file&amp;id={T_DL_ID}" title="{L_Delete_File}"><img src="{T_SITE_URL}/templates/default/css/images/delete_file.png" alt="{L_Delete_File}" /></a>';
 	}else{
 		$del_file = '';
