@@ -15,6 +15,7 @@
 #include <config.h>
 #include <fstream>
 #include <string>
+#include <map>
 
 #ifndef DDCLIENT_GUI
     #ifndef USE_STD_THREAD
@@ -150,6 +151,9 @@ private:
 #ifndef DDCLIENT_GUI
 	std::recursive_mutex mx;
 #endif
+
+    std::map<std::string, std::string> cfg_cache;
+    typedef std::map<std::string, std::string>::iterator CfgIter;
 
 };
 

@@ -72,6 +72,11 @@ std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 		lock.lock();
 #endif
 	}
+
+	CfgIter cit = cfg_cache.find(cfg_identifier);
+	if(cit != cfg_cache.end()) {
+        return cit->second;
+	}
 	file.seekg(0);
 	std::string buff, identstr, val;
 	size_t eqloc;
@@ -183,6 +188,7 @@ bool cfgfile::set_cfg_value(const std::string &cfg_identifier, const std::string
 			file << '\n';
 		}
 	}
+	cfg_cache[cfg_identifier] = value;
 #ifndef DDCLIENT_GUI
 	lock.unlock();
 #endif
