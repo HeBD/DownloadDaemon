@@ -47,7 +47,7 @@ function connect_to_daemon(&$socket, $host, $port, $pwd, $enc, $timeout = 0) {
 	
 	@recv_all($socket, $recv_buf);
 
-	if(mb_substr($recv_buf, 0, 3) == "100") {
+	if(substr($recv_buf, 0, 3) == "100") {
 		return "SUCCESS";
 	}
 
@@ -55,7 +55,7 @@ function connect_to_daemon(&$socket, $host, $port, $pwd, $enc, $timeout = 0) {
 	$rnd = "";
 	@recv_all($socket, $rnd);
 	$result = "";
-	if(mb_substr($rnd, 0, 3) != "102") {
+	if(substr($rnd, 0, 3) != "102") {
 		$rnd .= $pwd;
 		$enc_passwd = md5($rnd, true);
 		send_all($socket, $enc_passwd);
@@ -74,7 +74,7 @@ function connect_to_daemon(&$socket, $host, $port, $pwd, $enc, $timeout = 0) {
 		}
 	}
 	
-	if(mb_substr($result, 0, 3) != "100") {
+	if(substr($result, 0, 3) != "100") {
 		return "ERR_PASSWD";
 	} else {
 		return "SUCCESS";

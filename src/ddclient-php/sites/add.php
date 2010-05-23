@@ -32,7 +32,7 @@ if($connect != 'SUCCESS') {
 			send_all($socket, "DDP DL ADD " . $pkg_id . " " . $_POST['url'] . " " . $_POST['title']);
 			$recv = "";
 			recv_all($socket, $recv);
-			if(mb_substr($recv, 0, 3) != "100") {
+			if(substr($recv, 0, 3) != "100") {
 				$err_message .= msg_generate($LANG['ERR_URL_INVALID'], 'error');
 			} else {
 				$err_message .= msg_generate($LANG['SUCC_ADD_SINGLE'], 'success');
@@ -60,7 +60,7 @@ if($connect != 'SUCCESS') {
 			$buf = "";
 			send_all($socket, "DDP DL ADD " . $pkg_id . " " . $download_index[$i]);
 			recv_all($socket, $buf);
-			if(mb_substr($buf, 0, 3) != "100") {
+			if(substr($buf, 0, 3) != "100") {
 				echo "Error adding download: " . $download_index[$i] . ": URL is probably invalid.";	
 				$all_success = false;
 			}

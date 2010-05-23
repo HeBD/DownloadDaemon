@@ -17,7 +17,7 @@ if($connect != 'SUCCESS') {
 				send_all($socket, "DDP DL ACTIVATE " . $_GET['id']);
 				$buf = "";
 				recv_all($socket, $buf);
-				if(mb_substr($buf, 0, 3) != "100") {
+				if(substr($buf, 0, 3) != "100") {
 					$err_message .= msg_generate($LANG['ERR_DL_ACTIVATE'], 'error');
 				}
         		break;
@@ -25,7 +25,7 @@ if($connect != 'SUCCESS') {
 				send_all($socket, "DDP DL DEACTIVATE " . $_GET['id']);
 				$buf = "";
 				recv_all($socket, $buf);
-				if(mb_substr($buf, 0, 3) != "100") {
+				if(substr($buf, 0, 3) != "100") {
 					$err_message .= msg_generate($LANG['ERR_DL_DEACTIVATE'], 'error');
 				}
         		break;
@@ -37,7 +37,7 @@ if($connect != 'SUCCESS') {
 					send_all($socket, "DDP DL DEL " . $_GET['id']);
 				}
 				recv_all($socket, $buf);
-				if(mb_substr($buf, 0, 3) != "100") {
+				if(substr($buf, 0, 3) != "100") {
 					$err_message .= msg_generate($LANG['ERR_DL_DEL'], 'error');
 				}
         		break;
@@ -45,7 +45,7 @@ if($connect != 'SUCCESS') {
 				send_all($socket, "DDP FILE DEL " . $_GET['id']);
 				$buf = "";
 				recv_all($socket, $buf);
-				if(mb_substr($buf, 0, 3) != "100") {
+				if(substr($buf, 0, 3) != "100") {
 					$err_message .= msg_generate($LANG['ERR_FILE_DEL'], 'error');
 				}
     			break;
@@ -57,7 +57,7 @@ if($connect != 'SUCCESS') {
 					send_all($socket, "DDP DL UP " . $_GET['id']);
 				}
 				recv_all($socket, $buf);
-				if(mb_substr($buf, 0, 3) != "100") {
+				if(substr($buf, 0, 3) != "100") {
 					$err_message .= msg_generate($LANG['ERR_DL_UP'], 'error');
 				}
     			break;
@@ -66,7 +66,7 @@ if($connect != 'SUCCESS') {
 				if($_GET['pkg_id'] != "") {
 					send_all($socket, "DDP PKG SET " . $_GET['pkg_id'] . " PKG_NAME = " . $_POST['pkg_edit_name']);
 					recv_all($socket, $buf);
-					if(mb_substr($buf, 0, 3) != "100") {
+					if(substr($buf, 0, 3) != "100") {
 						$err_message .= msg_generate($LANG['ERR_EDIT'], 'error');
 						break;
 					}
@@ -74,14 +74,14 @@ if($connect != 'SUCCESS') {
 				} else {
 					send_all($socket, "DDP DL SET " . $_GET['id'] . " DL_TITLE = " . $_POST['dl_edit_title']);
 					recv_all($socket, $buf);
-					if(mb_substr($buf, 0, 3) != "100") {
+					if(substr($buf, 0, 3) != "100") {
 						$err_message .= msg_generate($LANG['ERR_EDIT'], 'error');
 						break;
 					}
 					send_all($socket, "DDP DL SET " . $_GET['id'] . " DL_URL = " . $_POST['dl_edit_url']);
 				}
 				recv_all($socket, $buf);
-				if(mb_substr($buf, 0, 3) != "100") {
+				if(substr($buf, 0, 3) != "100") {
 					$err_message .= msg_generate($LANG['ERR_EDIT'], 'error');
 				}					
 			break;
