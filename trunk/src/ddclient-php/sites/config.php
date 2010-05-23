@@ -14,7 +14,7 @@ if($connect != 'SUCCESS') {
 	send_all($socket, 'DDP VAR SET mgmt_password=' . $_POST['old_pw'] . ';' . $_POST['new_pw']);
 	$buf = '';
 	recv_all($socket, $buf);
-	if(mb_substr($buf, 0, 3) != '100') {
+	if(substr($buf, 0, 3) != '100') {
 		$err_message .= msg_generate('The Password could not be changed.', 'error');
 	}		
 }
@@ -27,7 +27,7 @@ if(isset($_POST['downloading_active'])) {
 	}
 	$buf = '';
 	recv_all($socket, $buf);
-	if(mb_substr($buf, 0, 3) != '100') {
+	if(substr($buf, 0, 3) != '100') {
 		$err_message .= msg_generate('Failed to set DownloadDaemons download activity status.', 'error');
 	}
 }
