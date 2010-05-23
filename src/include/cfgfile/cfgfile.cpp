@@ -88,6 +88,7 @@ std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 		if(identstr == cfg_identifier) {
 			val = buff.substr(eqloc +1);
 			trim(val);
+			cfg_cache[cfg_identifier] = val;
 			return val;
 		}
 	}
@@ -100,6 +101,7 @@ std::string cfgfile::get_cfg_value(const std::string &cfg_identifier) {
 	if(!val.empty() && is_writeable) {
 		set_cfg_value(cfg_identifier, val);
 	}
+	cfg_cache[cfg_identifier] = val;
 	return val;
 }
 
