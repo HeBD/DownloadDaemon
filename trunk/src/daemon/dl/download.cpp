@@ -456,7 +456,7 @@ void download::download_me_worker() {
 		}
 
 		if(!mkdir_recursive(download_folder)) {
-			log_string("Failed to create the download target directory for Download " + int_to_string(id), LOG_ERR);
+			log_string("Failed to create the download target directory for Download " + int_to_string(id) + ": " + download_folder, LOG_ERR);
 			status = DOWNLOAD_INACTIVE;
 			error = PLUGIN_WRITE_FILE_ERROR;
 			return;

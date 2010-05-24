@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-
+project(DownloadDaemon)
 add_subdirectory(plugins)
 
 SET(daemon_SRCS downloaddaemon.cpp 

@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <cstring>
 #include <vector>
 
 #ifndef USE_STD_THREAD
@@ -32,6 +33,8 @@ namespace std {
 #ifdef HAVE_SYSLOG_H
 	#include <syslog.h>
 #endif
+#include <errno.h>
+
 #include <cfgfile/cfgfile.h>
 #include "../dl/download.h"
 #include "../dl/download_container.h"
@@ -234,7 +237,7 @@ void correct_path(std::string &path) {
 		path.replace(0, 1, "$HOME");
 	}
 	substitute_env_vars(path);
-	if(path[0] != '/' && path[0] != '\\' && path.find(":\\") == std::string::npos) {
+	if(path[0] != '/' && path[0] != '\\' && path.find(":\\") == std::string::npos && path.find(":/") == string::npos) {
 		path.insert(0, program_root);
 	}
 
@@ -289,27 +292,24 @@ void substitute_env_vars(std::string &str) {
 }
 
 bool mkdir_recursive(std::string dir) {
-	size_t len = dir.length();
-	if(dir[len -1] == '/') {
-		dir[len - 1] = 0;
-	}
+    if (dir.size() < 2) return false;
+    correct_path(dir);
+    dir += "/";
 
-	if(dir[len - 1] != '/'){
-		dir.push_back('/');
-	}
-
-	string tmp;
-	struct stat st;
-	for(size_t index = 0; index < len; ++index) {
-		if(dir[index] == '/') {
-			tmp = dir.substr(0, dir.find('/', index + 1));
-			if(stat(tmp.c_str(), &st) == 0) continue;
-			if(mkdir(tmp.c_str(), 0777) != 0) {
-				return false;
-			}
-		}
-	}
-	return true;
+    struct stat st;
+    string curr;
+    for(size_t i = 0; i < dir.size(); ++i) {
+        if ((dir[i] == '/' || dir[i] == '\\') && i != 0) {
+            curr = dir.substr(0, i);
+            if(stat(curr.c_str(), &st) == 0) continue;
+            errno = 0;
+            if(mkdir(curr.c_str(), 0777) != 0) {
+                log_string("mkdir_recursive() failed for: '" + curr + "'. error: " + strerror(errno), LOG_ERR);
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 std::string filename_from_url(const std::string &url) {
