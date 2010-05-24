@@ -81,6 +81,7 @@ int main(int argc, char* argv[], char* env[]) {
 	signal(SIGPIPE, SIG_IGN);
 	#endif
 
+    #ifndef __CYGWIN__
 	// Drop user if there is one, and we were run as root
 	if (getuid() == 0 || geteuid() == 0) {
 		struct passwd *pw = getpwnam(DAEMON_USER /* "downloadd" */);
@@ -107,6 +108,7 @@ int main(int argc, char* argv[], char* env[]) {
 
 		}
 	}
+    #endif
 
 	for(int i = 1; i < argc; ++i) {
 		std::string arg = argv[i];
