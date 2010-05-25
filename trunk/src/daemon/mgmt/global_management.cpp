@@ -35,6 +35,8 @@ namespace global_mgmt {
 	std::string curr_start_time;
 	std::string curr_end_time;
 	bool downloading_active;
+
+	bool start_presetter = false;
 	// for sync signal handling
 	std::condition_variable sig_handle_cond;
 	int curr_sig = -1;
@@ -49,10 +51,18 @@ void do_once_per_second() {
 	while(true) {
         global_mgmt::once_per_sec_cond.wait(lock);
 		global_download_list.purge_deleted();
+
+		global_mgmt::ns_mutex.lock();
+
 		if(global_download_list.total_downloads() > 0) {
 			global_download_list.decrease_waits();
-			global_download_list.preset_file_status();
+			if (global_mgmt::start_presetter && global_config.get_bool_value("precheck_links")) {
+			    global_mgmt::start_presetter = false;
+                thread t(bind(&package_container::preset_file_status, &global_download_list));
+                t.detach();
+			}
 		}
+		global_mgmt::ns_mutex.unlock();
 
 		bool in_dl_time = global_download_list.in_dl_time_and_dl_active();
 		if(!was_in_dltime_last && in_dl_time) {
@@ -65,6 +75,7 @@ void do_once_per_second() {
 			// we just left dl_end time
 			was_in_dltime_last = false;
 		}
+
 	}
 }
 
@@ -76,7 +87,7 @@ void sig_handle_thread() {
 		switch(global_mgmt::curr_sig) {
 			case SIGSEGV:
 				#ifdef BACKTRACE_ON_CRASH
-				log_string("DOWNLOADDAEMON CRASH DETECTED. BACKTRACE:", LOG_ERR);				
+				log_string("DOWNLOADDAEMON CRASH DETECTED. BACKTRACE:", LOG_ERR);
 				for (int i = 0; i < global_mgmt::backtrace_size; ++i) {
 					log_string(global_mgmt::backtrace[i], LOG_ERR);
 				}

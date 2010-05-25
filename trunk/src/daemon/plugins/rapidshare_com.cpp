@@ -59,13 +59,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_ERROR;
 	}
 
-	CURL* prepare_handle = get_handle();
+	CURL* handle = get_handle();
 
 	std::string resultstr;
-	curl_easy_setopt(prepare_handle, CURLOPT_URL, get_url());
-	curl_easy_setopt(prepare_handle, CURLOPT_WRITEFUNCTION, write_data);
-	curl_easy_setopt(prepare_handle, CURLOPT_WRITEDATA, &resultstr);
-	int success = curl_easy_perform(prepare_handle);
+	curl_easy_setopt(handle, CURLOPT_URL, get_url());
+	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
+	int success = curl_easy_perform(handle);
 
 	if(success != 0) {
 		return PLUGIN_CONNECTION_ERROR;
@@ -88,12 +88,12 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	url = resultstr.substr(pos, end - pos);
 
 	resultstr.clear();
-	curl_easy_setopt(prepare_handle, CURLOPT_URL, url.c_str());
-	curl_easy_setopt(prepare_handle, CURLOPT_POST, 1);
-	curl_easy_setopt(prepare_handle, CURLOPT_COPYPOSTFIELDS, "dl.start=\"Free\"");
-	curl_easy_perform(prepare_handle);
-	curl_easy_setopt(prepare_handle, CURLOPT_POST, 0);
-	curl_easy_setopt(prepare_handle, CURLOPT_COPYPOSTFIELDS, "");
+	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(handle, CURLOPT_POST, 1);
+	curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "dl.start=\"Free\"");
+	curl_easy_perform(handle);
+	curl_easy_setopt(handle, CURLOPT_POST, 0);
+	curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "");
 
 	if(resultstr.find("Or try again in about") != std::string::npos) {
 		pos = resultstr.find("Or try again in about");
@@ -133,7 +133,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		}
 
 		outp.download_url = resultstr.substr(pos, end - pos);
-		CURL* handle = get_handle();
 		curl_easy_setopt(handle, CURLOPT_POST, 1);
 		curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "mirror=on&x=66&y=61");
 		return PLUGIN_SUCCESS;

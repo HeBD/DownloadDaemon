@@ -631,7 +631,7 @@ void download_container::extract_package() {
 
         while(true) {
             trim_string(curr_password);
-            log_string("Trying to extract... " + output_file, LOG_DEBUG);
+            log_string("Checking if file can be extracted: " + output_file, LOG_DEBUG);
             lock.unlock();
             pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, curr_password);
             lock.lock();

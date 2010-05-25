@@ -217,6 +217,7 @@ void connection_handler(tkSock *sock) {
 				global_mgmt::curr_start_time = global_config.get_cfg_value("download_timing_start");
 				global_mgmt::curr_end_time = global_config.get_cfg_value("download_timing_end");
 				global_mgmt::downloading_active = global_config.get_bool_value("downloading_active");
+				global_mgmt::start_presetter = true;
 				global_mgmt::ns_mutex.unlock();
 			}
 		}
