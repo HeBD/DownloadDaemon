@@ -35,7 +35,6 @@
 #include <fstream>
 #include <sstream>
 
-
 using namespace std;
 
 download::download(const std::string& dl_url)
@@ -284,6 +283,8 @@ void download::download_me() {
 	if(status == DOWNLOAD_RUNNING) {
 		status = DOWNLOAD_PENDING;
 	}
+	wait_seconds = 0;
+
 
 	if(status == DOWNLOAD_WAITING && error == PLUGIN_LIMIT_REACHED) {
 		int ret = set_next_proxy();
@@ -331,7 +332,14 @@ void download::download_me() {
 	need_stop = false;
 	is_running = false;
 	lock.unlock();
-	global_download_list.start_next_downloadable();
+	try {
+        thread t(bind(&package_container::start_next_downloadable, &global_download_list));
+        t.detach();
+	} catch(...) {
+        log_string("Failed to spawn start_next_downloadable() thread. DownloadDaemon might hang now until"
+                   " you trigger start_next_downloadable manually (change a config val). DownloadDaemon will try to recover automatically, but you never know.", LOG_ERR);
+        global_download_list.start_next_downloadable();
+	}
 }
 
 void download::download_me_worker() {
