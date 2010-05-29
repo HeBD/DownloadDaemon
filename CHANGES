@@ -1,3 +1,7 @@
+2010-05-29
+   [adrian]
+	- added support for actiontec PK5000 router
+
 2010-05-26
    [adrian]
    	- small idle-time optimization (less CPU required)
