@@ -25,7 +25,8 @@
         #define pstat stat
 #endif
 
-#ifdef HAVE_UNIT64_T
+#ifdef HAVE_UINT64_T
+	#include <stdint.h>
 	typedef uint64_t filesize_t;
 #else
 	typedef double filesize_t;

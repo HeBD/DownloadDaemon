@@ -160,16 +160,16 @@ std::string download::serialize() {
 	string dl_size;
 	stringstream conv1, conv2;
 	#ifndef HAVE_UINT64_T
-		conv1 << downloaded_bytes;
+		conv1 << fixed << downloaded_bytes;
 		string tmp = conv1.str();
 		dl_bytes = tmp.substr(0, tmp.find("."));
-		conv2 << size;
+		conv2 << fixed << size;
 		tmp = conv2.str();
 		dl_size = tmp.substr(0, tmp.find("."));
 	#else
-		conv1 << downloaded_bytes;
+		conv1 << fixed << downloaded_bytes;
 		dl_bytes = conv1.str();
-		conv2 << size;
+		conv2 << fixed << size;
 		dl_size = conv2.str();
 	#endif
 	while(dl_bytes.size() > 1 && dl_bytes[0] == '0') dl_bytes.erase(0, 1);
@@ -437,10 +437,9 @@ void download::download_me_worker() {
 		}
 
 		if(need_stop) return;
-
-		std::string output_filename;
-		std::string download_folder = global_config.get_cfg_value("download_folder");
-		correct_path(download_folder);
+		dl_cb_info cb_info;
+		cb_info.download_dir = global_config.get_cfg_value("download_folder");
+		correct_path(cb_info.download_dir);
 		if(global_config.get_bool_value("download_to_subdirs")) {
 			lock.unlock();
 			std::string dl_subfolder = global_download_list.get_pkg_name(parent);
@@ -460,74 +459,78 @@ void download::download_me_worker() {
 					dl_subfolder = "";
 				}
 			}
-			download_folder += "/" + dl_subfolder;
+			cb_info.download_dir += "/" + dl_subfolder;
 		}
 
-		if(!mkdir_recursive(download_folder)) {
-			log_string("Failed to create the download target directory for Download " + int_to_string(id) + ": " + download_folder, LOG_ERR);
+		if(!mkdir_recursive(cb_info.download_dir)) {
+			log_string("Failed to create the download target directory for Download " + int_to_string(id) + ": " + cb_info.download_dir, LOG_ERR);
 			status = DOWNLOAD_INACTIVE;
 			error = PLUGIN_WRITE_FILE_ERROR;
 			return;
 		}
-		if(plug_outp.download_filename == "") {
-			if(plug_outp.download_url != "") {
-				std::string fn = filename_from_url(plug_outp.download_url);
-				output_filename = download_folder + '/';
-				if(fn.empty()) {
-					output_filename += "file";
-				} else {
-					output_filename += fn;
-				}
-			}
-		} else {
-			output_filename += download_folder;
-			make_valid_filename(plug_outp.download_filename);
-			output_filename += '/' + plug_outp.download_filename;
+		if(plug_outp.download_filename != "") {
+			cb_info.filename = plug_outp.download_filename;
+			make_valid_filename(cb_info.filename);
 		}
+//		if(plug_outp.download_filename == "") {
+//			if(plug_outp.download_url != "") {
+//				std::string fn = filename_from_url(plug_outp.download_url);
+//				output_filename = download_folder + '/';
+//				if(fn.empty()) {
+//					output_filename += "file";
+//				} else {
+//					output_filename += fn;
+//				}
+//			}
+//		} else {
+//			output_filename += download_folder;
+//			make_valid_filename(plug_outp.download_filename);
+//			output_filename += '/' + plug_outp.download_filename;
+//		}
 
-		std::string final_filename(output_filename);
-		output_filename += ".part";
+//		output_filename += ".part";
 
 		struct pstat st;
 
+
 		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file_s;
+		cb_info.out_stream = &output_file_s;
 		filesize_t resume_size = 0;
-		if(get_hostinfo().allows_resumption && global_config.get_bool_value("enable_resume") &&
-		   pstat(output_filename.c_str(), &st) == 0 &&
-           #ifdef HAVE_UINT64_T
-           st.st_size == (int64_t)downloaded_bytes && can_resume) {
-           #else
-           st.st_size == (unsigned long)(downloaded_bytes + .5) && can_resume) {
-           #endif
-		   	resume_size = downloaded_bytes;
+		if(get_hostinfo().allows_resumption && global_config.get_bool_value("enable_resume") && !output_file.empty() &&
+		    pstat(output_file.c_str(), &st) == 0 &&  st.st_size == (filesize_t)downloaded_bytes && can_resume) {
+
+        	cb_info.resume_from = downloaded_bytes;
 			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, (long)downloaded_bytes);
-			output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
+
+			//output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
 			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
-		} else {
+		}// else {
 			// Check if the file should be overwritten if it exists
-			if(!global_config.get_bool_value("overwrite_files") && pstat(final_filename.c_str(), &st) == 0) {
-					status = DOWNLOAD_INACTIVE;
-					error = PLUGIN_WRITE_FILE_ERROR;
-					return;
-			}
-			output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::trunc);
-		}
+		//if(!global_config.get_bool_value("overwrite_files") && pstat.c_str(), &st) == 0) {
+		//			status = DOWNLOAD_INACTIVE;
+		//			error = PLUGIN_WRITE_FILE_ERROR;
+		//			return;
+		//	}
+			//output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::trunc);
+		//}
 
-		if(!output_file_s.good()) {
-			log_string(std::string("Could not write to file: ") + output_filename, LOG_ERR);
-			error = PLUGIN_WRITE_FILE_ERROR;
-			wait_n = global_config.get_int_value("write_error_wait");
-			if(wait_n == 0) {
-				status = DOWNLOAD_INACTIVE;
-			} else {
-				status = DOWNLOAD_PENDING;
-				wait_seconds = wait_n;
-			}
-			return;
-		}
+		//cb_info.filename = output_filename;
 
-		output_file = output_filename;
+		//if(!output_file_s.good()) {
+		//	log_string(std::string("Could not write to file: ") + output_filename, LOG_ERR);
+		//	error = PLUGIN_WRITE_FILE_ERROR;
+		//	wait_n = global_config.get_int_value("write_error_wait");
+		//	if(wait_n == 0) {
+		//		status = DOWNLOAD_INACTIVE;
+		//	} else {
+		//		status = DOWNLOAD_PENDING;
+		//		wait_seconds = wait_n;
+		//	}
+		//	return;
+		//}
+
+		//output_file = output_filename;
 
 		if(plug_outp.download_url.empty()) {
 			log_string(std::string("Empty URL for download ID: ") + dlid_log, LOG_ERR);
@@ -547,19 +550,18 @@ void download::download_me_worker() {
 		curl_easy_setopt(handle, CURLOPT_URL, plug_outp.download_url.c_str());
 		// set file-writing function as callback
 		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_file);
-		std::string cache;
 		// reserve a cache of 512 kb
-		cache.reserve(512000);
-		std::pair<fstream*, std::string*> callback_opt_left(&output_file_s, &cache);
-		std::pair<std::pair<fstream*, std::string*>, CURL*> callback_opt(callback_opt_left, handle);
-		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &callback_opt);
+		cb_info.cache.reserve(512000);
+		//std::pair<fstream*, std::string*> callback_opt_left(&output_file_s, &cache);
+		//std::pair<std::pair<fstream*, std::string*>, CURL*> callback_opt(callback_opt_left, handle);
+		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &cb_info);
 		// show progress
 		curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0);
 		curl_easy_setopt(handle, CURLOPT_PROGRESSFUNCTION, report_progress);
 
-		std::pair<dlindex, filesize_t> progressdata(dl, resume_size);
+		//std::pair<dlindex, filesize_t> progressdata(dl, resume_size);
 
-		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &progressdata);
+		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &cb_info);
 		// set timeouts
 		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
 		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
@@ -570,22 +572,24 @@ void download::download_me_worker() {
 
 		// set headers to parse content-disposition
 		curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, parse_header);
-		std::string fn_from_header;
-		curl_easy_setopt(handle, CURLOPT_WRITEHEADER, &fn_from_header);
+		curl_easy_setopt(handle, CURLOPT_WRITEHEADER, &cb_info);
+
+		cb_info.curl_handle = handle;
+		cb_info.id = make_pair<int, int>(parent, id);
 
 		log_string(std::string("Starting download ID: ") + dlid_log, LOG_DEBUG);
 		lock.unlock();
 		int curlsucces = curl_easy_perform(handle);
 		lock.lock();
 
-		if(plug_outp.download_filename.empty() && !fn_from_header.empty()) {
-			final_filename = final_filename.substr(0, final_filename.find_last_of("/\\"));
-			final_filename += "/" + fn_from_header;
-		}
+		//if(plug_outp.download_filename.empty() && !fn_from_header.empty()) {
+		//	final_filename = final_filename.substr(0, final_filename.find_last_of("/\\"));
+		//	final_filename += "/" + fn_from_header;
+		//}
 
 		// because the callback only safes every half second, there is still an unsafed rest-data:
-		output_file_s.write(cache.c_str(), cache.size());
-		downloaded_bytes += cache.size();
+		output_file_s.write(cb_info.cache.c_str(), cb_info.cache.size());
+		downloaded_bytes += cb_info.cache.size();
 		output_file_s.close();
 
 		long http_code;
@@ -607,8 +611,8 @@ void download::download_me_worker() {
 				log_string(std::string("File not found, ID: ") + dlid_log, LOG_WARNING);
 				status = DOWNLOAD_INACTIVE;
 				error = PLUGIN_FILE_NOT_FOUND;
-				if(!output_filename.empty()) {
-					remove(output_filename.c_str());
+				if(!output_file.empty()) {
+					remove(output_file.c_str());
 					output_file = "";
 				}
 				return;
@@ -616,19 +620,22 @@ void download::download_me_worker() {
 				log_string("Invalid http authentication on download ID: " + dlid_log, LOG_WARNING);
 				status = DOWNLOAD_INACTIVE;
 				error = PLUGIN_AUTH_FAIL;
-				remove(output_filename.c_str());
+				remove(output_file.c_str());
 				output_file = "";
 				return;
 		}
-
+		string new_fn;
 		switch(curlsucces) {
+
 			case CURLE_OK:
 				log_string(std::string("Finished download ID: ") + dlid_log, LOG_DEBUG);
 				status = DOWNLOAD_FINISHED;
-				if(rename(output_filename.c_str(), final_filename.c_str()) != 0) {
+				new_fn = output_file.substr(0, output_file.rfind(".part"));
+
+				if(rename(output_file.c_str(), new_fn.c_str()) != 0) {
 					log_string(std::string("Unable to rename .part file. You can do so manually."), LOG_ERR);
 				} else {
-					output_file = final_filename;
+					output_file = new_fn;
 				}
 				lock.unlock();
 				post_process_download();

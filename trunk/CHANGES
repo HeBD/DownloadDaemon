@@ -1,3 +1,7 @@
+2010-06-12
+   [adrian]
+	- restructuring of the download-setup-process for correct filename detection and more flexibility
+
 2010-05-29
    [adrian]
 	- added support for actiontec PK5000 router

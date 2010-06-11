@@ -24,15 +24,50 @@
 using namespace std;
 
 size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
-	std::pair<std::pair<fstream*, std::string*>, CURL*>* callback_opt = (std::pair<std::pair<fstream*, std::string*>, CURL*>*)userp;
-	fstream* output_file = callback_opt->first.first;
-	std::string* cache = callback_opt->first.second;
+	//std::pair<std::pair<fstream*, std::string*>, CURL*>* callback_opt = (std::pair<std::pair<fstream*, std::string*>, CURL*>*)userp;
+	dl_cb_info *info = (dl_cb_info*)userp;
+
+	fstream* output_file = info->out_stream;
+	std::string* cache = &(info->cache);
+
 	cache->append((char*)buffer, nmemb);
 	double speed;
-	curl_easy_getinfo(callback_opt->second, CURLINFO_SPEED_DOWNLOAD, &speed);
+	curl_easy_getinfo(info->curl_handle, CURLINFO_SPEED_DOWNLOAD, &speed);
 	if(speed < 1 || cache->size() >= speed / 2 || cache->size() >= 1048576) {
 		// wite twice per sec, if speed is 0, and if the cache is >= 1MB
+		if (!output_file->is_open()) {
+			if(info->filename.empty()) {
+				char* fn_cstr = 0;
+				curl_easy_getinfo(info->curl_handle, CURLINFO_EFFECTIVE_URL, &fn_cstr);
+				info->filename = filename_from_url(fn_cstr);
+				make_valid_filename(info->filename);
+				info->filename_from_effective_url = true;
+			}
+
+			if(info->download_dir.empty()) {
+				log_string("Failed to get download folder", LOG_ERR);
+				return 0;
+			}
+			string dl_path = info->download_dir + '/' + info->filename + ".part";
+			if(info->resume_from > 0) {
+				output_file->open(dl_path.c_str(), ios::out | ios::binary | ios::app);
+			} else {
+				output_file->open(dl_path.c_str(), ios::out | ios::binary | ios::trunc);
+			}
+			global_download_list.set_output_file(info->id, dl_path);
+			if(!output_file->is_open() || !output_file) {
+				return 0;
+			}
+		}
+
+
+
 		output_file->write(cache->c_str(), cache->size());
+		if(output_file->bad()) {
+			log_string("Successfully opened the download-file, but failed to write to it. Is your harddisk full?", LOG_ERR);
+			return 0;
+		}
+		global_download_list.set_downloaded_bytes(info->id, global_download_list.get_downloaded_bytes(info->id) + cache->size());
 		cache->clear();
 		global_download_list.dump_to_file();
 	}
@@ -41,31 +76,32 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 
 int report_progress(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
 
-	std::pair<dlindex, filesize_t> *prog_data = (std::pair<dlindex, filesize_t>*)clientp;
+	//std::pair<dlindex, filesize_t> *prog_data = (std::pair<dlindex, filesize_t>*)clientp;
+	dl_cb_info *info = (dl_cb_info*)clientp;
 
-	dlindex id = prog_data->first;
-	CURL* curr_handle = global_download_list.get_handle(id);
+	dlindex id = info->id;
+	CURL* curr_handle = info->curl_handle;
 
 	double curr_speed_param;
 	curl_easy_getinfo(curr_handle, CURLINFO_SPEED_DOWNLOAD, &curr_speed_param);
-	#ifdef HAVE_UINT64_T
-	uint64_t size_conv = (uint64_t)((dltotal + 0.5) + prog_data->second);
-	uint64_t speed_conv = (uint64_t)(curr_speed_param);
-	#else
-	double size_conv = dltotal + prog_data->second;
-	double speed_conv = curr_speed_param;
-	#endif
-	global_download_list.set_size(id, size_conv);
-	std::string output_file;
-	output_file = global_download_list.get_output_file(id);
+	filesize_t curr_speed = (filesize_t)(curr_speed_param + 0.5);
 
+	filesize_t  dl_size = info->resume_from + (filesize_t)(dltotal + 0.5);
 
-	global_download_list.set_speed(id, speed_conv);
-
-	struct pstat st;
-	if(pstat(output_file.c_str(), &st) == 0) {
-		global_download_list.set_downloaded_bytes(id, st.st_size);
+	global_download_list.set_size(id, dl_size);
+	std::string output_file = info->download_dir + '/' + info->filename;
+	if(output_file.empty()) { // a bit too early.. let's wait another round
+		return 0;
 	}
+
+
+	global_download_list.set_speed(id, curr_speed);
+
+	//filesize_t downloaded = info->resume_from + (filesize_t)(dlnow + 0.5);
+	//struct pstat st;
+	//if(pstat(output_file.c_str(), &st) == 0) {
+	//	global_download_list.set_downloaded_bytes(id, downloaded);
+	//}
 
 	if(global_download_list.get_need_stop(id)) {
 		// break up the download
@@ -75,7 +111,8 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 }
 
 size_t parse_header( void *ptr, size_t size, size_t nmemb, void *clientp) {
-	string* filename = (string*)clientp;
+	dl_cb_info *info = (dl_cb_info*)clientp;
+	string* filename = & (info->filename);
 	string header((char*)ptr, size * nmemb);
 	size_t n;
 	if((n = header.find("Content-Disposition:")) != string::npos) {

@@ -486,9 +486,31 @@ std::string download_container::create_client_list() {
 		if((*it)->get_status() == DOWNLOAD_DELETED || (*it)->get_id() < 0) {
 			continue;
 		}
+
+		string dl_bytes;
+		string dl_size;
+		stringstream conv1, conv2;
+		#ifndef HAVE_UINT64_T
+			conv1 << fixed << (*it)->get_downloaded_bytes();
+			string tmp = conv1.str();
+			dl_bytes = tmp.substr(0, tmp.find("."));
+			conv2 << fixed << (*it)->get_size();
+			tmp = conv2.str();
+			dl_size = tmp.substr(0, tmp.find("."));
+		#else
+			conv1 << fixed << (*it)->get_downloaded_bytes();
+			dl_bytes = conv1.str();
+			conv2 << fixed << (*it)->get_size();
+			dl_size = conv2.str();
+		#endif
+		while(dl_bytes.size() > 1 && dl_bytes[0] == '0') dl_bytes.erase(0, 1);
+		while(dl_size.size() > 1 && dl_size[0] == '0') dl_size.erase(0, 1);
+
+
+
 		ss << (*it)->get_id() << '|' << (*it)->get_add_date() << '|';
 		std::string comment = (*it)->get_title();
-		ss << comment << '|' << (*it)->get_url() << '|' << (*it)->get_status_str() << '|' << (*it)->get_downloaded_bytes() << '|' << (*it)->get_size()
+		ss << comment << '|' << (*it)->get_url() << '|' << (*it)->get_status_str() << '|' << dl_bytes << '|' << dl_size
 		   << '|' << (*it)->get_wait() << '|' << (*it)->get_error_str() << '|' << (*it)->get_speed() << '\n';
 	}
 	return ss.str();
