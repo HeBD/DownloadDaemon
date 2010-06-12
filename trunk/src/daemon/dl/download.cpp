@@ -496,41 +496,21 @@ void download::download_me_worker() {
 		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file_s;
 		cb_info.out_stream = &output_file_s;
-		filesize_t resume_size = 0;
 		if(get_hostinfo().allows_resumption && global_config.get_bool_value("enable_resume") && !output_file.empty() &&
-		    pstat(output_file.c_str(), &st) == 0 &&  st.st_size == (filesize_t)downloaded_bytes && can_resume) {
+		   pstat(output_file.c_str(), &st) == 0 && fequal((double)st.st_size, (double)downloaded_bytes) && can_resume && error == PLUGIN_SUCCESS
+           && !fequal((double)downloaded_bytes, (double)size)) {
 
         	cb_info.resume_from = downloaded_bytes;
 			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, (long)downloaded_bytes);
 
 			//output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
 			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
-		}// else {
-			// Check if the file should be overwritten if it exists
-		//if(!global_config.get_bool_value("overwrite_files") && pstat.c_str(), &st) == 0) {
-		//			status = DOWNLOAD_INACTIVE;
-		//			error = PLUGIN_WRITE_FILE_ERROR;
-		//			return;
-		//	}
-			//output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::trunc);
-		//}
+		} else {
+            downloaded_bytes = 0;
+		}
 
-		//cb_info.filename = output_filename;
 
-		//if(!output_file_s.good()) {
-		//	log_string(std::string("Could not write to file: ") + output_filename, LOG_ERR);
-		//	error = PLUGIN_WRITE_FILE_ERROR;
-		//	wait_n = global_config.get_int_value("write_error_wait");
-		//	if(wait_n == 0) {
-		//		status = DOWNLOAD_INACTIVE;
-		//	} else {
-		//		status = DOWNLOAD_PENDING;
-		//		wait_seconds = wait_n;
-		//	}
-		//	return;
-		//}
 
-		//output_file = output_filename;
 
 		if(plug_outp.download_url.empty()) {
 			log_string(std::string("Empty URL for download ID: ") + dlid_log, LOG_ERR);
@@ -595,7 +575,6 @@ void download::download_me_worker() {
 		long http_code;
 		curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &http_code);
 
-
 		switch(http_code) {
 			case 401:
 				log_string(std::string("Invalid premium account credentials, ID: ") + dlid_log, LOG_WARNING);
@@ -625,13 +604,45 @@ void download::download_me_worker() {
 				return;
 		}
 		string new_fn;
-		switch(curlsucces) {
 
+		//if(!global_config.get_bool_value("overwrite_files") && pstat.c_str(), &st) == 0) {
+		//			status = DOWNLOAD_INACTIVE;
+		//			error = PLUGIN_WRITE_FILE_ERROR;
+		//			return;
+		//	}
+			//output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::trunc);
+		//}
+
+		//cb_info.filename = output_filename;
+
+		//if(!output_file_s.good()) {
+		//	log_string(std::string("Could not write to file: ") + output_filename, LOG_ERR);
+		//	error = PLUGIN_WRITE_FILE_ERROR;
+		//	wait_n = global_config.get_int_value("write_error_wait");
+		//	if(wait_n == 0) {
+		//		status = DOWNLOAD_INACTIVE;
+		//	} else {
+		//		status = DOWNLOAD_PENDING;
+		//		wait_seconds = wait_n;
+		//	}
+		//	return;
+		//}
+
+		switch(curlsucces) {
 			case CURLE_OK:
 				log_string(std::string("Finished download ID: ") + dlid_log, LOG_DEBUG);
 				status = DOWNLOAD_FINISHED;
 				new_fn = output_file.substr(0, output_file.rfind(".part"));
-
+                if(pstat(new_fn.c_str(), &st) == 0 && !global_config.get_bool_value("overwrite_files")) {
+                    log_string("Could not rename " + output_file + ": It already exists and overwrite_files is set to false. You can rename the file manually.", LOG_ERR);
+                    status = DOWNLOAD_FINISHED;
+                    error = PLUGIN_SUCCESS;
+                    lock.unlock();
+                    post_process_download();
+                    return;
+                } else if(pstat(new_fn.c_str(), &st) == 0) {
+                    remove(new_fn.c_str());
+                }
 				if(rename(output_file.c_str(), new_fn.c_str()) != 0) {
 					log_string(std::string("Unable to rename .part file. You can do so manually."), LOG_ERR);
 				} else {
@@ -640,6 +651,17 @@ void download::download_me_worker() {
 				lock.unlock();
 				post_process_download();
 				return;
+
+            case CURLE_WRITE_ERROR:
+                error = cb_info.break_reason;
+                wait_n = global_config.get_int_value("write_error_wait");
+                if(wait_n == 0) {
+                    status = DOWNLOAD_INACTIVE;
+                } else {
+                    status = DOWNLOAD_PENDING;
+                    wait_seconds = wait_n;
+                }
+                return;
 			case CURLE_OPERATION_TIMEDOUT:
 			case CURLE_COULDNT_RESOLVE_HOST:
 				log_string(std::string("Connection lost for download ID: ") + dlid_log, LOG_WARNING);
@@ -661,8 +683,14 @@ void download::download_me_worker() {
 				status = DOWNLOAD_PENDING;
 				log_string("Resuming download failed. retrying without resumption", LOG_WARNING);
 				return;
+			case CURLE_PARTIAL_FILE:
+                log_string("The filesize reported by the server was unexpected", LOG_WARNING);
+                status = DOWNLOAD_INACTIVE;
+                error = PLUGIN_CONNECTION_ERROR;
+                return;
 			default:
 				log_string(std::string("Download error for download ID: ") + dlid_log, LOG_WARNING);
+				log_string(string("Unhandled curl error: ") + curl_easy_strerror((CURLcode)curlsucces) + string(". Please report this error."), LOG_ERR);
 				error = PLUGIN_CONNECTION_LOST;
 				wait_n = atol(global_config.get_cfg_value("connection_lost_wait").c_str());
 				if(wait_n == 0) {

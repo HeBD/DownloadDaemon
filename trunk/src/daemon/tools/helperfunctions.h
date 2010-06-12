@@ -130,6 +130,13 @@ void make_valid_filename(std::string &fn);
 */
 std::string ascii_hex_to_bin(std::string ascii_hex);
 
+/** Compares 2 doubles if they are almost equal/double equal
+*   @param p1 first double
+*   @param p2 second double
+*   @returns true if they are almost equal
+*/
+bool fequal(double p1, double p2);
+
 #ifdef BACKTRACE_ON_CRASH
 void print_backtrace(int sig);
 #endif
