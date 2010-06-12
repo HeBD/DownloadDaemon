@@ -1,6 +1,8 @@
 2010-06-12
    [adrian]
 	- restructuring of the download-setup-process for correct filename detection and more flexibility
+	- when downloading to a subdirectory and deleting the downloaded file, the subdirectory will now also be removed if there
+	  is nothing else in it
 
 2010-05-29
    [adrian]

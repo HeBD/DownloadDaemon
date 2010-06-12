@@ -913,6 +913,35 @@ void target_file_del(std::string &data, tkSock *sock) {
 		*sock << "110 PERMISSION";
 	} else {
 		log_string(std::string("Deleted file ID: ") + data, LOG_DEBUG);
+		string folder = fn.substr(0, fn.find_last_of("/\\"));
+		correct_path(folder);
+		string dl_folder = global_config.get_cfg_value("download_folder");
+		correct_path(dl_folder);
+		if(folder != dl_folder) {
+
+            bool del_folder = true;
+            DIR *dp;
+            struct dirent *ep;
+            dp = opendir(folder.c_str());
+            if (dp == NULL) {
+                del_folder = false;
+            } else {
+                while ((ep = readdir (dp))) {
+                    string curr = ep->d_name;
+                    if(!curr.empty() && curr != "." && curr != "..") {
+                        del_folder = false;
+                        break;
+                    }
+                }
+                closedir (dp);
+            }
+            if(del_folder) {
+                log_string("The deleted file was downloaded to a subfolder and there were no other files in it. Deleting it, too.", LOG_DEBUG);
+                rmdir(folder.c_str());
+            }
+
+		}
+
 		*sock << "100 SUCCESS";
 		global_download_list.set_output_file(id, "");
 	}

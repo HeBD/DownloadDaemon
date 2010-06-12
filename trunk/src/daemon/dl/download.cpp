@@ -454,10 +454,10 @@ void download::download_me_worker() {
 				dl_subfolder = filename_from_url(global_download_list.get_url(make_pair<int, int>(parent, first_id)));
 				lock.lock();
 				if(dl_subfolder.find(".") != string::npos) {
-					dl_subfolder = dl_subfolder.substr(0, dl_subfolder.find_last_of("."));
-				} else {
-					dl_subfolder = "";
-				}
+					dl_subfolder = dl_subfolder.substr(0, dl_subfolder.rfind("."));
+				}// else {
+				//	dl_subfolder = "";
+				//}
 			}
 			cb_info.download_dir += "/" + dl_subfolder;
 		}
