@@ -364,6 +364,12 @@ std::string ascii_hex_to_bin(std::string ascii_hex) {
 	return result;
 }
 
+bool fequal(double p1, double p2) {
+    if(p1 > (p2 - 0.0001) && p1 < p2 + 0.0001)
+        return true;
+    return false;
+}
+
 #ifdef BACKTRACE_ON_CRASH
 #include <execinfo.h>
 #include "../mgmt/global_management.h"

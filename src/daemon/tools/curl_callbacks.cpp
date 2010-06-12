@@ -24,7 +24,6 @@
 using namespace std;
 
 size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
-	//std::pair<std::pair<fstream*, std::string*>, CURL*>* callback_opt = (std::pair<std::pair<fstream*, std::string*>, CURL*>*)userp;
 	dl_cb_info *info = (dl_cb_info*)userp;
 
 	fstream* output_file = info->out_stream;
@@ -46,9 +45,11 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 
 			if(info->download_dir.empty()) {
 				log_string("Failed to get download folder", LOG_ERR);
+				info->break_reason = PLUGIN_WRITE_FILE_ERROR;
 				return 0;
 			}
 			string dl_path = info->download_dir + '/' + info->filename + ".part";
+			correct_path(dl_path);
 			if(info->resume_from > 0) {
 				output_file->open(dl_path.c_str(), ios::out | ios::binary | ios::app);
 			} else {
@@ -60,10 +61,9 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 			}
 		}
 
-
-
 		output_file->write(cache->c_str(), cache->size());
 		if(output_file->bad()) {
+		    info->break_reason = PLUGIN_WRITE_FILE_ERROR;
 			log_string("Successfully opened the download-file, but failed to write to it. Is your harddisk full?", LOG_ERR);
 			return 0;
 		}

@@ -224,16 +224,16 @@ typedef std::pair<int, int> dlindex;
 
 struct dl_cb_info {
 	dl_cb_info() : resume_from(0), total_size(0), filename_from_effective_url(false), id(0, 0), curl_handle(NULL), break_reason(PLUGIN_SUCCESS) {}
-	std::string        filename;
-	std::string        download_dir;
-	filesize_t           resume_from;
-	filesize_t           total_size;
+	std::string     filename;
+	std::string     download_dir;
+	filesize_t      resume_from;
+	filesize_t      total_size;
 	std::fstream*   out_stream;
-	bool                  filename_from_effective_url;
-	std::string        cache;
-	dlindex             id;
-	CURL*               curl_handle;
-	plugin_status  break_reason;
+	bool            filename_from_effective_url;
+	std::string     cache;
+	dlindex         id;
+	CURL*           curl_handle;
+	plugin_status   break_reason;
 };
 
 #endif
