@@ -23,7 +23,7 @@ namespace std {
 #endif
 
 namespace global_mgmt {
-	extern std::mutex ns_mutex;
+	extern std::recursive_mutex ns_mutex;
 	extern std::mutex once_per_sec_mutex;
 	extern std::condition_variable once_per_sec_cond;
 	extern std::string curr_start_time;

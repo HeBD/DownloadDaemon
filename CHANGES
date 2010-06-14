@@ -1,3 +1,8 @@
+2010-06-14
+   [adrian]
+	- new reconnect-settings: new_ip_wait, reconnect_tries, ip_server to set a few more reconnect options
+	- fixed bug of hangig downloads after reconnect
+
 2010-06-12
    [adrian]
 	- restructuring of the download-setup-process for correct filename detection and more flexibility

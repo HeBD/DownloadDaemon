@@ -216,7 +216,7 @@ bool proceed_variable(const std::string &variable, std::string value) {
 
 bool router_variable_is_valid(std::string &variable) {
 	trim_string(variable);
-	std::string possible_vars = ",reconnect_policy,router_ip,router_username,router_password,";
+	std::string possible_vars = ",reconnect_policy,router_ip,router_username,router_password,new_ip_wait,reconnect_tries,ip_server,";
 	size_t pos;
 	if((pos = possible_vars.find(variable)) != std::string::npos) {
 		if(possible_vars[pos - 1] == ',' && possible_vars[pos + variable.length()] == ',') {

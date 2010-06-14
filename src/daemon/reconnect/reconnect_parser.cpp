@@ -11,15 +11,18 @@
 
 #include "reconnect_parser.h"
 #include "../tools/helperfunctions.h"
+#include <cfgfile/cfgfile.h>
 #include <cstdlib>
 using namespace std;
+
+extern cfgfile global_router_config;
 
 reconnect::reconnect(const std::string &path_p, const std::string &host_p, const std::string &user_p, const std::string &pass_p)
 	: path(path_p), host(host_p), user(user_p), pass(pass_p) {
 	handle = curl_easy_init();
 	variables.insert(pair<string, string>("%user%", user));
 	variables.insert(pair<string, string>("%pass%", pass));
-	variables.insert(pair<string, string>("%routerip%", host));
+	variables.insert(pair<string, string>("%terip%", host));
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)1024);
     curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
     curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)1024);
@@ -32,11 +35,12 @@ reconnect::~reconnect() {
 
 std::string reconnect::get_current_ip() {
 	CURL* ip_handle = curl_easy_init();
-	curl_easy_setopt(ip_handle, CURLOPT_LOW_SPEED_LIMIT, (long)1024);
-    curl_easy_setopt(ip_handle, CURLOPT_LOW_SPEED_TIME, (long)20);
-    curl_easy_setopt(ip_handle, CURLOPT_CONNECTTIMEOUT, (long)1024);
+	curl_easy_setopt(ip_handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
+    curl_easy_setopt(ip_handle, CURLOPT_LOW_SPEED_TIME, (long)5);
+    curl_easy_setopt(ip_handle, CURLOPT_CONNECTTIMEOUT, (long)5);
     curl_easy_setopt(ip_handle, CURLOPT_NOSIGNAL, 1);
-	curl_easy_setopt(ip_handle, CURLOPT_URL, "http://www.whatismyip.com/automation/n09230945.asp");
+    string ip_srv = global_router_config.get_cfg_value("ip_server");
+	curl_easy_setopt(ip_handle, CURLOPT_URL, ip_srv.c_str());
 	std::string resultstr;
 	curl_easy_setopt(ip_handle, CURLOPT_WRITEFUNCTION, reconnect::write_data);
 	curl_easy_setopt(ip_handle, CURLOPT_WRITEDATA, &resultstr);
@@ -48,23 +52,45 @@ std::string reconnect::get_current_ip() {
 
 bool reconnect::do_reconnect() {
 	std::string old_ip = get_current_ip();
+	int num_retries = global_router_config.get_int_value("reconnect_tries");
+	int tried = 0;
+	if(num_retries == 0) {
+        log_string("reconnect_tries not specified, but reconnects are enabled. Defaulting to 3", LOG_WARNING);
+        num_retries = 3;
+	}
 
 	file.open(path.c_str());
 	if(!file.good() || !file.is_open()) {
 		log_string("Unable to open reconnect script", LOG_WARNING);
 		return false;
 	}
+	int ip_wait = global_router_config.get_int_value("new_ip_wait");
 
-	while(!curr_line.empty() || getline(file, curr_line)) {
-		trim_string(curr_line);
-		exec_next();
-	}
+	string new_ip;
 
-	if(old_ip == get_current_ip()) {
-		return false;
-	} else {
-		return true;
-	}
+    while(tried < num_retries) {
+        ++tried;
+        // try reconnecting n times
+        while(!curr_line.empty() || getline(file, curr_line)) {
+            trim_string(curr_line);
+            exec_next();
+        }
+        file.seekg(0);
+
+        long start_time = time(NULL);
+
+        while(start_time + ip_wait > time(NULL)) {
+            // while we diddn't wait lon enoguh, try to get the IP again
+            new_ip = get_current_ip();
+            if(new_ip != old_ip && !new_ip.empty())
+                return true;
+        }
+    }
+    if(new_ip.empty())
+        log_string("An error occured when contacting the IP-Server. If this error doesn't disappear, check your routerinfo.conf", LOG_ERR);
+    else
+        log_string("Reconnecting failed. Please check your settings in routerinfo.conf", LOG_WARNING);
+    return false;
 }
 
 bool reconnect::exec_next() {
