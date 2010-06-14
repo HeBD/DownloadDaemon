@@ -29,7 +29,7 @@
 using namespace std;
 
 namespace global_mgmt {
-	std::mutex ns_mutex;
+	std::recursive_mutex ns_mutex;
 	std::mutex once_per_sec_mutex;
 	std::condition_variable once_per_sec_cond;
 	std::string curr_start_time;

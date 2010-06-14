@@ -786,7 +786,12 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	}
 
 	dlclose(dlhandle);
-	global_download_list.correct_invalid_ids();
+	try {
+	    thread t(bind(&package_container::correct_invalid_ids, &global_download_list));
+	    t.detach();
+	} catch (...) {
+        log_string("Thread creation failed: package_container::correct_invalid_ids(). This may cause inconsitency! please report this!", LOG_ERR);
+	}
 	return retval;
 }
 

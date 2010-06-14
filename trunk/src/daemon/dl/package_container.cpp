@@ -665,6 +665,7 @@ void package_container::do_reconnect() {
 		(*pkg)->download_mutex.unlock();
 	}
 	is_reconnecting = false;
+	start_next_downloadable();
 	return;
 }
 
@@ -819,7 +820,7 @@ void package_container::start_next_downloadable() {
 }
 
 bool package_container::in_dl_time_and_dl_active() {
-	unique_lock<mutex> global_mgmt_lock(global_mgmt::ns_mutex);
+	unique_lock<recursive_mutex> global_mgmt_lock(global_mgmt::ns_mutex);
 
 	if(!global_mgmt::downloading_active) {
 		return false;
