@@ -22,7 +22,7 @@ reconnect::reconnect(const std::string &path_p, const std::string &host_p, const
 	handle = curl_easy_init();
 	variables.insert(pair<string, string>("%user%", user));
 	variables.insert(pair<string, string>("%pass%", pass));
-	variables.insert(pair<string, string>("%terip%", host));
+	variables.insert(pair<string, string>("%routerip%", host));
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)1024);
     curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
     curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)1024);
