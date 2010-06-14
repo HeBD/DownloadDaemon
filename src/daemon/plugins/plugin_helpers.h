@@ -242,8 +242,8 @@ std::vector<std::string> split_string(const std::string& inp_string, const std::
 }
 
 // I know, this looks ugly, but it does the job and seems to be okay in this case
-#include "../dl/download_container.cpp"
-#include "../dl/download.cpp"
-#include "captcha.cpp"
+//#include "../dl/download_container.cpp"
+//#include "../dl/download.cpp"
+//#include "captcha.cpp"
 
 #endif // PLUGIN_HELPERS_H_INCLUDED
