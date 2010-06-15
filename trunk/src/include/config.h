@@ -17,6 +17,9 @@
 	#ifndef RTLD_LOCAL
 		#define RTLD_LOCAL 0
 	#endif
+	#ifndef RTLD_NOW
+		#define RTLD_NOW 0
+	#endif
 #endif
 
 #ifdef HAVE_STAT64

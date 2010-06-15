@@ -241,9 +241,20 @@ std::vector<std::string> split_string(const std::string& inp_string, const std::
 	return ret;
 }
 
+#ifdef IS_PLUGIN
+int download_container::add_download(const std::string& url, const std::string& title) {
+	download* dl = new download(url);
+	dl->set_title(title);
+	dl->set_parent(container_id);
+	int ret = add_download(dl, -1);
+	if(ret != LIST_SUCCESS) delete dl;
+	return ret;
+}
+#endif
+
 // I know, this looks ugly, but it does the job and seems to be okay in this case
 //#include "../dl/download_container.cpp"
 //#include "../dl/download.cpp"
-//#include "captcha.cpp"
+#include "captcha.cpp"
 
 #endif // PLUGIN_HELPERS_H_INCLUDED

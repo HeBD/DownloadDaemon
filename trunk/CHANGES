@@ -1,3 +1,9 @@
+2010-06-15
+   [adrian]
+	- DownloadDaemon will now load all plugins at startup instead of loading them when needed. this increases performance of
+	  plugin-execution greatly
+	- fixed youtube.com playlist download (occured because of their site-layout change)
+
 2010-06-14
    [adrian]
 	- new reconnect-settings: new_ip_wait, reconnect_tries, ip_server to set a few more reconnect options
