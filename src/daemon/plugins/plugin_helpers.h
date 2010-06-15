@@ -252,9 +252,13 @@ int download_container::add_download(const std::string& url, const std::string& 
 }
 #endif
 
-// I know, this looks ugly, but it does the job and seems to be okay in this case
-//#include "../dl/download_container.cpp"
-//#include "../dl/download.cpp"
+#ifdef __CYGWIN__
+// I know, this looks ugly, but it does the job and seems to be okay in this case. It's only on cygwin
+// because windows doesn't support dlls with missing symbols. They all need to be available at compile-time.
+// This does the job until I find the time to declare DD's functions and classes __declspec(dllexport)
+	#include "../dl/download_container.cpp"
+	#include "../dl/download.cpp"
+#endif
 #include "captcha.cpp"
 
 #endif // PLUGIN_HELPERS_H_INCLUDED
