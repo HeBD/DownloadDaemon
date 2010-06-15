@@ -133,7 +133,7 @@ std::mutex p_mutex;
 
 /** This function is just a wrapper for defining globals and calling your plugin */
 extern "C" plugin_status plugin_exec_wrapper(download_container& dlc, int id, plugin_input& pinp, plugin_output& poutp,
-                                             int max_captcha_retrys, const std::string &gocr_path, const std::string &root_dir) {
+											 int max_captcha_retrys, const std::string &gocr_path, const std::string &root_dir) {
 	std::lock_guard<std::mutex> lock(p_mutex);
 	dl_list = &dlc;
 	dlid = id;

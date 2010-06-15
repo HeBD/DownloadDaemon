@@ -642,8 +642,8 @@ void package_container::do_reconnect() {
 				(*it)->set_status(DOWNLOAD_RECONNECTING);
 				(*it)->set_wait(0);
 			} else if((*it)->get_status() == DOWNLOAD_RUNNING) {
-                (*it)->set_need_stop(true);
-                (*it)->set_status(DOWNLOAD_RECONNECTING);
+				(*it)->set_need_stop(true);
+				(*it)->set_status(DOWNLOAD_RECONNECTING);
 			}
 		}
 		(*pkg)->download_mutex.unlock();

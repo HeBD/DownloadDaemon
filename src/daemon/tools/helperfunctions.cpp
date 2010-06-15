@@ -247,7 +247,7 @@ void correct_path(std::string &path) {
 	#else
   	path_max = pathconf (path, _PC_PATH_MAX);
 	if(path_max <= 0)
-    	path_max = 4096;
+		path_max = 4096;
 	#endif
 	char* real_path = new char[path_max];
 	realpath(path.c_str(), real_path);
@@ -260,7 +260,7 @@ void correct_path(std::string &path) {
 		path.erase(path.end() - 1);
 	}
 
-    std::string::iterator it = path.begin();
+	std::string::iterator it = path.begin();
 #ifdef __CYGWIN__
 	if(it != path.end())
 		++it; // required to make network-paths possible that start with \\ or //
@@ -292,24 +292,24 @@ void substitute_env_vars(std::string &str) {
 }
 
 bool mkdir_recursive(std::string dir) {
-    if (dir.size() < 2) return false;
-    correct_path(dir);
-    dir += "/";
+	if (dir.size() < 2) return false;
+	correct_path(dir);
+	dir += "/";
 
-    struct stat st;
-    string curr;
-    for(size_t i = 0; i < dir.size(); ++i) {
-        if ((dir[i] == '/' || dir[i] == '\\') && i != 0) {
-            curr = dir.substr(0, i);
-            if(stat(curr.c_str(), &st) == 0) continue;
-            errno = 0;
-            if(mkdir(curr.c_str(), 0777) != 0) {
-                log_string("mkdir_recursive() failed for: '" + curr + "'. error: " + strerror(errno), LOG_ERR);
-                return false;
-            }
-        }
-    }
-    return true;
+	struct stat st;
+	string curr;
+	for(size_t i = 0; i < dir.size(); ++i) {
+		if ((dir[i] == '/' || dir[i] == '\\') && i != 0) {
+			curr = dir.substr(0, i);
+			if(stat(curr.c_str(), &st) == 0) continue;
+			errno = 0;
+			if(mkdir(curr.c_str(), 0777) != 0) {
+				log_string("mkdir_recursive() failed for: '" + curr + "'. error: " + strerror(errno), LOG_ERR);
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 std::string filename_from_url(const std::string &url) {
@@ -365,9 +365,9 @@ std::string ascii_hex_to_bin(std::string ascii_hex) {
 }
 
 bool fequal(double p1, double p2) {
-    if(p1 > (p2 - 0.0001) && p1 < p2 + 0.0001)
-        return true;
-    return false;
+	if(p1 > (p2 - 0.0001) && p1 < p2 + 0.0001)
+		return true;
+	return false;
 }
 
 #ifdef BACKTRACE_ON_CRASH

@@ -47,9 +47,9 @@ namespace global_mgmt {
 
 void do_once_per_second() {
 	bool was_in_dltime_last = global_download_list.in_dl_time_and_dl_active();
-    unique_lock<mutex> lock(global_mgmt::once_per_sec_mutex);
+	unique_lock<mutex> lock(global_mgmt::once_per_sec_mutex);
 	while(true) {
-        global_mgmt::once_per_sec_cond.wait(lock);
+		global_mgmt::once_per_sec_cond.wait(lock);
 		global_download_list.purge_deleted();
 
 		global_mgmt::ns_mutex.lock();
@@ -57,9 +57,9 @@ void do_once_per_second() {
 		if(global_download_list.total_downloads() > 0) {
 			global_download_list.decrease_waits();
 			if (global_mgmt::start_presetter && global_config.get_bool_value("precheck_links")) {
-			    global_mgmt::start_presetter = false;
-                thread t(bind(&package_container::preset_file_status, &global_download_list));
-                t.detach();
+				global_mgmt::start_presetter = false;
+				thread t(bind(&package_container::preset_file_status, &global_download_list));
+				t.detach();
 			}
 		}
 		global_mgmt::ns_mutex.unlock();

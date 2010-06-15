@@ -20,33 +20,33 @@ using namespace std;
 // specify what you want to have returned in the premium-user.
 // eg: premium_user = PLUGIN_SUCCESS,allows_multiple,allows_resumption
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-    if(inp.premium_user.find("PLUGIN_ERROR") != string::npos)
-        return PLUGIN_ERROR;
+	if(inp.premium_user.find("PLUGIN_ERROR") != string::npos)
+		return PLUGIN_ERROR;
 
-    if(inp.premium_user.find("PLUGIN_FILE_NOT_FOUND") != string::npos)
-        return PLUGIN_FILE_NOT_FOUND;
+	if(inp.premium_user.find("PLUGIN_FILE_NOT_FOUND") != string::npos)
+		return PLUGIN_FILE_NOT_FOUND;
 
-    if(inp.premium_user.find("PLUGIN_LIMIT_REACHED") != string::npos) {
-        set_wait_time(999);
-        return PLUGIN_LIMIT_REACHED;
-    }
+	if(inp.premium_user.find("PLUGIN_LIMIT_REACHED") != string::npos) {
+		set_wait_time(999);
+		return PLUGIN_LIMIT_REACHED;
+	}
 
-    outp.download_url = "http://cdimage.ubuntu.com/hardy/daily/current/hardy-alternate-amd64.template";
-    return PLUGIN_SUCCESS;
+	outp.download_url = "http://cdimage.ubuntu.com/hardy/daily/current/hardy-alternate-amd64.template";
+	return PLUGIN_SUCCESS;
 
 
 }
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
-    if(inp.premium_user.find("allows_resumption") != string::npos)
-        outp.allows_resumption = true;
-    else
-        outp.allows_resumption = false;
+	if(inp.premium_user.find("allows_resumption") != string::npos)
+		outp.allows_resumption = true;
+	else
+		outp.allows_resumption = false;
 
-    if(inp.premium_user.find("allows_multiple") != string::npos)
-        outp.allows_multiple = true;
-    else
-        outp.allows_multiple = false;
+	if(inp.premium_user.find("allows_multiple") != string::npos)
+		outp.allows_multiple = true;
+	else
+		outp.allows_multiple = false;
 
 	outp.offers_premium = true;
 }

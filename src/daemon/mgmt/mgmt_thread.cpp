@@ -919,26 +919,26 @@ void target_file_del(std::string &data, tkSock *sock) {
 		correct_path(dl_folder);
 		if(folder != dl_folder) {
 
-            bool del_folder = true;
-            DIR *dp;
-            struct dirent *ep;
-            dp = opendir(folder.c_str());
-            if (dp == NULL) {
-                del_folder = false;
-            } else {
-                while ((ep = readdir (dp))) {
-                    string curr = ep->d_name;
-                    if(!curr.empty() && curr != "." && curr != "..") {
-                        del_folder = false;
-                        break;
-                    }
-                }
-                closedir (dp);
-            }
-            if(del_folder) {
-                log_string("The deleted file was downloaded to a subfolder and there were no other files in it. Deleting it, too.", LOG_DEBUG);
-                rmdir(folder.c_str());
-            }
+			bool del_folder = true;
+			DIR *dp;
+			struct dirent *ep;
+			dp = opendir(folder.c_str());
+			if (dp == NULL) {
+				del_folder = false;
+			} else {
+				while ((ep = readdir (dp))) {
+					string curr = ep->d_name;
+					if(!curr.empty() && curr != "." && curr != "..") {
+						del_folder = false;
+						break;
+					}
+				}
+				closedir (dp);
+			}
+			if(del_folder) {
+				log_string("The deleted file was downloaded to a subfolder and there were no other files in it. Deleting it, too.", LOG_DEBUG);
+				rmdir(folder.c_str());
+			}
 
 		}
 
@@ -1019,14 +1019,14 @@ void target_router(std::string &data, tkSock *sock) {
 	} else {
 		*sock << "101 PROTOCOL";
 	}
-    if(global_download_list.reconnect_needed()) {
-        try {
-            thread t(bind(&package_container::do_reconnect, &global_download_list));
-            t.detach();
-        } catch(...) {
-            log_string("Failed to start the reconnect-thread. There are probably too many running threads.", LOG_ERR);
-        }
-    }
+	if(global_download_list.reconnect_needed()) {
+		try {
+			thread t(bind(&package_container::do_reconnect, &global_download_list));
+			t.detach();
+		} catch(...) {
+			log_string("Failed to start the reconnect-thread. There are probably too many running threads.", LOG_ERR);
+		}
+	}
 }
 
 void target_router_list(std::string &data, tkSock *sock) {
@@ -1168,10 +1168,10 @@ void target_premium(std::string &data, tkSock *sock) {
 }
 
 void target_premium_list(std::string &data, tkSock *sock) {
-    vector<plugin> plugs = plugin_cache.get_all_infos();
-    string to_send;
+	vector<plugin> plugs = plugin_cache.get_all_infos();
+	string to_send;
 	for(vector<plugin>::const_iterator it = plugs.begin(); it != plugs.end(); ++it) {
-	    if (!it->offers_premium) continue;
+		if (!it->offers_premium) continue;
 		to_send.append(it->host);
 		to_send.append("\n");
 	}

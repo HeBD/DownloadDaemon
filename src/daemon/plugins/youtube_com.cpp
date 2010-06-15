@@ -86,8 +86,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 						title_pos += 7;
 						size_t end_pos = result.find("\"", title_pos);
 						while(result[end_pos - 1] == '\\') {
-                            ++end_pos;
-                            end_pos = result.find("\"", end_pos);
+							++end_pos;
+							end_pos = result.find("\"", end_pos);
 						}
 						title = result.substr(title_pos, end_pos - title_pos);
 						replace_html_special_chars(title);

@@ -27,8 +27,8 @@ void recursive_parser::add_to_list(int container) {
 void recursive_parser::deep_parse(std::string url, int container) {
 	std::string list;
 	CURL* handle = curl_easy_init();
-    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)1024);
-    curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
+	curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)1024);
+	curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
 	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, recursive_parser::to_string_callback);
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &list);

@@ -63,7 +63,7 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 
 		output_file->write(cache->c_str(), cache->size());
 		if(output_file->bad()) {
-		    info->break_reason = PLUGIN_WRITE_FILE_ERROR;
+			info->break_reason = PLUGIN_WRITE_FILE_ERROR;
 			log_string("Successfully opened the download-file, but failed to write to it. Is your harddisk full?", LOG_ERR);
 			return 0;
 		}
@@ -137,7 +137,7 @@ int get_size_progress_callback(void *clientp, double dltotal, double dlnow, doub
 		return 0;					 // because dltotal might be 0 through the whole download process, if curl fails to get the size.
 	}								 // so if we downloaded 100 bytes and still don't know the size, we give up
 
-    filesize_t *result = (filesize_t*)clientp;
+	filesize_t *result = (filesize_t*)clientp;
 	#ifdef HAVE_UINT64_T
 		*result = (filesize_t)(dltotal + 0.5);
 	#else

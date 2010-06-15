@@ -625,73 +625,73 @@ void download_container::preset_file_status() {
 }
 
 void download_container::extract_package() {
-    std::string fixed_passwd = get_password();
+	std::string fixed_passwd = get_password();
 	string password_list = global_config.get_cfg_value("pkg_extractor_passwords");
 	string curr_password = fixed_passwd;
 	bool all_success = true;
 	unique_lock<recursive_mutex> lock(download_mutex);
-    for (size_t i = 0; i < download_list.size(); ++i) {
-        string output_file = download_list[i]->get_filename();
-        size_t n = output_file.rfind(".part");
-        if (n != string::npos && output_file.find(".rar") != string::npos) {
-            int num_part = 1;
-            n += 5;
-            num_part = atoi(output_file.substr(n, output_file.find(".", n) - n).c_str());
-            if (num_part > 1) continue;
-        }
+	for (size_t i = 0; i < download_list.size(); ++i) {
+		string output_file = download_list[i]->get_filename();
+		size_t n = output_file.rfind(".part");
+		if (n != string::npos && output_file.find(".rar") != string::npos) {
+			int num_part = 1;
+			n += 5;
+			num_part = atoi(output_file.substr(n, output_file.find(".", n) - n).c_str());
+			if (num_part > 1) continue;
+		}
 
-        while(true) {
-            trim_string(curr_password);
-            log_string("Checking if file can be extracted: " + output_file, LOG_DEBUG);
-            lock.unlock();
-            pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, curr_password);
-            lock.lock();
-            if(ret == pkg_extractor::PKG_ERROR || ret == pkg_extractor::PKG_INVALID) {
-                all_success = false;
-                break;
-            }
-            if(ret == pkg_extractor::PKG_PASSWORD) {
-                // next password
-                if(!fixed_passwd.empty() || (fixed_passwd.empty() && password_list.empty())) {
-                        all_success = false;
-                        break;
-                }
-                if(curr_password.empty()) {
-                    curr_password = password_list.substr(0, password_list.find(";"));
-                    continue;
-                }
-                try {
-                    if(password_list.find(";") != string::npos) {
-                        password_list = password_list.substr(password_list.find(";") + 1);
-                    }
-                    curr_password = password_list.substr(0, password_list.find(";"));
-                } catch(...) {
-                    curr_password = password_list.substr(0, password_list.find(";"));
-                    password_list = "";
-                } // ignore errors
-                if(curr_password.empty()) {
-                    all_success = false;
-                    break;
-                }
-                continue;
-            }
+		while(true) {
+			trim_string(curr_password);
+			log_string("Checking if file can be extracted: " + output_file, LOG_DEBUG);
+			lock.unlock();
+			pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, curr_password);
+			lock.lock();
+			if(ret == pkg_extractor::PKG_ERROR || ret == pkg_extractor::PKG_INVALID) {
+				all_success = false;
+				break;
+			}
+			if(ret == pkg_extractor::PKG_PASSWORD) {
+				// next password
+				if(!fixed_passwd.empty() || (fixed_passwd.empty() && password_list.empty())) {
+						all_success = false;
+						break;
+				}
+				if(curr_password.empty()) {
+					curr_password = password_list.substr(0, password_list.find(";"));
+					continue;
+				}
+				try {
+					if(password_list.find(";") != string::npos) {
+						password_list = password_list.substr(password_list.find(";") + 1);
+					}
+					curr_password = password_list.substr(0, password_list.find(";"));
+				} catch(...) {
+					curr_password = password_list.substr(0, password_list.find(";"));
+					password_list = "";
+				} // ignore errors
+				if(curr_password.empty()) {
+					all_success = false;
+					break;
+				}
+				continue;
+			}
 
-            if(ret == pkg_extractor::PKG_SUCCESS) {
-                log_string("Successfully extracted file: " + output_file, LOG_DEBUG);
-                break;
-            }
-        }
-    }
-    if(all_success) {
-        log_string("All files extracted successfully.", LOG_DEBUG);
-        if(global_config.get_bool_value("delete_extracted_archives")) {
-            log_string("Removing downloaded archive files...", LOG_DEBUG);
-            for(size_t i = 0; i < download_list.size(); ++i) {
-                remove(download_list[i]->get_filename().c_str());
-                download_list[i]->set_filename("");
-            }
-        }
-    }
+			if(ret == pkg_extractor::PKG_SUCCESS) {
+				log_string("Successfully extracted file: " + output_file, LOG_DEBUG);
+				break;
+			}
+		}
+	}
+	if(all_success) {
+		log_string("All files extracted successfully.", LOG_DEBUG);
+		if(global_config.get_bool_value("delete_extracted_archives")) {
+			log_string("Removing downloaded archive files...", LOG_DEBUG);
+			for(size_t i = 0; i < download_list.size(); ++i) {
+				remove(download_list[i]->get_filename().c_str());
+				download_list[i]->set_filename("");
+			}
+		}
+	}
 }
 
 #endif
