@@ -15,6 +15,8 @@
 #include <fstream>
 #include <cstring>
 #include <iostream>
+
+#include <sys/stat.h>
 using namespace std;
 
 std::string captcha::process_image(std::string gocr_options, std::string img_type, int required_chars, bool use_db, bool keep_whitespaces) {

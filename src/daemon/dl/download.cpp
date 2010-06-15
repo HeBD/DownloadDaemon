@@ -191,7 +191,7 @@ std::string download::get_host(bool do_lock) {
 		if(result.find("http://") == 0 || result.find("ftp://") == 0 || result.find("https://") == 0) {
 			result = result.substr(result.find('/') + 2);
 		}
-		if(url.find("www.") == 0) {
+		if(result.find("www.") == 0) {
 			result = result.substr(4);
 		}
 		result = result.substr(0, result.find_first_of("/\\"));
@@ -707,9 +707,6 @@ void download::download_me_worker() {
 		wait_seconds = 30;
 		return;
 	}
-
-
-
 }
 
 void download::wait() {
@@ -731,23 +728,13 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 		return PLUGIN_SUCCESS;
 	}
 
-	// Load the plugin function needed
-	void* dlhandle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_LOCAL);
-	if (!dlhandle) {
-		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
-		return PLUGIN_ERROR;
-	}
 
-	dlerror();	// Clear any existing error
 
 	plugin_status (*plugin_exec_func)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string);
-	plugin_exec_func = (plugin_status (*)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string))dlsym(dlhandle, "plugin_exec_wrapper");
+	bool ret = plugin_cache.load_function(get_host(), "plugin_exec_wrapper", plugin_exec_func);
 
-	const char *dl_error;
-	if ((dl_error = dlerror()) != NULL)  {
-		log_string(std::string("Unable to execute plugin: ") + dl_error, LOG_ERR);
-		dlclose(dlhandle);
-		return PLUGIN_ERROR;
+	if(!ret) {
+        return PLUGIN_ERROR;
 	}
 
 	pinp.premium_user = global_premium_config.get_cfg_value(get_host(false) + "_user");
@@ -785,7 +772,6 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 		retval = PLUGIN_ERROR;
 	}
 
-	dlclose(dlhandle);
 	try {
 	    thread t(bind(&package_container::correct_invalid_ids, &global_download_list));
 	    t.detach();
@@ -800,28 +786,13 @@ void download::post_process_download() {
 	plugin_input pinp;
 
 	std::string host(get_host());
-	std::string pluginfile(get_plugin_file());
-
-	if(pluginfile.empty()) {
-		return;
-	}
 
 	// Load the plugin function needed
-	void* dlhandle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_LOCAL);
-	if (!dlhandle) {
-		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
-		return;
-	}
-
-	dlerror();	// Clear any existing error
-
 	void (*post_process_func)(download_container& dlc, int id, plugin_input& pinp);
-	post_process_func = (void (*)(download_container& dlc, int id, plugin_input& pinp))dlsym(dlhandle, "post_process_dl_init");
+	bool ret = plugin_cache.load_function(host, "post_process_dl_init", post_process_func);
 
-	const char *dl_error;
-	if ((dl_error = dlerror()) != NULL)  {
-	    dlclose(dlhandle);
-		return;
+	if(!ret) {
+        return;
 	}
 
 	pinp.premium_user = global_premium_config.get_cfg_value(get_host() + "_user");
@@ -836,7 +807,6 @@ void download::post_process_download() {
 		post_process_func(*global_download_list.get_listptr(parent), id, pinp);
 	} catch(...) {}
 
-	dlclose(dlhandle);
 	lock.lock();
 	is_running = false;
 }
@@ -844,11 +814,10 @@ void download::post_process_download() {
 void download::preset_file_status() {
 	unique_lock<recursive_mutex> lock(mx);
 	already_prechecked = true;
-	std::string pluginfile(get_plugin_file());
 	plugin_output outp;
 
 	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
-	if(pluginfile.empty()) {
+	if(plugin_cache[get_host()] == 0) {
 		log_string("No plugin found, using generic downloadtp preset the file-status", LOG_DEBUG);
 		CURL* precheck_handle = curl_easy_init();
 		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
@@ -900,21 +869,13 @@ void download::preset_file_status() {
 	}
 
 	// Load the plugin function needed
-	void* dlhandle = dlopen(pluginfile.c_str(), RTLD_LAZY | RTLD_LOCAL);
-	if (!dlhandle) {
-		log_string(std::string("Unable to open library file: ") + dlerror(), LOG_ERR);
-		return;
-	}
-
-	dlerror();	// Clear any existing error
 
 	plugin_input pinp;
 
 	bool (*file_status_func)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp);
-	file_status_func = (bool (*)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp))dlsym(dlhandle, "get_file_status_init");
-	const char *dl_error;
-	if ((dl_error = dlerror()) != NULL)  {
-	    dlclose(dlhandle);
+	bool ret = plugin_cache.load_function(get_host(), "get_file_status_init", file_status_func);
+
+	if (!ret)  {
 		return;
 	}
 
@@ -930,7 +891,7 @@ void download::preset_file_status() {
 	try {
 		is_host = file_status_func(*global_download_list.get_listptr(parent), id, pinp, outp);
 	} catch(...) {}
-	dlclose(dlhandle);
+
 	if(!is_host) {
 		try {
 			thread t(&download::download_me, this);
