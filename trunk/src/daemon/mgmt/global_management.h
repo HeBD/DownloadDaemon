@@ -31,10 +31,10 @@ namespace global_mgmt {
 	extern bool downloading_active;
 
 	extern bool start_presetter;
-    // for sync signal handling
-    extern std::condition_variable sig_handle_cond;
-    extern int curr_sig;
-    extern char **backtrace;
+	// for sync signal handling
+	extern std::condition_variable sig_handle_cond;
+	extern int curr_sig;
+	extern char **backtrace;
 	extern int backtrace_size;
 }
 

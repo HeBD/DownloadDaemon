@@ -81,7 +81,7 @@ int main(int argc, char* argv[], char* env[]) {
 	signal(SIGPIPE, SIG_IGN);
 	#endif
 
-    #ifndef __CYGWIN__
+	#ifndef __CYGWIN__
 	// Drop user if there is one, and we were run as root
 	if (getuid() == 0 || geteuid() == 0) {
 		struct passwd *pw = getpwnam(DAEMON_USER /* "downloadd" */);
@@ -108,7 +108,7 @@ int main(int argc, char* argv[], char* env[]) {
 
 		}
 	}
-    #endif
+	#endif
 
 	for(int i = 1; i < argc; ++i) {
 		std::string arg = argv[i];
@@ -292,25 +292,25 @@ int main(int argc, char* argv[], char* env[]) {
 		mgmt_thread.detach();
 
 
-        global_mgmt::ns_mutex.lock();
-        global_mgmt::curr_start_time = global_config.get_cfg_value("download_timing_start");
-        global_mgmt::curr_end_time = global_config.get_cfg_value("download_timing_end");
-        global_mgmt::downloading_active = global_config.get_bool_value("downloading_active");
-        global_mgmt::ns_mutex.unlock();
-        global_download_list.start_next_downloadable();
+		global_mgmt::ns_mutex.lock();
+		global_mgmt::curr_start_time = global_config.get_cfg_value("download_timing_start");
+		global_mgmt::curr_end_time = global_config.get_cfg_value("download_timing_end");
+		global_mgmt::downloading_active = global_config.get_bool_value("downloading_active");
+		global_mgmt::ns_mutex.unlock();
+		global_download_list.start_next_downloadable();
 
-        // tick download counters, start new downloads, etc each second
-        thread once_per_sec_thread(do_once_per_second);
-        once_per_sec_thread.detach();
-        thread sync_sig_handler(sig_handle_thread);
-        sync_sig_handler.detach();
+		// tick download counters, start new downloads, etc each second
+		thread once_per_sec_thread(do_once_per_second);
+		once_per_sec_thread.detach();
+		thread sync_sig_handler(sig_handle_thread);
+		sync_sig_handler.detach();
 
-        plugin_cache.load_plugins();
-        stringstream plglog;
-        for(plugin_container::handleIter it = plugin_cache.handles.begin(); it != plugin_cache.handles.end(); ++it) {
-            plglog << it->first << " ";
-        }
-        log_string("DownloadDaemon started successfully with these plugins: " + plglog.str(), LOG_DEBUG);
+		plugin_cache.load_plugins();
+		stringstream plglog;
+		for(plugin_container::handleIter it = plugin_cache.handles.begin(); it != plugin_cache.handles.end(); ++it) {
+			plglog << it->first << " ";
+		}
+		log_string("DownloadDaemon started successfully with these plugins: " + plglog.str(), LOG_DEBUG);
 	}
 	while(true) {
 		sleep(1);

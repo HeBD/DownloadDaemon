@@ -51,7 +51,7 @@ public:
 
 	void clear_cache();
 
-    void load_plugins();
+	void load_plugins();
 	std::map<std::string, void*> handles;
 	typedef std::map<std::string, void*>::iterator handleIter;
 
@@ -61,18 +61,18 @@ public:
 
 	template <typename func>
 	bool load_function(const std::string &host, const std::string& sym, func& ret) {
-        void* h = operator[](host);
-        if(!h) return false;
-        ret = (func)dlsym(h, sym.c_str());
-        const char *dl_error;
-        if ((dl_error = dlerror()) != NULL)  {
-            log_string(std::string("Unable to execute plugin function: ") + dl_error, LOG_ERR);
-            return false;
-        }
-        return true;
+		void* h = operator[](host);
+		if(!h) return false;
+		ret = (func)dlsym(h, sym.c_str());
+		const char *dl_error;
+		if ((dl_error = dlerror()) != NULL)  {
+			log_string(std::string("Unable to execute plugin function: ") + dl_error, LOG_ERR);
+			return false;
+		}
+		return true;
 	}
 
-    ~plugin_container();
+	~plugin_container();
 
 private:
 

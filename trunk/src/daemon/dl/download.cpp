@@ -333,12 +333,12 @@ void download::download_me() {
 	is_running = false;
 	lock.unlock();
 	try {
-        thread t(bind(&package_container::start_next_downloadable, &global_download_list));
-        t.detach();
+		thread t(bind(&package_container::start_next_downloadable, &global_download_list));
+		t.detach();
 	} catch(...) {
-        log_string("Failed to spawn start_next_downloadable() thread. DownloadDaemon might hang now until"
-                   " you trigger start_next_downloadable manually (change a config val). DownloadDaemon will try to recover automatically, but you never know.", LOG_ERR);
-        global_download_list.start_next_downloadable();
+		log_string("Failed to spawn start_next_downloadable() thread. DownloadDaemon might hang now until"
+				   " you trigger start_next_downloadable manually (change a config val). DownloadDaemon will try to recover automatically, but you never know.", LOG_ERR);
+		global_download_list.start_next_downloadable();
 	}
 }
 
@@ -498,15 +498,15 @@ void download::download_me_worker() {
 		cb_info.out_stream = &output_file_s;
 		if(get_hostinfo().allows_resumption && global_config.get_bool_value("enable_resume") && !output_file.empty() &&
 		   pstat(output_file.c_str(), &st) == 0 && fequal((double)st.st_size, (double)downloaded_bytes) && can_resume && error == PLUGIN_SUCCESS
-           && !fequal((double)downloaded_bytes, (double)size)) {
+		   && !fequal((double)downloaded_bytes, (double)size)) {
 
-        	cb_info.resume_from = downloaded_bytes;
+			cb_info.resume_from = downloaded_bytes;
 			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, (long)downloaded_bytes);
 
 			//output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
 			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
 		} else {
-            downloaded_bytes = 0;
+			downloaded_bytes = 0;
 		}
 
 
@@ -633,16 +633,16 @@ void download::download_me_worker() {
 				log_string(std::string("Finished download ID: ") + dlid_log, LOG_DEBUG);
 				status = DOWNLOAD_FINISHED;
 				new_fn = output_file.substr(0, output_file.rfind(".part"));
-                if(pstat(new_fn.c_str(), &st) == 0 && !global_config.get_bool_value("overwrite_files")) {
-                    log_string("Could not rename " + output_file + ": It already exists and overwrite_files is set to false. You can rename the file manually.", LOG_ERR);
-                    status = DOWNLOAD_FINISHED;
-                    error = PLUGIN_SUCCESS;
-                    lock.unlock();
-                    post_process_download();
-                    return;
-                } else if(pstat(new_fn.c_str(), &st) == 0) {
-                    remove(new_fn.c_str());
-                }
+				if(pstat(new_fn.c_str(), &st) == 0 && !global_config.get_bool_value("overwrite_files")) {
+					log_string("Could not rename " + output_file + ": It already exists and overwrite_files is set to false. You can rename the file manually.", LOG_ERR);
+					status = DOWNLOAD_FINISHED;
+					error = PLUGIN_SUCCESS;
+					lock.unlock();
+					post_process_download();
+					return;
+				} else if(pstat(new_fn.c_str(), &st) == 0) {
+					remove(new_fn.c_str());
+				}
 				if(rename(output_file.c_str(), new_fn.c_str()) != 0) {
 					log_string(std::string("Unable to rename .part file. You can do so manually."), LOG_ERR);
 				} else {
@@ -652,16 +652,16 @@ void download::download_me_worker() {
 				post_process_download();
 				return;
 
-            case CURLE_WRITE_ERROR:
-                error = cb_info.break_reason;
-                wait_n = global_config.get_int_value("write_error_wait");
-                if(wait_n == 0) {
-                    status = DOWNLOAD_INACTIVE;
-                } else {
-                    status = DOWNLOAD_PENDING;
-                    wait_seconds = wait_n;
-                }
-                return;
+			case CURLE_WRITE_ERROR:
+				error = cb_info.break_reason;
+				wait_n = global_config.get_int_value("write_error_wait");
+				if(wait_n == 0) {
+					status = DOWNLOAD_INACTIVE;
+				} else {
+					status = DOWNLOAD_PENDING;
+					wait_seconds = wait_n;
+				}
+				return;
 			case CURLE_OPERATION_TIMEDOUT:
 			case CURLE_COULDNT_RESOLVE_HOST:
 				log_string(std::string("Connection lost for download ID: ") + dlid_log, LOG_WARNING);
@@ -684,10 +684,10 @@ void download::download_me_worker() {
 				log_string("Resuming download failed. retrying without resumption", LOG_WARNING);
 				return;
 			case CURLE_PARTIAL_FILE:
-                log_string("The filesize reported by the server was unexpected", LOG_WARNING);
-                status = DOWNLOAD_INACTIVE;
-                error = PLUGIN_CONNECTION_ERROR;
-                return;
+				log_string("The filesize reported by the server was unexpected", LOG_WARNING);
+				status = DOWNLOAD_INACTIVE;
+				error = PLUGIN_CONNECTION_ERROR;
+				return;
 			default:
 				log_string(std::string("Download error for download ID: ") + dlid_log, LOG_WARNING);
 				log_string(string("Unhandled curl error: ") + curl_easy_strerror((CURLcode)curlsucces) + string(". Please report this error."), LOG_ERR);
@@ -734,7 +734,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	bool ret = plugin_cache.load_function(get_host(), "plugin_exec_wrapper", plugin_exec_func);
 
 	if(!ret) {
-        return PLUGIN_ERROR;
+		return PLUGIN_ERROR;
 	}
 
 	pinp.premium_user = global_premium_config.get_cfg_value(get_host(false) + "_user");
@@ -763,7 +763,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	plugin_status retval;
 	try {
 		retval = plugin_exec_func(*global_download_list.get_listptr(parent), id, pinp, poutp, global_config.get_int_value("captcha_retrys"),
-                                  global_config.get_cfg_value("gocr_binary"), program_root);
+								  global_config.get_cfg_value("gocr_binary"), program_root);
 	} catch(captcha_exception &e) {
 		log_string("Failed to decrypt captcha. Giving up (" + pluginfile + ")", LOG_ERR);
 		set_status(DOWNLOAD_INACTIVE);
@@ -773,10 +773,10 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	}
 
 	try {
-	    thread t(bind(&package_container::correct_invalid_ids, &global_download_list));
-	    t.detach();
+		thread t(bind(&package_container::correct_invalid_ids, &global_download_list));
+		t.detach();
 	} catch (...) {
-        log_string("Thread creation failed: package_container::correct_invalid_ids(). This may cause inconsitency! please report this!", LOG_ERR);
+		log_string("Thread creation failed: package_container::correct_invalid_ids(). This may cause inconsitency! please report this!", LOG_ERR);
 	}
 	return retval;
 }
@@ -792,7 +792,7 @@ void download::post_process_download() {
 	bool ret = plugin_cache.load_function(host, "post_process_dl_init", post_process_func);
 
 	if(!ret) {
-        return;
+		return;
 	}
 
 	pinp.premium_user = global_premium_config.get_cfg_value(get_host() + "_user");
