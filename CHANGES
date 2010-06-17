@@ -1,6 +1,11 @@
 2010-06-17
    [adrian]
 	- The rapidshare plugin now automatically switches from premium to free download if the download limit is exceeded (bug #3009052)
+	- Added new commandline-options for more flexibility:
+		--confdir      Use the configuration files in the specified directory
+		-u             Start DownloadDaemon as the specified user
+		-g             Start DownloadDaemon with the permissions of the specified group
+		-p             Specify the path of DownloadDaemons pid-file
 
 2010-06-15
    [adrian]
