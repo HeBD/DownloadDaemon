@@ -217,6 +217,8 @@ void post_process_download(plugin_input &inp) {
 		use_premium = false;
 		dl_list->set_status(dlid, DOWNLOAD_PENDING);
 		dl_list->set_error(dlid, PLUGIN_SUCCESS);
+		remove(filename.c_str());
+		dl_list->set_output_file(dlid, "");
 	}
 
 }
