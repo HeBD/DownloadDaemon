@@ -274,8 +274,7 @@ void download::download_me() {
 	lock.lock();
 
 	struct pstat st;
-	pstat(output_file.c_str(), &st);
-	if(st.st_size == 0) {
+	if(pstat(output_file.c_str(), &st) == 0 && st.st_size == 0) {
 		remove(output_file.c_str());
 		output_file = "";
 	}
