@@ -98,7 +98,7 @@ int main(int argc, char* argv[], char* env[]) {
 			cout << "   --confdir      Use the configuration files in the specified directory" << endl;
 			#ifndef __CYGWIN__
 			cout << "   -u             Start DownloadDaemon as the specified user" << endl;
-			cout << "   -g             Start DownloadDaemon with the permissions of the specified group" << endl;
+			cout << "   -g             Start DownloadDaemon with the permissions of a group" << endl;
 			cout << "   -p             Specify the path of DownloadDaemons pid-file" << endl;
 			#endif
 			return 0;
