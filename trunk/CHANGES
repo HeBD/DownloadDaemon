@@ -1,3 +1,7 @@
+2010-06-17
+   [adrian]
+	- The rapidshare plugin now automatically switches from premium to free download if the download limit is exceeded (bug #3009052)
+
 2010-06-15
    [adrian]
 	- DownloadDaemon will now load all plugins at startup instead of loading them when needed. this increases performance of

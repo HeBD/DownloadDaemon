@@ -10,6 +10,7 @@
  */
 
 #define PLUGIN_CAN_PRECHECK
+#define PLUGIN_WANTS_POST_PROCESSING
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -22,8 +23,10 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 	return nmemb;
 }
 
+bool use_premium = true; // if the premium limit is exceeded, this is set to false and we restart the download from the beginning without premium
+
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+	if(!inp.premium_user.empty() && !inp.premium_password.empty() && use_premium) {
 		CURL* handle = get_handle();
 		outp.allows_multiple = true;
 		outp.allows_resumption = true;
@@ -58,6 +61,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		}
 		return PLUGIN_ERROR;
 	}
+	use_premium = true;
 
 	CURL* handle = get_handle();
 
@@ -189,4 +193,30 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 		outp.allows_multiple = false;
 	}
 	outp.offers_premium = true;
+}
+
+void post_process_download(plugin_input &inp) {
+	if(inp.premium_user.empty() || inp.premium_password.empty()) return;
+	string filename = dl_list->get_output_file(dlid);
+	struct pstat st;
+	if(pstat(filename.c_str(), &st) != 0) {
+		return;
+	}
+	if(st.st_size > 1024 * 100 /* 100kb */ ) {
+		return;
+	}
+	ifstream ifs(filename.c_str());
+	string tmp;
+	char buf[1024];
+	while(ifs) {
+		ifs.read(buf, 1024);
+		tmp.append(buf, ifs.gcount());
+	}
+
+	if(tmp.find("You have exceeded the download limit.") != string::npos) {
+		use_premium = false;
+		dl_list->set_status(dlid, DOWNLOAD_PENDING);
+		dl_list->set_error(dlid, PLUGIN_SUCCESS);
+	}
+
 }
