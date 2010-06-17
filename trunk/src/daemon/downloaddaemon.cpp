@@ -33,6 +33,7 @@ namespace std {
 #include <climits>
 #include <cstdlib>
 #include <sstream>
+#include <map>
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -81,52 +82,84 @@ int main(int argc, char* argv[], char* env[]) {
 	signal(SIGPIPE, SIG_IGN);
 	#endif
 
-	#ifndef __CYGWIN__
-	// Drop user if there is one, and we were run as root
-	if (getuid() == 0 || geteuid() == 0) {
-		struct passwd *pw = getpwnam(DAEMON_USER /* "downloadd" */);
-		if(!pw) {
-			std::cerr << "Never run DownloadDaemon as root!" << endl;
-			std::cerr << "In order to run DownloadDaemon, please execute these commands as root:" << endl;
-			std::cerr << "   addgroup --system " DAEMON_USER << endl;
-			std::cerr << "   adduser --system --ingroup " DAEMON_USER " --home " DD_CONF_DIR " " DAEMON_USER << endl;
-			std::cerr << "   chown -R " DAEMON_USER ":" DAEMON_USER " " DD_CONF_DIR " /var/downloads" << endl;
-			std::cerr << "then rerun DownloadDaemon. It will automatically change its permissions to the ones of " DAEMON_USER "." << endl;
-			exit(-1);
+	string conf_dir = DD_CONF_DIR;
+	string daemon_user = DAEMON_USER;
+	string daemon_group = DAEMON_USER;
+	string pid_path = "/tmp/downloadd.pid";
+	map<string, string> args;
+	typedef map<string, string>::iterator argIter;
+	for(int i = 1; i < argc; ++i) {
+		std::string arg = argv[i-1];
+		std::string val = argv[i];
+		if(val == "--help" || val == "-h") {
+			cout << "Usage: downloaddaemon [options]" << endl << endl;
+			cout << "Options:" << endl;
+			cout << "   -d, --daemon   Start DownloadDaemon in Background" << endl;
+			cout << "   --confdir      Use the configuration files in the specified directory" << endl;
+			#ifndef __CYGWIN__
+			cout << "   -u             Start DownloadDaemon as the specified user" << endl;
+			cout << "   -g             Start DownloadDaemon with the permissions of the specified group" << endl;
+			cout << "   -p             Specify the path of DownloadDaemons pid-file" << endl;
+			#endif
+			return 0;
+		} else if(val == "-d" || val == "--daemon") {
+			args.insert(make_pair<string, string>("--daemon", ""));
+			continue;
 		}
+		if(i >= 2) {
+			args.insert(make_pair<string, string>(arg, argv[i]));
+		}
+	}
 
+	if(args.find("--confdir") != args.end()) conf_dir = args["--confdir"];
+	if(args.find("-u") != args.end()) daemon_user = args["-u"];
+	if(args.find("-g") != args.end()) daemon_group = args["-g"];
+	if(args.find("-p") != args.end()) pid_path = args["-p"];
+
+	correct_path(conf_dir);
+	correct_path(pid_path);
+
+	#ifndef __CYGWIN__
+	if(getuid() == 0 || geteuid() == 0 || args.find("-u") != args.end() || args.find("-g") != args.end()) {
+		struct passwd *pw = getpwnam(daemon_user.c_str());
 		#ifdef HAVE_INITGROUPS
-		if(initgroups(DAEMON_USER, pw->pw_gid)) {
+		if(pw && initgroups(daemon_user.c_str(), pw->pw_gid)) {
 			std::cerr << "Setting the groups of the DownloadDaemon user failed. This is a problem if you make downloaddaemon should download to a folder that "
 					  << " is only writeable for a supplementary group of DownloadDaemon, but not to the " DAEMON_USER " user itsself." << endl;
 		}
 		#endif
-
-		if(setgid(pw->pw_gid) != 0 || setuid(pw->pw_uid) != 0) {
-			std::cerr << "Failed to set user-id or group-id. Please run DownloadDaemon as a user manually." << endl;
+		if((getuid() == 0 || geteuid() == 0) && !pw) {
+			std::cerr << "Never run DownloadDaemon as root!" << endl;
+			if(args.find("-u") == args.end()) cout << "Unable to find the specified user!" << endl;
+			std::cerr << "In order to run DownloadDaemon, please run it as a normal user OR run it with the \"-u\" option" << endl;
+			std::cerr << "OR execute these commands as root:" << endl;
+			std::cerr << "   addgroup --system " + daemon_user << endl;
+			std::cerr << "   adduser --system --ingroup " + daemon_user + " --home " + conf_dir + " " + daemon_user << endl;
+			std::cerr << "   chown -R " + daemon_user + ":" + daemon_group + " " + conf_dir + " /var/downloads" << endl;
+			std::cerr << "then rerun DownloadDaemon. It will automatically change its UID to the ones of " + daemon_user + "." << endl;
 			exit(-1);
+		} else if(getuid() == 0 || geteuid() == 0) {
+			struct group* grpinfo = getgrnam(daemon_group.c_str());
+			gid_t gid_to_use = 0;
+			if(grpinfo) {
+				gid_to_use = grpinfo->gr_gid;
+			} else {
+				gid_to_use = pw->pw_gid;
+			}
 
+			if(setgid(gid_to_use) != 0 || setuid(pw->pw_uid) != 0) {
+				std::cerr << "Failed to set user-id or group-id. Please run DownloadDaemon as a user manually." << endl;
+				exit(-1);
+			}
 		}
+	} else {
+		#ifdef HAVE_INITGROUPS
+		struct passwd *pw = getpwuid(getuid());
+		initgroups(pw->pw_name, getgid());
+		#endif
 	}
+
 	#endif
-
-	for(int i = 1; i < argc; ++i) {
-		std::string arg = argv[i];
-		if(arg == "--help" || arg == "-h") {
-			cout << "Usage: downloaddaemon [options]" << endl << endl;
-			cout << "Options:" << endl;
-			cout << "   -d, --daemon\t\tStart DownloadDaemon in Background" << endl;
-
-			return 0;
-		}
-		if(arg == "-d" || arg == "--daemon") {
-			int j = fork();
-			if (j < 0) return 1; /* fork error */
-			if (j > 0) return 0; /* parent exits */
-			/* child (daemon) continues */
-			setsid();
-		}
-	}
 
 	struct flock fl;
 	fl.l_type = F_WRLCK;
@@ -135,10 +168,14 @@ int main(int argc, char* argv[], char* env[]) {
 	fl.l_len = 1;
 	int fdlock;
 	#ifndef __CYGWIN__
-	if((fdlock = open("/tmp/downloadd.lock", O_WRONLY|O_CREAT, 0777)) < 0 || fcntl(fdlock, F_SETLK, &fl) == -1) {
+	if((fdlock = open(pid_path.c_str(), O_WRONLY|O_CREAT, 0777)) < 0 || fcntl(fdlock, F_SETLK, &fl) == -1) {
 		std::cerr << "DownloadDaemon is already running. Exiting this instance" << endl;
 		exit(0);
+	} else {
+		string pid = int_to_string(getpid());
+		write(fdlock, pid.c_str(), pid.size());
 	}
+
 	// need to chmod seperately because the permissions set in open() are affected by the umask. chmod() isn't
 	fchmod(fdlock, 0777);
 	#else
@@ -224,46 +261,46 @@ int main(int argc, char* argv[], char* env[]) {
 		#endif
 	}
 	chdir(program_root.c_str());
+	{
+		string dd_conf_path(conf_dir + "/downloaddaemon.conf");
+		string premium_conf_path(conf_dir + "/premium_accounts.conf");
+		string router_conf_path(conf_dir + "/routerinfo.conf");
 
-	string dd_conf_path(DD_CONF_DIR "/downloaddaemon.conf");
-	string premium_conf_path(DD_CONF_DIR "/premium_accounts.conf");
-	string router_conf_path(DD_CONF_DIR "/routerinfo.conf");
 
-
-	// check again - will fail if the conf file does not exist at all
-	if(pstat(dd_conf_path.c_str(), &st) != 0) {
-		cerr << "Could not locate configuration file!" << endl;
-		exit(-1);
-	}
-
-	global_config.open_cfg_file(dd_conf_path.c_str(), true);
-	global_router_config.open_cfg_file(router_conf_path.c_str(), true);
-	global_premium_config.open_cfg_file(premium_conf_path.c_str(), true);
-	if(!global_config) {
-		uid_t uid = geteuid();
-		struct passwd *pw = getpwuid(uid);
-		std::string unam = "downloadd";
-		if(pw) {
-			unam = pw->pw_name;
+		// check again - will fail if the conf file does not exist at all
+		if(pstat(dd_conf_path.c_str(), &st) != 0) {
+			cerr << "Could not locate configuration file!" << endl;
+			exit(-1);
 		}
 
-		cerr << "Unable to open config file!" << endl;
-		cerr << "You probably don't have enough permissions to write the configuration file. executing \"chown -R "
-			 << unam << ":downloadd " DD_CONF_DIR " /var/downloads\" might help" << endl;
-		exit(-1);
-	}
-	if(!global_router_config) {
-		cerr << "Unable to open router config file" << endl;
-	}
-	if(!global_premium_config) {
-		cerr << "Unable to open premium account config file" << endl;
-	}
+		global_config.open_cfg_file(dd_conf_path.c_str(), true);
+		global_router_config.open_cfg_file(router_conf_path.c_str(), true);
+		global_premium_config.open_cfg_file(premium_conf_path.c_str(), true);
+		if(!global_config) {
+			uid_t uid = geteuid();
+			struct passwd *pw = getpwuid(uid);
+			std::string unam = "downloadd";
+			if(pw) {
+				unam = pw->pw_name;
+			}
 
-	global_config.set_default_config(program_root + "/dd_default.conf");
-	global_router_config.set_default_config(program_root + "/router_default.conf");
-	global_premium_config.set_default_config(program_root + "/premium_default.conf");
+			cerr << "Unable to open config file!" << endl;
+			cerr << "You probably don't have enough permissions to write the configuration file. executing \"chown -R "
+				 << unam << ":downloadd " + conf_dir + " /var/downloads\" might help" << endl;
+			exit(-1);
+		}
+		if(!global_router_config) {
+			cerr << "Unable to open router config file" << endl;
+		}
+		if(!global_premium_config) {
+			cerr << "Unable to open premium account config file" << endl;
+		}
 
-	{
+		global_config.set_default_config(program_root + "/dd_default.conf");
+		global_router_config.set_default_config(program_root + "/router_default.conf");
+		global_premium_config.set_default_config(program_root + "/premium_default.conf");
+
+
 		std::string dlist_fn = global_config.get_cfg_value("dlist_file");
 		correct_path(dlist_fn);
 
