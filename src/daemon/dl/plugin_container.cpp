@@ -37,7 +37,8 @@ plugin_output plugin_container::get_info(const std::string& info, p_info kind) {
 	string host = info;
 	if(kind == P_FILE) {
 		try {
-			host = info.substr(info.rfind("lib") + 3, info.size() - 4);
+			size_t pos = info.rfind("lib") + 3;
+			host = info.substr(pos, info.size() - 3 - pos);
 		} catch (...) {
 			log_string("plugin_container::get_info received invalid info: " + host + " which is of kind " + int_to_string((int)kind) + ". Please report this error.", LOG_ERR);
 		}
