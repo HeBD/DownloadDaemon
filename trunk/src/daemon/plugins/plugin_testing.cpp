@@ -9,7 +9,8 @@
  * GNU General Public License for more details.
  */
 
-
+#define PLGFILE plugin_testing
+#define PLGNAME "plugin-testing"
 #include "plugin_helpers.h"
 #include <cstdlib>
 #include <iostream>

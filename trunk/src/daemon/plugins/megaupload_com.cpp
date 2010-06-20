@@ -11,6 +11,8 @@
 
 #define PLUGIN_WANTS_POST_PROCESSING
 #define PLUGIN_CAN_PRECHECK
+#define PLGFILE megaupload_com
+#define PLGNAME "megaupload"
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>

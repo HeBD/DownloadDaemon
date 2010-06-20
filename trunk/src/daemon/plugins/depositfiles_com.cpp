@@ -10,6 +10,8 @@
  */
 
 #define PLUGIN_CAN_PRECHECK
+#define PLGFILE depositfiles_com
+#define PLGNAME "depositfiles"
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>

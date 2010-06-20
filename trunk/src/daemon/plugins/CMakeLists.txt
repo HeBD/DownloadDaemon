@@ -32,6 +32,7 @@ INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include_downloadd-plugins/ ../include)
 
 
 CHECK_FUNCTION_EXISTS(popen HAVE_POPEN)
+add_definitions(-rdynamic)
 
 find_package(CURL REQUIRED)
 

@@ -10,6 +10,8 @@
  */
 
 #define PLUGIN_CAN_PRECHECK
+#define PLGFILE hotfile_com
+#define PLGNAME "hotfile"
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -77,13 +79,14 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(handle, CURLOPT_POST, 1);
 	//curl_easy_setopt(prepare_handle, CURLOPT_COPYPOSTFIELDS, "dl.start=\"Free\"");
-	string action, tm, tmhash, wait_var, waithash;
+	string action, tm, tmhash, wait_var, waithash, upidhash;
 	form_opt(resultstr, pos, "action", action);
 	form_opt(resultstr, pos, "tm", tm);
 	form_opt(resultstr, pos, "tmhash", tmhash);
 	form_opt(resultstr, pos, "wait", wait_var);
 	form_opt(resultstr, pos, "waithash", waithash);
-	string post_data = "action=" + action + "&tm=" + tm + "&tmhash=" + tmhash + "&wait=" + wait_var + "&waithash=" + waithash;
+	form_opt(resultstr, pos, "upidhash", upidhash);
+	string post_data = "action=" + action + "&tm=" + tm + "&tmhash=" + tmhash + "&wait=" + wait_var + "&waithash=" + waithash + "&upidhash=" + upidhash;
 	curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, post_data.c_str());
 
 	resultstr.clear();
@@ -99,6 +102,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "");
 
 	pos = resultstr.find("<td><a href=\"");
+	if(pos == string::npos) {
+		return PLUGIN_ERROR;
+	}
 	pos += 13;
 	end = resultstr.find("\"", pos);
 	outp.download_url = resultstr.substr(pos, end - pos);

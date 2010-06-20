@@ -325,22 +325,11 @@ int main(int argc, char* argv[], char* env[]) {
 		dlist = dlist.substr(0, dlist.find_last_of('/'));
 		mkdir_recursive(dlist);
 
-		thread mgmt_thread(mgmt_thread_main);
-		mgmt_thread.detach();
-
-
 		global_mgmt::ns_mutex.lock();
 		global_mgmt::curr_start_time = global_config.get_cfg_value("download_timing_start");
 		global_mgmt::curr_end_time = global_config.get_cfg_value("download_timing_end");
 		global_mgmt::downloading_active = global_config.get_bool_value("downloading_active");
 		global_mgmt::ns_mutex.unlock();
-		global_download_list.start_next_downloadable();
-
-		// tick download counters, start new downloads, etc each second
-		thread once_per_sec_thread(do_once_per_second);
-		once_per_sec_thread.detach();
-		thread sync_sig_handler(sig_handle_thread);
-		sync_sig_handler.detach();
 
 		plugin_cache.load_plugins();
 		stringstream plglog;
@@ -348,6 +337,18 @@ int main(int argc, char* argv[], char* env[]) {
 			plglog << it->first << " ";
 		}
 		log_string("DownloadDaemon started successfully with these plugins: " + plglog.str(), LOG_DEBUG);
+
+		thread mgmt_thread(mgmt_thread_main);
+		mgmt_thread.detach();
+
+		// tick download counters, start new downloads, etc each second
+		thread once_per_sec_thread(do_once_per_second);
+		once_per_sec_thread.detach();
+		thread sync_sig_handler(sig_handle_thread);
+		sync_sig_handler.detach();
+
+		global_download_list.start_next_downloadable();
+
 	}
 	while(true) {
 		sleep(1);
