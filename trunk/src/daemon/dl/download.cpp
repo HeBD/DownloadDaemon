@@ -804,9 +804,10 @@ void download::post_process_download() {
 	try {
                 post_process_func(*global_download_list.get_listptr(parent), this, id, pinp);
 	} catch(...) {}
-
+        global_download_list.dump_to_file();
 	lock.lock();
 	is_running = false;
+
 }
 
 void download::preset_file_status() {
