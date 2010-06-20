@@ -364,6 +364,9 @@ void target_dl_add(std::string &data, tkSock *sock) {
 			*sock << "104 ID";
 		} else {
 			*sock << "100 SUCCESS";
+                        global_mgmt::ns_mutex.lock();
+                        global_mgmt::start_presetter = true;
+                        global_mgmt::ns_mutex.unlock();
 		}
 		return;
 	}

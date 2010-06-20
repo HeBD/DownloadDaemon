@@ -12,7 +12,6 @@
 #define PLUGIN_CAN_PRECHECK
 #define PLUGIN_WANTS_POST_PROCESSING
 #define PLGFILE rapidshare_com
-#define PLGNAME "rapidshare"
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>

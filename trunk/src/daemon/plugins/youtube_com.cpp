@@ -10,7 +10,6 @@
  */
 
 #define PLGFILE youtube_com
-#define PLGNAME "youtube"
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>

@@ -12,7 +12,6 @@
 #define PLUGIN_WANTS_POST_PROCESSING
 #define PLUGIN_CAN_PRECHECK
 #define PLGFILE megaupload_com
-#define PLGNAME "megaupload"
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -201,7 +200,7 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 		size_t size = 0;
 		if(value[1].find("KB") != string::npos)
 			size = strtod(value[0].c_str(), NULL) * 1024;
-		else if(value[1].find("MB") != string::npos)
+                else if(value[1].find("M") != string::npos)
 			size = strtod(value[0].c_str(), NULL) * (1024*1024);
 
 		setlocale(LC_NUMERIC, oldlocale);
