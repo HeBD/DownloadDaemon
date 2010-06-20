@@ -99,7 +99,4 @@ void sig_handle_thread() {
 		}
 
 	}
-
-
-
 }

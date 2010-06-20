@@ -729,7 +729,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 
 
 
-	plugin_status (*plugin_exec_func)(download_container&, int, plugin_input&, plugin_output&, int, std::string, std::string);
+	plugin_status (*plugin_exec_func)(download_container*, download*, int, plugin_input&, plugin_output&, int, std::string, std::string);
 	bool ret = plugin_cache.load_function(get_host(), "plugin_exec_wrapper", plugin_exec_func);
 
 	if(!ret) {
@@ -761,7 +761,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 
 	plugin_status retval;
 	try {
-		retval = plugin_exec_func(*global_download_list.get_listptr(parent), id, pinp, poutp, global_config.get_int_value("captcha_retrys"),
+		retval = plugin_exec_func(global_download_list.get_listptr(parent), this, id, pinp, poutp, global_config.get_int_value("captcha_retrys"),
 								  global_config.get_cfg_value("gocr_binary"), program_root);
 	} catch(captcha_exception &e) {
 		log_string("Failed to decrypt captcha. Giving up (" + pluginfile + ")", LOG_ERR);
