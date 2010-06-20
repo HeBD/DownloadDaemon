@@ -11,7 +11,6 @@
 
 #define PLUGIN_CAN_PRECHECK
 #define PLGFILE filefactory_com
-#define PLGNAME "filefactory"
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>

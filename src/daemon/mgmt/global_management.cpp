@@ -36,7 +36,7 @@ namespace global_mgmt {
 	std::string curr_end_time;
 	bool downloading_active;
 
-	bool start_presetter = false;
+        bool start_presetter = true;
 	// for sync signal handling
 	std::condition_variable sig_handle_cond;
 	int curr_sig = -1;

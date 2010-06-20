@@ -11,7 +11,6 @@
 
 #define PLUGIN_CAN_PRECHECK
 #define PLGFILE hotfile_com
-#define PLGNAME "hotfile"
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>

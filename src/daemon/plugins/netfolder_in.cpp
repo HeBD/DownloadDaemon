@@ -11,7 +11,6 @@
 
 #define PLUGIN_CAN_PRECHECK
 #define PLGFILE netfolder_in
-#define PLGNAME "netfolder"
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
