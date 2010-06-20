@@ -57,7 +57,6 @@ void do_once_per_second() {
 		if(global_download_list.total_downloads() > 0) {
 			global_download_list.decrease_waits();
 			if (global_mgmt::start_presetter && global_config.get_bool_value("precheck_links")) {
-				global_mgmt::start_presetter = false;
 				thread t(bind(&package_container::preset_file_status, &global_download_list));
 				t.detach();
 			}
