@@ -281,9 +281,8 @@ void download::download_me() {
 
 	if(status == DOWNLOAD_RUNNING) {
 		status = DOWNLOAD_PENDING;
+                wait_seconds = 0;
 	}
-	wait_seconds = 0;
-
 
 	if(status == DOWNLOAD_WAITING && error == PLUGIN_LIMIT_REACHED) {
 		int ret = set_next_proxy();
@@ -787,7 +786,7 @@ void download::post_process_download() {
 	std::string host(get_host());
 
 	// Load the plugin function needed
-	void (*post_process_func)(download_container& dlc, int id, plugin_input& pinp);
+        void (*post_process_func)(download_container& dlc, download*, int id, plugin_input& pinp);
 	bool ret = plugin_cache.load_function(host, "post_process_dl_init", post_process_func);
 
 	if(!ret) {
@@ -803,7 +802,7 @@ void download::post_process_download() {
 	lock.unlock();
 
 	try {
-		post_process_func(*global_download_list.get_listptr(parent), id, pinp);
+                post_process_func(*global_download_list.get_listptr(parent), this, id, pinp);
 	} catch(...) {}
 
 	lock.lock();
@@ -871,7 +870,7 @@ void download::preset_file_status() {
 
 	plugin_input pinp;
 
-	bool (*file_status_func)(download_container& dlc, int id, plugin_input& pinp, plugin_output &outp);
+        bool (*file_status_func)(download_container& dlc, download*, int id, plugin_input& pinp, plugin_output &outp);
 	bool ret = plugin_cache.load_function(get_host(), "get_file_status_init", file_status_func);
 
 	if (!ret)  {
@@ -888,7 +887,7 @@ void download::preset_file_status() {
 
 	bool is_host = true;
 	try {
-		is_host = file_status_func(*global_download_list.get_listptr(parent), id, pinp, outp);
+                is_host = file_status_func(*global_download_list.get_listptr(parent), this, id, pinp, outp);
 	} catch(...) {}
 
 	if(!is_host) {

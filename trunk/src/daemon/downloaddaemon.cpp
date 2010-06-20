@@ -236,7 +236,7 @@ int main(int argc, char* argv[], char* env[]) {
 			// resolve symlinks, etc
 			program_root = curr_path;
 			correct_path(program_root);
-		} else {
+                } else if(!getenv("DD_DATA_DIR")){
 			cerr << "Unable to locate executable!" << endl;
 			exit(-1);
 		}
@@ -248,6 +248,10 @@ int main(int argc, char* argv[], char* env[]) {
 	program_root = program_root.substr(0, program_root.find_last_of("/\\"));
 	program_root = program_root.substr(0, program_root.find_last_of("/\\"));
 	program_root.append("/share/downloaddaemon/");
+        if(getenv("DD_DATA_DIR")) {
+            program_root = getenv("DD_DATA_DIR");
+            correct_path(program_root);
+        }
 
 	if(pstat(program_root.c_str(), &st) != 0) {
 		#ifdef __CYGWIN__

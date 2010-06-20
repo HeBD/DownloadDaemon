@@ -238,9 +238,10 @@ extern "C" plugin_status plugin_exec_wrapper(download_container* dlc, download* 
 
 #ifdef PLUGIN_CAN_PRECHECK
 bool get_file_status(plugin_input &inp, plugin_output &outp);
-extern "C" bool get_file_status_init(download_container &dlc, int id, plugin_input &inp, plugin_output &outp) {
+extern "C" bool get_file_status_init(download_container &dlc, download* pdl, int id, plugin_input &inp, plugin_output &outp) {
 	std::lock_guard<std::mutex> lock(p_mutex);
 	dl_list = &dlc;
+        dl_ptr = pdl;
 	dlid = id;
 	return get_file_status(inp, outp);
 }
@@ -248,9 +249,10 @@ extern "C" bool get_file_status_init(download_container &dlc, int id, plugin_inp
 
 #ifdef PLUGIN_WANTS_POST_PROCESSING
 void post_process_download(plugin_input&);
-extern "C" void post_process_dl_init(download_container& dlc, int id, plugin_input& pinp) {
+extern "C" void post_process_dl_init(download_container& dlc, download *pdl, int id, plugin_input& pinp) {
 	std::lock_guard<std::mutex> lock(p_mutex);
 	dl_list = &dlc;
+        dl_ptr = pdl;
 	dlid = id;
 	host = dlc.get_host(id);
 	post_process_download(pinp);
