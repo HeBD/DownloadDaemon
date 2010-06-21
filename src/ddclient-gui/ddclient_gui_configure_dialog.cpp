@@ -243,9 +243,11 @@ QWidget *configure_dialog::create_logging_panel(){
 
     // log procedure
     procedure = new QComboBox();
+    procedure->setEditable(true);
     procedure->addItem(p->tsl("stdout - Standard output"));
     procedure->addItem(p->tsl("stderr - Standard error output"));
     procedure->addItem(p->tsl("syslog - Syslog-daemon"));
+    procedure->addItem(p->tsl("file:") + " " + p->tsl("enter path"));
 
     QString old_output = get_var("log_procedure");
 
@@ -255,6 +257,15 @@ QWidget *configure_dialog::create_logging_panel(){
         procedure->setCurrentIndex(1);
     else if(old_output == "syslog")
         procedure->setCurrentIndex(2);
+    else{ // own file selected
+        procedure->removeItem(3);
+
+        string file_output = old_output.toStdString();
+        file_output.replace(0, 6, ""); // we have to delete the "file: " part in English and insert the correct translation
+
+        procedure->addItem(p->tsl("file:") + " " + file_output.c_str());
+        procedure->setCurrentIndex(3);
+    }
 
     // log activity
     activity = new QComboBox();
@@ -278,7 +289,7 @@ QWidget *configure_dialog::create_logging_panel(){
         activity->setCurrentIndex(4);
 
     p_form_layout->addRow("", new QLabel(p->tsl("This option specifies how logging should be done\n(Standard output, Standard error"
-                                                "output, Syslog-daemon).")));
+                                                "output, Syslog-daemon, own file).")));
     p_form_layout->addRow("", procedure);
     a_form_layout->addRow("", new QLabel(p->tsl("This option specifies DownloadDaemons logging activity.")));
     a_form_layout->addRow("", activity);
@@ -599,6 +610,17 @@ void configure_dialog::ok(){
         case 1:     log_output = "stderr";
                     break;
         case 2:     log_output = "syslog";
+                    break;
+        case 3:     log_output = procedure->currentText().toStdString();
+
+                    size_t n; // we have to make sure the string starts with "file: " in English and not another language
+                    string old = p->tsl("file:").toStdString() + " ";
+
+                    while((n = log_output.find(old)) != std::string::npos){ // delete every "file: " in the current language
+                            log_output.replace(n, old.length(), "");
+                    }
+
+                    log_output = "file: " + log_output; // add the English one
                     break;
     }
 

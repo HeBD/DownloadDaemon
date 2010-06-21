@@ -1,3 +1,7 @@
+2010-06-21
+   [susanne]
+	- added possibility to enter a file path as logging procedure at ddclient-gui
+
 2010-06-17
    [adrian]
 	- The rapidshare plugin now automatically switches from premium to free download if the download limit is exceeded (bug #3009052)
