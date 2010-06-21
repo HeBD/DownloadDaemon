@@ -128,8 +128,6 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	int res = curl_easy_perform(handle);
 	curl_easy_cleanup(handle);
 
-	ofstream tmp("/home/ben/Desktop/log.html");
-	tmp.write(result.c_str(), result.size());
 	if(res != 0) {
 		outp.file_online = PLUGIN_CONNECTION_LOST;
 		return true;

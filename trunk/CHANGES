@@ -1,4 +1,6 @@
 2010-06-21
+   [adrian]
+	- new log_procedure value: file:<path to log file> for logging to a file without using syslog
    [susanne]
 	- added possibility to enter a file path as logging procedure at ddclient-gui
 
