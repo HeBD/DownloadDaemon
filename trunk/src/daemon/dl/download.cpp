@@ -317,12 +317,14 @@ void download::download_me() {
 	if(status == DOWNLOAD_FINISHED) {
 		lock.unlock();
 		if(global_download_list.package_finished(parent)) {
-			try {
-				thread t(bind(&package_container::extract_package, &global_download_list, parent));
-				t.detach();
-			} catch(...) {
-				log_string("Failed to start extractor-thread. There are probably too many running threads.", LOG_ERR);
-			}
+			// we don't have to do that in a seperate thread, we are in a non-blocking thread already, so unlock is enough
+			global_download_list.extract_package(parent);
+			//try {
+			//	thread t(bind(&package_container::extract_package, &global_download_list, parent));
+			//	t.detach();
+			//} catch(...) {
+			//	log_string("Failed to start extractor-thread. There are probably too many running threads.", LOG_ERR);
+			//}
 		}
 		lock.lock();
 	}
