@@ -338,6 +338,7 @@ void download::download_me() {
 				   " you trigger start_next_downloadable manually (change a config val). DownloadDaemon will try to recover automatically, but you never know.", LOG_ERR);
 		global_download_list.start_next_downloadable();
 	}
+	global_download_list.dump_to_file();
 }
 
 void download::download_me_worker() {
