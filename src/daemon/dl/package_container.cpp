@@ -737,7 +737,8 @@ void package_container::extract_package(int id) {
 	unique_lock<recursive_mutex> lock(mx);
 	package_container::iterator pkg_it = package_by_id(id);
 	if (pkg_it == packages.end()) return;
-	(*pkg_it)->extract_package();
+	thread t(bind(&download_container::extract_package, *pkg_it));
+	t.detach();
 }
 
 int package_container::get_next_download_id(bool lock_download_mutex) {
