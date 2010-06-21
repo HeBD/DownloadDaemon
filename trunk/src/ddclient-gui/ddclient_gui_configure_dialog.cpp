@@ -261,7 +261,10 @@ QWidget *configure_dialog::create_logging_panel(){
         procedure->removeItem(3);
 
         string file_output = old_output.toStdString();
-        file_output.replace(0, 6, ""); // we have to delete the "file: " part in English and insert the correct translation
+        file_output.replace(0, 5, ""); // we have to delete the "file:" part in English and insert the correct translation
+
+        while(file_output.size() > 0 && isspace(file_output[0])) // delete blanks at the beginning if existing
+            file_output.erase(0, 1);
 
         procedure->addItem(p->tsl("file:") + " " + file_output.c_str());
         procedure->setCurrentIndex(3);
@@ -620,7 +623,7 @@ void configure_dialog::ok(){
                             log_output.replace(n, old.length(), "");
                     }
 
-                    log_output = "file: " + log_output; // add the English one
+                    log_output = "file:" + log_output; // add the English one
                     break;
     }
 
