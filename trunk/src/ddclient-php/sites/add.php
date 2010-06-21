@@ -54,7 +54,8 @@ if($connect != 'SUCCESS') {
 		$err_message .= msg_generate($LANG['ERR_PKG_OR_DL_NAM'], 'error');
 	} else {
 		for($i = 0; $i < count($download_index); $i++) {
-			if(strpos($download_index[$i], "http://") === FALSE && strpos($download_index[$i], "ftp://") === FALSE) {
+			if(strpos($download_index[$i], "http://") === FALSE && strpos($download_index[$i], "ftp://") === FALSE
+			   && strpos($download_index[$i], "https://") === FALSE) {
 				continue;
 			}
 			$buf = "";
