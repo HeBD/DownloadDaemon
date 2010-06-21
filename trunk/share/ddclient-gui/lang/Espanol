@@ -58,9 +58,11 @@ New Password->Contraseña Nueva
 Logging Activity->Registro de Actividad
 Log Procedure->Procedimiento de Registro
 This option specifies DownloadDaemons logging activity.->Nivel de registro de actividad.
-This option specifies how logging should be done\n(Standard output, Standard erroroutput, Syslog-daemon).->Como realizar el registro de actividad\n(Salida estandar, Salida de error Estandar, Demonio de SysLog)
+This option specifies how logging should be done\n(Standard output, Standard erroroutput, Syslog-daemon, own file).->Como realizar el registro de actividad\n(Salida estandar, Salida de error Estandar, Demonio de SysLog, Fichero)
 stdout - Standard output->stdout - Salida Estandar
 stderr - Standard error output->stderr - Salida de Error Estandar
+file:->Fichero:
+enter path->entrar Camino
 Warning->Alerta
 Severe->Grave
 Off->Desactivado

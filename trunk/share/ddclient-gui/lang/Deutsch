@@ -58,9 +58,11 @@ New Password->Neues Passwort
 Logging Activity->Log Modus
 Log Procedure->Log Prozedur
 This option specifies DownloadDaemons logging activity.->Diese Option legt den Logmodus fest.
-This option specifies how logging should be done\n(Standard output, Standard erroroutput, Syslog-daemon).->Diese Option legt wie das Loggen gemacht werden soll\n(Standard Ausgabe, Standard Fehlerausgabe, Syslog-daemon).
+This option specifies how logging should be done\n(Standard output, Standard erroroutput, Syslog-daemon, own file).->Diese Option legt wie das Loggen gemacht werden soll\n(Standard Ausgabe, Standard Fehlerausgabe, Syslog-daemon, eigene Datei).
 stdout - Standard output->stdout - Standard Ausgabe
 stderr - Standard error output->stderr - Standard Fehlerausgabe
+file:->Datei:
+enter path->Pfad eingeben
 Warning->Warnungen
 Severe->Fehler
 Off->Aus
