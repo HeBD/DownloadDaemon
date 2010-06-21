@@ -136,7 +136,13 @@ void log_string(const std::string logstr, int level) {
 		cout << to_log.str() << flush;
 	} else if(log_procedure == "stderr") {
 		cerr << to_log.str() << flush;
-	} else if(log_procedure == "syslog") {
+	} else if(log_procedure.find("file:") == 0) {
+		log_procedure = log_procedure.substr(5);
+		trim_string(log_procedure);
+		ofstream ofs(log_procedure.c_str(), ios::app);
+		if(ofs) ofs.write(to_log.str().c_str(), to_log.str().size());
+		ofs.close();
+	} else {
 		#ifdef HAVE_SYSLOG_H
 		openlog("DownloadDaemon", LOG_PID, LOG_DAEMON);
 		syslog(level, to_syslog.str().c_str(), 0);
