@@ -12,10 +12,10 @@
 #ifndef DDCLIENT_GUI_STATUS_BAR_H
 #define DDCLIENT_GUI_STATUS_BAR_H
 
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 
 
-class status_bar : public QItemDelegate{
+class status_bar : public QStyledItemDelegate{
     public:
         /** Defaultconstructor */
         status_bar(QObject *parent);

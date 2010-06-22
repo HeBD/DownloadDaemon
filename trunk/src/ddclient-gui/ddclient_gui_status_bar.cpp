@@ -20,7 +20,7 @@
 using namespace std;
 
 
-status_bar::status_bar(QObject *parent) : QItemDelegate(parent){
+status_bar::status_bar(QObject *parent) : QStyledItemDelegate(parent){
 }
 
 
@@ -55,7 +55,7 @@ void status_bar::paint(QPainter* painter, const QStyleOptionViewItem& option, co
 
         size_t pos = content.find("%");
         if(pos == string::npos) // there is no % in content => we can't show a value inside the progress bar
-            QItemDelegate::paint(painter, option, index);
+			QStyledItemDelegate::paint(painter, option, index);
 
         else{
             string s = content.substr(0, content.find("%"));
@@ -73,5 +73,5 @@ void status_bar::paint(QPainter* painter, const QStyleOptionViewItem& option, co
             QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
         }
     }else
-        QItemDelegate::paint(painter, option, index);
+		QStyledItemDelegate::paint(painter, option, index);
 }
