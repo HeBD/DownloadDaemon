@@ -814,9 +814,9 @@ void configure_dialog::ok(){
 
     // enable package extractor
     if(enable_extractor)
-        set_var("enable_extractor", "1");
+        set_var("enable_pkg_extractor", "1");
     else
-        set_var("enable_extractor", "0");
+        set_var("enable_pkg_extractor", "0");
 
     // delete extracted archives
     if(delete_extracted)
