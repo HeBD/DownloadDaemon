@@ -2031,12 +2031,14 @@ void ddclient_gui::on_reload(){
     // update statusbar
     if(selected_downloads_size != 0){ // something is selected and the total size is known
         status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size));
-        tray_icon->setToolTip(tsl("Connected to") + " " + server + " \n " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size));
+		if(QSystemTrayIcon::isSystemTrayAvailable())
+			tray_icon->setToolTip(tsl("Connected to") + " " + server + " \n " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size));
 
     }else{
         status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
                                    " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet));
-        tray_icon->setToolTip(tsl("Connected to") + " " + server + " \n " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
+		if(QSystemTrayIcon::isSystemTrayAvailable())
+			tray_icon->setToolTip(tsl("Connected to") + " " + server + " \n " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
                               " \n " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet));
     }
 
