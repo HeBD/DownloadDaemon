@@ -39,6 +39,7 @@ No Connection to Downloaddaemon->Keine Verbindung
 overwrite existing Files->existierende Dateien überschreiben
 refuse existing Links->existierende Links nicht akzeptieren
 check Size and Availability on adding->Größe und Verfügbarkeit beim Hinzufügen testen
+Captcha retries->Captcha Versuche
 
 Download Time->Download Zeitraum
 Download Folder->Download Ordner
@@ -88,6 +89,11 @@ retry->erneut versuchen
 
 Client->Client
 Update Interval in s->Update Intervall in s
+
+Package Extractor->Entpacker
+enable->verwende
+delete extracted Archives->entpackte Archive löschen
+Supply a list of passwords that should always be tried to extract archives. If you set a\npassword for a specific package, that password will be used. If you set no password,\nExtraction will be tried without a password and with this list.\nOne entry per Line.->Passwortliste, die immer für das Entpacken von Archiven verwendet werden soll. Wenn man\nein Passwort für ein Paket setzt, wird dieses Passwort benutzt. Wenn kein Passwort\ngesetzt ist, wird das Entpacken ohne Passwort und mit Hilfe dieser\nPasswortliste verwendet.\nEin Eintrag pro Zeile.
 
 #connect dialog
 Connect to Host->Mit Host verbinden

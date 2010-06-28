@@ -40,13 +40,14 @@ configure_dialog::configure_dialog(QWidget *parent, QString config_dir) : QDialo
     QDialogButtonBox *button_box = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
 
     QTabWidget *tabs = new QTabWidget();
-    tabs->addTab (create_general_panel(), p->tsl("General"));
-    tabs->addTab (create_download_panel(), p->tsl("Download"));
-    tabs->addTab (create_password_panel(), p->tsl("Password"));
-    tabs->addTab (create_logging_panel(), p->tsl("Logging"));
-    tabs->addTab (create_reconnect_panel(), p->tsl("Reconnect"));
-    tabs->addTab (create_proxy_panel(), p->tsl("Proxy"));
-    tabs->addTab (create_client_panel(), p->tsl("Client"));
+    tabs->addTab(create_general_panel(), p->tsl("General"));
+    tabs->addTab(create_download_panel(), p->tsl("Download"));
+    tabs->addTab(create_password_panel(), p->tsl("Password"));
+    tabs->addTab(create_logging_panel(), p->tsl("Logging"));
+    tabs->addTab(create_reconnect_panel(), p->tsl("Reconnect"));
+    tabs->addTab(create_proxy_panel(), p->tsl("Proxy"));
+    tabs->addTab(create_client_panel(), p->tsl("Client"));
+    tabs->addTab(create_extractor_panel(), p->tsl("Package Extractor"));
 
     layout->addWidget(tabs);
     layout->addWidget(button_box);
@@ -131,9 +132,13 @@ QWidget *configure_dialog::create_general_panel(){
     size_existing = new QCheckBox(p->tsl("check Size and Availability on adding"));
     size_existing->setChecked(enable);
 
+    captcha_retries = new QLineEdit(get_var("captcha_retrys"));
+    captcha_retries->setFixedWidth(50);
+
     general_layout->addRow("", overwrite);
     general_layout->addRow("", refuse_existing);
     general_layout->addRow("", size_existing);
+    general_layout->addRow(p->tsl("Captcha Retries"), captcha_retries);
 
     connect(button_box->button(QDialogButtonBox::Save), SIGNAL(clicked()),this, SLOT(save_premium()));
     connect(premium_host, SIGNAL(currentIndexChanged(int)),this, SLOT(premium_host_changed()));
@@ -499,6 +504,58 @@ QWidget *configure_dialog::create_client_panel(){
     return page;
 }
 
+QWidget *configure_dialog::create_extractor_panel(){
+    ddclient_gui *p = (ddclient_gui *) this->parent();
+
+    QWidget *page = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout();
+    page->setLayout(layout);
+
+    QGroupBox *group_box = new QGroupBox(p->tsl("Package Extractor"));
+    QFormLayout *form_layout = new QFormLayout();
+    group_box->setLayout(form_layout);
+
+    bool enable = false;
+    if(get_var("enable_pkg_extractor") == "1")
+        enable = true;
+
+    enable_extractor = new QCheckBox(p->tsl("enable") + " " + p->tsl("Package Extractor"));
+    enable_extractor->setChecked(enable);
+
+    enable = false;
+    if(get_var("delete_extracted_archives") == "1")
+        enable = true;
+
+    delete_extracted = new QCheckBox(p->tsl("delete extracted Archives"));
+    delete_extracted->setChecked(enable);
+
+    QLabel *extractor_explanation = new QLabel(p->tsl("Supply a list of passwords that should always be tried to extract archives. If you set a"
+                                                  "\npassword for a specific package, that password will be used. If you set no password,"
+                                                  "\nExtraction will be tried without a password and with this list."
+                                                  "\nOne entry per Line."));
+
+    string password_list = this->get_var("pkg_extractor_passwords").toStdString();
+    size_t n;
+
+    while((n = password_list.find(";")) != std::string::npos){
+        password_list.replace(n, 1, "\n");
+    }
+
+    QTextEdit *passwords_edit = new QTextEdit();
+    passwords_edit->setFixedHeight(100);
+    extractor_passwords = new QTextDocument(password_list.c_str(), passwords_edit);
+    passwords_edit->setDocument(extractor_passwords);
+
+    form_layout->addRow("", enable_extractor);
+    form_layout->addRow("", delete_extracted);
+    form_layout->addRow("", new QLabel(""));
+    form_layout->addRow("", extractor_explanation);
+    form_layout->addRow("", passwords_edit);
+
+    layout->addWidget(group_box);
+    return page;
+}
+
 
 QString configure_dialog::get_var(const string &var, var_type typ){
         ddclient_gui *p = (ddclient_gui *) this->parent();
@@ -597,6 +654,7 @@ void configure_dialog::ok(){
     bool overwrite = this->overwrite->isChecked();
     bool refuse_existing = this->refuse_existing->isChecked();
     bool precheck_links = size_existing->isChecked();
+    string captcha_retries = this->captcha_retries->text().toStdString();
 
     string start_time = this->start_time->text().toStdString();
     string end_time = this->end_time->text().toStdString();
@@ -616,12 +674,15 @@ void configure_dialog::ok(){
                     break;
         case 3:     log_output = procedure->currentText().toStdString();
 
-                    size_t n; // we have to make sure the string starts with "file: " in English and not another language
-                    string old = p->tsl("file:").toStdString() + " ";
+                    size_t n; // we have to make sure the string starts with "file:" in English and not another language
+                    string old = p->tsl("file:").toStdString();
 
-                    while((n = log_output.find(old)) != std::string::npos){ // delete every "file: " in the current language
+                    while((n = log_output.find(old)) != std::string::npos) // delete every "file:" in the current language
                             log_output.replace(n, old.length(), "");
-                    }
+
+
+                    while(log_output.size() > 0 && isspace(log_output[0])) // delete blanks at the beginning if existing
+                        log_output.erase(0, 1);
 
                     log_output = "file:" + log_output; // add the English one
                     break;
@@ -685,6 +746,16 @@ void configure_dialog::ok(){
 
     int update_interval = this->update_interval->text().toInt();
 
+    bool enable_extractor = this->enable_extractor->isChecked();
+    bool delete_extracted = this->delete_extracted->isChecked();
+
+    string passwords_list = extractor_passwords->toPlainText().toStdString();
+
+    while((n = passwords_list.find("\n")) != std::string::npos){
+        passwords_list.replace(n, 1, ";");
+    }
+
+
     // check connection
     if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))
         return;
@@ -709,6 +780,9 @@ void configure_dialog::ok(){
         set_var("precheck_links", "1");
     else
         set_var("precheck_links", "0");
+
+    // captcha retries
+    set_var("captcha_retrys", captcha_retries);
 
     // download times
     set_var("download_timing_start", start_time);
@@ -735,7 +809,24 @@ void configure_dialog::ok(){
     else
         set_var("assume_proxys_online", "1");
 
+    // proxy list
     set_var("proxy_list", proxy_list);
+
+    // enable package extractor
+    if(enable_extractor)
+        set_var("enable_extractor", "1");
+    else
+        set_var("enable_extractor", "0");
+
+    // delete extracted archives
+    if(delete_extracted)
+        set_var("delete_extracted_archives", "1");
+    else
+        set_var("delete_extracted_archives", "0");
+
+    // extractor passwords
+    set_var("pkg_extractor_passwords", passwords_list);
+
 
     // reconnect enable
     if(reconnect_enable){
