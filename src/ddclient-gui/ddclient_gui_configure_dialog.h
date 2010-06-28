@@ -40,6 +40,7 @@ class configure_dialog : public QDialog{
         QWidget *create_reconnect_panel();
         QWidget *create_proxy_panel();
         QWidget *create_client_panel();
+        QWidget *create_extractor_panel();
         QString get_var(const std::string &var, var_type typ = NORMAL_T);
         void set_var(const std::string &var, const std::string &value, var_type typ = NORMAL_T);
 
@@ -50,6 +51,7 @@ class configure_dialog : public QDialog{
         QCheckBox *overwrite;
         QCheckBox *refuse_existing;
         QCheckBox *size_existing;
+        QLineEdit *captcha_retries;
         QLineEdit *premium_user;
         QLineEdit *premium_password;
 
@@ -85,6 +87,11 @@ class configure_dialog : public QDialog{
         // client
         QComboBox *language;
         QLineEdit *update_interval;
+
+        // extractor
+        QTextDocument *extractor_passwords;
+        QCheckBox *enable_extractor;
+        QCheckBox *delete_extracted;
 
     private slots:
         void help();

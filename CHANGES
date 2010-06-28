@@ -1,3 +1,7 @@
+2010-06-28
+   [susanne]
+	- added possibility to change the number of captcha retries and some package extraction options at config dialog of ddclient-gui
+
 2010-06-21
    [adrian]
 	- new log_procedure value: file:<path to log file> for logging to a file without using syslog
