@@ -356,9 +356,11 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 	}
 
 	std::string dl_url = plug_outp.download_url;
-	if(dl_url[dl_url.size() - 1] == '/' && dl_url.find("ftp://") == 0 && global_config.get_cfg_value("recursive_ftp_download") != "0") {
+	if(dl_url[dl_url.size() - 1] == '/' && dl_url.find("ftp://") == 0 && global_config.get_bool_value("recursive_ftp_download")) {
+		lock.unlock();
 		recursive_parser parser(dl_url);
 		parser.add_to_list(parent);
+		lock.lock();
 		if(status == DOWNLOAD_DELETED) {
 			return;
 		}
