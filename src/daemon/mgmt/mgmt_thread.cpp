@@ -963,11 +963,11 @@ void target_file_getpath(std::string &data, tkSock *sock) {
 		return;
 	}
 	std::string output_file = global_download_list.get_output_file(id);
-	struct pstat st;
-	if(pstat(output_file.c_str(), &st) != 0) {
-		*sock << "";
-		return;
-	}
+	//struct pstat st; // nice to have, but this slows it down a LOT for larger download lists (40+ downloads) when called after each dl list.
+	//if(pstat(output_file.c_str(), &st) != 0) {
+	//	*sock << "";
+	//	return;
+	//}
 	*sock << output_file;
 }
 

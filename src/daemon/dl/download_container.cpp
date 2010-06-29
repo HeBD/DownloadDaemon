@@ -606,13 +606,14 @@ void download_container::preset_file_status() {
 	try {
 		size_t calls = 0;
 		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-                        if(!(*it)->get_prechecked() && (*it)->get_size() < 2 && global_config.get_bool_value("precheck_links")) {
+			if(!(*it)->get_prechecked() && (*it)->get_size() < 2 && global_config.get_bool_value("precheck_links") && !(*it)->get_running()
+				&& (*it)->get_status() != DOWNLOAD_FINISHED) {
 				thread t(bind(&download::preset_file_status, *it));
 				t.detach();
 				++calls;
 			}
 			// we set prechecked here to make HDD spin-down possible. If we don't do this, it can happen that the config-value is checked every round.
-			(*it)->set_prechecked(true);
+			//(*it)->set_prechecked(true);
 			if(calls >=3) {
 				// we start 3 threads per second as a maximum, so we don't get problems with boost::thread_resource_error
 				return;

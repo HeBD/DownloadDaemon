@@ -1,3 +1,8 @@
+2010-06-29
+   [adrian]
+	- fixed deadlock and crash when downloading via ftp
+	- do not stat() a downloaded file on FILE GETPATH because it can be really slow if called for a lot of downloads in a loop (40+)
+
 2010-06-28
    [susanne]
 	- added possibility to change the number of captcha retries and some package extraction options at config dialog of ddclient-gui

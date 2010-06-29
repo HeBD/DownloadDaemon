@@ -49,6 +49,8 @@ struct plugin_input {
 	std::string url;
 };
 
+struct dl_cb_info ;
+
 class download {
 public:
 	/** Normal constructor
@@ -110,7 +112,7 @@ public:
 	plugin_output get_hostinfo();
 
 	void download_me();
-	void download_me_worker();
+	void download_me_worker(dl_cb_info &cb_info);
 
 	friend bool operator<(const download& x, const download& y);
 
@@ -216,6 +218,7 @@ private:
 	bool already_prechecked;
 
 	int parent;
+
 	mutable std::recursive_mutex mx;
 };
 
