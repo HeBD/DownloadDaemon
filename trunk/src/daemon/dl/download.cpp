@@ -260,6 +260,7 @@ void download::download_me() {
 	unique_lock<recursive_mutex> lock(mx);
 	need_stop = false;
 	handle = curl_easy_init();
+	dl_cb_info cb_info;
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
 	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
 	curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
@@ -270,7 +271,7 @@ void download::download_me() {
 		curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
 	}
 	lock.unlock();
-	download_me_worker();
+	download_me_worker(cb_info);
 	lock.lock();
 
 	struct pstat st;
@@ -343,7 +344,7 @@ void download::download_me() {
 	global_download_list.dump_to_file();
 }
 
-void download::download_me_worker() {
+void download::download_me_worker(dl_cb_info &cb_info) {
 	plugin_output plug_outp;
 	plugin_status success = prepare_download(plug_outp);
 
@@ -438,7 +439,6 @@ void download::download_me_worker() {
 		}
 
 		if(need_stop) return;
-		dl_cb_info cb_info;
 		cb_info.download_dir = global_config.get_cfg_value("download_folder");
 		correct_path(cb_info.download_dir);
 		if(global_config.get_bool_value("download_to_subdirs")) {
@@ -816,6 +816,7 @@ void download::post_process_download() {
 void download::preset_file_status() {
 	unique_lock<recursive_mutex> lock(mx);
 	already_prechecked = true;
+	is_running = true;
 	plugin_output outp;
 
 	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
@@ -838,12 +839,11 @@ void download::preset_file_status() {
 
 		curl_easy_setopt(precheck_handle, CURLOPT_PROGRESSFUNCTION, get_size_progress_callback);
 		curl_easy_setopt(precheck_handle, CURLOPT_PROGRESSDATA, &new_size);
-		is_running = true;
 
 		lock.unlock();
 		int curlsucces = curl_easy_perform(precheck_handle);
 		lock.lock();
-		is_running = false;
+
 		curl_easy_cleanup(precheck_handle);
 
 		long http_code;
@@ -867,6 +867,7 @@ void download::preset_file_status() {
 			error = PLUGIN_FILE_NOT_FOUND;
 			status = DOWNLOAD_INACTIVE;
 		}
+		is_running = false;
 		return;
 	}
 
@@ -878,6 +879,7 @@ void download::preset_file_status() {
 	bool ret = plugin_cache.load_function(get_host(), "get_file_status_init", file_status_func);
 
 	if (!ret)  {
+		is_running = false;
 		return;
 	}
 
@@ -886,7 +888,6 @@ void download::preset_file_status() {
 	pinp.url = url;
 	trim_string(pinp.premium_user);
 	trim_string(pinp.premium_password);
-	is_running = true;
 	lock.unlock();
 
 	bool is_host = true;
