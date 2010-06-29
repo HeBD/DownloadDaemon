@@ -34,15 +34,27 @@ class add_dialog : public QDialog{
         add_dialog(QWidget *parent);
 
     private:
+
+        struct new_download{
+            std::string url;
+            std::string title;
+            std::string file_name;
+            int package;
+        };
+
+        void find_parts(std::vector<new_download> &all_dls);
+
         QLineEdit *url_single;
         QLineEdit *title_single;
         QComboBox *package_single;
         QComboBox *package_many;
+        QCheckBox *separate_packages;
         QTextDocument *add_many;
         std::vector<package_info> packages;
 
     private slots:
         void ok();
+        void separate_packages_toggled();
 };
 
 #endif // DDCLIENT_GUI_ADD_DIALOG_H

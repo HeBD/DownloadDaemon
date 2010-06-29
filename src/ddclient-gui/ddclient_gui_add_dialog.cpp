@@ -64,6 +64,7 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
     package_many = new QComboBox();
     package_many->setFixedWidth(200);
     package_many->setEditable(true);
+    separate_packages = new QCheckBox(p->tsl("Separate into different Packages"));
 
     QMutex *mx = p->get_mutex();
     downloadc *dclient = p->get_connection();
@@ -96,6 +97,7 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
     single_layout->addRow(new QLabel(p->tsl("URL")), url_single);
 
     many_package_layout->addRow(new QLabel(p->tsl("Package")), package_many);
+    many_package_layout->addRow(new QLabel(""), separate_packages);
 
     many_layout->addWidget(new QLabel(p->tsl("Separate URL and Title like this: http://something.aa/bb|a fancy Title")));
     many_layout->addLayout(many_package_layout);
@@ -103,6 +105,114 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
 
     connect(button_box->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(ok()));
     connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
+    connect(separate_packages, SIGNAL(stateChanged(int)), this, SLOT(separate_packages_toggled()));
+}
+
+
+void add_dialog::find_parts(vector<new_download> &all_dls){
+    ddclient_gui *p = (ddclient_gui *) parent();
+    downloadc *dclient = p->get_connection();
+    int package_id;
+    bool error_occured = false;
+    int error = 0;
+
+    // prepare imaginary file names
+    vector<new_download>::iterator it = all_dls.begin();
+    for(; it != all_dls.end(); ++it){
+        it->file_name = it->url;
+
+        // cut away some things
+        size_t n;
+
+        n = it->file_name.find_last_of("//");
+        if(n != (it->file_name.length())-1) // cut everything till the last / if there is something after it, eg: http://cut.me/bla => bla
+            it->file_name = it->file_name.substr(n+1);
+
+        else{ // there is a / at the end, delete it and do it again
+            it->file_name.erase(n, 1);
+
+            n = it->file_name.find_last_of("//");
+            if(n != (it->file_name.length())-1) // cut everything till the last / if there is something after it, eg: http://cut.me/bla => bla
+                it->file_name = it->file_name.substr(n+1);
+
+        }
+
+        string cut_me = ".html";
+        while((n = it->file_name.find(cut_me)) != std::string::npos) // cut .html
+                it->file_name.replace(n, cut_me.length(), "");
+
+        cut_me = ".htm";
+        while((n = it->file_name.find(cut_me)) != std::string::npos) // cut .htm
+                it->file_name.replace(n, cut_me.length(), "");
+
+        for (size_t i = 0; i < it->file_name.size(); ++i){ // strip numbers
+            if(isdigit(it->file_name[i])){
+                it->file_name.erase(i, 1);
+                --i; // otherwise the next letter will not be looked at
+            }
+        }
+
+        for (size_t i = 0; i < it->file_name.size(); ++i) // make it case insensitive
+            it->file_name[i] = tolower(it->file_name[i]);
+    }
+
+
+    // decide packages based on the file names
+    vector<new_download>::iterator inner_it;
+
+    for(it = all_dls.begin(); it != all_dls.end(); ++it){
+        if(it->package == -1){ // found a download without a package
+
+            // create a new package
+            try{
+                package_id = dclient->add_package();
+            }catch(client_exception &e){ // there is no reason to continue if we failed here
+                QMessageBox::warning(this,  p->tsl("Error"), p->tsl("Failed to create Package."));
+                return;
+            }
+
+            it->package = package_id;
+
+            // find all other downloads with the same file name
+            for(inner_it = it+1; inner_it != all_dls.end(); ++inner_it){
+
+                if(inner_it->package == -1){ // no package yet
+                    if(inner_it->file_name == it->file_name)
+                        inner_it->package = package_id;
+                }
+            }
+        }
+    }
+
+
+    // finally send downloads
+    for(it = all_dls.begin(); it != all_dls.end(); ++it){
+        try{
+            dclient->add_download(it->package, it->url, it->title);
+        }catch(client_exception &e){
+            error_occured = true;
+            error = e.get_id();
+        }
+
+    }
+
+
+
+    if(error_occured){
+        if(error == 6)
+            QMessageBox::warning(this,  p->tsl("Error"), p->tsl("Failed to create Package."));
+        else if(error == 13)
+            QMessageBox::warning(this,  p->tsl("Invalid URL"), p->tsl("At least one inserted URL was invalid."));
+    }
+
+}
+
+
+void add_dialog::separate_packages_toggled(){
+    if(separate_packages->isChecked())
+        package_many->setEnabled(false);
+    else
+        package_many->setEnabled(true);
 }
 
 
@@ -117,7 +227,9 @@ void add_dialog::ok(){
     string package_single = this->package_single->currentText().toStdString();
     string package_many = this->package_many->currentText().toStdString();
 
-    // exchange every | inside the title with a blank
+    bool separate = separate_packages->isChecked();
+
+    // exchange every | inside the title (of single download) with a blank
     size_t title_find;
     title_find = title.find("|");
 
@@ -126,45 +238,48 @@ void add_dialog::ok(){
         title_find = title.find("|");
     }
 
-    // find out if we have an existing or new package;
+    // find out if we have an existing or new package
     int package_single_id = -1;
     int package_many_id = -1;
     vector<package_info>::iterator it = packages.begin();
 
-    for(; it != packages.end(); ++it){ // first single package
-        stringstream s;
-        s << it->id;
-        if(package_single == s.str()){
-            package_single_id = it->id;
-            break;
-        }
+    if(package_single.size() != 0){ // we don't have to check if there's no package name given
+        for(; it != packages.end(); ++it){ // first single package
+            stringstream s;
+            s << it->id;
+            if(package_single == s.str()){
+                package_single_id = it->id;
+                break;
+            }
 
-        s << ": " << it->name;
-        if(package_single == s.str()){
-            package_single_id = it->id;
-            break;
+            s << ": " << it->name;
+            if(package_single == s.str()){
+                package_single_id = it->id;
+                break;
+            }
         }
     }
 
-    for(it = packages.begin(); it != packages.end(); ++it){ // now many package
-        stringstream s;
-        s << it->id;
-        if(package_many == s.str()){
-            package_many_id = it->id;
-            break;
-        }
+    if((package_many.size() != 0) && !separate){ // we don't have to check if there's no package name given and we don't have to separate into packages
+        for(it = packages.begin(); it != packages.end(); ++it){ // now many package
+            stringstream s;
+            s << it->id;
+            if(package_many == s.str()){
+                package_many_id = it->id;
+                break;
+            }
 
-        s << ": " << it->name;
-        if(package_many == s.str()){
-            package_many_id = it->id;
-            break;
+            s << ": " << it->name;
+            if(package_many == s.str()){
+                package_many_id = it->id;
+                break;
+            }
         }
     }
 
 
     bool error_occured = false;
     int error = 0;
-    vector<string> splitted_line;
     string line;
     size_t lineend = 1, urlend;
 
@@ -183,6 +298,9 @@ void add_dialog::ok(){
     }
 
     // add many downloads
+    vector<new_download> all_dls; // in case we have to separate into packages
+    new_download dl = {"", "", "", -1};
+
     // parse lines
     while(many.length() > 0 && lineend != string::npos){
         lineend = many.find("\n"); // termination character for line
@@ -215,16 +333,26 @@ void add_dialog::ok(){
             title = "";
         }
 
-        // send a single download
-        try{
-            if(package_many_id == -1) // create a new package
-                package_many_id = dclient->add_package(package_many);
+        if(separate){ // don't send it now, find fitting packages first
+            dl.url = url;
+            dl.title = title;
+            all_dls.push_back(dl);
 
-            dclient->add_download(package_many_id, url, title);
-        }catch(client_exception &e){
-            error_occured = true;
-            error = e.get_id();
+        }else{ // send a single download
+            try{
+                if(package_many_id == -1) // create a new package
+                    package_many_id = dclient->add_package(package_many);
+
+                dclient->add_download(package_many_id, url, title);
+            }catch(client_exception &e){
+                error_occured = true;
+                error = e.get_id();
+            }
         }
+    }
+
+    if(all_dls.size() > 0){
+        find_parts(all_dls);
     }
 
     if(error_occured){
