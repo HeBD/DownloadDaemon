@@ -137,6 +137,10 @@ void add_dialog::find_parts(vector<new_download> &all_dls){
 
         }
 
+        n = it->file_name.find_last_of("?");
+        if(n != (it->file_name.length())-1) // cut everything from the last ?, eg: test?var1=5 => test
+            it->file_name = it->file_name.substr(0, n);
+
         string cut_me = ".html";
         while((n = it->file_name.find(cut_me)) != std::string::npos) // cut .html
                 it->file_name.replace(n, cut_me.length(), "");
