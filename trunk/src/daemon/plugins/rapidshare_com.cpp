@@ -31,10 +31,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		CURL* handle = get_handle();
 		outp.allows_multiple = true;
 		outp.allows_resumption = true;
-
-		string post_data("uselandingpage=1&login=" + inp.premium_user + "&password=" + inp.premium_password);
+		string post_data("sub=getaccountdetails_v1&withcookie=1&type=prem&login=" + inp.premium_user + "&password=" + inp.premium_password);
 		string result;
-		curl_easy_setopt(handle, CURLOPT_URL, "https://ssl.rapidshare.com/cgi-bin/premiumzone.cgi");
+		curl_easy_setopt(handle, CURLOPT_URL, "http://api.rapidshare.com/cgi-bin/rsapi.cgi");
 		curl_easy_setopt(handle, CURLOPT_POST, 1);
 		curl_easy_setopt(handle, CURLOPT_POSTFIELDS, post_data.c_str());
 		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
@@ -43,21 +42,21 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
 		int res = curl_easy_perform(handle);
 		if(res == 0) {
-			if(result.find("Forgotten your password?") != string::npos) {
+			if(result.find("Login failed") != string::npos) {
 				return PLUGIN_AUTH_FAIL;
 			}
 
 			outp.download_url = get_url();
 			// get the handle ready (get cookies)
 			curl_easy_setopt(handle, CURLOPT_POST, 0);
+			size_t pos = result.find("cookie=");
+			if(pos == string::npos)
+				return PLUGIN_AUTH_FAIL;
 
-			string orig_url = get_url();
-			// as of DownloadDaemon 0.9, this should not be needed any more, since rapidshare sends the Content-Disposition header that includes the filename
-			//if(orig_url.find(".html") != string::npos) {
-			//	size_t n = orig_url.find_last_of("/\\");
-			//	outp.download_filename = orig_url.substr(n + 1, orig_url.find(".html") - n - 1);
-			//}
-			outp.download_url = orig_url;
+			string tmp = result.substr(pos + 7);
+			tmp = tmp.substr(0, tmp.find_first_of(" \r\n"));
+			curl_easy_setopt(handle, CURLOPT_COOKIE, string("enc=" + tmp).c_str());
+
 			return PLUGIN_SUCCESS;
 		}
 		return PLUGIN_ERROR;
