@@ -14,6 +14,7 @@
 #define IS_PLUGIN
 
 #include <sstream>
+#include <config.h>
 #include "../dl/download.h"
 #include "../dl/download_container.h"
 #include "captcha.h"
@@ -259,7 +260,7 @@ extern "C" void post_process_dl_init(download_container& dlc, download *pdl, int
 }
 #endif
 
-#ifdef __CYGWIN__
+#if defined (__CYGWIN__) || defined (__APPLE__)
 // I know, this looks ugly, but it does the job and seems to be okay in this case. It's only on cygwin
 // because windows doesn't support dlls with missing symbols. They all need to be available at compile-time.
 // This does the job until I find the time to declare DD's functions and classes __declspec(dllexport)
