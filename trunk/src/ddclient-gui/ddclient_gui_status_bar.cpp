@@ -48,6 +48,7 @@ void status_bar::paint(QPainter* painter, const QStyleOptionViewItem& option, co
         progressBarOption.progress = progress;
         progressBarOption.text = QString::number(progress) + "%";
         progressBarOption.textVisible = true;
+		progressBarOption.state = QStyle::State_Enabled | QStyle::State_Active;
 
         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
 
@@ -77,6 +78,7 @@ void status_bar::paint(QPainter* painter, const QStyleOptionViewItem& option, co
 
             progressBarOption.text = content.c_str();
             progressBarOption.textVisible = true;
+			progressBarOption.state = QStyle::State_Enabled | QStyle::State_Active;
 
             QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
         }
