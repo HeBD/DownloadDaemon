@@ -1,3 +1,7 @@
+2010-07-05
+   [susanne]
+	- added possibility to autofill the title with a part of the URL when adding downloads at ddclient-gui
+
 2010-06-29
    [adrian]
 	- fixed deadlock and crash when downloading via ftp

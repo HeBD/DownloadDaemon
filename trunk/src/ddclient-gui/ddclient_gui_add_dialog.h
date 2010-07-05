@@ -43,18 +43,22 @@ class add_dialog : public QDialog{
         };
 
         void find_parts(std::vector<new_download> &all_dls);
+        std::string find_title(std::string url, bool strip = true);
 
         QLineEdit *url_single;
+        QCheckBox *fill_title_single;
         QLineEdit *title_single;
         QComboBox *package_single;
         QComboBox *package_many;
         QCheckBox *separate_packages;
+        QCheckBox *fill_title;
         QTextDocument *add_many;
         std::vector<package_info> packages;
 
     private slots:
         void ok();
         void separate_packages_toggled();
+        void fill_title_toggled();
 };
 
 #endif // DDCLIENT_GUI_ADD_DIALOG_H
