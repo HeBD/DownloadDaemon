@@ -26,6 +26,7 @@ At least one inserted URL was invalid.->Mindestens eine hinzugefügte URL war un
 Invalid URL->Ungültige URL
 Package->Paket
 Failed to create Package.->Paketerstellung fehlgeschlagen.
+fill Title from URL->Titel aus URL füllen
 
 #configure dialog
 Configure DownloadDaemon->DownloadDaemon konfigurieren

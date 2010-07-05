@@ -55,6 +55,7 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
     package_single = new QComboBox();
     package_single->setFixedWidth(200);
     package_single->setEditable(true);
+    fill_title_single = new QCheckBox(p->tsl("fill Title from URL"));
 
     // many downloads
     QTextEdit *add_many_edit = new QTextEdit();
@@ -65,6 +66,7 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
     package_many->setFixedWidth(200);
     package_many->setEditable(true);
     separate_packages = new QCheckBox(p->tsl("Separate into different Packages"));
+    fill_title = new QCheckBox(p->tsl("fill Title from URL"));
 
     QMutex *mx = p->get_mutex();
     downloadc *dclient = p->get_connection();
@@ -94,10 +96,12 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
 
     single_layout->addRow(new QLabel(p->tsl("Package")), package_single);
     single_layout->addRow(new QLabel(p->tsl("Title")), title_single);
+    single_layout->addRow(new QLabel(""), fill_title_single);
     single_layout->addRow(new QLabel(p->tsl("URL")), url_single);
 
     many_package_layout->addRow(new QLabel(p->tsl("Package")), package_many);
     many_package_layout->addRow(new QLabel(""), separate_packages);
+    many_package_layout->addRow(new QLabel(""), fill_title);
 
     many_layout->addWidget(new QLabel(p->tsl("Separate URL and Title like this: http://something.aa/bb|a fancy Title")));
     many_layout->addLayout(many_package_layout);
@@ -106,6 +110,7 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
     connect(button_box->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(ok()));
     connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
     connect(separate_packages, SIGNAL(stateChanged(int)), this, SLOT(separate_packages_toggled()));
+    connect(fill_title_single, SIGNAL(stateChanged(int)), this, SLOT(fill_title_toggled()));
 }
 
 
@@ -119,45 +124,7 @@ void add_dialog::find_parts(vector<new_download> &all_dls){
     // prepare imaginary file names
     vector<new_download>::iterator it = all_dls.begin();
     for(; it != all_dls.end(); ++it){
-        it->file_name = it->url;
-
-        // cut away some things
-        size_t n;
-
-        n = it->file_name.find_last_of("//");
-        if(n != (it->file_name.length())-1) // cut everything till the last / if there is something after it, eg: http://cut.me/bla => bla
-            it->file_name = it->file_name.substr(n+1);
-
-        else{ // there is a / at the end, delete it and do it again
-            it->file_name.erase(n, 1);
-
-            n = it->file_name.find_last_of("//");
-            if(n != (it->file_name.length())-1) // cut everything till the last / if there is something after it, eg: http://cut.me/bla => bla
-                it->file_name = it->file_name.substr(n+1);
-
-        }
-
-        n = it->file_name.find_last_of("?");
-        if(n != (it->file_name.length())-1) // cut everything from the last ?, eg: test?var1=5 => test
-            it->file_name = it->file_name.substr(0, n);
-
-        string cut_me = ".html";
-        while((n = it->file_name.find(cut_me)) != std::string::npos) // cut .html
-                it->file_name.replace(n, cut_me.length(), "");
-
-        cut_me = ".htm";
-        while((n = it->file_name.find(cut_me)) != std::string::npos) // cut .htm
-                it->file_name.replace(n, cut_me.length(), "");
-
-        for (size_t i = 0; i < it->file_name.size(); ++i){ // strip numbers
-            if(isdigit(it->file_name[i])){
-                it->file_name.erase(i, 1);
-                --i; // otherwise the next letter will not be looked at
-            }
-        }
-
-        for (size_t i = 0; i < it->file_name.size(); ++i) // make it case insensitive
-            it->file_name[i] = tolower(it->file_name[i]);
+        it->file_name = find_title(it->url);
     }
 
 
@@ -192,6 +159,9 @@ void add_dialog::find_parts(vector<new_download> &all_dls){
     // finally send downloads
     for(it = all_dls.begin(); it != all_dls.end(); ++it){
         try{
+            if((this->fill_title) && it->title.size() < 1)
+                it->title = find_title(it->url, false);
+
             dclient->add_download(it->package, it->url, it->title);
         }catch(client_exception &e){
             error_occured = true;
@@ -212,11 +182,70 @@ void add_dialog::find_parts(vector<new_download> &all_dls){
 }
 
 
+string add_dialog::find_title(string url, bool strip){
+    string file_name = url;
+
+    if(file_name.size() < 1)
+        return "";
+
+    // cut away some things
+    size_t n;
+
+    n = file_name.find_last_of("//");
+    if((n != (file_name.length())-1) && (n != std::string::npos)) // cut everything till the last / if there is something after it, eg: http://cut.me/bla => bla
+        file_name = file_name.substr(n+1);
+
+    else if(n != std::string::npos){ // there is a / at the end, delete it and do it again
+        file_name.erase(n, 1);
+
+        n = file_name.find_last_of("//");
+        if(n != ((file_name.length())-1) && (n != std::string::npos)) // cut everything till the last / if there is something after it, eg: http://cut.me/bla => bla
+            file_name = file_name.substr(n+1);
+
+    }
+
+    n = file_name.find_last_of("?");
+    if(n != std::string::npos) // cut everything from the last ?, eg: test?var1=5 => test
+        file_name = file_name.substr(0, n);
+
+    string cut_me = ".html";
+    while((n = file_name.find(cut_me)) != std::string::npos) // cut .html
+            file_name.replace(n, cut_me.length(), "");
+
+    cut_me = ".htm";
+    while((n = file_name.find(cut_me)) != std::string::npos) // cut .htm
+            file_name.replace(n, cut_me.length(), "");
+
+    if(strip){
+        for (size_t i = 0; i < file_name.size(); ++i){ // strip numbers
+            if(isdigit(file_name[i])){
+                file_name.erase(i, 1);
+                --i; // otherwise the next letter will not be looked at
+            }
+        }
+
+    for (size_t i = 0; i < file_name.size(); ++i) // make it case insensitive
+        file_name[i] = tolower(file_name[i]);
+
+    }
+
+    return file_name;
+}
+
+
 void add_dialog::separate_packages_toggled(){
     if(separate_packages->isChecked())
         package_many->setEnabled(false);
     else
         package_many->setEnabled(true);
+}
+
+
+void add_dialog::fill_title_toggled(){
+    if(fill_title_single->isChecked())
+        title_single->setEnabled(false);
+    else
+        title_single->setEnabled(true);
 }
 
 
@@ -241,6 +270,10 @@ void add_dialog::ok(){
         title.at(title_find) = ' ';
         title_find = title.find("|");
     }
+
+    // fill title from url if checked
+    if(fill_title_single->isChecked())
+        title = find_title(url, false);
 
     // find out if we have an existing or new package
     int package_single_id = -1;
@@ -346,6 +379,9 @@ void add_dialog::ok(){
             try{
                 if(package_many_id == -1) // create a new package
                     package_many_id = dclient->add_package(package_many);
+
+                if((this->fill_title) && title.size() < 1)
+                    title = find_title(url, false);
 
                 dclient->add_download(package_many_id, url, title);
             }catch(client_exception &e){
