@@ -64,9 +64,17 @@ void status_bar::paint(QPainter* painter, const QStyleOptionViewItem& option, co
             int progress = atoi(s.c_str());
             QStyleOptionProgressBar progressBarOption;
             progressBarOption.rect = option.rect;
-            progressBarOption.minimum = 0;
-            progressBarOption.maximum = 100;
-            progressBarOption.progress = progress;
+
+            if((progress > 100) || (progress <= 0)){
+                progressBarOption.minimum = 0;
+                progressBarOption.maximum = 1;
+                progressBarOption.progress = 0;
+            }else{
+                progressBarOption.minimum = 0;
+                progressBarOption.maximum = 100;
+                progressBarOption.progress = progress;
+            }
+
             progressBarOption.text = content.c_str();
             progressBarOption.textVisible = true;
 
