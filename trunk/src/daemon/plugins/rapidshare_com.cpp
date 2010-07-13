@@ -28,19 +28,19 @@ bool use_premium = true; // if the premium limit is exceeded, this is set to fal
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	if(!inp.premium_user.empty() && !inp.premium_password.empty() && use_premium) {
-		CURL* handle = get_handle();
+                ddcurl* handle = get_handle();
 		outp.allows_multiple = true;
 		outp.allows_resumption = true;
 		string post_data("sub=getaccountdetails_v1&withcookie=1&type=prem&login=" + inp.premium_user + "&password=" + inp.premium_password);
 		string result;
-		curl_easy_setopt(handle, CURLOPT_URL, "http://api.rapidshare.com/cgi-bin/rsapi.cgi");
-		curl_easy_setopt(handle, CURLOPT_POST, 1);
-		curl_easy_setopt(handle, CURLOPT_POSTFIELDS, post_data.c_str());
-		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
-		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
-		curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, false);
-		curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
-		int res = curl_easy_perform(handle);
+                handle->setopt(CURLOPT_URL, "http://api.rapidshare.com/cgi-bin/rsapi.cgi");
+                handle->setopt(CURLOPT_POST, 1);
+                handle->setopt(CURLOPT_POSTFIELDS, post_data.c_str());
+                handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+                handle->setopt(CURLOPT_WRITEDATA, &result);
+                handle->setopt(CURLOPT_SSL_VERIFYPEER, false);
+                handle->setopt(CURLOPT_COOKIEFILE, "");
+                int res = handle->perform();
 		if(res == 0) {
 			if(result.find("Login failed") != string::npos) {
 				return PLUGIN_AUTH_FAIL;
@@ -48,14 +48,14 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 			outp.download_url = get_url();
 			// get the handle ready (get cookies)
-			curl_easy_setopt(handle, CURLOPT_POST, 0);
+                        handle->setopt(CURLOPT_POST, 0);
 			size_t pos = result.find("cookie=");
 			if(pos == string::npos)
 				return PLUGIN_AUTH_FAIL;
 
 			string tmp = result.substr(pos + 7);
 			tmp = tmp.substr(0, tmp.find_first_of(" \r\n"));
-			curl_easy_setopt(handle, CURLOPT_COOKIE, string("enc=" + tmp).c_str());
+                        handle->setopt(CURLOPT_COOKIE, string("enc=" + tmp).c_str());
 
 			return PLUGIN_SUCCESS;
 		}
@@ -63,13 +63,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	}
 	use_premium = true;
 
-	CURL* handle = get_handle();
+        ddcurl* handle = get_handle();
 
 	std::string resultstr;
-	curl_easy_setopt(handle, CURLOPT_URL, get_url());
-	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
-	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
-	int success = curl_easy_perform(handle);
+        handle->setopt(CURLOPT_URL, get_url());
+        handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+        handle->setopt(CURLOPT_WRITEDATA, &resultstr);
+        int success = handle->perform();
 
 	if(success != 0) {
 		return PLUGIN_CONNECTION_ERROR;
@@ -92,12 +92,15 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	url = resultstr.substr(pos, end - pos);
 
 	resultstr.clear();
-	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
-	curl_easy_setopt(handle, CURLOPT_POST, 1);
-	curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "dl.start=\"Free\"");
-	curl_easy_perform(handle);
-	curl_easy_setopt(handle, CURLOPT_POST, 0);
-	curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "");
+        handle->setopt(CURLOPT_URL, url.c_str());
+        handle->setopt(CURLOPT_POST, 1);
+        handle->setopt(CURLOPT_COPYPOSTFIELDS, "dl.start=\"Free\"");
+        handle->perform();
+        handle->setopt(CURLOPT_POST, 0);
+        handle->setopt(CURLOPT_COPYPOSTFIELDS, "");
+
+        ofstream ofs("/home/ben/out.html");
+        ofs.write(resultstr.c_str(), resultstr.size());
 
 	if(resultstr.find("Or try again in about") != std::string::npos) {
 		pos = resultstr.find("Or try again in about");
@@ -137,8 +140,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		}
 
 		outp.download_url = resultstr.substr(pos, end - pos);
-		curl_easy_setopt(handle, CURLOPT_POST, 1);
-		curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, "mirror=on&x=66&y=61");
+                handle->setopt(CURLOPT_POST, 1);
+                handle->setopt(CURLOPT_COPYPOSTFIELDS, "mirror=on&x=66&y=61");
 		return PLUGIN_SUCCESS;
 	}
 }
@@ -146,17 +149,17 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	std::string url = get_url();
 	std::string result;
-	CURL* handle = curl_easy_init();
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
-	curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
-	curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
-	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
-	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
-	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
-	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
-	int res = curl_easy_perform(handle);
-	curl_easy_cleanup(handle);
+        ddcurl handle;
+        handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+        handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+        handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+        handle.setopt(CURLOPT_NOSIGNAL, 1);
+        handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
+        handle.setopt(CURLOPT_WRITEDATA, &result);
+        handle.setopt(CURLOPT_COOKIEFILE, "");
+        handle.setopt(CURLOPT_URL, url.c_str());
+        int res = handle.perform();
+        handle.cleanup();
 	if(res != 0) {
 		outp.file_online = PLUGIN_CONNECTION_LOST;
 		return true;

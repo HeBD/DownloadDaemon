@@ -23,14 +23,14 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-	CURL* handle = get_handle();
+        ddcurl* handle = get_handle();
 
 	string result;
-	curl_easy_setopt(handle, CURLOPT_URL, get_url());
-	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
-	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
-	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
-	int res = curl_easy_perform(handle);
+        handle->setopt(CURLOPT_URL, get_url());
+        handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+        handle->setopt(CURLOPT_WRITEDATA, &result);
+        handle->setopt(CURLOPT_COOKIEFILE, "");
+        int res = handle->perform();
 	if(res != 0) {
 		return PLUGIN_ERROR;
 	}
@@ -66,8 +66,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			string page_url = url.substr(0, url.find("&"));
 			page_url += "&page=" + convert_to_string(i);
 
-			curl_easy_setopt(handle, CURLOPT_URL, page_url.c_str());
-			res = curl_easy_perform(handle);
+                        handle->setopt(CURLOPT_URL, page_url.c_str());
+                        res = handle->perform();
 			if(res != 0) {
 				return PLUGIN_ERROR;
 			}

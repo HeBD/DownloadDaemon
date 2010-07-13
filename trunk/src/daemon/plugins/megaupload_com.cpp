@@ -27,23 +27,23 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-	CURL* handle = get_handle();
+        ddcurl* handle = get_handle();
 	string result;
 	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
-		curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
-		curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
-		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
-		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
-		curl_easy_setopt(handle, CURLOPT_URL, "http://www.megaupload.com/?c=login&setlang=en");
-		curl_easy_setopt(handle, CURLOPT_POST, 1);
+                handle->setopt(CURLOPT_COOKIEFILE, "");
+                handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+                handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+                handle->setopt(CURLOPT_WRITEDATA, &result);
+                handle->setopt(CURLOPT_URL, "http://www.megaupload.com/?c=login&setlang=en");
+                handle->setopt(CURLOPT_POST, 1);
 		string to_post = "login=1&redir=1&username=" + inp.premium_user + "&password=" + inp.premium_password;
-		curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, to_post.c_str());
-		int res = curl_easy_perform(handle);
+                handle->setopt(CURLOPT_COPYPOSTFIELDS, to_post.c_str());
+                int res = handle->perform();
 		if(res != 0) {
 			return PLUGIN_CONNECTION_ERROR;
 		}
 
-		curl_easy_setopt(handle, CURLOPT_POST, 0);
+                handle->setopt(CURLOPT_POST, 0);
 		if(result.find("Username and password do not match") != string::npos) {
 			return PLUGIN_AUTH_FAIL;
 		}
@@ -58,13 +58,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	int while_tries = 0;
 	while(!done && while_tries < 100) {
 		++while_tries;
-		curl_easy_setopt(handle, CURLOPT_URL, get_url());
-		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
-		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
-		curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
-		curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
+                handle->setopt(CURLOPT_URL, get_url());
+                handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+                handle->setopt(CURLOPT_WRITEDATA, &result);
+                handle->setopt(CURLOPT_COOKIEFILE, "");
+                handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
 		result.clear();
-		int res = curl_easy_perform(handle);
+                int res = handle->perform();
 		if(res != 0) {
 			return PLUGIN_CONNECTION_ERROR;
 		}
@@ -101,9 +101,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			std::string megavar = result.substr(n, result.find("\"", n) - n);
 
 
-			curl_easy_setopt(handle, CURLOPT_URL, captcha_url.c_str());
+                        handle->setopt(CURLOPT_URL, captcha_url.c_str());
 			result.clear();
-			res = curl_easy_perform(handle);
+                        res = handle->perform();
 			if(res != 0) {
 				return PLUGIN_ERROR;
 			}
@@ -136,12 +136,12 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 			std::string post_data = "captchacode=" + captchacode + "&megavar=" + megavar + "&captcha=" + captcha_text;
 
-			curl_easy_setopt(handle, CURLOPT_URL, get_url());
-			curl_easy_setopt(handle, CURLOPT_POST, 1);
-			curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, post_data.c_str());
+                        handle->setopt(CURLOPT_URL, get_url());
+                        handle->setopt(CURLOPT_POST, 1);
+                        handle->setopt(CURLOPT_COPYPOSTFIELDS, post_data.c_str());
 			result.clear();
-			res = curl_easy_perform(handle);
-			curl_easy_setopt(handle, CURLOPT_POST, 0);
+                        res = handle->perform();
+                        handle->setopt(CURLOPT_POST, 0);
 			if(res != 0) {
 				return PLUGIN_ERROR;
 			}
@@ -168,18 +168,18 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	std::string url = get_url();
 	std::string result;
-	CURL* handle = curl_easy_init();
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
-	curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
-	curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
-	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
-	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
-	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
-	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, true);
-	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
-	int res = curl_easy_perform(handle);
-	curl_easy_cleanup(handle);
+        ddcurl handle;
+        handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+        handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+        handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+        handle.setopt(CURLOPT_NOSIGNAL, 1);
+        handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
+        handle.setopt(CURLOPT_WRITEDATA, &result);
+        handle.setopt(CURLOPT_COOKIEFILE, "");
+        handle.setopt(CURLOPT_FOLLOWLOCATION, true);
+        handle.setopt(CURLOPT_URL, url.c_str());
+        int res = handle.perform();
+        handle.cleanup();
 	if(res != 0) {
 		outp.file_online = PLUGIN_CONNECTION_LOST;
 		return true;

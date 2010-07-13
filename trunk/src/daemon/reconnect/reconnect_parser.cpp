@@ -19,33 +19,32 @@ extern cfgfile global_router_config;
 
 reconnect::reconnect(const std::string &path_p, const std::string &host_p, const std::string &user_p, const std::string &pass_p)
 	: path(path_p), host(host_p), user(user_p), pass(pass_p) {
-	handle = curl_easy_init();
 	variables.insert(pair<string, string>("%user%", user));
 	variables.insert(pair<string, string>("%pass%", pass));
 	variables.insert(pair<string, string>("%routerip%", host));
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)1024);
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
-	curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)1024);
-	curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
+        handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)1024);
+        handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+        handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)1024);
+        handle.setopt(CURLOPT_NOSIGNAL, 1);
 }
 
 reconnect::~reconnect() {
-	curl_easy_cleanup(handle);
+    handle.cleanup();
 }
 
 std::string reconnect::get_current_ip() {
-	CURL* ip_handle = curl_easy_init();
-	curl_easy_setopt(ip_handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
-	curl_easy_setopt(ip_handle, CURLOPT_LOW_SPEED_TIME, (long)5);
-	curl_easy_setopt(ip_handle, CURLOPT_CONNECTTIMEOUT, (long)5);
-	curl_easy_setopt(ip_handle, CURLOPT_NOSIGNAL, 1);
+        ddcurl ip_handle;
+        ip_handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+        ip_handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)5);
+        ip_handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)5);
+        ip_handle.setopt(CURLOPT_NOSIGNAL, 1);
 	string ip_srv = global_router_config.get_cfg_value("ip_server");
-	curl_easy_setopt(ip_handle, CURLOPT_URL, ip_srv.c_str());
+        ip_handle.setopt(CURLOPT_URL, ip_srv.c_str());
 	std::string resultstr;
-	curl_easy_setopt(ip_handle, CURLOPT_WRITEFUNCTION, reconnect::write_data);
-	curl_easy_setopt(ip_handle, CURLOPT_WRITEDATA, &resultstr);
-	curl_easy_perform(ip_handle);
-	curl_easy_cleanup(ip_handle);
+        ip_handle.setopt(CURLOPT_WRITEFUNCTION, reconnect::write_data);
+        ip_handle.setopt(CURLOPT_WRITEDATA, &resultstr);
+        ip_handle.perform();
+        ip_handle.cleanup();
 	trim_string(resultstr);
 	return resultstr;
 }
@@ -160,12 +159,12 @@ void reconnect::request() {
 	}
 	curr_line = curr_line.substr(curr_line.find("]]]") + 3);
 	trim_string(curr_line);
-	curl_easy_reset(handle);
+        handle.reset();
 	std::string resultstr;
-	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
-	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, reconnect::write_data);
-	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &resultstr);
-	curl_easy_setopt(handle, CURLOPT_URL, string("http://" + host).c_str());
+        handle.setopt(CURLOPT_COOKIEFILE, "");
+        handle.setopt(CURLOPT_WRITEFUNCTION, reconnect::write_data);
+        handle.setopt(CURLOPT_WRITEDATA, &resultstr);
+        handle.setopt(CURLOPT_URL, string("http://" + host).c_str());
 	struct curl_slist *header = NULL;
 
 	bool this_is_data = false;
@@ -185,12 +184,12 @@ void reconnect::request() {
 
 		if(cmd.empty() && curr_line.find("[[[/REQUEST]]]") == 0) {
 			if(header != NULL)
-				curl_easy_setopt(handle, CURLOPT_HTTPHEADER, header);
+                                handle.setopt(CURLOPT_HTTPHEADER, header);
 
 			if(!curr_post_data.empty()) {
-				curl_easy_setopt(handle, CURLOPT_POSTFIELDS, curr_post_data.c_str());
+                                handle.setopt(CURLOPT_POSTFIELDS, curr_post_data.c_str());
 			}
-			curl_easy_perform(handle);
+                        handle.perform();
 			if(header != NULL)
 				curl_slist_free_all(header);
 			curr_post_data.clear();
@@ -203,7 +202,7 @@ void reconnect::request() {
 			substitute_vars(cmd);
 			if(cmd.empty()) continue;
 			if(cmd.find("%basicauth%") != string::npos) {
-				curl_easy_setopt(handle, CURLOPT_USERPWD, string(user + ':' + pass).c_str());
+                                handle.setopt(CURLOPT_USERPWD, string(user + ':' + pass).c_str());
 				cmd = "";
 				continue;
 			}
@@ -213,9 +212,9 @@ void reconnect::request() {
 				trim_string(cmd);
 				cmd = cmd.substr(0, cmd.find_first_of(" \t\n"));
 				cmd = "http://" + host + cmd;
-				curl_easy_setopt(handle, CURLOPT_URL, cmd.c_str());
+                                handle.setopt(CURLOPT_URL, cmd.c_str());
 				if(cmd.find("POST") == 0)
-					curl_easy_setopt(handle, CURLOPT_POST, true);
+                                        handle.setopt(CURLOPT_POST, true);
 				continue;
 			}
 

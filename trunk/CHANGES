@@ -1,3 +1,12 @@
+2010-07-13
+   [adrian]
+	- Implementation of ddproxy.php. This lets you use a proxy for downloading/traffic limit bypassing without even having access
+	  to a proxy server. A simple PHP/cURL enabled webserver is enough (see https://downloaddaemon.svn.sourceforge.net/svnroot/downloaddaemon/trunk/tools/ddproxy.php)
+
+2010-07-10
+   [adrian]
+	- removed hotfile.com plugin because they moved to the (currently) unsolveable recaptcha service
+
 2010-07-05
    [susanne]
 	- added possibility to autofill the title with a part of the URL when adding downloads at ddclient-gui

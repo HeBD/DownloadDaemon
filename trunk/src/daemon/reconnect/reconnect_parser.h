@@ -15,7 +15,7 @@
 #include <string>
 #include <fstream>
 #include <map>
-#include <curl/curl.h>
+#include <ddcurl.h>
 
 class reconnect {
 public:
@@ -43,7 +43,7 @@ private:
 	std::map<std::string, std::string> variables;
 	std::string path, host, user, pass, curr_line;
 	std::ifstream file;
-	CURL* handle;
+        ddcurl handle;
 
 	bool exec_next();
 	void step();

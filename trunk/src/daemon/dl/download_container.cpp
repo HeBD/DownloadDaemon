@@ -405,7 +405,7 @@ int download_container::get_speed(int id) {
 	return (*dl)->get_speed();
 }
 
-CURL* download_container::get_handle(int id) {
+ddcurl* download_container::get_handle(int id) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
 	if(dl == download_list.end()) return NULL;

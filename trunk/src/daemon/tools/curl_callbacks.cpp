@@ -31,13 +31,13 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 
 	cache->append((char*)buffer, nmemb);
 	double speed;
-	curl_easy_getinfo(info->curl_handle, CURLINFO_SPEED_DOWNLOAD, &speed);
+        info->curl_handle->getinfo(CURLINFO_SPEED_DOWNLOAD, &speed);
 	if(speed < 1 || cache->size() >= speed / 2 || cache->size() >= 1048576) {
 		// wite twice per sec, if speed is 0, and if the cache is >= 1MB
 		if (!output_file->is_open()) {
 			if(info->filename.empty()) {
 				char* fn_cstr = 0;
-				curl_easy_getinfo(info->curl_handle, CURLINFO_EFFECTIVE_URL, &fn_cstr);
+                                info->curl_handle->getinfo(CURLINFO_EFFECTIVE_URL, &fn_cstr);
 				info->filename = filename_from_url(fn_cstr);
 				make_valid_filename(info->filename);
 				info->filename_from_effective_url = true;
@@ -80,10 +80,10 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	dl_cb_info *info = (dl_cb_info*)clientp;
 
 	dlindex id = info->id;
-	CURL* curr_handle = info->curl_handle;
+        ddcurl* curr_handle = info->curl_handle;
 
 	double curr_speed_param;
-	curl_easy_getinfo(curr_handle, CURLINFO_SPEED_DOWNLOAD, &curr_speed_param);
+        curr_handle->getinfo(CURLINFO_SPEED_DOWNLOAD, &curr_speed_param);
 	filesize_t curr_speed = (filesize_t)(curr_speed_param + 0.5);
 
 	filesize_t  dl_size = info->resume_from + (filesize_t)(dltotal + 0.5);
@@ -113,7 +113,8 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 size_t parse_header( void *ptr, size_t size, size_t nmemb, void *clientp) {
 	dl_cb_info *info = (dl_cb_info*)clientp;
 	string* filename = & (info->filename);
-	string header((char*)ptr, size * nmemb);
+        string header((char*)ptr, size * nmemb);
+        if(!filename->empty()) return nmemb; // the filename has been set by the plugin -- priority
 	size_t n;
 	if((n = header.find("Content-Disposition:")) != string::npos) {
 		n += 20;
