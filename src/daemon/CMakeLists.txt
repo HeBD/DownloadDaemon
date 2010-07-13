@@ -3,10 +3,10 @@ project(DownloadDaemon)
 
 add_subdirectory(plugins)
 
-SET(daemon_SRCS downloaddaemon.cpp 
+SET(daemon_SRCS downloaddaemon.cpp
 		tools/helperfunctions.cpp 
 		tools/curl_callbacks.cpp 
-		mgmt/global_management.cpp 
+                mgmt/global_management.cpp
 		mgmt/mgmt_thread.cpp
 		dl/download.cpp 
 		dl/recursive_parser.cpp

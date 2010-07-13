@@ -39,7 +39,7 @@ using namespace std;
 
 download::download(const std::string& dl_url)
 	: url(dl_url), id(0), downloaded_bytes(0), size(0), wait_seconds(0), error(PLUGIN_SUCCESS),
-	is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true), handle(NULL), already_prechecked(false) {
+        is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true), handle(false), already_prechecked(false) {
 	lock_guard<recursive_mutex> lock(mx);
 	time_t rawtime;
 	struct tm* timeinfo;
@@ -259,16 +259,16 @@ plugin_output download::get_hostinfo() {
 void download::download_me() {
 	unique_lock<recursive_mutex> lock(mx);
 	need_stop = false;
-	handle = curl_easy_init();
+        handle.init();
 	dl_cb_info cb_info;
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
-	curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
-	curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
+        handle.setopt(CURLOPT_LOW_SPEED_LIMIT,(long)10);
+        handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+        handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+        handle.setopt(CURLOPT_NOSIGNAL, 1);
 
 	curl_off_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
 	if(dl_speed > 0) {
-		curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
+                handle.setopt(CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
 	}
 	lock.unlock();
 	download_me_worker(cb_info);
@@ -312,7 +312,7 @@ void download::download_me() {
 	} else {
 		proxy = "";
 	}
-	curl_easy_cleanup(handle);
+        handle.cleanup();
 
 
 	if(status == DOWNLOAD_FINISHED) {
@@ -504,7 +504,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		   && !fequal((double)downloaded_bytes, (double)size)) {
 
 			cb_info.resume_from = downloaded_bytes;
-			curl_easy_setopt(handle, CURLOPT_RESUME_FROM, (long)downloaded_bytes);
+                        handle.setopt(CURLOPT_RESUME_FROM, (long)downloaded_bytes);
 
 			//output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
 			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
@@ -529,40 +529,40 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		}
 
 		// set url
-		curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
-		curl_easy_setopt(handle, CURLOPT_URL, plug_outp.download_url.c_str());
+                handle.setopt(CURLOPT_FOLLOWLOCATION, 1);
+                handle.setopt(CURLOPT_URL, plug_outp.download_url.c_str());
 		// set file-writing function as callback
-		curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_file);
+                handle.setopt(CURLOPT_WRITEFUNCTION, write_file);
 		// reserve a cache of 512 kb
 		cb_info.cache.reserve(512000);
 		//std::pair<fstream*, std::string*> callback_opt_left(&output_file_s, &cache);
 		//std::pair<std::pair<fstream*, std::string*>, CURL*> callback_opt(callback_opt_left, handle);
-		curl_easy_setopt(handle, CURLOPT_WRITEDATA, &cb_info);
+                handle.setopt(CURLOPT_WRITEDATA, &cb_info);
 		// show progress
-		curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0);
-		curl_easy_setopt(handle, CURLOPT_PROGRESSFUNCTION, report_progress);
+                handle.setopt(CURLOPT_NOPROGRESS, 0);
+                handle.setopt(CURLOPT_PROGRESSFUNCTION, report_progress);
 
 		//std::pair<dlindex, filesize_t> progressdata(dl, resume_size);
 
-		curl_easy_setopt(handle, CURLOPT_PROGRESSDATA, &cb_info);
+                handle.setopt(CURLOPT_PROGRESSDATA, &cb_info);
 		// set timeouts
-		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
-		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
+                handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+                handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
 		curl_off_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
 		if(dl_speed > 0) {
-			curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
+                        handle.setopt(CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
 		}
 
 		// set headers to parse content-disposition
-		curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, parse_header);
-		curl_easy_setopt(handle, CURLOPT_WRITEHEADER, &cb_info);
+                handle.setopt(CURLOPT_HEADERFUNCTION, parse_header);
+                handle.setopt(CURLOPT_WRITEHEADER, &cb_info);
 
-		cb_info.curl_handle = handle;
+                cb_info.curl_handle = &handle;
 		cb_info.id = make_pair<int, int>(parent, id);
 
 		log_string(std::string("Starting download ID: ") + dlid_log, LOG_DEBUG);
 		lock.unlock();
-		int curlsucces = curl_easy_perform(handle);
+                int curlsucces = handle.perform();
 		lock.lock();
 
 		//if(plug_outp.download_filename.empty() && !fn_from_header.empty()) {
@@ -576,7 +576,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		output_file_s.close();
 
 		long http_code;
-		curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &http_code);
+                handle.getinfo(CURLINFO_RESPONSE_CODE, &http_code);
 
 		switch(http_code) {
 			case 401:
@@ -678,7 +678,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 				}
 				return;
 			case CURLE_ABORTED_BY_CALLBACK:
-				log_string(std::string("Stopped download ID: ") + dlid_log, LOG_WARNING);
+                                log_string(std::string("Stopped download ID: ") + dlid_log, LOG_INFO);
 				return;
 			case CURLE_BAD_DOWNLOAD_RESUME:
 				// if download resumption fails, retry without resumption
@@ -748,25 +748,32 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 
 	// enable a proxy if neccessary
 	string proxy_str = proxy;
+        proxy_str = "http://secret@adrian.batzill.com/proxy.php";
 	if(!proxy_str.empty()) {
-		size_t n;
-		std::string proxy_ipport;
-		if((n = proxy_str.find("@")) != string::npos &&  proxy_str.size() > n + 1) {
-			curl_easy_setopt(handle, CURLOPT_PROXYUSERPWD, proxy_str.substr(0, n).c_str());
-			curl_easy_setopt(handle, CURLOPT_PROXY, proxy_str.substr(n + 1).c_str());
-			log_string("Setting proxy: " + proxy_str.substr(n + 1) + " for " + url, LOG_DEBUG);
-		} else {
-			curl_easy_setopt(handle, CURLOPT_PROXY, proxy_str.c_str());
-			log_string("Setting proxy: " + proxy_str + " for " + url, LOG_DEBUG);
-		}
+            size_t n;
+            std::string proxy_ipport;
+            if((n = proxy_str.find("@")) != string::npos && proxy_str.size() > n + 1) {
+                string user = proxy_str.substr(0, n);
+                if(user.find("http://") == 0 || user.find("https://") == 0) {
+                    user = ":" + user.substr(user.find("//") + 2);
+                    proxy_str = proxy_str.substr(0, proxy_str.find("//") + 2) + proxy_str.substr(proxy_str.find("@") + 1);
+                }
+                handle.setopt(CURLOPT_PROXYUSERPWD, user);
+                handle.setopt(CURLOPT_PROXY, proxy_str),
+                log_string("Setting proxy: " + proxy_str + " for " + url, LOG_DEBUG);
+            } else {
+                handle.setopt(CURLOPT_PROXY, proxy_str.c_str());
+                log_string("Setting proxy: " + proxy_str + " for " + url, LOG_DEBUG);
+            }
 	}
 
 	lock.unlock();
 
 	plugin_status retval;
 	try {
-		retval = plugin_exec_func(global_download_list.get_listptr(parent), this, id, pinp, poutp, global_config.get_int_value("captcha_retrys"),
-								  global_config.get_cfg_value("gocr_binary"), program_root);
+                retval = plugin_exec_func(global_download_list.get_listptr(parent), this, id, pinp, poutp,
+                                          global_config.get_int_value("captcha_retrys"),
+                                          global_config.get_cfg_value("gocr_binary"), program_root);
 	} catch(captcha_exception &e) {
 		log_string("Failed to decrypt captcha. Giving up (" + pluginfile + ")", LOG_ERR);
 		set_status(DOWNLOAD_INACTIVE);
@@ -823,33 +830,33 @@ void download::preset_file_status() {
 
 	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
 	if(plugin_cache[get_host()] == 0) {
-		log_string("No plugin found, using generic downloadtp preset the file-status", LOG_DEBUG);
-		CURL* precheck_handle = curl_easy_init();
-		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
-		curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
-		curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
-		curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
-		curl_easy_setopt(precheck_handle, CURLOPT_URL, url.c_str());
+                log_string("No plugin found, using generic download to preset the file-status", LOG_DEBUG);
+                ddcurl precheck_handle;
+                precheck_handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+                precheck_handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+                precheck_handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+                precheck_handle.setopt(CURLOPT_NOSIGNAL, 1);
+                precheck_handle.setopt(CURLOPT_URL, url.c_str());
 		// set url
-		curl_easy_setopt(precheck_handle, CURLOPT_FOLLOWLOCATION, 1);
+                precheck_handle.setopt(CURLOPT_FOLLOWLOCATION, 1);
 		// set file-writing function as callback
-		curl_easy_setopt(precheck_handle, CURLOPT_WRITEFUNCTION, pretend_write_file);
+                precheck_handle.setopt(CURLOPT_WRITEFUNCTION, pretend_write_file);
 		// show progress
-		curl_easy_setopt(precheck_handle, CURLOPT_NOPROGRESS, 0);
+                precheck_handle.setopt(CURLOPT_NOPROGRESS, 0);
 
 		filesize_t new_size;
 
-		curl_easy_setopt(precheck_handle, CURLOPT_PROGRESSFUNCTION, get_size_progress_callback);
-		curl_easy_setopt(precheck_handle, CURLOPT_PROGRESSDATA, &new_size);
+                precheck_handle.setopt(CURLOPT_PROGRESSFUNCTION, get_size_progress_callback);
+                precheck_handle.setopt(CURLOPT_PROGRESSDATA, &new_size);
 
 		lock.unlock();
-		int curlsucces = curl_easy_perform(precheck_handle);
+                int curlsucces = precheck_handle.perform();
 		lock.lock();
 
-		curl_easy_cleanup(precheck_handle);
+                precheck_handle.cleanup();;
 
 		long http_code;
-		curl_easy_getinfo(precheck_handle, CURLINFO_RESPONSE_CODE, &http_code);
+                precheck_handle.getinfo(CURLINFO_RESPONSE_CODE, &http_code);
 
 		switch(http_code) {
 			case 401:

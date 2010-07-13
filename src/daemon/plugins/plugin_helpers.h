@@ -78,7 +78,7 @@ namespace PLGFILE {
 	/** this returns the curl-handle which will be used for downloading later. You may need it for setting special options like cookies, etc.
 	 *	@returns the curl handle
 	 */
-	CURL* get_handle();
+        ddcurl* get_handle();
 
 	/** passing a download_container object to that function will delete the current download and replace it by all the links specified in lst.
 	 *	this is mainly for decrypter-plugins for hosters that contain several download-links of other hosters
@@ -152,7 +152,7 @@ namespace PLGFILE {
 		return dl_list;
 	}
 
-	CURL* get_handle() {
+        ddcurl* get_handle() {
 		return dl_ptr->get_handle();
 	}
 

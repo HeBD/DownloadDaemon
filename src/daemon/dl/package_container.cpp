@@ -274,7 +274,7 @@ std::string package_container::get_proxy(dlindex dl) {
 	return (*it)->get_proxy(dl.second);
 }
 
-CURL* package_container::get_handle(dlindex dl) {
+ddcurl* package_container::get_handle(dlindex dl) {
 	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return NULL;
