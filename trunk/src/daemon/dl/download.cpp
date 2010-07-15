@@ -18,6 +18,8 @@
 
 #include "download.h"
 #include "download_container.h"
+#include "../mgmt/connection_manager.h"
+
 #ifndef IS_PLUGIN
 #include <cfgfile/cfgfile.h>
 #include "../tools/curl_callbacks.h"
@@ -26,8 +28,6 @@
 #include "recursive_parser.h"
 #include "../plugins/captcha.h"
 #include "plugin_container.h"
-#include "../mgmt/connection_manager.h"
-
 #endif
 
 #include <string>
