@@ -266,6 +266,7 @@ extern "C" void post_process_dl_init(download_container& dlc, download *pdl, int
 // This does the job until I find the time to declare DD's functions and classes __declspec(dllexport)
 	#include "../dl/download_container.cpp"
 	#include "../dl/download.cpp"
+	#include "../mgmt/connection_manager.cpp"
 #endif
 #include "captcha.cpp"
 

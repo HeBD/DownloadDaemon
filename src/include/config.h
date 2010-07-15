@@ -9,7 +9,7 @@
 #define HAVE_SYSLOG_H
 #define HAVE_INITGROUPS
 #define HAVE_STAT64
-#define USE_STD_THREAD
+//#define USE_STD_THREAD
 
 #define BACKTRACE_ON_CRASH
 
