@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>DownloadDaemon</title>
+<meta name="autor" content="DownloadDaemon Team">
+<meta name="keywords" content="arm, c++, console, daemon, ddclient-php, ddclient-wx, ddconsole, download, downloaddaemon, downloader, file, linux, manager, nas, remote, root, server, socket, web, windows, wxwidgets">
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="content-language" content="en">
+<meta name="copyright" content="DownloadDaemon Team">
+<meta name="robots" content="all">
+<link rel ="stylesheet" type="text/css" href="style.css">
+<link rel="shortcut icon" href="ddico.ico" type="image/x-icon">
+</head>
+<body>
+
+<div id="menu">
+	<p><a href="index.html" target="_self">Home</a></p>
+	<p><a href="https://sourceforge.net/news/?group_id=278029" target="_self">News</a></p>
+	<p><a href="https://sourceforge.net/projects/downloaddaemon/forums" target="_self">Forums</a></p>
+	<p><a href="https://sourceforge.net/apps/mediawiki/downloaddaemon/index.php" target="_self">Wiki</a></p>
+	<p><a href="http://sourceforge.net/projects/downloaddaemon/files/" target="_self">Downloads</a></p>
+	<p><a href="https://launchpad.net/~agib/+archive/ppa" target="_self">Ubuntu Repository</a></p>
+	<p><a href="https://downloaddaemon.svn.sourceforge.net/svnroot/downloaddaemon/trunk/INSTALLING" target="_self">How to install</a></p>
+	<p><a href="https://downloaddaemon.svn.sourceforge.net/svnroot/downloaddaemon/trunk/LICENCE" target="_self">Licence</a></p>
+	<p><a href="https://downloaddaemon.svn.sourceforge.net/svnroot/downloaddaemon/trunk/CHANGES" target="_self">Changes</a></p>
+	<p><a href="version_status.html" target="_self">Version Status</a></p>
+	<p><a href="screenshots.html" target="_self">Screenshots</a></p>
+	<p><a href="http://sourceforge.net/donate/index.php?group_id=278029"><img src="http://images.sourceforge.net/images/project-support.jpg" width="88" height="32" border="0" alt="Support This Project" /> </a></p>
+</div>
+
+
+<div id="contenttxt">
+
+	<h1>Version Status and Release notes</h1>
+
+	<h2>DownloadDaemon and Clients version 1.0:</h2>
+	<p>The Current status of version 1.0 is, as of 2010-04-11:</p>
+	<p>DownloadDaemon 1.0rc1 has just been released. This should already be more stable than version 0.9.
+	   Hopefully, a completely stable version can be released in 1-2 Weeks. Please report any Bug you find.
+	   The RC1 already contains all features that will be in 1.0. Right now, we only do bug-fixing.</p>
+	   Changelog 0.9->1.0:
+	<ul>
+		<li>ddclient-gui now starts as tray icon and only shows gui if user clicks on this icon (right click shows a menu)</li>
+		<li>added display of download information to statusbar (feature request ID: 2979928)</li>
+		<li>added possibility to set package title/password and download title/url in ddclient-php</li>
+		<li>some general ddclient-php improvements</li>
+		<li>improvements in DL SET (DL_URL) command which reported incorrect SUCCESS status</li>
+		<li>fixed youtube.com playlist download</li>
+		<li>fixed wrong display of very big download sizes (>2 GB)</li>
+		<li>ddclient-gui now shows if a package password is set via key icon in title column (feature request ID: 2980573)</li>
+		<li>added donation button to about dialog at ddclient-gui</li>
+		<li>fixed bug #2979924, which reports that after stopping and starting a running download, the download size will not be correct</li>
+		<li>fixed youtube.com plugin (video download)</li>
+		<li>implemented feature request #2977846 to get the file-size and status before actually running the download. you can also disable this functionality in the config-file. It already works for all plugins besides the youtube-plugin</li>
+		<li>ddclient-php now correctly displays prechecked size of pending downloads</li>
+		<li>some race-condition fixes if a download is deleted while a POST_PROCESS_DOWNLOAD plugin is active</li>
+		<li>added plugin for depositfiles.com free download!</li>
+		<li>ddclient-gui now correctly displays prechecked size of pending downloads</li>
+		<li>added possibility to configure precheck_links with ddclient-gui</li>
+		<li>added function to insert urls via ctrl+v to ddclient-gui</li>
+		<li>Added plugin for filefactory.com free download</li>
+		<li>added compile flag -DBACKTRACE_ON_CRASH, which will make downloaddaemon print a backtrace if it gets a sigsegv</li>
+		<li>fixed bug in reconnect parser, that posted post-data in the header, if it would also be valid (e.g. post-data is "login:xxxxx", it would be interpreted as a header)</li>
+		<li>Added plugin for netfolder.in</li>
+		<li>hopefully fixed the problem that sometimes, when downloading many files from rapidshare, the process suddenly stops when starting the next download</li>
+		<li>some fixes and improvements in filename-validtaion for downloaded files</li>
+		<li>improved unpacking functionality and made it more deadlock-secure. still some more testing required</li>
+		<li>implemented support for extracting zip-archives using the "unzip" program</li>
+		<li>added spanish language file for ddclient-php (https://sourceforge.net/tracker/?func=detail&aid=2975094&group_id=278029&atid=1180473)</li>
+		<li>added better checks when writing to the dlist file. You will get a logged error now</li>
+		<li>added spanish translation file for ddclient-gui (thanks to anonymous translator)</li>
+		<li>added client configuration to configuration dialog at ddclient-gui (language and update interval)</li>
+		<li>correctly reload plugin-cache if premium credetials have changed</li>
+		<li>correctly get the premium-credetials, even if its a subdomain URL</li>
+		<li>fixed compilation on older gcc 4.0 compilers that diddn't allow anonymous enums as template arguments</li>
+		<li>fixed small bug in download-serialization</li>
+		<li>improvements for downloaded files with a size of > 2GB by using stat64 instead of stat</li>
+		<li>fixed rsdf support (sometimes the last url in the file was missing)</li>
+		<li>fixed downloading if a plugin is needed and the URL contained "www." somewhere in the filename</li>
+	</ul>
+	<br>
+
+</div>
+
+<a href="http://sourceforge.net/projects/downloaddaemon"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=278029&amp;type=10" width="80" height="15" alt="Get DownloadDaemon at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+
+<!-- Piwik -->
+<script type="text/javascript">
+	var pkBaseURL = (("https:" == document.location.protocol) ? "https://sourceforge.net/apps/piwik/downloaddaemon/" : "http://sourceforge.net/apps/piwik/downloaddaemon/");
+	document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+</script><script type="text/javascript">
+	piwik_action_name = '';
+	piwik_idsite = 1;
+	piwik_url = pkBaseURL + "piwik.php";
+	piwik_log(piwik_action_name, piwik_idsite, piwik_url);
+</script>
+<object><noscript><p><img src="http://sourceforge.net/apps/piwik/downloaddaemon/piwik.php?idsite=1" alt="piwik"/></p></noscript></object>
+<!-- End Piwik Tag -->
+
+</body>
+</html>
