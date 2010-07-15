@@ -8,6 +8,7 @@ SET(daemon_SRCS downloaddaemon.cpp
 		tools/curl_callbacks.cpp 
                 mgmt/global_management.cpp
 		mgmt/mgmt_thread.cpp
+		mgmt/connection_manager.cpp
 		dl/download.cpp 
 		dl/recursive_parser.cpp
 		../include/netpptk/netpptk.cpp 

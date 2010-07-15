@@ -40,6 +40,7 @@ ROUTER stands for router hardware. DownloadDaemon supports reconnect scripts thr
        With this target you can specify router options (username/password/ip to connect, etc) (basically: this changes routerinfo.conf)
 PREMIUM with this target you can do Premium account setup for hosters. Basically you can try to put anything in there,
 	however, it will only work if there is a plugin for the desired host and if it supports Premium account handling.
+SUBSCRIPTION as of DD 1.1, a client can subscribe to changes, so you don't have to fetch the whole list with each refresh: With this target, you can set up what you want to subscribe.
 
 After specifing the target, at least one whitespace needs to follow, so now we got someting like "DDP DL ", "DDP VAR ", ...
 
@@ -106,6 +107,11 @@ For the target PREMIUM, you can use the following commands:
 	    possible answers are: 100 SUCCESS, 101 PROTOCOL (if you did something wrong) and 110 PERMISSION.
 	GET <host> Will return the specified username for the desired host. You can not receive the premium password
 	    with this command for security reason.
+	    
+For the target SUBSCRIPTION, you can use the following commands:
+	LIST will list everything you have currently subscribed
+	ADD <topic> will add a subscription to the executing client. Currently you can subscribe to SUBS_DOWNLOADS and SUBS_CONFIG (which you have to give the ADD command as a parameter
+	DEL <topic> will remove a subscription from the executing client. Again, specify which topic's subscription you want to remove, either SUBS_DOWNLOADS or SUBS_CONFIG.
 
 All error codes may vary between 100 and 999, to make parsing simple.
 For now, this list represents all codes:

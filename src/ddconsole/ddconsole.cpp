@@ -18,6 +18,9 @@
 #include <cstring>
 #include <netpptk/netpptk.h>
 #include <crypt/md5.h>
+#if defined(linux) || defined(__linux)
+#include <linux/fcntl.h>
+#endif
 using namespace std;
 
 void trim_string(std::string &str);
@@ -100,7 +103,39 @@ int main(int argc, char* argv[]) {
 	std::string snd;
 	while(true) {
 		cout << host << "> ";
+		cout.flush();
 		if(command.empty()) {
+			fd_set fds;
+
+
+			bool do_cont = false;
+			bool last_was_recv = false;
+			while(true) {
+				string tmp;
+				if(sock.select(0)) {
+					sock.recv(tmp);
+				}
+
+				if (tmp.size()) {
+					cout << endl << tmp;
+					cout.flush();
+					do_cont = true;
+					last_was_recv = true;
+					continue;
+				}
+				if (last_was_recv) {
+					cout << endl;
+					break;
+				}
+
+				struct timeval tv;
+				tv.tv_sec = 0;
+				tv.tv_usec = 50;
+				FD_ZERO(&fds);
+				FD_SET(0, &fds); // select() on stdin
+				if(select(1, &fds, 0, 0, &tv)) break;
+			}
+			if(do_cont) continue;
 			getline(cin, snd);
 		} else {
 			snd = command;

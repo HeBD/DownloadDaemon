@@ -1,3 +1,7 @@
+2010-07-15
+   [adrian]
+	- Added support for client-subscriptions (the client can subscribe to the download-list or the DownloadDaemon configuration and automatically receive updates)
+
 2010-07-13
    [adrian]
 	- Implementation of ddproxy.php. This lets you use a proxy for downloading/traffic limit bypassing without even having access

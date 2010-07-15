@@ -38,6 +38,7 @@
 #include "../dl/download_container.h"
 #include "../global.h"
 #include "global_management.h"
+#include "connection_manager.h"
 using namespace std;
 
 
@@ -66,11 +67,14 @@ void mgmt_thread_main() {
 
 	srand(time(NULL));
 
+	connection_manager::create_instance();
+
 
 	while(true) {
 		try {
-			tkSock* connection = new tkSock;
-			main_sock.accept(*connection);
+			client* connection = new client;
+			main_sock.accept(*(connection->sock));
+			connection_manager::instance()->add_client(connection);
 			thread t(bind(connection_handler, connection));
 			t.detach();
 		} catch(...) {
@@ -82,7 +86,8 @@ void mgmt_thread_main() {
 /** connection handle for management connections (callback function for tkSock)
  * @param sock the socket we get for communication with the other side
  */
-void connection_handler(tkSock *sock) {
+void connection_handler(client *connection) {
+	tkSock *sock = connection->sock;
 	std::string data;
 	std::string passwd(global_config.get_cfg_value("mgmt_password"));
 	if(*sock && passwd != "") {
@@ -139,6 +144,13 @@ void connection_handler(tkSock *sock) {
 		*sock << "100 SUCCESS";
 	}
 	while(*sock) {
+		while(true) {
+			if(connection->messagecount() > 0) {
+				*sock << connection->pop_message();
+			} else if(sock->select(50)) {
+				break;
+			}
+		}
 		if(sock->recv(data) == 0) {
 			*sock << "101 PROTOCOL";
 			break;
@@ -202,6 +214,14 @@ void connection_handler(tkSock *sock) {
 			}
 			trim_string(data);
 			target_premium(data, sock);
+		} else if(data.find("SUBSCRIPTION") == 0) {
+			data = data.substr(12);
+			if(data.length() == 0 || !isspace(data[0])) {
+				*sock << "101 PROTOCOL";
+				continue;
+			}
+			trim_string(data);
+			target_subscription(data, connection);
 		} else {
 			*sock << "101 PROTOCOL";
 			continue;
@@ -222,9 +242,12 @@ void connection_handler(tkSock *sock) {
 			}
 		}
 	}
-	delete sock;
+	connection_manager::instance()->del_client(connection->client_id);
 }
 
+//////////////////////////////////////////////
+////////// DL TARGET START ///////////////////
+//////////////////////////////////////////////
 
 void target_dl(std::string &data, tkSock *sock) {
 	if(data.find("LIST") == 0) {
@@ -547,6 +570,10 @@ void target_dl_get(std::string &data, tkSock *sock) {
 	}
 }
 
+////////////////////////////////////////////////
+/////////////// PKG TARGET START ///////////////
+////////////////////////////////////////////////
+
 void target_pkg(std::string &data, tkSock *sock) {
 	if(data.find("ADD") == 0) {
 		data = data.substr(3);
@@ -776,6 +803,10 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 	}
 }
 
+////////////////////////////////////////////////
+////////////////// VAR TARGET START ////////////
+////////////////////////////////////////////////
+
 void target_var(std::string &data, tkSock *sock) {
 	if(data.find("GET") == 0) {
 		data = data.substr(3);
@@ -829,6 +860,7 @@ void target_var_set(std::string &data, tkSock *sock) {
 		if(old_pw == global_config.get_cfg_value("mgmt_password")) {
 			if(global_config.set_cfg_value("mgmt_password", data.substr(data.find(';') + 1))) {
 				log_string("Changed management password", LOG_WARNING);
+				connection_manager::instance()->push_message(connection_manager::SUBS_CONFIG, "mgmt_password");
 				*sock << "100 SUCCESS";
 			} else {
 				log_string("Unable to write configuration file", LOG_ERR);
@@ -852,6 +884,7 @@ void target_var_set(std::string &data, tkSock *sock) {
 		if(variable_is_valid(identifier)) {
 			if(global_config.set_cfg_value(identifier, value)) {
 				*sock << "100 SUCCESS";
+				connection_manager::instance()->push_message(connection_manager::SUBS_CONFIG, identifier + " = " + value);
 			} else {
 				*sock << "110 PERMISSION";
 			}
@@ -993,6 +1026,10 @@ void target_file_getsize(std::string &data, tkSock *sock) {
 	}
 	*sock << int_to_string(st.st_size);
 }
+
+////////////////////////////////////////////////////
+///////////// ROUTER TARGET START //////////////////
+////////////////////////////////////////////////////
 
 void target_router(std::string &data, tkSock *sock) {
 	if(data.find("LIST") == 0) {
@@ -1140,6 +1177,9 @@ void target_router_get(std::string &data, tkSock *sock) {
 	}
 }
 
+/////////////////////////////////////////////////////
+//////////////// PREMIUM TARGET START ///////////////
+/////////////////////////////////////////////////////
 
 void target_premium(std::string &data, tkSock *sock) {
 	if(data.find("LIST") == 0) {
@@ -1216,3 +1256,73 @@ void target_premium_set(std::string &data, tkSock *sock) {
 	}
 
 }
+
+///////////////////////////////////////////////////////
+///////// SUBSCRIPTION TARGET START ///////////////////
+///////////////////////////////////////////////////////
+
+void target_subscription(std::string &data, client *cl) {
+	 tkSock *sock = cl->sock;
+	 if(data.find("ADD") == 0) {
+		 data = data.substr(3);
+		 if(data.length() == 0 || !isspace(data[0])) {
+			 *sock << "101 PROTOCOL";
+			 return;
+		 }
+		 trim_string(data);
+		 target_subscription_add(data, cl);
+	 } else if(data.find("DEL") == 0) {
+		 data = data.substr(3);
+		 if(data.length() == 0 || !isspace(data[0])) {
+			 *sock << "101 PROTOCOL";
+			 return;
+		 }
+		 trim_string(data);
+		 target_subscription_del(data, cl);
+	 } else if(data.find("LIST") == 0) {
+		 data = data.substr(4);
+		 trim_string(data);
+		 target_subscription_list(data, cl);
+	 } else {
+		 *sock << "101 PROTOCOL";
+	 }
+
+}
+
+void target_subscription_add(std::string &data, client *cl) {
+	 tkSock *sock = cl->sock;
+	 trim_string(data);
+	 connection_manager::subs_type type = connection_manager::string_to_subs(data);
+	 if(type == connection_manager::SUBS_NONE) {
+		  *sock << "108 VARIABLE";
+		  return;
+	 }
+	 cl->subscribe(type);
+	 *sock << "100 SUCCESS";
+}
+
+void target_subscription_del(std::string &data, client *cl) {
+	 tkSock *sock = cl->sock;
+	 trim_string(data);
+	 connection_manager::subs_type type = connection_manager::string_to_subs(data);
+	 if(type == connection_manager::SUBS_NONE) {
+		  *sock << "108 VARIABLE";
+		  return;
+	 }
+	 cl->unsubscribe(type);
+	 *sock << "100 SUCCESS";
+}
+
+void target_subscription_list(std::string &data, client *cl) {
+	 tkSock *sock = cl->sock;
+	 std::vector<connection_manager::subs_type> list = cl->list();
+	 std::stringstream ss;
+	 for(size_t i = 0; i < list.size(); ++i) {
+		  std::string tmp;
+		  connection_manager::subs_to_string(list[i], tmp);
+		  ss << tmp;
+		  if(i != list.size() - 1) ss << "\n";
+	 }
+	 *sock << ss.str();
+}
+

@@ -26,6 +26,7 @@
 #include "recursive_parser.h"
 #include "../plugins/captcha.h"
 #include "plugin_container.h"
+#include "../mgmt/connection_manager.h"
 
 #endif
 
@@ -48,6 +49,7 @@ download::download(const std::string& dl_url)
 	char timestr[20];
 	strftime(timestr, 20, "%Y-%m-%d %X", timeinfo);
 	add_date = timestr;
+	post_subscribers();
 	//add_date.erase(add_date.length() - 1);
 }
 
@@ -148,6 +150,7 @@ download::~download() {
 		status = DOWNLOAD_DELETED;
 		usleep(10);
 	}
+	post_subscribers();
 }
 
 std::string download::serialize() {
@@ -179,6 +182,42 @@ std::string download::serialize() {
 	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << status << '|'
 	<< dl_bytes << '|' << dl_size << '|' << output_file << "|\n";
 	return ss.str();
+}
+
+void download::create_client_line(std::string &ret) {
+	unique_lock<recursive_mutex> lock(mx);
+	string dl_bytes;
+	string dl_size;
+	stringstream conv1, conv2;
+	#ifndef HAVE_UINT64_T
+		conv1 << fixed << downloaded_bytes;
+		string tmp = conv1.str();
+		dl_bytes = tmp.substr(0, tmp.find("."));
+		conv2 << fixed << size;
+		tmp = conv2.str();
+		dl_size = tmp.substr(0, tmp.find("."));
+	#else
+		conv1 << fixed << downloaded_bytes;
+		dl_bytes = conv1.str();
+		conv2 << fixed << size;
+		dl_size = conv2.str();
+	#endif
+	while(dl_bytes.size() > 1 && dl_bytes[0] == '0') dl_bytes.erase(0, 1);
+	while(dl_size.size() > 1 && dl_size[0] == '0') dl_size.erase(0, 1);
+	std::stringstream ss;
+	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << get_status_str() << '|' << dl_bytes << '|'
+	   << dl_size << '|' << wait_seconds << '|' << get_error_str() << '|' << speed << '\n';
+	ret = ss.str();
+}
+
+void download::post_subscribers() {
+	unique_lock<recursive_mutex> lock(mx);
+	std::string line;
+	create_client_line(line);
+	if(line.size()) {
+		line.erase(line.size() - 1); // strip the \n
+		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
+	}
 }
 
 std::string download::get_host(bool do_lock) {
@@ -244,7 +283,7 @@ const char* download::get_status_str() {
 		case DOWNLOAD_RECONNECTING:
 			return "DOWNLOAD_RECONNECTING";
 		default:
-			return "DOWNLOAD_DELETING";
+			return "DOWNLOAD_DELETED";
 	}
 }
 
@@ -342,6 +381,7 @@ void download::download_me() {
 		global_download_list.start_next_downloadable();
 	}
 	global_download_list.dump_to_file();
+	post_subscribers();
 }
 
 void download::download_me_worker(dl_cb_info &cb_info) {
@@ -349,6 +389,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 	plugin_status success = prepare_download(plug_outp);
 
 	unique_lock<recursive_mutex> lock(mx);
+	post_subscribers();
 
 	std::string dlid_log = int_to_string(id);
 	if(need_stop) {
@@ -574,6 +615,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		output_file_s.write(cb_info.cache.c_str(), cb_info.cache.size());
 		downloaded_bytes += cb_info.cache.size();
 		output_file_s.close();
+		post_subscribers();
 
 		long http_code;
                 handle.getinfo(CURLINFO_RESPONSE_CODE, &http_code);
@@ -788,6 +830,7 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	} catch (...) {
 		log_string("Thread creation failed: package_container::correct_invalid_ids(). This may cause inconsitency! please report this!", LOG_ERR);
 	}
+	post_subscribers();
 	return retval;
 }
 
@@ -798,7 +841,7 @@ void download::post_process_download() {
 	std::string host(get_host());
 
 	// Load the plugin function needed
-        void (*post_process_func)(download_container& dlc, download*, int id, plugin_input& pinp);
+	void (*post_process_func)(download_container& dlc, download*, int id, plugin_input& pinp);
 	bool ret = plugin_cache.load_function(host, "post_process_dl_init", post_process_func);
 
 	if(!ret) {
@@ -819,7 +862,7 @@ void download::post_process_download() {
         global_download_list.dump_to_file();
 	lock.lock();
 	is_running = false;
-
+	post_subscribers();
 }
 
 void download::preset_file_status() {
@@ -877,6 +920,7 @@ void download::preset_file_status() {
 			status = DOWNLOAD_INACTIVE;
 		}
 		is_running = false;
+		post_subscribers();
 		return;
 	}
 
@@ -920,6 +964,7 @@ void download::preset_file_status() {
 		}
 	}
 	is_running = false;
+	post_subscribers();
 }
 
 std::string download::get_plugin_file() {
