@@ -17,6 +17,7 @@
 #include "dl/plugin_container.h"
 #include "mgmt/global_management.h"
 #include "tools/helperfunctions.h"
+#include "mgmt/connection_manager.h"
 
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
@@ -315,7 +316,7 @@ int main(int argc, char* argv[], char* env[]) {
 		int umask_i = 0;
 		umask_ss >> umask_i;
 		umask(umask_i);
-
+		connection_manager::create_instance();
 		global_download_list.from_file(dlist_fn.c_str());
 
 		// Create the needed folders

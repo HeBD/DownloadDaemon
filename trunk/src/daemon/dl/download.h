@@ -91,6 +91,14 @@ public:
 	*/
 	std::string serialize();
 
+	/** puts the download-properties in a single line for sending to a client
+	* @param the line
+	*/
+	void create_client_line(std::string &ret);
+
+	/** Posts the download to all clients that subscribed to SUBS_DOWNLOAD */
+	void post_subscribers();
+
 	/** Find out the hoster (needed to call the correct plugin)
 	* @returns host-string
 	*/
@@ -117,31 +125,31 @@ public:
 	friend bool operator<(const download& x, const download& y);
 
 	std::string get_url() const					{ std::lock_guard<std::recursive_mutex> lock(mx); return url; }
-	void set_url(const std::string &new_url) 	{ std::lock_guard<std::recursive_mutex> lock(mx); url = new_url; }
+	void set_url(const std::string &new_url) 	{ std::lock_guard<std::recursive_mutex> lock(mx); url = new_url; post_subscribers(); }
 
 	std::string get_title() const				{ std::lock_guard<std::recursive_mutex> lock(mx); return comment; }
-	void set_title(const std::string &title) 	{ std::lock_guard<std::recursive_mutex> lock(mx); comment = title; }
+	void set_title(const std::string &title) 	{ std::lock_guard<std::recursive_mutex> lock(mx); comment = title; post_subscribers(); }
 
 	std::string get_add_date() const			{ std::lock_guard<std::recursive_mutex> lock(mx); return add_date; }
-	void set_add_date(const std::string &new_add_date) { std::lock_guard<std::recursive_mutex> lock(mx); add_date = new_add_date; }
+	void set_add_date(const std::string &new_add_date) { std::lock_guard<std::recursive_mutex> lock(mx); add_date = new_add_date; post_subscribers(); }
 
 	int get_id() const							{ std::lock_guard<std::recursive_mutex> lock(mx); return id; }
-	void set_id(int new_id) 					{ std::lock_guard<std::recursive_mutex> lock(mx); id = new_id; }
+	void set_id(int new_id) 					{ std::lock_guard<std::recursive_mutex> lock(mx); id = new_id; post_subscribers(); }
 
 	filesize_t get_downloaded_bytes() const		{ std::lock_guard<std::recursive_mutex> lock(mx); return downloaded_bytes; }
-	void set_downloaded_bytes(filesize_t b) 		{ std::lock_guard<std::recursive_mutex> lock(mx); downloaded_bytes = b; }
+	void set_downloaded_bytes(filesize_t b) 		{ std::lock_guard<std::recursive_mutex> lock(mx); downloaded_bytes = b; post_subscribers(); }
 
 	filesize_t get_size() const					{ std::lock_guard<std::recursive_mutex> lock(mx); return size; }
-	void set_size(filesize_t b) 					{ std::lock_guard<std::recursive_mutex> lock(mx); size = b; }
+	void set_size(filesize_t b) 					{ std::lock_guard<std::recursive_mutex> lock(mx); size = b; post_subscribers(); }
 
 	int get_wait() const						{ std::lock_guard<std::recursive_mutex> lock(mx); return wait_seconds; }
-	void set_wait(int w) 						{ std::lock_guard<std::recursive_mutex> lock(mx); wait_seconds = w; }
+	void set_wait(int w) 						{ std::lock_guard<std::recursive_mutex> lock(mx); wait_seconds = w; post_subscribers(); }
 
 	plugin_status get_error() const				{ std::lock_guard<std::recursive_mutex> lock(mx); return error; }
-	void set_error(plugin_status e)				{ std::lock_guard<std::recursive_mutex> lock(mx); error = e; }
+	void set_error(plugin_status e)				{ std::lock_guard<std::recursive_mutex> lock(mx); error = e; post_subscribers(); }
 
 	std::string get_filename() const			{ std::lock_guard<std::recursive_mutex> lock(mx); return output_file; }
-	void set_filename(const std::string &fn) 	{ std::lock_guard<std::recursive_mutex> lock(mx); output_file = fn; }
+	void set_filename(const std::string &fn) 	{ std::lock_guard<std::recursive_mutex> lock(mx); output_file = fn; post_subscribers(); }
 
 	bool get_running() const					{ std::lock_guard<std::recursive_mutex> lock(mx); return is_running; }
 	void set_running(bool r) 					{ std::lock_guard<std::recursive_mutex> lock(mx); is_running = r; }
@@ -152,10 +160,10 @@ public:
 	download_status get_status() const			{ std::lock_guard<std::recursive_mutex> lock(mx); return status; }
 	void set_status(download_status st)			{ std::lock_guard<std::recursive_mutex> lock(mx); if(status == DOWNLOAD_DELETED) return;
 												  status = st;
-												  if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) { need_stop = true; wait_seconds = 0; } }
+												  if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) { need_stop = true; wait_seconds = 0; } post_subscribers(); }
 
 	int get_speed()	const						{ std::lock_guard<std::recursive_mutex> lock(mx); return speed; }
-	void set_speed(int s)						{ std::lock_guard<std::recursive_mutex> lock(mx); speed = s; }
+	void set_speed(int s)						{ std::lock_guard<std::recursive_mutex> lock(mx); speed = s; post_subscribers(); }
 
 	bool get_resumable() const					{ std::lock_guard<std::recursive_mutex> lock(mx); return can_resume; }
 	void set_resumable(bool r) 					{ std::lock_guard<std::recursive_mutex> lock(mx); can_resume = r; }

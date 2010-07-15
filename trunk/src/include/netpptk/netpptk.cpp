@@ -255,22 +255,26 @@ bool tkSock::send(const std::string &s) {
 	return true;
 }
 
-int tkSock::recv(std::string& s) {
+int tkSock::recv(std::string& s, int flags) {
 	char initbuf[21];
 	s = "";
 	memset(initbuf, 0, 21);
-	int status = ::recv(m_sock, initbuf, 21, MSG_NOSIGNAL);
- 	if(status <= 0) {
+	int status = ::recv(m_sock, initbuf, 21, MSG_NOSIGNAL | MSG_PEEK | flags);
+	if(status < 0) {
+#if defined(linux) || defined(__linux)
+		if(flags & MSG_DONTWAIT)
+			return 0;
+#endif
 		valid = false;
 		return 0;
 	}
 	s.append(initbuf, status);
+	size_t headerlen = s.size();
 	int msgLen = remove_header(s);
+	headerlen -= s.size();
 	if(msgLen == -1) {
 		s = "";
 		valid = false;
-		return status;
-	} else if(s.length() >= (unsigned)msgLen) {
 		return status;
 	}
 
@@ -282,13 +286,24 @@ int tkSock::recv(std::string& s) {
 		return status;
 	}
 
+	// because we only PEEKed the socket-queue, we now have to take out the header and ignore it
+	::recv(m_sock, initbuf, headerlen, MSG_NOSIGNAL | flags);
+	s.clear();
 	char *buf = new char[m_maxrecv + 1];
-	while(s.length() < (unsigned)msgLen) {
+	status = 0;
+	while(status < (unsigned)msgLen) {
 		memset(buf, 0, m_maxrecv + 1);
 		int old_status = status;
-		status += ::recv(m_sock, buf, m_maxrecv, 0);
-		if(status <= old_status) {
+		int to_recv = m_maxrecv;
+		if(to_recv > msgLen - status)
+			to_recv = msgLen - status;
+		status += ::recv(m_sock, buf, to_recv, MSG_NOSIGNAL | flags);
+		if(status < old_status) {
 			valid = false;
+#if defined(linux) || defined(__linux)
+			if (flags & MSG_DONTWAIT)
+				valid = true;
+#endif
 			tv.tv_sec = 0;
 			setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(tv));
 			delete [] buf;
@@ -359,6 +374,28 @@ int tkSock::remove_header(std::string &data) {
 	ss >> retval;
 	data.erase(0, NumberString.length() + 1);
 	return retval;
+}
+
+bool tkSock::select(long msec) {
+#if defined(linux) || defined(__linux)
+	// On linux, we emulate a select-call by calling nonblocking, peeking recv because sometimes a
+	// recv call might block even if select() reported that there is data to get. This is a more robust way.
+	char buf[1];
+	int bytes = ::recv(m_sock, buf, 1, MSG_NOSIGNAL | MSG_PEEK | MSG_DONTWAIT);
+	if(bytes > 0)
+		return true;
+	return false;
+#endif
+	 fd_set set;
+	 FD_ZERO(&set);
+	 FD_SET(m_sock, &set);
+	 struct timeval t;
+	 t.tv_sec = 0;
+	 t.tv_usec = msec;
+	 int ret = ::select(m_sock + 1, &set, 0, 0, &t);
+	 if(ret == 1)
+		  return true;
+	 return false;
 }
 
 tkSock::operator bool() const {

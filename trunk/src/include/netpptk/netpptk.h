@@ -81,7 +81,7 @@ public:
 	*	@param s String to store the received data
 	*	@returns The number of received bytes, negative value on error
 	*/
-	int recv(std::string &s);
+	int recv(std::string &s, int flags = 0);
 
 	/** Convert the object to book to use easy if(..) constructs for validity-checks */
 	operator bool() const;
@@ -104,6 +104,12 @@ public:
 	*	@reutrns Peer ip-address, empty string if it fails
 	*/
 	std::string get_peer_name();
+
+	/** Checks if there is data on the socket to be read
+	*  @param msec Specifies how long to wait for input before returning in milliseconds (may be 0)
+	*  @returns true if there is data
+	*/
+	bool select(long msec = 0);
 
 
 private:

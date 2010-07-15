@@ -17,17 +17,19 @@
 #include "../dl/download.h"
 #include <cfgfile/cfgfile.h>
 #include <netpptk/netpptk.h>
+#include "connection_manager.h"
 
 
 void mgmt_thread_main();
 
-void connection_handler(tkSock *sock);
+void connection_handler(client *connection);
 void target_dl(std::string &data, tkSock *sock);
 void target_pkg(std::string &data, tkSock *sock);
 void target_var(std::string &data, tkSock *sock);
 void target_file(std::string &data, tkSock *sock);
 void target_router(std::string &data, tkSock *sock);
 void target_premium(std::string &data, tkSock *sock);
+void target_subscription(std::string &data, client *cl);
 
 void target_dl_list(std::string &data, tkSock *sock);
 void target_dl_add(std::string &data, tkSock *sock);
@@ -64,4 +66,9 @@ void target_router_get(std::string &data, tkSock *sock);
 void target_premium_list(std::string &data, tkSock *sock);
 void target_premium_set(std::string &data, tkSock *sock);
 void target_premium_get(std::string &data, tkSock *sock);
+
+
+void target_subscription_add(std::string &data, client *cl);
+void target_subscription_del(std::string &data, client *cl);
+void target_subscription_list(std::string &data, client *cl);
 #endif /*MGMT_THREAD_H_*/
