@@ -189,6 +189,9 @@ std::vector<package> downloadc::get_list(){
     }
 
     for( ; content_it != new_content.end(); content_it++){
+        if(content_it->size() < 1) // ignore blank lines
+            continue;
+
         if((*content_it)[0] == "PACKAGE"){ // we have a package line
 
             if(!empty_package){
