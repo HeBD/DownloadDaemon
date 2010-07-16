@@ -111,6 +111,8 @@ ELSE(CYGWIN)
 	add_definitions(-rdynamic)
 ENDIF(CYGWIN)
 
+
+
 find_package(CURL REQUIRED)
 
 IF(CURL_FOUND AND HAVE_POPEN)

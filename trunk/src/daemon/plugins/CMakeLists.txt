@@ -36,6 +36,7 @@ IF(NOT CYGWIN)
 	add_definitions(-rdynamic)
 ENDIF(NOT CYGWIN)
 
+
 find_package(CURL REQUIRED)
 
 IF(CURL_FOUND AND HAVE_POPEN)
@@ -59,6 +60,10 @@ IF(CURL_FOUND AND HAVE_POPEN)
 		set_target_properties(${plugins} PROPERTIES LINK_FLAGS "-L..")
 		#SET(CMAKE_MODULE_LINKER_FLAGS ${CMAKE_MODULE_LINKER_FLAGS} -L../ -lDownloadDaemon --enable-runtime-pseudo-reloc)
 	ENDIF(CYGWIN)
+
+	IF(APPLE)
+		set(CMAKE_MODULE_LINKER_FLAGS "-undefined suppress -flat_namespace")
+	ENDIF(APPLE)
 	
 	SET(link_libs ${CURL_LIBRARIES})
 	IF(CYGWIN)
@@ -68,6 +73,7 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	IF(NOT USE_STD_THREAD)
 		find_package(Boost 1.36.0 REQUIRED COMPONENTS thread)
 		SET(link_libs ${link_libs} ${Boost_LIBRARIES})
+		INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 	ELSE(NOT USE_STD_THREAD)
 		SET_TARGET_PROPERTIES(${plugins} PROPERTIES COMPILE_FLAGS -std=c++0x)
 	ENDIF(NOT USE_STD_THREAD)
