@@ -206,7 +206,7 @@ void download::create_client_line(std::string &ret) {
 	while(dl_size.size() > 1 && dl_size[0] == '0') dl_size.erase(0, 1);
 	std::stringstream ss;
 	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << get_status_str() << '|' << dl_bytes << '|'
-	   << dl_size << '|' << wait_seconds << '|' << get_error_str() << '|' << speed << '\n';
+	   << dl_size << '|' << wait_seconds << '|' << get_error_str() << '|' << speed;
 	ret = ss.str();
 }
 
@@ -214,10 +214,7 @@ void download::post_subscribers() {
 	unique_lock<recursive_mutex> lock(mx);
 	std::string line;
 	create_client_line(line);
-	if(line.size()) {
-		line.erase(line.size() - 1); // strip the \n
-		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
-	}
+	connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
 }
 
 std::string download::get_host(bool do_lock) {
