@@ -103,7 +103,13 @@ INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include_downloadd/ ../include)
 
 CHECK_FUNCTION_EXISTS(popen HAVE_POPEN)
 
-add_definitions(-rdynamic)
+
+IF(CYGWIN)
+	#add_definitions(-Wl,-out-implib,libDownloadDaemon.dll.a)
+	set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-all-symbols,--enable-runtime-pseudo-reloc,-out-implib,libDownloadDaemon.dll.a)
+ELSE(CYGWIN)
+	add_definitions(-rdynamic)
+ENDIF(CYGWIN)
 
 find_package(CURL REQUIRED)
 

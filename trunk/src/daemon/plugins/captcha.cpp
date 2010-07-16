@@ -11,10 +11,12 @@
 
 #include "captcha.h"
 
+
 #include <string>
 #include <fstream>
 #include <cstring>
 #include <iostream>
+
 
 #include <sys/stat.h>
 using namespace std;
