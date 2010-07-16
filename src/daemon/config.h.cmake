@@ -19,7 +19,7 @@
 	#endif
 #endif
 
-#ifdef HAVE_STAT64
+#if defined(HAVE_STAT64) && !defined(__APPLE__)
         #define pstat stat64
 #else
         #define pstat stat
