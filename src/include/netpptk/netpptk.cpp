@@ -259,7 +259,7 @@ int tkSock::recv(std::string& s, int flags) {
 	char initbuf[21];
 	s = "";
 	memset(initbuf, 0, 21);
-	int status = ::recv(m_sock, initbuf, 21, MSG_NOSIGNAL | MSG_PEEK | flags);
+	long status = ::recv(m_sock, initbuf, 21, MSG_NOSIGNAL | MSG_PEEK | flags);
 	if(status < 0) {
 #if defined(linux) || defined(__linux)
 		if(flags & MSG_DONTWAIT)
@@ -270,7 +270,7 @@ int tkSock::recv(std::string& s, int flags) {
 	}
 	s.append(initbuf, status);
 	size_t headerlen = s.size();
-	int msgLen = remove_header(s);
+	long msgLen = remove_header(s);
 	headerlen -= s.size();
 	if(msgLen == -1) {
 		s = "";
@@ -291,7 +291,7 @@ int tkSock::recv(std::string& s, int flags) {
 	s.clear();
 	char *buf = new char[m_maxrecv + 1];
 	status = 0;
-	while(status < (unsigned)msgLen) {
+	while(status < msgLen) {
 		memset(buf, 0, m_maxrecv + 1);
 		int old_status = status;
 		int to_recv = m_maxrecv;
