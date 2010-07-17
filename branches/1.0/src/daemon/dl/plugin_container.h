@@ -60,12 +60,12 @@ public:
 	void* operator[](std::string plg);
 
 	template <typename func>
-	bool load_function(const std::string &host, const std::string& sym, func& ret) {
+        bool load_function(const std::string &host, const std::string& sym, func& ret, bool log_error = true) {
 		void* h = operator[](host);
 		if(!h) return false;
 		ret = (func)dlsym(h, sym.c_str());
 		const char *dl_error;
-		if ((dl_error = dlerror()) != NULL)  {
+                if ((dl_error = dlerror()) != NULL && log_error)  {
 			log_string(std::string("Unable to execute plugin function: ") + dl_error, LOG_ERR);
 			return false;
 		}
