@@ -131,20 +131,17 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../LICENCE DESTINATION share/downlo
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../share/downloaddaemon/reconnect DESTINATION share/downloaddaemon PATTERN ".svn" EXCLUDE)
 
 
-IF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/downloaddaemon.conf")
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/downloaddaemon.conf DESTINATION "$ENV{DESTDIR}/${DD_CONF_DIR}" PERMISSIONS OWNER_READ
-OWNER_WRITE)
-ENDIF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/downloaddaemon.conf")
+#IF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/downloaddaemon.conf")
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/downloaddaemon.conf DESTINATION "${DD_CONF_DIR}" PERMISSIONS OWNER_READ OWNER_WRITE)
+#ENDIF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/downloaddaemon.conf")
 
-IF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/routerinfo.conf")
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/routerinfo.conf DESTINATION "$ENV{DESTDIR}/${DD_CONF_DIR}" PERMISSIONS OWNER_READ
-OWNER_WRITE)
-ENDIF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/routerinfo.conf")
+#IF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/routerinfo.conf")
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/routerinfo.conf DESTINATION "${DD_CONF_DIR}" PERMISSIONS OWNER_READ OWNER_WRITE)
+#ENDIF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/routerinfo.conf")
 
-IF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/premium_accounts.conf")
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/premium_accounts.conf DESTINATION "$ENV{DESTDIR}/${DD_CONF_DIR}" PERMISSIONS OWNER_READ
-OWNER_WRITE)
-ENDIF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/premium_accounts.conf")
+#IF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/premium_accounts.conf")
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../etc/downloaddaemon/premium_accounts.conf DESTINATION "${DD_CONF_DIR}" PERMISSIONS OWNER_READ OWNER_WRITE)
+#ENDIF(NOT EXISTS "$ENV{DESTDIR}/${DD_CONF_DIR}/premium_accounts.conf")
 
 
 
