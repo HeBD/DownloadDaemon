@@ -184,10 +184,10 @@ replace="${replace/
 # different copyright\/license attached and list them here./}"
 echo "$replace" > copyright
 
-replace="$(<dirs)"
-replace+="
-/usr/share"
-echo "$replace" > dirs
+#replace="$(<dirs)"
+#replace+="
+#/usr/share"
+#echo "$replace" > dirs
 
 rm docs cron.d.ex ddclient-gui.default.ex ddclient-gui.doc-base.EX emacsen-install.ex emacsen-remove.ex emacsen-startup.ex init.d.ex init.d.lsb.ex manpage.* menu.ex README.Debian watch.ex postinst.ex  postrm.ex  preinst.ex  prerm.ex
 cd ../..

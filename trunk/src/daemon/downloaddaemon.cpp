@@ -335,6 +335,14 @@ int main(int argc, char* argv[], char* env[]) {
 		global_mgmt::curr_end_time = global_config.get_cfg_value("download_timing_end");
 		global_mgmt::downloading_active = global_config.get_bool_value("downloading_active");
 		global_mgmt::ns_mutex.unlock();
+		
+		if(args.find("--daemon") != args.end()) {
+			int j = fork();
+			if (j < 0) return 1; /* fork error */
+			if (j > 0) return 0; /* parent exits */
+			/* child (daemon) continues */
+			setsid();	
+		}
 
 		plugin_cache.load_plugins();
 		stringstream plglog;

@@ -787,7 +787,6 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 
 	// enable a proxy if neccessary
 	string proxy_str = proxy;
-        proxy_str = "http://secret@adrian.batzill.com/proxy.php";
 	if(!proxy_str.empty()) {
             size_t n;
             std::string proxy_ipport;
@@ -799,10 +798,10 @@ plugin_status download::prepare_download(plugin_output &poutp) {
                 }
                 handle.setopt(CURLOPT_PROXYUSERPWD, user);
                 handle.setopt(CURLOPT_PROXY, proxy_str),
-                log_string("Setting proxy: " + proxy_str + " for " + url, LOG_DEBUG);
+                log_string("Setting proxy: " + proxy_str + " for " + url, LOG_INFO);
             } else {
                 handle.setopt(CURLOPT_PROXY, proxy_str.c_str());
-                log_string("Setting proxy: " + proxy_str + " for " + url, LOG_DEBUG);
+                log_string("Setting proxy: " + proxy_str + " for " + url, LOG_INFO);
             }
 	}
 

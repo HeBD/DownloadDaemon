@@ -19,7 +19,7 @@ case "$1" in
    		echo "This script must be run as root" 1>&2
    		exit 1
 	fi
-	DownloadDaemon -d
+	DownloadDaemon -d 2> /dev/null
 	;;
   stop)
 	if [ "$(id -u)" != "0" ]; then
@@ -37,7 +37,7 @@ case "$1" in
    		exit 1
 	fi
 	killall DownloadDaemon 2> /dev/null
-	DownloadDaemon -d
+	DownloadDaemon -d 2> /dev/null
 	;;
   status)
 	echo "Status of DownloadDaemon:"
