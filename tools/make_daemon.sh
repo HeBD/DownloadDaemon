@@ -1,18 +1,18 @@
 #!/bin/bash
 
 # debian target distribution
-DEB_DIST="karmic"
+DEB_DIST="lucid"
 
 # upstream authors "Name LastName <mail@foo.foo>", seperated by newline and 4 spaces
 UPSTREAM_AUTHORS="Adrian Batzill <adrian # batzill ! com>
     Susanne Eichel <susanne.eichel # web ! de>"
 
 # copyright holders "Copyright (C) {Year(s)} by {Author(s)} {Email address(es)}", seperated by newline and 4 spaces
-COPYRIGHT_HOLDERS="Copyright (C) 2009 by Adrian Batzill <adrian # batzill ! com>
-    Copyright (C) 2009 by Susanne Eichel <susanne.eichel # web ! de>"
+COPYRIGHT_HOLDERS="Copyright (C) 2009, 2010 by Adrian Batzill <adrian # batzill ! com>
+    Copyright (C) 2009, 2010 by Susanne Eichel <susanne.eichel # web ! de>"
 
 # build dependencies
-BUILDDEP_DD="debhelper (>= 7), cmake, libboost-thread-dev (>=1.37.0) | libboost-thread1.37-dev, libcurl4-gnutls-dev"
+BUILDDEP_DD="debhelper (>= 7), cmake, libboost-thread-dev (>=1.37.0), libcurl4-gnutls-dev"
 
 # dependencies (leave empty for auto-detection)
 DEP_DD=""
@@ -33,9 +33,9 @@ DESC_DD="DownloadDaemon is a download manager with many features
 
 # specify all files/directorys (array) and the path's where they should go to (basically a cp -r FILES_XXX[i] PATHS_XXX[i] is done)
 # the .svn folders are removed automatically. Folders are created automatically before copying
-FILES_DD=("../src/daemon" "../src/include/netpptk" "../src/include/crypt" "../src/include/cfgfile" "../etc/downloaddaemon" "../etc/init.d/downloadd" "../share/downloaddaemon/reconnect" "../share/downloaddaemon/plugins/captchadb/*.tar.bz2"
+FILES_DD=("../src/daemon" "../src/include/netpptk" "../src/include/crypt" "../src/include/cfgfile" "../src/include/ddcurl.h" "../etc/downloaddaemon" "../etc/init.d/downloadd" "../share/downloaddaemon/reconnect" "../share/downloaddaemon/plugins/captchadb/*.tar.bz2"
 "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
-PATHS_DD=("src/" "src/include" "src/include" "src/include" "etc/" "etc/init.d" "share/downloaddaemon" "share/downloaddaemon/plugins/captchadb/")
+PATHS_DD=("src/" "src/include" "src/include" "src/include" "src/include" "etc/" "etc/init.d" "share/downloaddaemon" "share/downloaddaemon/plugins/captchadb/")
 
 script_dir=`pwd`
 
@@ -154,11 +154,11 @@ replace="${replace/
 # different copyright\/license attached and list them here./}"
 echo "$replace" > copyright
 
-replace="$(<dirs)"
-replace+="
-/etc/downloaddaemon
-/usr/share"
-echo "$replace" > dirs
+#replace="$(<dirs)"
+#replace+="
+#/etc/downloaddaemon
+#/usr/share"
+#echo "$replace" > dirs
 
 mv postinst.ex postinst
 mv postrm.ex postrm
