@@ -16,6 +16,7 @@ single Download->Descarga única
 many Downloads->Descarga múltiple
 Add single Download (no Title necessary)->Añadir descarga única (no requiere título)
 Add many Downloads (one per Line, no Title necessary)->Añadir descarga múltiple (una por linea, no requiere título)
+Separate into different Packages->Separar en Paquetes diferentes
 Title->Título
 Separate URL and Title like this: http://something.aa/bb|a fancy Title->Separar el enlace y el título, por ejemplo: http://dominio.ext/enlace|Mi título
 Please connect before adding Downloads.->Por favor conectate antes de añadir descargas.
@@ -23,7 +24,8 @@ No Connection to Server->No hay conexión con el Servidor
 At least one inserted URL was invalid.->Al menos uno de los enlaces no es válido
 Invalid URL->Enlace no válido
 Package->Paquete
-Failed to create Package.->No se ha podido crear el paquete
+Failed to create Package.->No se ha podido crear el paquete.
+fill Title from URL->rellenar el Título desde la URL
 
 #configure dialog
 Configure DownloadDaemon->Configuración de DownloadDaemon
@@ -39,6 +41,7 @@ No Connection to Downloaddaemon->No hay conexión con DownloadDaemon
 overwrite existing Files->Sobreescribir los archivos existentes
 refuse existing Links->Rechazar los enlaces existentes
 check Size and Availability on adding->comprobar Tamaño y la Disponibilidad de añadir
+Captcha retries->Reintentos Captcha
 
 Download Time->Horario de descarga
 Download Folder->Carpeta de descarga
@@ -62,7 +65,7 @@ This option specifies how logging should be done\n(Standard output, Standard err
 stdout - Standard output->stdout - Salida Estandar
 stderr - Standard error output->stderr - Salida de Error Estandar
 file:->Fichero:
-enter path->entrar Camino
+enter path->introducir ruta
 Warning->Alerta
 Severe->Grave
 Off->Desactivado
@@ -84,10 +87,16 @@ Failed to reset the Password.->No se ha podido establecer la contraseña.
 Proxy->Proxy
 You can provide a list of proxys to use proxy-alternation. For hosters with an IP-based\nbandwidth-limit, this can bypass such restrictions by using different proxies.\n\nOne entry per Line. User, Password and Port are optional.\nFormat: <user>:<password>@<ip-address>:<port>\nFor example: tom:mypass@123.456.7.89:5115 or tom@hello.de:1234 or hello.de->Lista de proxies para descarga desde sitios con limite de ancho de banda basado en\nIP,permite saltarse las restricciones usando los proxies.\nUna entrada por línea. El usuario, contraseña y puerto so opcionales.\nFormato: <usuario>:<contraseña>@<dirección-ip>:<puerto>\nPor ejemplo: manolo:clave@11.22.33.44:555 o manolo@hi.ext:555 o dominio.ext
 If a connection to a server fails when using a proxy, should DownloadDaemon retry with\nanother proxy?->Si falla la conexión a un servidor usando un proxy, ¿Debe intentarlo\nDownloadDaemon con otro proxy?
-retry->Reintentar
+retry->reintentar
 
 Client->Cliente
-Update Interval in s->Actualización Intervalo en s
+Update Interval in s->Intervalo de actualización en s
+
+Package Extractor->Extractor de Paquetes
+enable->activar
+delete extracted Archives->eliminar Archivos extraidos
+Supply a list of passwords that should always be tried to extract archives. If you set a\npassword for a specific package, that password will be used. If you set no password,\nExtraction will be tried without a password and with this list.\nOne entry per Line.->Proporciona una lista de contraseñas con las que se debería intentar extraer siempre los archivos, si especificas\nuna contraseña específica para un paquete, entonces se usara esa. Si no indicas ninguna\nse intentará sin contraseña y con todas las de la lista.\nPon una contraseña por línea.
+
 
 #connect dialog
 Connect to Host->Conectar al Servidor
@@ -98,7 +107,7 @@ Save Data->Guardar datos
 Language->Idioma
 
 Encrypted authentication not supported by server.->El protocolo de autenticación encriptada no es soportado por el Servidor.
-Do you want to try unsecure plain-text authentication?->¿Quieres conectarte mediante autenticación sin encriptar?
+Do you want to try unsecure plain-text authentication?->¿Quieres conectarte mediante autenticación sin encriptar (no segura)?
 No Encryption->Sin Encriptación
 Unknown Error while Authentication.->Error desconocido durante la autenticación.
 Authentication Error->Error en la autenticación.
@@ -116,11 +125,11 @@ Always no->No a todo
 
 #main dialog
 Auto Connection: No Encryption Supported->Conexión automática: Encriptación no soportada
-Please reconnect.->Por favor vuelve a conectar
+Please reconnect.->Por favor vuelve a conectar.
 No Connection to Server->No hay conexión con el Servidor
 Not connected->Desconectado
 Connected to->Conectado a
-Selected Size->Tamaño seleccionados
+Selected Size->Tamaño seleccionado
 Total Speed->Velocidad total
 Pending Queue Size->Tamaño pendiente
 
@@ -136,7 +145,7 @@ Delete Download->Eliminar Descarga
 Delete finished Downloads->Eliminar Descargas Finalizadas
 Select all->Seleccionar Todo
 Copy URL->Copiar Enlace
-Paste URL->Pasta Enlace
+Paste URL->Pegar Enlace
 Quit->Salir
 File->Archivo
 About->Acerca de
@@ -153,7 +162,7 @@ Delete File->Eliminar Archivo
 Activate->Activar
 Activate the selected Download->Activar las Descargas Seleccionadas
 Deactivate->Desactivar
-Deactivate the selected Download->Desactivas las Descargas Seleccionadas
+Deactivate the selected Download->Desactivar las Descargas Seleccionadas
 Increase Priority->Aumentar Prioridad
 Increase Priority of the selected Download->Aumentar Prioridad de las Descargas Seleccionadas
 Decrease Priority->Reducir Prioridad
@@ -164,7 +173,7 @@ Time left->Tiempo restante
 
 Download running. Waiting.->Descarga iniciada, Esperando.
 Error->Error
-Retrying soon.->Reintentando en breve
+Retrying soon.->Reintentando en breve.
 Running->Iniciado
 Download Inactive.->Descarga Inactiva.
 Download Inactive and Finished.->Descarga Inactiva e Finalizada.
@@ -187,7 +196,7 @@ Unknown plugin error - please report->Error en el plugin - por favor informar
 Size->Tamaño
 
 Please connect before deleting Downloads.->Hay que conectarse para poder eliminar Descargas.
-Do you really want to delete\nthe selected Download(s)?->¿Estas seguro de que desea eliminar las Descargas seleccionadas?
+Do you really want to delete\nthe selected Download(s)?->¿Esta seguro de que desea eliminar las Descargas seleccionadas?
 Delete Downloads->Eliminar Descargas
 Error occured at deleting File of Download %p1.->Se ha producido un error eliminando el Archivo de la Descarga %p1.
 At least one Row should be selected.->Hay que seleccionar al menos una fila.
@@ -209,9 +218,9 @@ Please connect before you activate Downloading.->Hay que conectarse para poder a
 Please connect before you deactivate Downloading.->Hay que conectarse para poder desactivar las descargas.
 Please connect before copying URLs.->Hay que conectarse para poder copiar enlaces.
 Please connect before changing Packages.->Hay que conectarse para poder cambiar los paquetes.
-Couldn't write into clipboard.->No se ha podido escribir en el portapapeles
+Couldn't write into clipboard.->No se ha podido escribir en el portapapeles.
 Clipboard Error->Error en portapapeles
-Enter Package Password->Introduce la Contraseña del paquete
+Enter Package Password->Introduce la Contraseña del Paquete
 Please connect before changing the Download List.->Hay que conectarse para poder para poder editar la lista de Descargas.
 Enter Title->Introduce el título
 Enter Title of Package %p1->Introduce el título del paquete %p1
