@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # debian target distribution
-DEB_DIST="karmic"
+DEB_DIST="lucid"
 
 # upstream authors "Name LastName <mail@foo.foo>", seperated by newline and 4 spaces
 UPSTREAM_AUTHORS="Adrian Batzill <adrian # batzill ! com>
