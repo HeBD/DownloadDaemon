@@ -99,9 +99,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         handle->setopt(CURLOPT_POST, 0);
         handle->setopt(CURLOPT_COPYPOSTFIELDS, "");
 
-        ofstream ofs("/home/ben/out.html");
-        ofs.write(resultstr.c_str(), resultstr.size());
-
 	if(resultstr.find("Or try again in about") != std::string::npos) {
 		pos = resultstr.find("Or try again in about");
 		pos = resultstr.find("about", pos);
