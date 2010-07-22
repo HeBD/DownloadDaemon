@@ -33,12 +33,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		outp.allows_resumption = true;
 		string post_data("sub=getaccountdetails_v1&withcookie=1&type=prem&login=" + inp.premium_user + "&password=" + inp.premium_password);
 		string result;
-                handle->setopt(CURLOPT_URL, "http://api.rapidshare.com/cgi-bin/rsapi.cgi");
-                handle->setopt(CURLOPT_POST, 1);
-                handle->setopt(CURLOPT_POSTFIELDS, post_data.c_str());
+                handle->setopt(CURLOPT_URL, string("http://api.rapidshare.com/cgi-bin/rsapi.cgi?" + post_data).c_str());
                 handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
                 handle->setopt(CURLOPT_WRITEDATA, &result);
-                handle->setopt(CURLOPT_SSL_VERIFYPEER, false);
                 handle->setopt(CURLOPT_COOKIEFILE, "");
                 int res = handle->perform();
 		if(res == 0) {
