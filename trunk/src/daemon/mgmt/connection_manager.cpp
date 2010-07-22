@@ -119,3 +119,9 @@ std::vector<connection_manager::subs_type> client::list() {
 	 std::lock_guard<std::mutex> lock(mx);
 	 return subscriptions;
 }
+
+bool client::has_subscription(connection_manager::subs_type type) {
+    if(find(subscriptions.begin(), subscriptions.end(), type) == subscriptions.end())
+        return false;
+    return true;
+}

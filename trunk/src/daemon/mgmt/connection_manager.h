@@ -53,6 +53,7 @@ public:
 	 size_t      messagecount();
 	 void        subscribe   (connection_manager::subs_type type);
 	 void        unsubscribe (connection_manager::subs_type type);
+         bool        has_subscription(connection_manager::subs_type type);
 
 	 std::vector<connection_manager::subs_type> list();
 
