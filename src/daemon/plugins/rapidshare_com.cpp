@@ -45,7 +45,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 			outp.download_url = get_url();
 			// get the handle ready (get cookies)
-                        handle->setopt(CURLOPT_POST, 0);
+			handle->setopt(CURLOPT_POST, 0);
 			size_t pos = result.find("cookie=");
 			if(pos == string::npos)
 				return PLUGIN_AUTH_FAIL;
