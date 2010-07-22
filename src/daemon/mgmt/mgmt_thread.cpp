@@ -144,13 +144,17 @@ void connection_handler(client *connection) {
 		*sock << "100 SUCCESS";
 	}
 	while(*sock) {
-		while(true) {
-			if(connection->messagecount() > 0) {
-				*sock << connection->pop_message();
-			} else if(sock->select(50)) {
-				break;
+		if(!connection->list().empty()) {
+			// the client subscribed to something, so we have to check for commands and subscription updates at the same time
+			while(true) {
+				if(connection->messagecount() > 0) {
+					*sock << connection->pop_message();
+				} else if(sock->select(100) || !*sock) {
+					break;
+				}
 			}
 		}
+		if(!*sock) break;
 		if(sock->recv(data) == 0) {
 			*sock << "101 PROTOCOL";
 			break;
