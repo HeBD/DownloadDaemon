@@ -97,20 +97,23 @@ public:
         }
 
 
-        std::string escape(const std::string &url) {
-            if(!handle) handle = curl_easy_init();
-            char *ret = curl_easy_escape(handle, url.c_str(), 0);
+		static std::string escape(const std::string &url) {
+			CURL *tmph = curl_easy_init();
+			char *ret = curl_easy_escape(tmph, url.c_str(), url.size());
+			curl_easy_cleanup(tmph);
             if(!ret) return url;
             std::string tmp(ret);
             curl_free(ret);
             return tmp;
         }
 
-        std::string unescape(const std::string &url) {
-            if(!handle) handle = curl_easy_init();
-            char *ret = curl_easy_unescape(handle, url.c_str(), 0, 0);
+		static std::string unescape(const std::string &url) {
+			CURL *tmph = curl_easy_init();
+			int olen;
+			char *ret = curl_easy_unescape(tmph, url.c_str(), url.size(), &olen);
+			curl_easy_cleanup(tmph);
             if(!ret) return url;
-            std::string tmp(ret);
+			std::string tmp(ret, olen);
             curl_free(ret);
             return tmp;
         }
