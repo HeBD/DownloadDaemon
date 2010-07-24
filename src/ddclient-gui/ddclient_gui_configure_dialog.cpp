@@ -22,7 +22,6 @@
 #include <QtGui/QLabel>
 #include <QDialogButtonBox>
 #include <QtGui/QMessageBox>
-#include <QTabWidget>
 #include <QStringList>
 #include <QtGui/QTextEdit>
 
@@ -39,17 +38,38 @@ configure_dialog::configure_dialog(QWidget *parent, QString config_dir) : QDialo
     setLayout(layout);
     QDialogButtonBox *button_box = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
 
-    QTabWidget *tabs = new QTabWidget();
-    tabs->addTab(create_general_panel(), p->tsl("General"));
-    tabs->addTab(create_download_panel(), p->tsl("Download"));
-    tabs->addTab(create_password_panel(), p->tsl("Password"));
-    tabs->addTab(create_logging_panel(), p->tsl("Logging"));
-    tabs->addTab(create_reconnect_panel(), p->tsl("Reconnect"));
-    tabs->addTab(create_proxy_panel(), p->tsl("Proxy"));
-    tabs->addTab(create_client_panel(), p->tsl("Client"));
-    tabs->addTab(create_extractor_panel(), p->tsl("Package Extractor"));
+	tabs = new QListWidget;
+	//tabs->setViewMode(QListView::IconMode);
+	//tabs->setIconSize(QSize(96, 84));
+	tabs->setMovement(QListView::Static);
+	tabs->setMaximumWidth(128);
 
-    layout->addWidget(tabs);
+	tabs->addItem(create_list_item("General"));
+	tabs->addItem(create_list_item("Download"));
+	tabs->addItem(create_list_item("Password"));
+	tabs->addItem(create_list_item("Logging"));
+	tabs->addItem(create_list_item("Reconnect"));
+	tabs->addItem(create_list_item("Proxy"));
+	tabs->addItem(create_list_item("Package Extractor"));
+	tabs->addItem(create_list_item("Client"));
+
+	tabs->setCurrentRow(0);
+
+	pages = new QStackedWidget;
+	pages->addWidget(create_general_panel());
+	pages->addWidget(create_download_panel());
+	pages->addWidget(create_password_panel());
+	pages->addWidget(create_logging_panel());
+	pages->addWidget(create_reconnect_panel());
+	pages->addWidget(create_proxy_panel());
+	pages->addWidget(create_extractor_panel());
+	pages->addWidget(create_client_panel());
+
+	QHBoxLayout *horizontalLayout = new QHBoxLayout;
+	horizontalLayout->addWidget(tabs);
+	horizontalLayout->addWidget(pages, 1);
+
+	layout->addLayout(horizontalLayout);
     layout->addWidget(button_box);
 
     button_box->button(QDialogButtonBox::Ok)->setDefault(true);
@@ -57,6 +77,23 @@ configure_dialog::configure_dialog(QWidget *parent, QString config_dir) : QDialo
 
     connect(button_box->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(ok()));
     connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
+	connect(tabs, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(change_page(QListWidgetItem*, QListWidgetItem*)));
+}
+
+
+QListWidgetItem *configure_dialog::create_list_item(const string &name, const string &picture){
+	ddclient_gui *p = (ddclient_gui *) this->parent();
+	QListWidgetItem *button = new QListWidgetItem(tabs);
+
+	if(!picture.empty())
+		button->setIcon(QIcon(picture.c_str()));
+
+	button->setText(p->tsl(name));
+	button->setSizeHint(QSize(50, 30));
+	button->setTextAlignment(Qt::AlignVCenter);
+	button->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	return button;
 }
 
 
@@ -594,6 +631,14 @@ void configure_dialog::set_var(const string &var, const std::string &value, var_
             else if(typ == ROUTER_T)  // set router var
                 dclient->set_router_var(var, value);
         }catch(client_exception &e){}
+}
+
+
+void configure_dialog::change_page(QListWidgetItem *current, QListWidgetItem *previous){
+	if(!current)
+		current = previous;
+
+	pages->setCurrentIndex(tabs->row(current));
 }
 
 

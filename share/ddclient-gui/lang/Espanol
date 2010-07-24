@@ -12,10 +12,9 @@ Project Website->Sitio web del proyecto
 
 #add dialog
 Add Downloads->Añadir descargas
-single Download->Descarga única
-many Downloads->Descarga múltiple
-Add single Download (no Title necessary)->Añadir descarga única (no requiere título)
-Add many Downloads (one per Line, no Title necessary)->Añadir descarga múltiple (una por linea, no requiere título)
+Single Download->Descarga única
+Many Downloads->Descarga múltiple
+Add many Downloads (one per Line, no Title necessary).->Añadir descarga múltiple (una por linea, no requiere título).
 Separate into different Packages->Separar en Paquetes diferentes
 Title->Título
 Separate URL and Title like this: http://something.aa/bb|a fancy Title->Separar el enlace y el título, por ejemplo: http://dominio.ext/enlace|Mi título
