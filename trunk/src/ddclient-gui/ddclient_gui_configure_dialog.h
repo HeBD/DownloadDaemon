@@ -19,8 +19,11 @@
 #include <QListWidget>
 #include <QtGui/QCheckBox>
 #include <QTextDocument>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QStackedWidget>
+#include <string>
 #include <vector>
-
 
 class configure_dialog : public QDialog{
     Q_OBJECT
@@ -32,7 +35,9 @@ class configure_dialog : public QDialog{
         configure_dialog(QWidget *parent, QString config_dir);
 
     private:
+
         enum var_type {NORMAL_T, ROUTER_T, PREMIUM_T};
+		QListWidgetItem *create_list_item(const std::string &name, const std::string &picture = "");
         QWidget *create_general_panel();
         QWidget *create_download_panel();
         QWidget *create_password_panel();
@@ -45,6 +50,8 @@ class configure_dialog : public QDialog{
         void set_var(const std::string &var, const std::string &value, var_type typ = NORMAL_T);
 
         QString config_dir;
+		QListWidget *tabs;
+		QStackedWidget *pages;
 
         // general
         QComboBox *premium_host;
@@ -94,6 +101,7 @@ class configure_dialog : public QDialog{
         QCheckBox *delete_extracted;
 
     private slots:
+		void change_page(QListWidgetItem *current, QListWidgetItem *previous);
         void help();
         void search_in_model();
         void premium_host_changed();

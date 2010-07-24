@@ -17,6 +17,9 @@
 #include <QTextDocument>
 #include <QtGui/QCheckBox>
 #include <QComboBox>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QStackedWidget>
 
 struct package_info{
     int id;
@@ -42,8 +45,14 @@ class add_dialog : public QDialog{
             int package;
         };
 
+		QListWidgetItem *create_list_item(const std::string &name, const std::string &picture = "");
+		QWidget *create_single_downloads_page();
+		QWidget *create_many_downloads_page();
         void find_parts(std::vector<new_download> &all_dls);
         std::string find_title(std::string url, bool strip = true);
+
+		QListWidget *tabs;
+		QStackedWidget *pages;
 
         QLineEdit *url_single;
         QCheckBox *fill_title_single;
@@ -56,6 +65,7 @@ class add_dialog : public QDialog{
         std::vector<package_info> packages;
 
     private slots:
+		void change_page(QListWidgetItem *current, QListWidgetItem *previous);
         void ok();
         void separate_packages_toggled();
         void fill_title_toggled();

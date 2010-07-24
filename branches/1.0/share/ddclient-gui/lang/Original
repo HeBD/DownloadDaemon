@@ -13,10 +13,9 @@ Project Website->Projekt Webseite
 
 #add dialog
 Add Downloads->Downloads hinzufügen
-single Download->einzelner Download
-many Downloads->mehrere Downloads
-Add single Download (no Title necessary)->Einzelnen Download hinzufügen (kein Titel nötig)
-Add many Downloads (one per Line, no Title necessary)->Mehrere Downloads hinzufügen (einen pro Zeile, kein Titel nötig)
+Single Download->Einzelner Download
+Many Downloads->Mehrere Downloads
+Add many Downloads (one per Line, no Title necessary).->Mehrere Downloads hinzufügen (einen pro Zeile, kein Titel nötig).
 Separate into different Packages->in verschiedene Pakete aufteilen
 Title->Titel
 Separate URL and Title like this: http://something.aa/bb|a fancy Title->Teilen Sie URL und Titel so: http//irgendetwas.aa/bb|mein Titel

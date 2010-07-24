@@ -30,87 +30,144 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
 
     setWindowTitle(p->tsl("Add Downloads"));
 
-    QGroupBox *single_box = new QGroupBox(p->tsl("single Download"));
-    QGroupBox *many_box = new QGroupBox(p->tsl("many Downloads"));
-    QFormLayout *single_layout = new QFormLayout();
-    QFormLayout *many_package_layout = new QFormLayout();
-    QVBoxLayout *layout = new QVBoxLayout();
-    QVBoxLayout *many_layout = new QVBoxLayout();
-    QDialogButtonBox *button_box = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
-    single_box->setLayout(single_layout);
-    many_box->setLayout(many_layout);
+	tabs = new QListWidget;
+	//tabs->setViewMode(QListView::IconMode);
+	//tabs->setIconSize(QSize(96, 84));
+	tabs->setMovement(QListView::Static);
+	tabs->setMaximumWidth(128);
 
-    layout->addWidget(new QLabel(p->tsl("Add single Download (no Title necessary)")));
-    layout->addWidget(single_box);
-    layout->addWidget(new QLabel(""));
-    layout->addWidget(new QLabel(p->tsl("Add many Downloads (one per Line, no Title necessary)")));
-    layout->addWidget(many_box);
-    layout->addWidget(button_box);
-    this->setLayout(layout);
+	tabs->addItem(create_list_item("Single Download"));
+	tabs->addItem(create_list_item("Many Downloads"));
 
-    // single download
-    url_single = new QLineEdit();
-    title_single = new QLineEdit();
-    title_single->setFixedWidth(200);
-    package_single = new QComboBox();
-    package_single->setFixedWidth(200);
-    package_single->setEditable(true);
-    fill_title_single = new QCheckBox(p->tsl("fill Title from URL"));
+	tabs->setCurrentRow(0);
 
-    // many downloads
-    QTextEdit *add_many_edit = new QTextEdit();
-    add_many_edit->setFixedHeight(150);
-    add_many = new QTextDocument(add_many_edit);
-    add_many_edit->setDocument(add_many);
-    package_many = new QComboBox();
-    package_many->setFixedWidth(200);
-    package_many->setEditable(true);
-    separate_packages = new QCheckBox(p->tsl("Separate into different Packages"));
-    fill_title = new QCheckBox(p->tsl("fill Title from URL"));
+	pages = new QStackedWidget;
+	pages->addWidget(create_single_downloads_page());
+	pages->addWidget(create_many_downloads_page());
 
-    QMutex *mx = p->get_mutex();
-    downloadc *dclient = p->get_connection();
-    vector<package> pkgs;
-    vector<package>::iterator it;
+	// fill packages combobox
+	QMutex *mx = p->get_mutex();
+	downloadc *dclient = p->get_connection();
+	vector<package> pkgs;
+	vector<package>::iterator it;
 
-    mx->lock();
-    try{
-        pkgs = dclient->get_packages();
-    }catch(client_exception &e){}
-    mx->unlock();
+	mx->lock();
+	try{
+		pkgs = dclient->get_packages();
+	}catch(client_exception &e){}
+	mx->unlock();
 
-    for(it = pkgs.begin(); it != pkgs.end(); it++){
-        if(it->name != string("")){
-            package_single->addItem(QString("%1").arg(it->id) + ": " + it->name.c_str());
-            package_many->addItem(QString("%1").arg(it->id) + ": " + it->name.c_str());
-        }else{
-            package_single->addItem(QString("%1").arg(it->id));
-            package_many->addItem(QString("%1").arg(it->id));
-        }
-        package_info info = {it->id, it->name};
-        packages.push_back(info);
-    }
+	for(it = pkgs.begin(); it != pkgs.end(); it++){
+		if(it->name != string("")){
+			package_single->addItem(QString("%1").arg(it->id) + ": " + it->name.c_str());
+			package_many->addItem(QString("%1").arg(it->id) + ": " + it->name.c_str());
+		}else{
+			package_single->addItem(QString("%1").arg(it->id));
+			package_many->addItem(QString("%1").arg(it->id));
+		}
+		package_info info = {it->id, it->name};
+		packages.push_back(info);
+	}
 
-    button_box->button(QDialogButtonBox::Ok)->setDefault(true);
-    button_box->button(QDialogButtonBox::Ok)->setFocus(Qt::OtherFocusReason);
 
-    single_layout->addRow(new QLabel(p->tsl("Package")), package_single);
-    single_layout->addRow(new QLabel(p->tsl("Title")), title_single);
-    single_layout->addRow(new QLabel(""), fill_title_single);
-    single_layout->addRow(new QLabel(p->tsl("URL")), url_single);
+	QHBoxLayout *horizontalLayout = new QHBoxLayout;
+	horizontalLayout->addWidget(tabs);
+	horizontalLayout->addWidget(pages, 1);
 
-    many_package_layout->addRow(new QLabel(p->tsl("Package")), package_many);
-    many_package_layout->addRow(new QLabel(""), separate_packages);
-    many_package_layout->addRow(new QLabel(""), fill_title);
+	QVBoxLayout *layout = new QVBoxLayout();
+	QDialogButtonBox *button_box = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+	button_box->button(QDialogButtonBox::Ok)->setDefault(true);
+	button_box->button(QDialogButtonBox::Ok)->setFocus(Qt::OtherFocusReason);
 
-    many_layout->addWidget(new QLabel(p->tsl("Separate URL and Title like this: http://something.aa/bb|a fancy Title")));
-    many_layout->addLayout(many_package_layout);
-    many_layout->addWidget(add_many_edit);
+	layout->addLayout(horizontalLayout);
+	layout->addWidget(button_box);
+	this->setLayout(layout);
 
     connect(button_box->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(ok()));
     connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
-    connect(separate_packages, SIGNAL(stateChanged(int)), this, SLOT(separate_packages_toggled()));
+	connect(separate_packages, SIGNAL(stateChanged(int)), this, SLOT(separate_packages_toggled()));
     connect(fill_title_single, SIGNAL(stateChanged(int)), this, SLOT(fill_title_toggled()));
+	connect(tabs, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this, SLOT(change_page(QListWidgetItem*, QListWidgetItem*)));
+}
+
+
+QListWidgetItem *add_dialog::create_list_item(const string &name, const string &picture){
+	ddclient_gui *p = (ddclient_gui *) this->parent();
+	QListWidgetItem *button = new QListWidgetItem(tabs);
+
+	if(!picture.empty())
+		button->setIcon(QIcon(picture.c_str()));
+
+	button->setText(p->tsl(name));
+	button->setSizeHint(QSize(50, 30));
+	button->setTextAlignment(Qt::AlignVCenter);
+	button->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	return button;
+}
+
+
+QWidget *add_dialog::create_single_downloads_page(){
+	ddclient_gui *p = (ddclient_gui *) this->parent();
+
+	QWidget *page = new QWidget();
+	QVBoxLayout *layout = new QVBoxLayout();
+	page->setLayout(layout);
+	QFormLayout *single_layout = new QFormLayout();
+
+	//layout->set
+
+	//layout->addWidget(new QLabel(p->tsl("Add single Download (no Title necessary)")));
+	layout->addLayout(single_layout);
+
+	// single download
+	url_single = new QLineEdit();
+	title_single = new QLineEdit();
+	title_single->setFixedWidth(200);
+	package_single = new QComboBox();
+	package_single->setFixedWidth(200);
+	package_single->setEditable(true);
+	fill_title_single = new QCheckBox(p->tsl("fill Title from URL"));
+
+	single_layout->addRow(new QLabel(p->tsl("Package")), package_single);
+	single_layout->addRow(new QLabel(p->tsl("Title")), title_single);
+	single_layout->addRow(new QLabel(""), fill_title_single);
+	single_layout->addRow(new QLabel(p->tsl("URL")), url_single);
+
+	return page;
+}
+
+
+QWidget *add_dialog::create_many_downloads_page(){
+	ddclient_gui *p = (ddclient_gui *) this->parent();
+
+	QWidget *page = new QWidget();
+	QVBoxLayout *layout = new QVBoxLayout();
+	page->setLayout(layout);
+
+	QFormLayout *many_package_layout = new QFormLayout();
+	layout->addWidget(new QLabel(p->tsl("Add many Downloads (one per Line, no Title necessary).")));
+
+	// many downloads
+	QTextEdit *add_many_edit = new QTextEdit();
+	add_many_edit->setFixedHeight(150);
+	add_many = new QTextDocument(add_many_edit);
+	add_many_edit->setDocument(add_many);
+	package_many = new QComboBox();
+	package_many->setFixedWidth(200);
+	package_many->setEditable(true);
+	separate_packages = new QCheckBox(p->tsl("Separate into different Packages"));
+	fill_title = new QCheckBox(p->tsl("fill Title from URL"));
+
+	many_package_layout->addRow(new QLabel(p->tsl("Package")), package_many);
+	many_package_layout->addRow(new QLabel(""), separate_packages);
+	many_package_layout->addRow(new QLabel(""), fill_title);
+
+	layout->addWidget(new QLabel(p->tsl("Separate URL and Title like this: http://something.aa/bb|a fancy Title")));
+	layout->addLayout(many_package_layout);
+	layout->addWidget(add_many_edit);
+
+	return page;
 }
 
 
@@ -246,6 +303,14 @@ void add_dialog::fill_title_toggled(){
         title_single->setEnabled(false);
     else
         title_single->setEnabled(true);
+}
+
+
+void add_dialog::change_page(QListWidgetItem *current, QListWidgetItem *previous){
+	if(!current)
+		current = previous;
+
+	pages->setCurrentIndex(tabs->row(current));
 }
 
 
