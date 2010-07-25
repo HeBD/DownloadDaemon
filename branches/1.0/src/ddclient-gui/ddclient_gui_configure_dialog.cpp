@@ -42,7 +42,9 @@ configure_dialog::configure_dialog(QWidget *parent, QString config_dir) : QDialo
 	//tabs->setViewMode(QListView::IconMode);
 	//tabs->setIconSize(QSize(96, 84));
 	tabs->setMovement(QListView::Static);
-	tabs->setMaximumWidth(128);
+	//tabs->setMaximumWidth(128);
+	//tabs->setMinimumWidth(127);
+	tabs->setFixedWidth(128);
 
 	tabs->addItem(create_list_item("General"));
 	tabs->addItem(create_list_item("Download"));
@@ -74,6 +76,8 @@ configure_dialog::configure_dialog(QWidget *parent, QString config_dir) : QDialo
 
     button_box->button(QDialogButtonBox::Ok)->setDefault(true);
     button_box->button(QDialogButtonBox::Ok)->setFocus(Qt::OtherFocusReason);
+
+	this->resize(1, 1); // set the window to the smalles possible size initially
 
     connect(button_box->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(ok()));
     connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
@@ -390,8 +394,7 @@ QWidget *configure_dialog::create_reconnect_panel(){
 
     // router model
     model = new QListWidget();
-    model->setFixedHeight(100);
-    QStringList model_input;
+	QStringList model_input;
     string line = "", old_model;
     int selection = 0, i = 0;
     vector<string> model_list;
@@ -478,7 +481,7 @@ QWidget *configure_dialog::create_proxy_panel(){
 
 
     QTextEdit *proxy_edit = new QTextEdit();
-    proxy_edit->setFixedHeight(100);
+	//proxy_edit->setFixedHeight(100);
     proxy = new QTextDocument(proxy_list.c_str(), proxy_edit);
     proxy_edit->setDocument(proxy);
 
@@ -579,7 +582,7 @@ QWidget *configure_dialog::create_extractor_panel(){
     }
 
     QTextEdit *passwords_edit = new QTextEdit();
-    passwords_edit->setFixedHeight(100);
+	//passwords_edit->setFixedHeight(100);
     extractor_passwords = new QTextDocument(password_list.c_str(), passwords_edit);
     passwords_edit->setDocument(extractor_passwords);
 
