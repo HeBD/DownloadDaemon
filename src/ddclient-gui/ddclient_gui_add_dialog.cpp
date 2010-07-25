@@ -34,16 +34,16 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
 	//tabs->setViewMode(QListView::IconMode);
 	//tabs->setIconSize(QSize(96, 84));
 	tabs->setMovement(QListView::Static);
-	tabs->setMaximumWidth(128);
+	tabs->setFixedWidth(128);
 
-	tabs->addItem(create_list_item("Single Download"));
 	tabs->addItem(create_list_item("Many Downloads"));
+	tabs->addItem(create_list_item("Single Download"));
 
 	tabs->setCurrentRow(0);
 
 	pages = new QStackedWidget;
-	pages->addWidget(create_single_downloads_page());
 	pages->addWidget(create_many_downloads_page());
+	pages->addWidget(create_single_downloads_page());
 
 	// fill packages combobox
 	QMutex *mx = p->get_mutex();
@@ -82,6 +82,9 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
 	layout->addLayout(horizontalLayout);
 	layout->addWidget(button_box);
 	this->setLayout(layout);
+
+	this->resize(1, 1); // set the window to the smalles possible size initially
+	tabs->adjustSize();
 
     connect(button_box->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(ok()));
     connect(button_box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
@@ -150,11 +153,9 @@ QWidget *add_dialog::create_many_downloads_page(){
 
 	// many downloads
 	QTextEdit *add_many_edit = new QTextEdit();
-	add_many_edit->setFixedHeight(150);
 	add_many = new QTextDocument(add_many_edit);
 	add_many_edit->setDocument(add_many);
 	package_many = new QComboBox();
-	package_many->setFixedWidth(200);
 	package_many->setEditable(true);
 	separate_packages = new QCheckBox(p->tsl("Separate into different Packages"));
 	fill_title = new QCheckBox(p->tsl("fill Title from URL"));
