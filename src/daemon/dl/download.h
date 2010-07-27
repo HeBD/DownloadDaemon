@@ -97,7 +97,7 @@ public:
 	void create_client_line(std::string &ret);
 
 	/** Posts the download to all clients that subscribed to SUBS_DOWNLOAD */
-	void post_subscribers();
+	void post_subscribers(const std::string &reason = "UPDATE");
 
 	/** Find out the hoster (needed to call the correct plugin)
 	* @returns host-string
@@ -168,11 +168,11 @@ public:
 	bool get_resumable() const					{ std::lock_guard<std::recursive_mutex> lock(mx); return can_resume; }
 	void set_resumable(bool r) 					{ std::lock_guard<std::recursive_mutex> lock(mx); can_resume = r; }
 
-        std::string get_proxy() const                                   { std::lock_guard<std::recursive_mutex> lock(mx); return proxy; }
-        void set_proxy(const std::string &p)                            { std::lock_guard<std::recursive_mutex> lock(mx); proxy = p; }
+	std::string get_proxy() const                                   { std::lock_guard<std::recursive_mutex> lock(mx); return proxy; }
+	void set_proxy(const std::string &p)                            { std::lock_guard<std::recursive_mutex> lock(mx); proxy = p; }
 
-        ddcurl* get_handle() const				{ std::lock_guard<std::recursive_mutex> lock(mx); return &handle; }
-        //void set_handle(CURL* h)					{ std::lock_guard<std::recursive_mutex> lock(mx); handle = h; }
+	ddcurl* get_handle() const				{ std::lock_guard<std::recursive_mutex> lock(mx); return &handle; }
+	//void set_handle(CURL* h)					{ std::lock_guard<std::recursive_mutex> lock(mx); handle = h; }
 
 	int get_parent() const						{ std::lock_guard<std::recursive_mutex> lock(mx); return parent; }
 	void set_parent(int p)						{ std::lock_guard<std::recursive_mutex> lock(mx); parent = p; }
@@ -184,6 +184,9 @@ public:
 	*	Then it sets the PLUGIN_* error and the filesize for the download
 	*/
 	void preset_file_status();
+
+	bool subs_enabled;
+	mutable std::recursive_mutex mx;
 
 private:
 	/** Sets the next proxy from list to the download
@@ -202,33 +205,32 @@ private:
 	std::string get_plugin_file();
 	void wait();
 
-        std::string     url;
-        std::string     comment;
-        std::string     add_date;
-        int             id;
-        filesize_t      downloaded_bytes;
-        filesize_t      size;
-        int             wait_seconds;
-        plugin_status   error;
-        std::string     output_file;
-        bool            is_running;
-        bool            need_stop;
+	std::string     url;
+	std::string     comment;
+	std::string     add_date;
+	int             id;
+	filesize_t      downloaded_bytes;
+	filesize_t      size;
+	int             wait_seconds;
+	plugin_status   error;
+	std::string     output_file;
+	bool            is_running;
+	bool            need_stop;
 	download_status status;
-        int             speed;
-        bool            can_resume;
-        mutable ddcurl  handle;
-        std::string     proxy;
-        bool            already_prechecked;
-        int             parent;
-
-	mutable std::recursive_mutex mx;
+	int             speed;
+	bool            can_resume;
+	mutable ddcurl  handle;
+	std::string     proxy;
+	bool            already_prechecked;
+	int             parent;
+	std::string     last_posted_message;
 };
 
 #ifndef IS_PLUGIN
 typedef std::pair<int, int> dlindex;
 
 struct dl_cb_info {
-	dl_cb_info() : resume_from(0), total_size(0), filename_from_effective_url(false), id(0, 0), curl_handle(NULL), break_reason(PLUGIN_SUCCESS) {}
+	dl_cb_info() : resume_from(0), total_size(0), filename_from_effective_url(false), id(0, 0), curl_handle(NULL), break_reason(PLUGIN_SUCCESS), dl_ptr(0), last_postmsg(0) {}
 	std::string     filename;
 	std::string     download_dir;
 	filesize_t      resume_from;
@@ -237,8 +239,10 @@ struct dl_cb_info {
 	bool            filename_from_effective_url;
 	std::string     cache;
 	dlindex         id;
-        ddcurl*         curl_handle;
+	ddcurl*         curl_handle;
 	plugin_status   break_reason;
+	download*       dl_ptr;
+	long            last_postmsg;
 };
 
 #endif

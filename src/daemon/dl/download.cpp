@@ -39,8 +39,8 @@
 using namespace std;
 
 download::download(const std::string& dl_url)
-	: url(dl_url), id(0), downloaded_bytes(0), size(0), wait_seconds(0), error(PLUGIN_SUCCESS),
-        is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true), handle(false), already_prechecked(false) {
+	: subs_enabled(true), url(dl_url), id(-1), downloaded_bytes(0), size(0), wait_seconds(0), error(PLUGIN_SUCCESS),
+		is_running(false), need_stop(false), status(DOWNLOAD_PENDING), speed(0), can_resume(true), handle(false), already_prechecked(false) {
 	lock_guard<recursive_mutex> lock(mx);
 	time_t rawtime;
 	struct tm* timeinfo;
@@ -49,7 +49,7 @@ download::download(const std::string& dl_url)
 	char timestr[20];
 	strftime(timestr, 20, "%Y-%m-%d %X", timeinfo);
 	add_date = timestr;
-	post_subscribers();
+	//post_subscribers();
 	//add_date.erase(add_date.length() - 1);
 }
 
@@ -141,6 +141,7 @@ void download::operator=(const download& dl) {
 	need_stop = dl.need_stop;
 	handle = dl.handle;
 	already_prechecked = dl.already_prechecked;
+	subs_enabled = dl.subs_enabled;
 }
 
 download::~download() {
@@ -210,11 +211,16 @@ void download::create_client_line(std::string &ret) {
 	ret = ss.str();
 }
 
-void download::post_subscribers() {
+void download::post_subscribers(const std::string &reason) {
 	unique_lock<recursive_mutex> lock(mx);
+	if (!subs_enabled || id < 0) return;
 	std::string line;
 	create_client_line(line);
-	connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
+	line = reason + ":" + line;
+	if(line != last_posted_message) {
+		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
+		last_posted_message = line;
+	}
 }
 
 std::string download::get_host(bool do_lock) {
@@ -567,36 +573,37 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		}
 
 		// set url
-                handle.setopt(CURLOPT_FOLLOWLOCATION, 1);
-                handle.setopt(CURLOPT_URL, plug_outp.download_url.c_str());
+		handle.setopt(CURLOPT_FOLLOWLOCATION, 1);
+		handle.setopt(CURLOPT_URL, plug_outp.download_url.c_str());
 		// set file-writing function as callback
-                handle.setopt(CURLOPT_WRITEFUNCTION, write_file);
+		handle.setopt(CURLOPT_WRITEFUNCTION, write_file);
 		// reserve a cache of 512 kb
 		cb_info.cache.reserve(512000);
 		//std::pair<fstream*, std::string*> callback_opt_left(&output_file_s, &cache);
 		//std::pair<std::pair<fstream*, std::string*>, CURL*> callback_opt(callback_opt_left, handle);
-                handle.setopt(CURLOPT_WRITEDATA, &cb_info);
+		handle.setopt(CURLOPT_WRITEDATA, &cb_info);
 		// show progress
-                handle.setopt(CURLOPT_NOPROGRESS, 0);
-                handle.setopt(CURLOPT_PROGRESSFUNCTION, report_progress);
+		handle.setopt(CURLOPT_NOPROGRESS, 0);
+		handle.setopt(CURLOPT_PROGRESSFUNCTION, report_progress);
 
 		//std::pair<dlindex, filesize_t> progressdata(dl, resume_size);
 
-                handle.setopt(CURLOPT_PROGRESSDATA, &cb_info);
+		handle.setopt(CURLOPT_PROGRESSDATA, &cb_info);
 		// set timeouts
-                handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
-                handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+		handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+		handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
 		curl_off_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
 		if(dl_speed > 0) {
-                        handle.setopt(CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
+			handle.setopt(CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
 		}
 
 		// set headers to parse content-disposition
-                handle.setopt(CURLOPT_HEADERFUNCTION, parse_header);
-                handle.setopt(CURLOPT_WRITEHEADER, &cb_info);
+		handle.setopt(CURLOPT_HEADERFUNCTION, parse_header);
+		handle.setopt(CURLOPT_WRITEHEADER, &cb_info);
 
-                cb_info.curl_handle = &handle;
+		cb_info.curl_handle = &handle;
 		cb_info.id = make_pair<int, int>(parent, id);
+		cb_info.dl_ptr = this;
 
 		log_string(std::string("Starting download ID: ") + dlid_log, LOG_DEBUG);
 		lock.unlock();

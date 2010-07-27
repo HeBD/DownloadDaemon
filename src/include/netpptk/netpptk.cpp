@@ -381,14 +381,19 @@ bool tkSock::select(long msec) {
 	// On linux, we emulate a select-call by calling nonblocking, peeking recv because sometimes a
 	// recv call might block even if select() reported that there is data to get. This is a more robust way.
 	char buf[1];
-        struct timeval tv, old_tv;
-        tv.tv_sec = 0;
-        tv.tv_usec = msec;
-        socklen_t size = sizeof(old_tv);
-        getsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (void*)&old_tv, &size);
-        setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,  sizeof(tv));
-        int bytes = ::recv(m_sock, buf, 1, MSG_NOSIGNAL | MSG_PEEK);
-        setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&old_tv, sizeof(old_tv));
+	int bytes = 0;
+	if(msec > 0) {
+		struct timeval tv, old_tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = msec;
+		socklen_t size = sizeof(old_tv);
+		getsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (void*)&old_tv, &size);
+		setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,  sizeof(tv));
+		bytes = ::recv(m_sock, buf, 1, MSG_NOSIGNAL | MSG_PEEK);
+		setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&old_tv, sizeof(old_tv));
+	} else {
+		bytes = ::recv(m_sock, buf, 1, MSG_NOSIGNAL | MSG_PEEK | MSG_DONTWAIT);
+	}
 
 	if(bytes > 0)
 		return true;
