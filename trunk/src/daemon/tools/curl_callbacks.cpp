@@ -31,13 +31,13 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 
 	cache->append((char*)buffer, nmemb);
 	double speed;
-        info->curl_handle->getinfo(CURLINFO_SPEED_DOWNLOAD, &speed);
+	info->curl_handle->getinfo(CURLINFO_SPEED_DOWNLOAD, &speed);
 	if(speed < 1 || cache->size() >= speed / 2 || cache->size() >= 1048576) {
 		// wite twice per sec, if speed is 0, and if the cache is >= 1MB
 		if (!output_file->is_open()) {
 			if(info->filename.empty()) {
 				char* fn_cstr = 0;
-                                info->curl_handle->getinfo(CURLINFO_EFFECTIVE_URL, &fn_cstr);
+				info->curl_handle->getinfo(CURLINFO_EFFECTIVE_URL, &fn_cstr);
 				info->filename = filename_from_url(fn_cstr);
 				make_valid_filename(info->filename);
 				info->filename_from_effective_url = true;
@@ -67,9 +67,18 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 			log_string("Successfully opened the download-file, but failed to write to it. Is your harddisk full?", LOG_ERR);
 			return 0;
 		}
-		global_download_list.set_downloaded_bytes(info->id, global_download_list.get_downloaded_bytes(info->id) + cache->size());
+		unique_lock<recursive_mutex> lock(info->dl_ptr->mx);
+		info->dl_ptr->subs_enabled = false;
+		info->dl_ptr->set_downloaded_bytes(info->dl_ptr->get_downloaded_bytes() + cache->size());
+		info->dl_ptr->subs_enabled = true;
+		//global_download_list.set_downloaded_bytes(info->id, global_download_list.get_downloaded_bytes(info->id) + cache->size());
+		lock.unlock();
 		cache->clear();
 		global_download_list.dump_to_file();
+		if(time(NULL) > info->last_postmsg) { // post at maximum once per second
+			info->last_postmsg = time(NULL);
+			info->dl_ptr->post_subscribers();
+		}
 	}
 	return nmemb;
 }
@@ -80,22 +89,26 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	dl_cb_info *info = (dl_cb_info*)clientp;
 
 	dlindex id = info->id;
-        ddcurl* curr_handle = info->curl_handle;
+	ddcurl* curr_handle = info->curl_handle;
 
 	double curr_speed_param;
-        curr_handle->getinfo(CURLINFO_SPEED_DOWNLOAD, &curr_speed_param);
+	curr_handle->getinfo(CURLINFO_SPEED_DOWNLOAD, &curr_speed_param);
 	filesize_t curr_speed = (filesize_t)(curr_speed_param + 0.5);
 
 	filesize_t  dl_size = info->resume_from + (filesize_t)(dltotal + 0.5);
 
-	global_download_list.set_size(id, dl_size);
+	//global_download_list.set_size(id, dl_size);
 	std::string output_file = info->download_dir + '/' + info->filename;
 	if(output_file.empty()) { // a bit too early.. let's wait another round
 		return 0;
 	}
 
-
-	global_download_list.set_speed(id, curr_speed);
+	unique_lock<recursive_mutex> lock(info->dl_ptr->mx);
+	info->dl_ptr->subs_enabled = false;
+	info->dl_ptr->set_size(dl_size);
+	info->dl_ptr->set_speed(curr_speed);
+	info->dl_ptr->subs_enabled = true;
+	//global_download_list.set_speed(id, curr_speed);
 
 	//filesize_t downloaded = info->resume_from + (filesize_t)(dlnow + 0.5);
 	//struct pstat st;
@@ -103,7 +116,13 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	//	global_download_list.set_downloaded_bytes(id, downloaded);
 	//}
 
-	if(global_download_list.get_need_stop(id)) {
+	//if(global_download_list.get_need_stop(id)) {
+
+	if(time(NULL) > info->last_postmsg) { // post at maximum once per second
+		info->last_postmsg = time(NULL);
+		info->dl_ptr->post_subscribers();
+	}
+	if(info->dl_ptr->get_need_stop()) {
 		// break up the download
 		return -1;
 	}
