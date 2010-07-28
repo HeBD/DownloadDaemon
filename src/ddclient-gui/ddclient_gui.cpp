@@ -2035,11 +2035,23 @@ void ddclient_gui::on_reload(){
 			tray_icon->setToolTip(tsl("Connected to") + " " + server + " \n " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size));
 
     }else{
+
+        string time_left;
+
+        if(download_speed > 0){
+            stringstream s;
+            s << (int)((not_downloaded_yet*1024)/download_speed);
+            time_left = s.str();
+            ddclient_gui::cut_time(time_left);
+
+        }else
+            time_left = "unknown";
+
         status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
-                                   " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet));
+                                   " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + " | " + tsl("Time left") + ": " + time_left.c_str());
 		if(QSystemTrayIcon::isSystemTrayAvailable())
-			tray_icon->setToolTip(tsl("Connected to") + " " + server + " \n " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
-                              " \n " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet));
+                        tray_icon->setToolTip(tsl("Connected to") + " " + server + "\n" + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
+                              "\n" + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + "\n" + tsl("Time left") + ": " + time_left.c_str());
     }
 
     mx.unlock();
