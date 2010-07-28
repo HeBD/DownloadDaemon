@@ -2045,7 +2045,7 @@ void ddclient_gui::on_reload(){
             ddclient_gui::cut_time(time_left);
 
         }else
-            time_left = "unknown";
+            time_left = "-";
 
         status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
                                    " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + " | " + tsl("Time left") + ": " + time_left.c_str());
