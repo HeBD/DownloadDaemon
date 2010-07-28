@@ -1035,6 +1035,7 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
                         selection_model->select(index.child(dl_line, i), QItemSelectionModel::Select);
 
                     selected_downloads_size += (double)new_dit->size / 1048576;
+                    selected_downloads_count++;
                     break;
                 }
             }
@@ -2019,6 +2020,7 @@ void ddclient_gui::on_reload(){
     download_speed = 0;
     not_downloaded_yet = 0;
     selected_downloads_size = 0;
+    selected_downloads_count = 0;
 
     if(content.size() == 0) // the content gets deleted whenever the language changes
         list_model->setRowCount(0);
@@ -2030,9 +2032,10 @@ void ddclient_gui::on_reload(){
 
     // update statusbar
     if(selected_downloads_size != 0){ // something is selected and the total size is known
-        status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size));
+        status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size) + ", " + QString("%1").arg(selected_downloads_count) + " " + tsl("Download(s)"));
+
 		if(QSystemTrayIcon::isSystemTrayAvailable())
-			tray_icon->setToolTip(tsl("Connected to") + " " + server + " \n " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size));
+                        tray_icon->setToolTip(tsl("Connected to") + " " + server + "\n" + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size) + ", " + QString("%1").arg(selected_downloads_count) + " " + tsl("Download(s)"));
 
     }else{
 

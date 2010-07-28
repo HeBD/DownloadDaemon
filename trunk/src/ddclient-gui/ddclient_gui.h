@@ -142,6 +142,7 @@ class ddclient_gui : public QMainWindow{
         QString server;
         uint64_t not_downloaded_yet;
         uint64_t selected_downloads_size;
+        int selected_downloads_count;
         double download_speed;
         error_message last_error_message;
         std::vector<selected_info> selected_lines;

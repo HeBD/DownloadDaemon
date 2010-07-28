@@ -169,6 +169,7 @@ Decrease Priority of the selected Download->Reducir prioridad de las descargas s
 Configure DownloadDaemon Server->Configurar servidor de DownloadDaemon
 
 Time left->Tiempo restante
+Download(s)->Descarga
 
 Download running. Waiting.->Descarga iniciada, esperando.
 Error->Error
