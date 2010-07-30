@@ -33,6 +33,9 @@ class update_thread : public QThread{
         */
         void set_update_interval(int interval);
 
+        /** Sets terminate variable true */
+        void terminate_yourself();
+
         /** Toggles updating */
         void toggle_updating();
 
@@ -42,6 +45,7 @@ class update_thread : public QThread{
         bool told;
         bool update;
         int interval;
+        bool term;
 };
 
 #endif // DDCLIENT_GUI_UPDATE_THREAD_H

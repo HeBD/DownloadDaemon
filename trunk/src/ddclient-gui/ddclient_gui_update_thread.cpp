@@ -14,11 +14,15 @@
 update_thread::update_thread(ddclient_gui *parent, int interval) : parent(parent), interval(interval){
     told = false;
     update = true;
+    term = false;
 }
 
 
 void update_thread::run(){
     while(true){ // thread will live till program cancel
+
+        if(term)
+            return;
 
         if(update){
 
@@ -33,8 +37,12 @@ void update_thread::run(){
             parent->clear_last_error_message();
         }
 
-        for(int i = 0; i < interval; i++)
+        for(int i = 0; i < interval; i++){
+            if(term)
+                return;
+
             sleep(1); // wait till update intervall is finished
+        }
     }
 }
 
@@ -46,4 +54,9 @@ void update_thread::set_update_interval(int interval){
 
 void update_thread::toggle_updating(){
     update = !update;
+}
+
+
+void update_thread::terminate_yourself(){
+    term = true;
 }
