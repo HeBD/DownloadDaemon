@@ -112,7 +112,7 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 ddclient_gui::~ddclient_gui(){
     mx.lock();
     delete dclient;
-    thread->terminate();
+    ((update_thread *)thread)->terminate_yourself();
     thread->wait();
     delete thread;
     mx.unlock();
@@ -739,7 +739,7 @@ void ddclient_gui::get_selected_lines(){
         selected_info info;
         info.row = selection_list.at(i).row();
 
-        if(selection_list.at(i).parent() == QModelIndex::QModelIndex()){ // no parent: we have a package
+        if(selection_list.at(i).parent() == QModelIndex()){ // no parent: we have a package
             info.package = true;
             info.parent_row = -1;
         }else{
