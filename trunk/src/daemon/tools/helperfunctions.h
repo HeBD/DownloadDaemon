@@ -14,6 +14,7 @@
 
 #include <config.h>
 #include <string>
+#include <vector>
 
 #ifdef HAVE_SYSLOG_H
 	#include <syslog.h>
@@ -136,6 +137,13 @@ std::string ascii_hex_to_bin(std::string ascii_hex);
 *   @returns true if they are almost equal
 */
 bool fequal(double p1, double p2);
+
+/** Splits a string into many strings, seperating them with the seperator
+ *  @param inp_string string to split
+ *	@param seperator Seperator to use for splitting
+ *	@returns Vector of all the strings
+ */
+std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape = false);
 
 #ifdef BACKTRACE_ON_CRASH
 void print_backtrace(int sig);

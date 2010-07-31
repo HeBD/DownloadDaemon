@@ -47,6 +47,10 @@ you would usually do with the result of get_dl_container().
 
 // forward declaration
 plugin_status plugin_exec(plugin_input &pinp, plugin_output &poutp);
+
+#include <vector>
+#include "../tools/helperfunctions.h"
+
 namespace PLGFILE {
 
 	/** Set the wait-time for the currently active download. Set this whenever you have to wait for the host. DownloadDaemon will count down
@@ -86,18 +90,6 @@ namespace PLGFILE {
 	 */
 	void replace_this_download(download_container &lst);
 
-	/** remove white-spaces from the beginning and ending of str
-	 *	@param str String from which whitespaces will be stripped
-	 */
-	void trim_string(std::string &str);
-
-	/** replace all occurences of old with new_s in str
-	 *	@param str string to use for replacing
-	 *	@param old string that should be replaced
-	 *	@param new_s string which will be inserted instead of old
-	 */
-	void replace_all(std::string& str, const std::string& old, const std::string& new_s);
-
 	/** this function replaces some html-encoded characters with native ansi characters (eg replaces &quot; with " and &lt; with <)
 	 *	@param s string in which to replace
 	 */
@@ -109,14 +101,6 @@ namespace PLGFILE {
 	 */
 	template <class PARAM>
 	std::string convert_to_string(PARAM p1);
-
-	#include <vector>
-	/** Splits a string into many strings, seperating them with the seperator
-	 *  @param inp_string string to split
-	 *	@param seperator Seperator to use for splitting
-	 *	@returns Vector of all the strings
-	 */
-	std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator);
 
 
 	/////////////////////// IMPLEMENTATION ////////////////////////
@@ -161,22 +145,6 @@ namespace PLGFILE {
 		dl_list->set_status(dlid, DOWNLOAD_DELETED);
 	}
 
-	void trim_string(std::string &str) {
-		while(str.length() > 0 && isspace(str[0])) {
-			str.erase(str.begin());
-		}
-		while(str.length() > 0 && isspace(*(str.end() - 1))) {
-			str.erase(str.end() -1);
-		}
-	}
-
-	void replace_all(std::string& str, const std::string& old, const std::string& new_s) {
-		size_t n;
-		while((n = str.find(old)) != std::string::npos) {
-			str.replace(n, old.length(), new_s);
-		}
-	}
-
 	void replace_html_special_chars(std::string& s) {
 		replace_all(s, "&quot;", "\"");
 		replace_all(s, "&lt;", "<");
@@ -192,21 +160,6 @@ namespace PLGFILE {
 		ss << p1;
 		return ss.str();
 	}
-
-	std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator) {
-		std::vector<std::string> ret;
-		size_t n = 0, last_n = 0;
-		while(true) {
-			n = inp_string.find(seperator, n);
-			ret.push_back(inp_string.substr(last_n, n - last_n));
-			if(n == std::string::npos) break;
-			n += seperator.size();
-			last_n = n;
-
-		}
-		return ret;
-	}
-
 }
 
 using namespace PLGFILE;

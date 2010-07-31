@@ -29,7 +29,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	std::string resultstr;
 	std::string url = get_url();
 	replace_all(url, "/ru/", "/en/");
-        replace_all(url, "/de/", "/en/");
+	replace_all(url, "/de/", "/en/");
 	replace_all(url, "/es/", "/en/");
 	replace_all(url, "/pt/", "/en/");
 

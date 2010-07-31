@@ -77,10 +77,6 @@ public:
 	*/
 	~download();
 
-	/** Simple constructor
-	*/
-	download() {}
-
 	/** Initialize a download object with a serialized download string
 	* @param serializedDL Serialized download
 	*/
@@ -224,6 +220,11 @@ private:
 	bool            already_prechecked;
 	int             parent;
 	std::string     last_posted_message;
+
+
+	/** Simple constructor (private)
+	*/
+	download() {}
 };
 
 #ifndef IS_PLUGIN

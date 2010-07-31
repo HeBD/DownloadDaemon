@@ -1,3 +1,8 @@
+2010-07-31
+   [susanne]
+   	- Added insecure mode, in which all variables of the config file can be changed remotely
+   	- Added possibility to specify a post download script, which will be executed after a download has been finished
+
 2010-07-15
    [adrian]
 	- Added support for client-subscriptions (the client can subscribe to the download-list or the DownloadDaemon configuration and automatically receive updates)

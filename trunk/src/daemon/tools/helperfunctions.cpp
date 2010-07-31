@@ -196,12 +196,21 @@ bool variable_is_valid(std::string &variable) {
 						   "bind_addr,dlist_file,auth_fail_wait,write_error_wait,plugin_fail_wait,connection_lost_wait,refuse_existing_links,overwrite_files,"
 						   "recursive_ftp_download,assume_proxys_online,proxy_list,enable_pkg_extractor,pkg_extractor_passwords,download_to_subdirs,"
 						   "precheck_links,captcha_retrys,delete_extracted_archives,";
+	std::string insecure_vars = ",daemon_umask,gocr_binary,tar_path,unrar_path,unzip_path,post_download_script,";
+
 	size_t pos;
 	if((pos = possible_vars.find(variable)) != std::string::npos) {
 		if(possible_vars[pos - 1] == ',' && possible_vars[pos + variable.length()] == ',') {
 			return true;
 		}
 	}
+
+	if(global_config.get_bool_value("insecure_mode") && ((pos = insecure_vars.find(variable)) != std::string::npos)) {
+		if(insecure_vars[pos - 1] == ',' && insecure_vars[pos + variable.length()] == ',') {
+			return true;
+		}
+	}
+
 	return false;
 }
 
@@ -259,7 +268,7 @@ void correct_path(std::string &path) {
 	realpath(path.c_str(), real_path);
 	if(real_path[0] != '\0')
 		path = real_path;
-	delete real_path;
+	delete [] real_path;
 
 	// remove slashes at the end
 	while(*(path.end() - 1) == '/' || *(path.end() - 1) == '\\') {
@@ -375,6 +384,35 @@ bool fequal(double p1, double p2) {
 		return true;
 	return false;
 }
+
+std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape) {
+	std::vector<std::string> ret;
+	size_t n = 0, last_n = 0;
+	while(true) {
+		n = inp_string.find(seperator, n);
+
+		if(respect_escape && (n != string::npos) && (n != 0)) {
+			if(inp_string[n-1] == '\\') {
+				++n;
+				continue;
+			}
+		}
+
+		ret.push_back(inp_string.substr(last_n, n - last_n));
+		size_t esc_pos = 0;
+		if(respect_escape) {
+			while((esc_pos = ret.back().find('\\' + seperator)) != string::npos)
+				ret.back().erase(esc_pos, 1);
+		}
+
+		if(n == std::string::npos) break;
+		n += seperator.size();
+		last_n = n;
+
+	}
+	return ret;
+}
+
 
 #ifdef BACKTRACE_ON_CRASH
 #include <execinfo.h>
