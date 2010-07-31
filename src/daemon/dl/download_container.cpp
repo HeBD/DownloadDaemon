@@ -610,10 +610,12 @@ void download_container::preset_file_status() {
 void download_container::extract_package() {
 	std::string fixed_passwd = get_password();
 	string password_list = global_config.get_cfg_value("pkg_extractor_passwords");
-	string curr_password = fixed_passwd;
 	bool all_success = true;
+	vector <string> passwords = split_string(password_list, ";");
+	passwords.insert(passwords.begin(), fixed_passwd);
 	unique_lock<recursive_mutex> lock(download_mutex);
 	for (size_t i = 0; i < download_list.size(); ++i) {
+		vector<string>::iterator curr_password = passwords.begin();
 		string output_file = download_list[i]->get_filename();
 		size_t n = output_file.rfind(".part");
 		if (n != string::npos && output_file.find(".rar") != string::npos) {
@@ -624,10 +626,13 @@ void download_container::extract_package() {
 		}
 
 		while(true) {
-			trim_string(curr_password);
-			log_string("Checking if file can be extracted: " + output_file, LOG_DEBUG);
+			trim_string(*curr_password);
+			if (curr_password->empty())
+				log_string("Checking if file can be extracted " + output_file + " using no password", LOG_INFO);
+			else
+				log_string("Trying to extract " + output_file + " using password" + *curr_password, LOG_INFO);
 			lock.unlock();
-			pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, curr_password);
+			pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, *curr_password);
 			lock.lock();
 			if(ret == pkg_extractor::PKG_ERROR || ret == pkg_extractor::PKG_INVALID) {
 				all_success = false;
@@ -635,28 +640,17 @@ void download_container::extract_package() {
 			}
 			if(ret == pkg_extractor::PKG_PASSWORD) {
 				// next password
-				if(!fixed_passwd.empty() || (fixed_passwd.empty() && password_list.empty())) {
-						all_success = false;
-						break;
-				}
-				if(curr_password.empty()) {
-					curr_password = password_list.substr(0, password_list.find(";"));
-					continue;
-				}
-				try {
-					if(password_list.find(";") != string::npos) {
-						password_list = password_list.substr(password_list.find(";") + 1);
-					}
-					curr_password = password_list.substr(0, password_list.find(";"));
-				} catch(...) {
-					curr_password = password_list.substr(0, password_list.find(";"));
-					password_list = "";
-				} // ignore errors
-				if(curr_password.empty()) {
+				if(!fixed_passwd.empty()) {
 					all_success = false;
+					log_string("The password you entered for extracting " + output_file + " seems to be incorrect", LOG_WARNING);
 					break;
 				}
-				continue;
+				++curr_password;
+				if(curr_password == passwords.end()) {
+					all_success = false;
+					log_string("Failed to extract file " + output_file + ": No correct password could be found", LOG_WARNING);
+					break;
+				}
 			}
 
 			if(ret == pkg_extractor::PKG_SUCCESS) {
