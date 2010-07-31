@@ -78,7 +78,7 @@ int package_container::from_file(const char* filename) {
 			curr_pkg_id = add_package("imported");
 		}
 
-		download* dl = new download;
+		download* dl = new download("");
 		dl->from_serialized(line);
 		add_dl_to_pkg(dl, curr_pkg_id);
 	}

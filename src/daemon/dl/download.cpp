@@ -35,6 +35,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
+#include <cstring>
+#include <iostream>
 
 using namespace std;
 
@@ -385,6 +387,64 @@ void download::download_me() {
 	}
 	global_download_list.dump_to_file();
 	post_subscribers();
+
+
+	if(status == DOWNLOAD_FINISHED) {
+
+		string post_script = global_config.get_cfg_value("post_download_script");
+		if(post_script.empty()) return;
+
+		trim_string(post_script);
+		vector<string> param = split_string(post_script, " ", true);
+
+		string dlist = global_download_list.create_client_list();
+		string pkg_name = global_download_list.get_pkg_name(parent);
+		string client_line;
+		create_client_line(client_line);
+
+		char **args = new char *[param.size() + 1];
+		memset(args, 0, (param.size() + 1) * sizeof(char*));
+		int i = 0;
+
+		lock.lock();
+
+		vector<string>::iterator it = param.begin();
+		for(; it != param.end(); ++it) {
+			replace_all(*it, "[dlist]", dlist);
+			replace_all(*it, "[pkg_name]", pkg_name);
+			replace_all(*it, "[url]", url);
+			replace_all(*it, "[filename]", output_file);
+			replace_all(*it, "[dl_line]", client_line);
+			replace_all(*it, "[dl_id]", int_to_string(id));
+			replace_all(*it, "[pkg_id]", int_to_string(parent));
+
+			args[i] = new char[it->size() + 1];
+			memset(args[i], 0, it->size() + 1);
+			strncpy(args[i], it->c_str(), it->size());
+			i++;
+		}
+
+		char* param0 = new char[param[0].size() + 1];
+		memset(param0, 0, param[0].size() + 1);
+		strncpy(param0, param[0].c_str(), param[0].size());
+
+		lock.unlock();
+		int j = fork();
+
+		if (j < 0)
+			log_string("Fork error, couldn't execute post download script.", LOG_ERR);
+
+		if (j == 0) { /* I'm the Child */
+			execvp(param0, args);
+			exit(0);
+		}
+
+		delete [] param0;
+
+		for(size_t i = 0; i < param.size() - 1; ++i)
+			if (args[i]) delete [] args[i];
+		delete [] args;
+	}
 }
 
 void download::download_me_worker(dl_cb_info &cb_info) {

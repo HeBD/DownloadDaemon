@@ -6,3 +6,6 @@
 - remotely solve captchas if they can't be solved automatically
 - auto-updater for plugins and reconnect scripts
 - plugin-properties: makes it possible to set plugin-specific options if hte plugin can handle them (e.g. one-time passwords for containers, etc)
+- execute custom command after finishing a download
+- "insecure-mode": all variables can be changed remotely (for private networks behind firewall)
+- use Angelscript or similar for plugins and implement auto-update functionality for plugins
