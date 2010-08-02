@@ -54,6 +54,8 @@ struct package{
 /** Enum file_delete, manages the three options for deleting a file */
 enum file_delete{ del_file, dont_delete, dont_know };
 
+/** Subcription Type, describes what to subscribe to. */
+enum subs_type{ SUBS_NONE = 0, SUBS_DOWNLOADS, SUBS_CONFIG };
 
 /** DownloadClient Class, makes communication with DownloadDaemon easier */
 class downloadc{
@@ -270,8 +272,31 @@ class downloadc{
         */
         std::string get_premium_var(std::string host);
 
+        // target SUBSCRIPTION
+        /** Returns the subscription list, successful or not shown by exception
+        *   @returns subscription list in a vector
+        */
+        std::vector<std::string> get_subscription_list();
+
+        /** Adds a subscription, successful or not shown by exception
+        *   @param type subscription type to add
+        */
+        void add_subscription(subs_type type);
+
+        /** Removes a subscription, successful or not shown by exception
+        *   @param type subscription type to delete
+        */
+        void remove_subscription(subs_type type);
+
         /** Checks connection, successful or not shown by exception*/
         void check_connection();
+
+        /** Splits a string into many strings, seperating them with the seperator
+        *    @param inp_string string to split
+        *    @param seperator Seperator to use for splitting
+        *    @returns Vector of all the strings
+        */
+        static std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape = false);
 
     private:
 
@@ -279,6 +304,7 @@ class downloadc{
         std::mutex mx;
 
         void check_error_code(std::string check_me);
+        void subs_to_string(subs_type t, std::string &ret);
 };
 
 #endif // DOWNLOADC_H

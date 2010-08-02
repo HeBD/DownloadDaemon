@@ -213,12 +213,15 @@ void download::create_client_line(std::string &ret) {
 	ret = ss.str();
 }
 
-void download::post_subscribers(const std::string &reason) {
+void download::post_subscribers(reason_type reason) {
 	unique_lock<recursive_mutex> lock(mx);
 	if (!subs_enabled || id < 0) return;
-	std::string line;
+	std::string line, reason_str;
+
 	create_client_line(line);
-	line = reason + ":" + line;
+	reason_to_string(reason, reason_str);
+
+	line = reason_str + ":" + line;
 	if(line != last_posted_message) {
 		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
 		last_posted_message = line;
@@ -1028,6 +1031,26 @@ void download::preset_file_status() {
 	}
 	is_running = false;
 	post_subscribers();
+}
+
+void download::reason_to_string(reason_type t, std::string &ret) {
+	 switch(t) {
+	 case DL_UPDATE:
+		  ret = "DL_UPDATE";
+		  return;
+	 case DL_NEW:
+		  ret = "DL_NEW";
+		  return;
+	 case DL_DELETE:
+		  ret = "DL_DELETE";
+		  return;
+	 case DL_MOVEUP:
+		  ret = "DL_MOVEUP";
+		  return;
+	 case DL_MOVEDOWN:
+		  ret = "DL_MOVEDOWN";
+		  return;
+	 }
 }
 
 std::string download::get_plugin_file() {

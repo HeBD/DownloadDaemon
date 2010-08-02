@@ -15,10 +15,12 @@
 #include <config.h>
 #include <map>
 #include <string>
+#include <vector>
+
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
 namespace std {
-	using namespace boost;
+    using namespace boost;
 }
 #else
 #include <thread>
@@ -28,41 +30,41 @@ namespace std {
 
 /** Language Class, translates a string to a given language */
 class language{
-	public:
+    public:
 
-		/** Defaultconstructor */
-		language();
+        /** Defaultconstructor */
+        language();
 
-		/** Sets the working directory
-		*	@param working_dir Working Directory
-		*/
-		void set_working_dir(std::string working_dir);
+        /** Sets the working directory
+        *    @param working_dir Working Directory
+        */
+        void set_working_dir(std::string working_dir);
 
-		/** Sets the language by reading in the language file.
-		*	@param lang Language wich is set
-		*	@returns Successful nor not
-		*/
-		bool set_language(std::string lang);
+        /** Sets the language by reading in the language file.
+        *    @param lang Language wich is set
+        *    @returns Successful nor not
+        */
+        bool set_language(std::string lang);
 
-		/** Operator []
-		*	@param index Index where the language Object is accessed at
-		*	@returns String
-		*/
-		std::string operator[](std::string index);
+        /** Operator []
+        *    @param index Index where the language Object is accessed at
+        *    @returns String
+        */
+        std::string operator[](std::string index);
 
-		/** Repaces all occurences of old in str with new_s
-		*	@param str string to search in
-		*	@param old string to replace
-		*	@param new_s replacement
-		*/
-		static void replace_all(std::string& str, const std::string& old, const std::string& new_s);
+        /** Repaces all occurences of old in str with new_s
+        *    @param str string to search in
+        *    @param old string to replace
+        *    @param new_s replacement
+        */
+        static void replace_all(std::string& str, const std::string& old, const std::string& new_s);
 
-	private:
+    private:
 
-		std::map<std::string, std::string> texts;
-		std::string lang;
-		std::string working_dir;
-		std::mutex mx;
+        std::map<std::string, std::string> texts;
+        std::string lang;
+        std::string working_dir;
+        std::mutex mx;
 };
 
 #endif // DDCLIENT_WX_LANGUAGE_H

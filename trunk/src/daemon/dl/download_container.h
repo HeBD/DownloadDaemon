@@ -36,6 +36,11 @@ class download_container {
 	friend class package_container;
 
 public:
+
+	/** Describes the reason why a message is sent to a subscriber.
+	*/
+	enum reason_type { PKG_UPDATE = 0, PKG_NEW, PKG_DELETE, PKG_MOVEUP, PKG_MOVEDOWN };
+
 	/** simple constructor
 	*/
 	download_container() {}
@@ -175,6 +180,11 @@ public:
 	*/
 	std::string create_client_list();
 
+	/** Posts the package to all clients that subscribed to SUBS_DOWNLOAD
+	*	@param reason reason why the message is sent
+	*/
+	void post_subscribers(reason_type reason = PKG_UPDATE);
+
 	/** Gets the lowest unused ID that should be used for the next download
 	*	@returns ID
 	*/
@@ -220,6 +230,12 @@ public:
 	/** extracts this package */
 	void extract_package();
 
+	/** Fills a string with the reason why a message is sent to a subscriber.
+	*	@param t reason type
+	*	@param ret return String
+	*/
+	static void reason_to_string(reason_type t, std::string &ret);
+
 private:
 	typedef std::vector<download*>::iterator iterator;
 	/** get an iterator to a download by giving an ID
@@ -255,6 +271,8 @@ private:
 	int container_id;
 	std::string name;
 	std::string password; // password for rar-extraction
+	std::string last_posted_message;
+	bool subs_enabled;
 };
 
 

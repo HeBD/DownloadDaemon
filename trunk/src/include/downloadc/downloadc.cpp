@@ -748,33 +748,14 @@ uint64_t downloadc::get_file_size(int id){
 std::vector<std::string> downloadc::get_router_list(){
     check_connection();
 
-    std::string model_list, line = "";
-    size_t lineend = 1;
+    std::string model_list;
 
     mx.lock();
     mysock->send("DDP ROUTER LIST");
     mysock->recv(model_list);
     mx.unlock();
 
-    std::vector<std::string> router_list;
-
-    // parse lines
-    while(model_list.length() > 0 && lineend != std::string::npos){
-        lineend = model_list.find("\n"); // termination character for line
-
-        if(lineend == std::string::npos){ // this is the last line (which ends without \n)
-            line = model_list.substr(0, model_list.length());
-            model_list = "";
-
-        }else{ // there is still another line after this one
-            line = model_list.substr(0, lineend);
-            model_list = model_list.substr(lineend+1);
-        }
-
-        router_list.push_back(line);
-    }
-
-    return router_list;
+    return split_string(model_list, "\n");
 }
 
 
@@ -824,33 +805,14 @@ std::string downloadc::get_router_var(std::string var){
 std::vector<std::string> downloadc::get_premium_list(){
     check_connection();
 
-    std::string host_list, line = "";
-    size_t lineend = 1;
+    std::string host_list;
 
     mx.lock();
     mysock->send("DDP PREMIUM LIST");
     mysock->recv(host_list);
     mx.unlock();
 
-    std::vector<std::string> premium_list;
-
-    // parse lines
-    while(host_list.length() > 0 && lineend != std::string::npos){
-        lineend = host_list.find("\n"); // termination character for line
-
-        if(lineend == std::string::npos){ // this is the last line (which ends without \n)
-            line = host_list.substr(0, host_list.length());
-            host_list = "";
-
-        }else{ // there is still another line after this one
-            line = host_list.substr(0, lineend);
-            host_list = host_list.substr(lineend+1);
-        }
-
-        premium_list.push_back(line);
-    }
-
-    return premium_list;
+    return this->split_string(host_list, "\n");
 }
 
 
@@ -882,6 +844,50 @@ std::string downloadc::get_premium_var(std::string host){
 }
 
 
+std::vector<std::string> downloadc::get_subscription_list(){
+    check_connection();
+
+    std::string sub_list;
+
+    mx.lock();
+    mysock->send("DDP SUBSCRIPTION LIST");
+    mysock->recv(sub_list);
+    mx.unlock();
+
+    return split_string(sub_list, "\n");
+}
+
+
+void downloadc::add_subscription(subs_type type){
+    check_connection();
+
+    std::lock_guard<std::mutex> lock(mx);
+
+    std::string answer, t_subs;
+    subs_to_string(type, t_subs);
+
+    mysock->send("DDP SUBSCRIPTION ADD " + t_subs);
+    mysock->recv(answer);
+
+    check_error_code(answer);
+}
+
+
+void downloadc::remove_subscription(subs_type type){
+    check_connection();
+
+    std::lock_guard<std::mutex> lock(mx);
+
+    std::string answer, t_subs;
+    subs_to_string(type, t_subs);
+
+    mysock->send("DDP SUBSCRIPTION DEL " + t_subs);
+    mysock->recv(answer);
+
+    check_error_code(answer);
+}
+
+
 // helper functions
 void downloadc::check_connection(){
     std::lock_guard<std::mutex> lock(mx);
@@ -899,6 +905,39 @@ void downloadc::check_connection(){
         throw client_exception(10, "connection lost");
     }
 }
+
+
+std::vector<std::string> downloadc::split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape){
+    std::vector<std::string> ret;
+        size_t n = 0, last_n = 0;
+        while(true){
+            n = inp_string.find(seperator, n);
+
+            if(respect_escape && (n != std::string::npos) && (n != 0)){
+                if(inp_string[n-1] == '\\') {
+                    ++n;
+                    continue;
+                }
+            }
+
+        ret.push_back(inp_string.substr(last_n, n - last_n));
+        size_t esc_pos = 0;
+
+        if(respect_escape){
+            while((esc_pos = ret.back().find('\\' + seperator)) != std::string::npos)
+                ret.back().erase(esc_pos, 1);
+        }
+
+        if(n == std::string::npos)
+            break;
+        n += seperator.size();
+        last_n = n;
+
+    }
+
+    return ret;
+}
+
 
 
 void downloadc::check_error_code(std::string check_me){
@@ -957,4 +996,19 @@ void downloadc::check_error_code(std::string check_me){
         return;
     }
 
+}
+
+
+void downloadc::subs_to_string(subs_type t, std::string &ret){
+    switch(t){
+        case SUBS_DOWNLOADS:
+            ret = "SUBS_DOWNLOADS";
+            return;
+        case SUBS_CONFIG:
+            ret = "SUBS_CONFIG";
+            return;
+        case SUBS_NONE:
+            ret = "";
+            return;
+    }
 }

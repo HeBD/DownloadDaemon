@@ -53,23 +53,28 @@ struct dl_cb_info ;
 
 class download {
 public:
+
+	/** Describes the reason why a message is sent to a subscriber.
+	*/
+	enum reason_type { DL_UPDATE = 0, DL_NEW, DL_DELETE, DL_MOVEUP, DL_MOVEDOWN };
+
 	/** Normal constructor
-	* @param url Download URL
+	*	@param url Download URL
 	*/
 	download(const std::string &dl_url);
 
 	/** Constructor from a serialized download from file
-	* @param serializedDL Serialized Download string
+	*	@param serializedDL Serialized Download string
 	*/
 	//download(std::string &serializedDL);
 
 	/** Copy constructor because of CURL* handles
-	* @param dl Download object to copy
+	*	@param dl Download object to copy
 	*/
 	download(const download& dl);
 
 	/** needed because of boost::mutex noncopyability
-	* @param dl download object to assign
+	*	@param dl download object to assign
 	*/
 	void operator=(const download& dl);
 
@@ -78,35 +83,37 @@ public:
 	~download();
 
 	/** Initialize a download object with a serialized download string
-	* @param serializedDL Serialized download
+	*	@param serializedDL Serialized download
 	*/
 	void from_serialized(std::string &serializedDL);
 
 	/** Serialize the download object to store it in the file
-	* @returns The serialized string
+	*	@returns The serialized string
 	*/
 	std::string serialize();
 
 	/** puts the download-properties in a single line for sending to a client
-	* @param the line
+	*	@param the line
 	*/
 	void create_client_line(std::string &ret);
 
-	/** Posts the download to all clients that subscribed to SUBS_DOWNLOAD */
-	void post_subscribers(const std::string &reason = "UPDATE");
+	/** Posts the download to all clients that subscribed to SUBS_DOWNLOAD
+	*	@param reason reason why the message is sent
+	*/
+	void post_subscribers(reason_type reason = DL_UPDATE);
 
 	/** Find out the hoster (needed to call the correct plugin)
-	* @returns host-string
+	*	@returns host-string
 	*/
 	std::string get_host(bool do_lock = true);
 
 	/** Get the defines from above as a string literal
-	* @returns the resulting error string
+	*	@returns the resulting error string
 	*/
 	const char* get_error_str();
 
 	/** Get the defines from above as a string literal
-	* @returns the resulting status string
+	*	@returns the resulting status string
 	*/
 	const char* get_status_str();
 
@@ -180,6 +187,12 @@ public:
 	*	Then it sets the PLUGIN_* error and the filesize for the download
 	*/
 	void preset_file_status();
+
+	/** Fills a string with the reason why a message is sent to a subscriber.
+	*	@param t reason type
+	*	@param ret return String
+	*/
+	static void reason_to_string(reason_type t, std::string &ret);
 
 	bool subs_enabled;
 	mutable std::recursive_mutex mx;
