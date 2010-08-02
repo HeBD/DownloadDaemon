@@ -106,9 +106,6 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
     update_thread *thread = new update_thread(this, interval);
     thread->start();
     this->thread = thread;
-
-    dclient->add_subscription(SUBS_DOWNLOADS);
-    dclient->get_updates();
 }
 
 
