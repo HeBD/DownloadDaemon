@@ -18,76 +18,76 @@ language::language() : lang("English"){
 
 
 void language::set_working_dir(std::string working_dir){
-	std::lock_guard<std::mutex> lock(mx);
-	this->working_dir = working_dir;
+    std::lock_guard<std::mutex> lock(mx);
+    this->working_dir = working_dir;
 }
 
 
 bool language::set_language(std::string lang){
-	std::lock_guard<std::mutex> lock(mx);
-	texts.clear();
+    std::lock_guard<std::mutex> lock(mx);
+    texts.clear();
 
-	// einlesen der datei
-	if(lang != "English"){ // default language is english
-		size_t found;
+    // einlesen der datei
+    if(lang != "English"){ // default language is english
+        size_t found;
 
-		if(working_dir == "")
-			return false;
+        if(working_dir == "")
+            return false;
 
 
-		std::string file_name = working_dir + lang;
-		std::ifstream ifs(file_name.c_str(), std::fstream::in); // open file
+        std::string file_name = working_dir + lang;
+        std::ifstream ifs(file_name.c_str(), std::fstream::in); // open file
 
-		if(ifs.good()){ // file successfully opened
-			std::string line;
+        if(ifs.good()){ // file successfully opened
+            std::string line;
 
-			while((!ifs.eof())){ // loop through lines
-				getline(ifs, line);
+            while((!ifs.eof())){ // loop through lines
+                getline(ifs, line);
 
-				replace_all(line, "\\n", "\n");
-				replace_all(line, "\\t", "\t");
+                replace_all(line, "\\n", "\n");
+                replace_all(line, "\\t", "\t");
 
-				std::string lang_string;
+                std::string lang_string;
 
-				found = line.find("->"); // english and language string are separated by ->
+                found = line.find("->"); // english and language string are separated by ->
 
-				if (found != std::string::npos && line[0] != '#'){ // split line in english and language string and insert it
-					lang_string = line.substr(found+2);
-					line = line.substr(0, found);
+                if (found != std::string::npos && line[0] != '#'){ // split line in english and language string and insert it
+                    lang_string = line.substr(found+2);
+                    line = line.substr(0, found);
 
-					texts.insert(std::pair<std::string, std::string>(line, lang_string));
-				}
-			}
+                    texts.insert(std::pair<std::string, std::string>(line, lang_string));
+                }
+            }
 
-			ifs.close(); // close file
-		}else // error at opening
-			return false;
+            ifs.close(); // close file
+        }else // error at opening
+            return false;
 
-	}
+    }
 
-	this->lang = lang;
-	return true;
+    this->lang = lang;
+    return true;
 }
 
 
 std::string language::operator[](std::string index){
-	std::lock_guard<std::mutex> lock(mx);
+    std::lock_guard<std::mutex> lock(mx);
 
-	if(lang == "English") // default language is English
-		return index;
+    if(lang == "English") // default language is English
+        return index;
 
-	if(texts.find(index) == texts.end()) // if index can't be found return index
-		return index;
+    if(texts.find(index) == texts.end()) // if index can't be found return index
+        return index;
 
-	else
-		return texts[index];
+    else
+        return texts[index];
 }
 
 
 void language::replace_all(std::string& str, const std::string& old, const std::string& new_s){
-	size_t n;
+    size_t n;
 
-	while((n = str.find(old)) != std::string::npos){
-		str.replace(n, old.length(), new_s);
-	}
+    while((n = str.find(old)) != std::string::npos){
+        str.replace(n, old.length(), new_s);
+    }
 }

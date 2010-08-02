@@ -23,7 +23,7 @@ class connection_manager
 public:
 	 enum subs_type { SUBS_NONE = 0, SUBS_DOWNLOADS, SUBS_CONFIG };
 
-    connection_manager();
+	 connection_manager();
 	 ~connection_manager();
 
 	 long add_client(client *c);
@@ -38,7 +38,7 @@ public:
 	 static void subs_to_string(subs_type t, std::string &ret);
 private:
 	 static connection_manager *m_instance;
-	 std::vector<client*>  connections;
+	 std::vector<client *>  connections;
 	 std::mutex mx;
 };
 

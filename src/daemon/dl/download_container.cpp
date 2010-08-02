@@ -22,6 +22,7 @@
 #include "download.h"
 #include "../plugins/captcha.h"
 #include "package_extractor.h"
+#include "../mgmt/connection_manager.h"
 
 
 #ifndef IS_PLUGIN
@@ -35,10 +36,10 @@
 #include <iostream>
 using namespace std;
 
-download_container::download_container(int id, std::string container_name) : container_id(id), name(container_name) {
+download_container::download_container(int id, std::string container_name) : container_id(id), name(container_name), subs_enabled(true) {
 }
 
-download_container::download_container(const download_container &cnt) : download_list(cnt.download_list), container_id(cnt.container_id), name(cnt.name) {}
+download_container::download_container(const download_container &cnt) : download_list(cnt.download_list), container_id(cnt.container_id), name(cnt.name), subs_enabled(true) {}
 
 download_container::~download_container() {
 	lock_guard<recursive_mutex> lock(download_mutex);
@@ -482,6 +483,21 @@ std::string download_container::create_client_list() {
 	return ss.str();
 }
 
+void download_container::post_subscribers(reason_type reason) {
+	unique_lock<recursive_mutex> lock(download_mutex);
+	if (!subs_enabled || container_id < 0) return;
+	std::string list, reason_str;
+
+	list = create_client_list();
+	reason_to_string(reason, reason_str);
+
+	list = reason_str + ":" + list;
+	if(list != last_posted_message) {
+		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, list);
+		last_posted_message = list;
+	}
+}
+
 int download_container::stop_download(int id) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(id);
@@ -669,6 +685,26 @@ void download_container::extract_package() {
 			}
 		}
 	}
+}
+
+void download_container::reason_to_string(reason_type t, std::string &ret) {
+	 switch(t) {
+	 case PKG_UPDATE:
+		  ret = "PKG_UPDATE";
+		  return;
+	 case PKG_NEW:
+		  ret = "PKG_NEW";
+		  return;
+	 case PKG_DELETE:
+		  ret = "PKG_DELETE";
+		  return;
+	 case PKG_MOVEUP:
+		  ret = "PKG_MOVEUP";
+		  return;
+	 case PKG_MOVEDOWN:
+		  ret = "PKG_MOVEDOWN";
+		  return;
+	 }
 }
 
 #endif

@@ -4,7 +4,7 @@ using namespace std;
 
 connection_manager* connection_manager::m_instance = 0;
 
-connection_manager::connection_manager(){
+connection_manager::connection_manager() {
 }
 
 connection_manager::~connection_manager() {
@@ -13,8 +13,7 @@ connection_manager::~connection_manager() {
 	 }
 }
 
-long connection_manager::add_client(client *c)
-{
+long connection_manager::add_client(client *c) {
 	 std::lock_guard<std::mutex> lock(mx);
 	 int id = 0;
 	 if(connections.size() > 0) {
@@ -25,8 +24,7 @@ long connection_manager::add_client(client *c)
 	 return id;
 }
 
-void connection_manager::del_client(long id)
-{
+void connection_manager::del_client(long id) {
 	 std::lock_guard<std::mutex> lock(mx);
 	 for(vector<client*>::iterator it = connections.begin(); it != connections.end(); ++it) {
 		  if((*it)->client_id == id) {
@@ -37,8 +35,7 @@ void connection_manager::del_client(long id)
 	 }
 }
 
-void connection_manager::push_message(subs_type type, const std::string &message)
-{
+void connection_manager::push_message(subs_type type, const std::string &message) {
 	 std::lock_guard<std::mutex> lock(mx);
 	 for(vector<client*>::iterator it = connections.begin(); it != connections.end(); ++it) {
 		  (*it)->push_message(type, message);
