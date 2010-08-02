@@ -206,7 +206,7 @@ bool tkSock::connect(const std::string &host, const int port) {
 	}
 	m_addr.sin_family = AF_INET;
 	m_addr.sin_port = htons(port);
-	if(this) {
+	if(*this) {
 		disconnect();
 	}
 	int status = ::connect(m_sock, reinterpret_cast<sockaddr*>(&m_addr), sizeof(m_addr));
@@ -377,7 +377,7 @@ int tkSock::remove_header(std::string &data) {
 }
 
 bool tkSock::select(long msec) {
-#if defined(linux) || defined(__linux)
+#if 0 //defined(linux) || defined(__linux)
 	// On linux, we emulate a select-call by calling nonblocking, peeking recv because sometimes a
 	// recv call might block even if select() reported that there is data to get. This is a more robust way.
 	char buf[1];
@@ -398,7 +398,7 @@ bool tkSock::select(long msec) {
 	if(bytes > 0)
 		return true;
 	return false;
-#endif
+#else
 	 fd_set set;
 	 FD_ZERO(&set);
 	 FD_SET(m_sock, &set);
@@ -406,9 +406,11 @@ bool tkSock::select(long msec) {
 	 t.tv_sec = 0;
 	 t.tv_usec = msec;
 	 int ret = ::select(m_sock + 1, &set, 0, 0, &t);
+	 if(ret < 0) valid = false;
 	 if(ret == 1)
 		  return true;
 	 return false;
+#endif
 }
 
 tkSock::operator bool() const {
