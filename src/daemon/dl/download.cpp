@@ -18,7 +18,6 @@
 
 #include "download.h"
 #include "download_container.h"
-#include "../mgmt/connection_manager.h"
 
 #ifndef IS_PLUGIN
 #include <cfgfile/cfgfile.h>
@@ -213,16 +212,17 @@ void download::create_client_line(std::string &ret) {
 	ret = ss.str();
 }
 
-void download::post_subscribers(reason_type reason) {
+void download::post_subscribers(connection_manager::reason_type reason) {
 	unique_lock<recursive_mutex> lock(mx);
 	if (!subs_enabled || id < 0) return;
 	std::string line, reason_str;
 
 	create_client_line(line);
-	reason_to_string(reason, reason_str);
+	connection_manager::reason_to_string(reason, reason_str);
 
 	line = reason_str + ":" + line;
-	if(line != last_posted_message) {
+
+	if((line != last_posted_message) || (reason == connection_manager::MOVEDOWN) || (reason == connection_manager::MOVEUP)) {
 		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
 		last_posted_message = line;
 	}
@@ -1031,26 +1031,6 @@ void download::preset_file_status() {
 	}
 	is_running = false;
 	post_subscribers();
-}
-
-void download::reason_to_string(reason_type t, std::string &ret) {
-	 switch(t) {
-	 case DL_UPDATE:
-		  ret = "DL_UPDATE";
-		  return;
-	 case DL_NEW:
-		  ret = "DL_NEW";
-		  return;
-	 case DL_DELETE:
-		  ret = "DL_DELETE";
-		  return;
-	 case DL_MOVEUP:
-		  ret = "DL_MOVEUP";
-		  return;
-	 case DL_MOVEDOWN:
-		  ret = "DL_MOVEDOWN";
-		  return;
-	 }
 }
 
 std::string download::get_plugin_file() {
