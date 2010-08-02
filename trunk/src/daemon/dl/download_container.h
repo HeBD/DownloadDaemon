@@ -16,6 +16,7 @@
 #include "download.h"
 #include <string>
 #include <vector>
+#include "../mgmt/connection_manager.h"
 
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
@@ -36,10 +37,6 @@ class download_container {
 	friend class package_container;
 
 public:
-
-	/** Describes the reason why a message is sent to a subscriber.
-	*/
-	enum reason_type { PKG_UPDATE = 0, PKG_NEW, PKG_DELETE, PKG_MOVEUP, PKG_MOVEDOWN };
 
 	/** simple constructor
 	*/
@@ -176,14 +173,15 @@ public:
 	void purge_deleted();
 
 	/** Creates the list for the DL LIST command
+	*	@param header just create header line
 	*	@returns the list
 	*/
-	std::string create_client_list();
+	std::string create_client_list(bool header = false);
 
 	/** Posts the package to all clients that subscribed to SUBS_DOWNLOAD
 	*	@param reason reason why the message is sent
 	*/
-	void post_subscribers(reason_type reason = PKG_UPDATE);
+	void post_subscribers(connection_manager::reason_type reason = connection_manager::UPDATE);
 
 	/** Gets the lowest unused ID that should be used for the next download
 	*	@returns ID
@@ -229,12 +227,6 @@ public:
 
 	/** extracts this package */
 	void extract_package();
-
-	/** Fills a string with the reason why a message is sent to a subscriber.
-	*	@param t reason type
-	*	@param ret return String
-	*/
-	static void reason_to_string(reason_type t, std::string &ret);
 
 private:
 	typedef std::vector<download*>::iterator iterator;

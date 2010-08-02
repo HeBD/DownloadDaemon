@@ -123,6 +123,27 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 }
 
 
+std::string downloadc::get_updates(){ // TODO: finish
+    check_connection();
+
+    std::string answer;
+
+    mx.lock();
+
+    /** TODO: remove this bad code... */
+    while(true){
+        if(mysock->select(999999999999))
+            mysock->recv(answer);
+
+        if(answer.size() > 0)
+            break;
+    }
+    mx.unlock();
+
+    return answer;
+}
+
+
 // target DL
 std::vector<package> downloadc::get_list(){
     check_connection();

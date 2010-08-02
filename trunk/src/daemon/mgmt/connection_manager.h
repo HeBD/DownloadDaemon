@@ -23,6 +23,10 @@ class connection_manager
 public:
 	 enum subs_type { SUBS_NONE = 0, SUBS_DOWNLOADS, SUBS_CONFIG };
 
+	 /** Describes the reason why a message is sent to a subscriber.
+	 */
+	 enum reason_type { UPDATE = 0, NEW, DELETE, MOVEUP, MOVEDOWN };
+
 	 connection_manager();
 	 ~connection_manager();
 
@@ -36,6 +40,12 @@ public:
 
 	 static subs_type string_to_subs(const std::string &s);
 	 static void subs_to_string(subs_type t, std::string &ret);
+
+	 /** Fills a string with the reason why a message is sent to a subscriber.
+	 *	@param t reason type
+	 *	@param ret return String
+	 */
+	 static void reason_to_string(reason_type t, std::string &ret);
 private:
 	 static connection_manager *m_instance;
 	 std::vector<client *>  connections;

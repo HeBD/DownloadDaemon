@@ -62,6 +62,25 @@ void connection_manager::subs_to_string(subs_type t, std::string &ret) {
 	 }
 }
 
+void connection_manager::reason_to_string(reason_type t, std::string &ret) {
+	 switch(t) {
+	 case UPDATE:
+		  ret = "UPDATE";
+		  return;
+	 case NEW:
+		  ret = "NEW";
+		  return;
+	 case DELETE:
+		  ret = "DELETE";
+		  return;
+	 case MOVEUP:
+		  ret = "MOVEUP";
+		  return;
+	 case MOVEDOWN:
+		  ret = "MOVEDOWN";
+		  return;
+	 }
+}
 
 //////////////////////////////////////
 //////// CLASS CLIENT ////////////////

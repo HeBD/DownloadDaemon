@@ -75,6 +75,11 @@ class downloadc{
         */
         void connect(std::string host = "127.0.0.1", int port = 56789, std::string pass = "", bool encrypt = false);
 
+        /** Waits for updates and receives them
+        *   @returns updates as a string
+        */
+        std::string get_updates();
+
 
         // target DL
         /** Returns a list of all downloads

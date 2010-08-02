@@ -22,7 +22,6 @@
 #include "download.h"
 #include "../plugins/captcha.h"
 #include "package_extractor.h"
-#include "../mgmt/connection_manager.h"
 
 
 #ifndef IS_PLUGIN
@@ -39,7 +38,8 @@ using namespace std;
 download_container::download_container(int id, std::string container_name) : container_id(id), name(container_name), subs_enabled(true) {
 }
 
-download_container::download_container(const download_container &cnt) : download_list(cnt.download_list), container_id(cnt.container_id), name(cnt.name), subs_enabled(true) {}
+download_container::download_container(const download_container &cnt) : download_list(cnt.download_list), container_id(cnt.container_id), name(cnt.name), subs_enabled(true) {
+}
 
 download_container::~download_container() {
 	lock_guard<recursive_mutex> lock(download_mutex);
@@ -467,34 +467,41 @@ void download_container::purge_deleted() {
 	}
 }
 
-std::string download_container::create_client_list() {
+std::string download_container::create_client_list(bool header) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 
 	std::stringstream ss;
 
-	for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
-		if((*it)->get_status() == DOWNLOAD_DELETED || (*it)->get_id() < 0) {
-			continue;
+	if(header) {
+		ss << "PACKAGE|" << container_id << "|" << name;
+
+	} else {
+		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
+			if((*it)->get_status() == DOWNLOAD_DELETED || (*it)->get_id() < 0) {
+				continue;
+			}
+
+			std::string ret;
+			(*it)->create_client_line(ret);
+			ss << ret << '\n';
 		}
-		std::string ret;
-		(*it)->create_client_line(ret);
-		ss << ret << '\n';
 	}
+
 	return ss.str();
 }
 
-void download_container::post_subscribers(reason_type reason) {
+void download_container::post_subscribers(connection_manager::reason_type reason) {
 	unique_lock<recursive_mutex> lock(download_mutex);
 	if (!subs_enabled || container_id < 0) return;
-	std::string list, reason_str;
+	std::string line, reason_str;
 
-	list = create_client_list();
-	reason_to_string(reason, reason_str);
+	line = create_client_list(true);
+	connection_manager::reason_to_string(reason, reason_str);
 
-	list = reason_str + ":" + list;
-	if(list != last_posted_message) {
-		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, list);
-		last_posted_message = list;
+	line = reason_str + ":" + line;
+	if((line != last_posted_message) || (reason == connection_manager::MOVEDOWN) || (reason == connection_manager::MOVEUP)) {
+		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
+		last_posted_message = line;
 	}
 }
 
@@ -685,26 +692,6 @@ void download_container::extract_package() {
 			}
 		}
 	}
-}
-
-void download_container::reason_to_string(reason_type t, std::string &ret) {
-	 switch(t) {
-	 case PKG_UPDATE:
-		  ret = "PKG_UPDATE";
-		  return;
-	 case PKG_NEW:
-		  ret = "PKG_NEW";
-		  return;
-	 case PKG_DELETE:
-		  ret = "PKG_DELETE";
-		  return;
-	 case PKG_MOVEUP:
-		  ret = "PKG_MOVEUP";
-		  return;
-	 case PKG_MOVEDOWN:
-		  ret = "PKG_MOVEDOWN";
-		  return;
-	 }
 }
 
 #endif
