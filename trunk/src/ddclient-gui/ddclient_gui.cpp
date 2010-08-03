@@ -246,7 +246,6 @@ bool ddclient_gui::check_connection(bool tell_user, string individual_message){
                 }
             }
             mx.unlock();
-
             return false;
         }
     }
