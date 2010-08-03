@@ -78,7 +78,7 @@ class downloadc{
         /** Waits for updates and receives them
         *   @returns updates as a string
         */
-        std::string get_updates();
+        std::vector<std::string> get_updates();
 
 
         // target DL
@@ -141,7 +141,6 @@ class downloadc{
 
 
         // target PKG
-
         /** Returns a list of all packages without downloads
         *   @returns list of packages
         */
@@ -277,6 +276,7 @@ class downloadc{
         */
         std::string get_premium_var(std::string host);
 
+
         // target SUBSCRIPTION
         /** Returns the subscription list, successful or not shown by exception
         *   @returns subscription list in a vector
@@ -293,6 +293,8 @@ class downloadc{
         */
         void remove_subscription(subs_type type);
 
+
+        // helper functions
         /** Checks connection, successful or not shown by exception*/
         void check_connection();
 
@@ -307,6 +309,7 @@ class downloadc{
 
         tkSock *mysock;
         std::mutex mx;
+        bool skip_update;
 
         void check_error_code(std::string check_me);
         void subs_to_string(subs_type t, std::string &ret);

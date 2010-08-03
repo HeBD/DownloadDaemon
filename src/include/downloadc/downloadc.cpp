@@ -15,9 +15,10 @@
 #include <sstream>
 
 
-downloadc::downloadc(){
+downloadc::downloadc() : skip_update(false){
     mysock = NULL;
 }
+
 
 downloadc::~downloadc(){
     std::lock_guard<std::mutex> lock(mx);
@@ -35,8 +36,8 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
     }catch(...){} // no code needed here due to boolean connection
 
     if(!connection){
-        throw client_exception(1, "Connection failed (wrong IP/URL or Port).");
         delete mysock;
+        throw client_exception(1, "Connection failed (wrong IP/URL or Port).");
         return;
     }
 
@@ -75,8 +76,8 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
             mysock->recv(snd);
 
         }else if(encrypt){ // encryption not permitted and user really wants it
-            throw client_exception(2, "connection failed (no encryption)");
             delete mysock;
+            throw client_exception(2, "connection failed (no encryption)");
             return;
 
         }else{ // no encryption permitted but user doesn't care
@@ -86,8 +87,8 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
             }catch(...){} // no code needed here due to boolean connection
 
             if(!connection){
-                throw client_exception(1, "Connection failed (wrong IP/URL or Port).");
                 delete mysock;
+                throw client_exception(1, "Connection failed (wrong IP/URL or Port).");
                 return;
             }
 
@@ -99,19 +100,20 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 
         // check if password was ok
         if(snd.find("102") == 0 && connection){
-            throw client_exception(3, "Wrong Password, Authentication failed.");
             delete mysock;
+            throw client_exception(3, "Wrong Password, Authentication failed.");
             return;
         }
 
     }else{
-        throw client_exception(4, "Connection failed");
         delete mysock;
+        throw client_exception(4, "Connection failed");
         return;
     }
 
 
     // connection ok => save data
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     if(this->mysock != NULL){ //if there is already a connection, delete the old one
@@ -120,27 +122,35 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
     }
 
     this->mysock = mysock;
+    skip_update = false;
 }
 
 
-std::string downloadc::get_updates(){ // TODO: finish
+std::vector<std::string> downloadc::get_updates(){
     check_connection();
 
     std::string answer;
+    std::vector<std::string> all_answers;
 
-    mx.lock();
-
-    /** TODO: remove this bad code... */
     while(true){
-        if(mysock->select(999999999999))
-            mysock->recv(answer);
+        if(!skip_update){
+            mx.lock();
 
-        if(answer.size() > 0)
-            break;
+            while(mysock->select(0)){
+                mysock->recv(answer);
+                all_answers.push_back(answer);
+            }
+
+            mx.unlock();
+
+            if(all_answers.size() > 0)
+                break;
+        }
+
+        sleep(1);
     }
-    mx.unlock();
 
-    return answer;
+    return all_answers;
 }
 
 
@@ -150,10 +160,12 @@ std::vector<package> downloadc::get_list(){
 
     std::string answer;
 
+    skip_update = true;
     mx.lock();
     mysock->send("DDP DL LIST");
     mysock->recv(answer);
     mx.unlock();
+    skip_update = false;
 
     std::vector<std::string> splitted_line;
     std::vector<std::vector<std::string> > new_content;
@@ -278,6 +290,7 @@ std::vector<package> downloadc::get_list(){
 void downloadc::add_download(int package, std::string url, std::string title){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     // make sure everything with the package is ok
@@ -307,6 +320,7 @@ void downloadc::add_download(int package, std::string url, std::string title){
     mysock->send("DDP DL ADD " + pkg_exists.str() + " " + url + " " + title);
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -314,6 +328,7 @@ void downloadc::add_download(int package, std::string url, std::string title){
 void downloadc::delete_download(int id, file_delete fdelete){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -345,6 +360,7 @@ void downloadc::delete_download(int id, file_delete fdelete){
     mysock->send("DDP DL DEL " + id_str.str());
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 
     if(error){
@@ -357,6 +373,7 @@ void downloadc::delete_download(int id, file_delete fdelete){
 void downloadc::stop_download(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -366,6 +383,7 @@ void downloadc::stop_download(int id){
     mysock->send("DDP DL STOP " + id_str.str());
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -373,6 +391,7 @@ void downloadc::stop_download(int id){
 void downloadc::priority_up(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -382,6 +401,7 @@ void downloadc::priority_up(int id){
     mysock->send("DDP DL UP " + id_str.str());
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -389,6 +409,7 @@ void downloadc::priority_up(int id){
 void downloadc::priority_down(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -398,6 +419,7 @@ void downloadc::priority_down(int id){
     mysock->send("DDP DL DOWN " + id_str.str());
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -405,6 +427,7 @@ void downloadc::priority_down(int id){
 void downloadc::activate_download(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -414,6 +437,7 @@ void downloadc::activate_download(int id){
     mysock->send("DDP DL ACTIVATE " + id_str.str());
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -421,6 +445,7 @@ void downloadc::activate_download(int id){
 void downloadc::deactivate_download(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -430,6 +455,7 @@ void downloadc::deactivate_download(int id){
     mysock->send("DDP DL DEACTIVATE " + id_str.str());
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -437,6 +463,7 @@ void downloadc::deactivate_download(int id){
 void downloadc::set_download_var(int id, std::string var, std::string value){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
     std::string answer;
     std::stringstream s;
@@ -445,6 +472,7 @@ void downloadc::set_download_var(int id, std::string var, std::string value){
     mysock->send("DDP DL SET " + s.str() + " " + var + "=" + value);
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer); // set DL_URL can throw 108 variable if download is running or finished
 }
 
@@ -452,6 +480,7 @@ void downloadc::set_download_var(int id, std::string var, std::string value){
 std::string downloadc::get_download_var(int id, std::string var){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
     std::string answer;
     std::stringstream s;
@@ -460,6 +489,7 @@ std::string downloadc::get_download_var(int id, std::string var){
     mysock->send("DDP DL GET " + s.str() + " " + var);
     mysock->recv(answer);
 
+    skip_update = false;
     return answer;
 }
 
@@ -470,10 +500,12 @@ std::vector<package> downloadc::get_packages(){
 
     std::string answer;
 
+    skip_update = true;
     mx.lock();
     mysock->send("DDP DL LIST");
     mysock->recv(answer);
     mx.unlock();
+    skip_update = false;
 
     std::vector<std::string> splitted_line;
     std::vector<std::vector<std::string> > new_content;
@@ -559,11 +591,13 @@ std::vector<package> downloadc::get_packages(){
 int downloadc::add_package(std::string name){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
     std::string answer;
 
     mysock->send("DDP PKG ADD " + name);
     mysock->recv(answer);
+    skip_update = false;
 
     int id = atoi(answer.c_str());
     if(id == -1){
@@ -576,6 +610,7 @@ int downloadc::add_package(std::string name){
 void downloadc::delete_package(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -584,12 +619,14 @@ void downloadc::delete_package(int id){
 
     mysock->send("DDP PKG DEL " + id_str.str());
     mysock->recv(answer);
+    skip_update = false;
 }
 
 
 void downloadc::package_priority_up(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -598,12 +635,14 @@ void downloadc::package_priority_up(int id){
 
     mysock->send("DDP PKG UP " + id_str.str());
     mysock->recv(answer);
+    skip_update = false;
 }
 
 
 void downloadc::package_priority_down(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -612,12 +651,14 @@ void downloadc::package_priority_down(int id){
 
     mysock->send("DDP PKG DOWN " + id_str.str());
     mysock->recv(answer);
+    skip_update = false;
 }
 
 
 bool downloadc::package_exists(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -626,6 +667,7 @@ bool downloadc::package_exists(int id){
 
     mysock->send("DDP PKG EXISTS " + id_str.str());
     mysock->recv(answer);
+    skip_update = false;
 
     if(answer == "0")
         return false;
@@ -637,6 +679,7 @@ bool downloadc::package_exists(int id){
 void downloadc::set_package_var(int id, std::string var, std::string value){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
     std::string answer;
     std::stringstream s;
@@ -645,6 +688,7 @@ void downloadc::set_package_var(int id, std::string var, std::string value){
     mysock->send("DDP PKG SET " + s.str() + " " + var + " = " + value);
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -652,6 +696,7 @@ void downloadc::set_package_var(int id, std::string var, std::string value){
 std::string downloadc::get_package_var(int id, std::string var){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
     std::string answer;
     std::stringstream s;
@@ -660,6 +705,7 @@ std::string downloadc::get_package_var(int id, std::string var){
     mysock->send("DDP PKG GET " + s.str() + " " + var);
     mysock->recv(answer);
 
+    skip_update = false;
     return answer;
 }
 
@@ -667,12 +713,14 @@ std::string downloadc::get_package_var(int id, std::string var){
 void downloadc::pkg_container(std::string type, std::string content){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
     std::string answer;
 
     mysock->send("DDP PKG CONTAINER " + type + ":" + content);
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -681,6 +729,7 @@ void downloadc::pkg_container(std::string type, std::string content){
 void downloadc::set_var(std::string var, std::string value, std::string old_value ){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
     std::string answer;
 
@@ -690,6 +739,7 @@ void downloadc::set_var(std::string var, std::string value, std::string old_valu
     mysock->send("DDP VAR SET " + var + " = " + value);
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -697,12 +747,14 @@ void downloadc::set_var(std::string var, std::string value, std::string old_valu
 std::string downloadc::get_var(std::string var){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
     std::string answer;
 
     mysock->send("DDP VAR GET " + var);
     mysock->recv(answer);
 
+    skip_update = false;
     return answer;
 }
 
@@ -711,6 +763,7 @@ std::string downloadc::get_var(std::string var){
 void downloadc::delete_file(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -729,6 +782,7 @@ void downloadc::delete_file(int id){
     mysock->send("DDP FILE DEL " + id_str.str());
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -736,6 +790,7 @@ void downloadc::delete_file(int id){
 std::string downloadc::get_file_path(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -745,6 +800,7 @@ std::string downloadc::get_file_path(int id){
     mysock->send("DDP FILE GETPATH " + id_str.str());
     mysock->recv(answer);
 
+    skip_update = false;
     return answer;
 }
 
@@ -752,6 +808,7 @@ std::string downloadc::get_file_path(int id){
 uint64_t downloadc::get_file_size(int id){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -760,6 +817,7 @@ uint64_t downloadc::get_file_size(int id){
 
     mysock->send("DDP FILE GETSIZE " + id_str.str());
     mysock->recv(answer);
+    skip_update = false;
 
     return atol(answer.c_str());
 }
@@ -771,10 +829,12 @@ std::vector<std::string> downloadc::get_router_list(){
 
     std::string model_list;
 
+    skip_update = true;
     mx.lock();
     mysock->send("DDP ROUTER LIST");
     mysock->recv(model_list);
     mx.unlock();
+    skip_update = false;
 
     return split_string(model_list, "\n");
 }
@@ -783,6 +843,7 @@ std::vector<std::string> downloadc::get_router_list(){
 void downloadc::set_router_model(std::string model){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -790,6 +851,7 @@ void downloadc::set_router_model(std::string model){
     mysock->send("DDP ROUTER SETMODEL " + model);
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -797,6 +859,7 @@ void downloadc::set_router_model(std::string model){
 void downloadc::set_router_var(std::string var, std::string value){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -804,6 +867,7 @@ void downloadc::set_router_var(std::string var, std::string value){
     mysock->send("DDP ROUTER SET " + var + " = " + value);
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -811,6 +875,7 @@ void downloadc::set_router_var(std::string var, std::string value){
 std::string downloadc::get_router_var(std::string var){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -818,6 +883,7 @@ std::string downloadc::get_router_var(std::string var){
     mysock->send("DDP ROUTER GET " + var);
     mysock->recv(answer);
 
+    skip_update = false;
     return answer;
 }
 
@@ -828,10 +894,12 @@ std::vector<std::string> downloadc::get_premium_list(){
 
     std::string host_list;
 
+    skip_update = true;
     mx.lock();
     mysock->send("DDP PREMIUM LIST");
     mysock->recv(host_list);
     mx.unlock();
+    skip_update = false;
 
     return this->split_string(host_list, "\n");
 }
@@ -840,6 +908,7 @@ std::vector<std::string> downloadc::get_premium_list(){
 void downloadc::set_premium_var(std::string host, std::string user, std::string password){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -847,6 +916,7 @@ void downloadc::set_premium_var(std::string host, std::string user, std::string 
     mysock->send("DDP PREMIUM SET " + host + " " + user + ";" + password);
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -854,6 +924,7 @@ void downloadc::set_premium_var(std::string host, std::string user, std::string 
 std::string downloadc::get_premium_var(std::string host){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
@@ -861,6 +932,7 @@ std::string downloadc::get_premium_var(std::string host){
     mysock->send("DDP PREMIUM GET " + host);
     mysock->recv(answer);
 
+    skip_update = false;
     return answer;
 }
 
@@ -870,10 +942,12 @@ std::vector<std::string> downloadc::get_subscription_list(){
 
     std::string sub_list;
 
+    skip_update = true;
     mx.lock();
     mysock->send("DDP SUBSCRIPTION LIST");
     mysock->recv(sub_list);
     mx.unlock();
+    skip_update = false;
 
     return split_string(sub_list, "\n");
 }
@@ -882,6 +956,7 @@ std::vector<std::string> downloadc::get_subscription_list(){
 void downloadc::add_subscription(subs_type type){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer, t_subs;
@@ -890,6 +965,7 @@ void downloadc::add_subscription(subs_type type){
     mysock->send("DDP SUBSCRIPTION ADD " + t_subs);
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
@@ -897,6 +973,7 @@ void downloadc::add_subscription(subs_type type){
 void downloadc::remove_subscription(subs_type type){
     check_connection();
 
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     std::string answer, t_subs;
@@ -905,15 +982,18 @@ void downloadc::remove_subscription(subs_type type){
     mysock->send("DDP SUBSCRIPTION DEL " + t_subs);
     mysock->recv(answer);
 
+    skip_update = false;
     check_error_code(answer);
 }
 
 
 // helper functions
 void downloadc::check_connection(){
+    skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
 
     if(mysock == NULL){ // deleted mysock
+        skip_update = false;
         throw client_exception(10, "connection lost");
     }
 
@@ -921,6 +1001,7 @@ void downloadc::check_connection(){
 
     mysock->send("hello :3"); // send something, so we can test the connection
     mysock->recv(answer);
+    skip_update = false;
 
     if(!*mysock){ // if there is no active connection
         throw client_exception(10, "connection lost");
