@@ -126,7 +126,7 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 }
 
 
-std::vector<std::string> downloadc::get_updates(){
+std::vector<update_content> downloadc::get_updates(){
     check_connection();
 
     std::string answer;
@@ -159,12 +159,14 @@ std::vector<std::string> downloadc::get_updates(){
     for(rit = all_answers.rbegin(); rit != all_answers.rend(); ++rit){
         push = true;
 
+        // if there is more then one download update from the same id we only need the last one
         if(rit->find("SUBS_DOWNLOADS:UPDATE") == 0){
+
             splitted_line = this->split_string(*rit, ":");
-            if(splitted_line.size() < 3)
+            if(splitted_line.size() < 3) // corrupt line
                 continue;
 
-            id = atoi(splitted_line[2].c_str()); // here might be an ERROR
+            id = atoi(splitted_line[2].c_str());
 
             for(id_it = ids.begin(); id_it != ids.end(); ++id_it){
                 if(id == *id_it){
@@ -180,8 +182,131 @@ std::vector<std::string> downloadc::get_updates(){
         }
     }
 
+    // delete empty lines
+    for(unsigned int i = 0; i < all_answers.size(); i++){
+        if(all_answers[i] == ""){
+            all_answers.erase(all_answers.begin()+i);
+            i--;
+        }
 
-    return all_answers;
+    }
+
+    // now we have to pack the vector into a nicer structure
+    std::vector<std::string>::iterator it = all_answers.begin();
+    std::vector<update_content> updates;
+    update_content update;
+    size_t pos;
+
+    /* Lines look like this:
+     * SUBS_CONFIG:var=value
+     * SUBS_DOWNLOADS:UPDATE:id|date|title|...
+     * SUBS_DOWNLOADS:NEW:PACKAGE|id|name|...
+     */
+
+    for(; it != all_answers.end(); ++it){
+
+        if(it->find("SUBS_CONFIG") == 0){
+            update.sub = SUBS_CONFIG;
+            answer = it->substr(12); // cut away SUBS_CONFIG:
+
+            if((pos = answer.find("=")) == std::string::npos) // corrupt line
+                continue;
+
+            update.var_name = answer.substr(0, pos);
+            update.value = answer.substr(pos+1);
+            
+            trim_string(update.var_name);
+            trim_string(update.value);
+            
+            updates.push_back(update);
+            continue;
+        }
+
+        splitted_line = this->split_string(*it, "|", true);
+
+
+        if(splitted_line[0].find("SUBS_DOWNLOADS") == 0){
+            update.sub = SUBS_DOWNLOADS;
+            answer = splitted_line[0].substr(15); // cut away SUBS_DOWNLOAD:
+
+            if(answer.find("UPDATE") == 0){
+                update.reason = UPDATE;
+                answer = answer.substr(7);
+            }else if(answer.find("NEW") == 0){
+                update.reason = NEW;
+                answer = answer.substr(4);
+            }else if(answer.find("DELETE") == 0){
+                update.reason = DELETE;
+                answer = answer.substr(7);
+            }else if(answer.find("MOVEUP") == 0){
+                update.reason = MOVEUP;
+                answer = answer.substr(7);
+            }else if(answer.find("MOVEDOWN") == 0){
+                update.reason = MOVEDOWN;
+                answer = answer.substr(9);
+            }else // corrupt line or don't know reason_type
+                continue;
+
+            if(answer.size() <= 0)
+                continue; // corrupt line
+
+            if(answer == "PACKAGE"){
+                update.package = true;
+
+                if(splitted_line.size() < 2) // corrupt line
+                    continue;
+
+                update.id = atoi(splitted_line[1].c_str());
+                try{
+                    update.name = splitted_line.at(2);
+                }catch(...){
+                    update.name = "";
+                }
+
+                try{
+                    update.password = splitted_line.at(3);
+                }catch(...){
+                    update.password = "";
+                }
+
+            }else{ // we're looking at a download line
+                update.package = false;
+
+                // defaults
+                update.id = -1;
+                update.date = "";
+                update.title = "";
+                update.url = "";
+                update.status = "";
+                update.downloaded = 0;
+                update.size = 0;
+                update.wait = 0;
+                update.error = "";
+                update.speed = 0;
+
+                try{
+                    update.id = atoi(splitted_line.at(0).c_str());
+                    update.date = splitted_line.at(1);
+                    update.title = splitted_line.at(2);
+                    update.url = splitted_line.at(3);
+                    update.status = splitted_line.at(4);
+                    update.downloaded = std::strtod(splitted_line.at(5).c_str(), NULL);
+                    update.size = std::strtod(splitted_line.at(6).c_str(), NULL);
+                    update.wait = atoi(splitted_line.at(7).c_str());
+                    update.error = splitted_line.at(8);
+                    update.speed = atoi(splitted_line.at(9).c_str());
+                }catch(...){}
+
+
+            }
+        }else // corrupt line or don't know subs_type
+            continue;
+
+        if(update.id != -1)
+            updates.push_back(update);
+    }
+
+    return updates;
 }
 
 
@@ -198,42 +323,8 @@ std::vector<package> downloadc::get_list(){
     mx.unlock();
     skip_update = false;
 
-    std::vector<std::string> splitted_line;
     std::vector<std::vector<std::string> > new_content;
-    std::string line, tab;
-    size_t lineend = 1, tabend = 1;
-
-    // parse lines
-    while(answer.length() > 0 && lineend != std::string::npos){
-        lineend = answer.find("\n"); // termination character for line
-        line = answer.substr(0, lineend);
-        answer = answer.substr(lineend+1);
-
-        // parse columns
-        tabend = 0;
-
-        while(line.length() > 0 && tabend != std::string::npos){
-
-            tabend = line.find("|"); // termination character for column
-
-            if(tabend == std::string::npos){ // no | found, so it is the last column
-                tab = line;
-                line = "";
-            }else{
-                if(tabend != 0 && line.at(tabend-1) == '\\') // because titles can have | inside (will be escaped with \)
-                    tabend = line.find("|", tabend+1);
-
-                tab = line.substr(0, tabend);
-                line = line.substr(tabend+1);
-
-            }
-        splitted_line.push_back(tab); // save all tabs per line for later use
-        }
-
-        new_content.push_back(splitted_line);
-        splitted_line.clear();
-    }
-
+    this->split_special_string(new_content, answer);
 
     // now we have the data in a vector<vector<string> > and can push it in a better readable structure
     std::vector<package> pkg;
@@ -538,42 +629,8 @@ std::vector<package> downloadc::get_packages(){
     mx.unlock();
     skip_update = false;
 
-    std::vector<std::string> splitted_line;
     std::vector<std::vector<std::string> > new_content;
-    std::string line, tab;
-    size_t lineend = 1, tabend = 1;
-
-    // parse lines
-    while(answer.length() > 0 && lineend != std::string::npos){
-        lineend = answer.find("\n"); // termination character for line
-        line = answer.substr(0, lineend);
-        answer = answer.substr(lineend+1);
-
-        // parse columns
-        tabend = 0;
-
-        while(line.length() > 0 && tabend != std::string::npos){
-
-            tabend = line.find("|"); // termination character for column
-
-            if(tabend == std::string::npos){ // no | found, so it is the last column
-                tab = line;
-                line = "";
-            }else{
-                if(tabend != 0 && line.at(tabend-1) == '\\') // because titles can have | inside (will be escaped with \)
-                    tabend = line.find("|", tabend+1);
-
-                tab = line.substr(0, tabend);
-                line = line.substr(tabend+1);
-
-            }
-        splitted_line.push_back(tab); // save all tabs per line for later use
-        }
-
-        new_content.push_back(splitted_line);
-        splitted_line.clear();
-    }
-
+    this->split_special_string(new_content, answer);
 
     // now we have the data in a vector<vector<string> > and can push it in a better readable structure
     std::vector<package> pkg;
@@ -1069,6 +1126,57 @@ std::vector<std::string> downloadc::split_string(const std::string& inp_string, 
     }
 
     return ret;
+}
+
+
+const std::string &downloadc::trim_string(std::string &str){
+    while(str.length() > 0 && isspace(str[0])){
+        str.erase(str.begin());
+    }
+
+    while(str.length() > 0 && isspace(*(str.end() - 1))){
+        str.erase(str.end() -1);
+    }
+
+    return str;
+}
+
+
+void downloadc::split_special_string(std::vector<std::vector<std::string> > &new_content, std::string &answer){
+    std::vector<std::string> splitted_line;
+    std::string line, tab;
+    size_t lineend = 1, tabend = 1;
+
+    // parse lines
+    while(answer.length() > 0 && lineend != std::string::npos){
+        lineend = answer.find("\n"); // termination character for line
+        line = answer.substr(0, lineend);
+        answer = answer.substr(lineend+1);
+
+        // parse columns
+        tabend = 0;
+
+        while(line.length() > 0 && tabend != std::string::npos){
+
+            tabend = line.find("|"); // termination character for column
+
+            if(tabend == std::string::npos){ // no | found, so it is the last column
+                tab = line;
+                line = "";
+            }else{
+                if(tabend != 0 && line.at(tabend-1) == '\\') // because titles can have | inside (will be escaped with \)
+                    tabend = line.find("|", tabend+1);
+
+                tab = line.substr(0, tabend);
+                line = line.substr(tabend+1);
+
+            }
+        splitted_line.push_back(tab); // save all tabs per line for later use
+        }
+
+        new_content.push_back(splitted_line);
+        splitted_line.clear();
+    }
 }
 
 

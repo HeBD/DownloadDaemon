@@ -29,6 +29,16 @@ namespace std {
 #include <stdint.h>
 
 
+/** Enum file_delete, manages the three options for deleting a file */
+enum file_delete{ del_file = 0, dont_delete, dont_know };
+
+/** Subcription Type, describes what to subscribe to. */
+enum subs_type{ SUBS_NONE = 0, SUBS_DOWNLOADS, SUBS_CONFIG };
+
+/** Reason Type, describes the reason for an update. */
+enum reason_type{ UPDATE = 0, NEW, DELETE, MOVEUP, MOVEDOWN };
+
+
 /** Download Struct, defines one single Download */
 struct download{
     int id;
@@ -51,10 +61,18 @@ struct package{
     std::string password;
 };
 
-/** Update Content Struckt, includes all the content of one update message */
+/** Update Content Struct, includes all the content of one update message */
 struct update_content{
 
-    bool package;
+    subs_type sub;
+    reason_type reason;
+
+    // if sub == SUBS_CONFIG this is filled
+    std::string var_name;
+    std::string value;
+
+    // if sub == SUBS_DOWNLOADS some of these are filled
+    bool package; // package attributes are filled or not (contrary to download attributes)
     int id;
 
     // dl attributes
@@ -72,15 +90,6 @@ struct update_content{
     std::string name;
     std::string password;
 };
-
-/** Enum file_delete, manages the three options for deleting a file */
-enum file_delete{ del_file = 0, dont_delete, dont_know };
-
-/** Subcription Type, describes what to subscribe to. */
-enum subs_type{ SUBS_NONE = 0, SUBS_DOWNLOADS, SUBS_CONFIG };
-
-/** */
-enum reason_type{ UPDATE = 0, NEW, DELETE, MOVEUP, MOVEDOWN };
 
 /** DownloadClient Class, makes communication with DownloadDaemon easier */
 class downloadc{
@@ -103,7 +112,7 @@ class downloadc{
         /** Waits for updates and receives them
         *   @returns updates as a string
         */
-        std::vector<std::string> get_updates();
+        std::vector<update_content> get_updates();
 
 
         // target DL
@@ -330,12 +339,19 @@ class downloadc{
         */
         static std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape = false);
 
+        /** Remove whitespaces from beginning and end of a string
+        *   @param str string to process
+        *   @returns the same string
+        */
+        static const std::string& trim_string(std::string &str);
+
     private:
 
         tkSock *mysock;
         std::mutex mx;
         bool skip_update;
 
+        void split_special_string(std::vector<std::vector<std::string> > &new_content, std::string &answer);
         void check_error_code(std::string check_me);
         void subs_to_string(subs_type t, std::string &ret);
 };
