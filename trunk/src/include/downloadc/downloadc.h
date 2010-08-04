@@ -51,11 +51,36 @@ struct package{
     std::string password;
 };
 
+/** Update Content Struckt, includes all the content of one update message */
+struct update_content{
+
+    bool package;
+    int id;
+
+    // dl attributes
+    std::string date;
+    std::string title;
+    std::string url;
+    std::string status;
+    uint64_t downloaded;
+    uint64_t size;
+    int wait;
+    std::string error;
+    int speed;
+
+    // package attributes
+    std::string name;
+    std::string password;
+};
+
 /** Enum file_delete, manages the three options for deleting a file */
-enum file_delete{ del_file, dont_delete, dont_know };
+enum file_delete{ del_file = 0, dont_delete, dont_know };
 
 /** Subcription Type, describes what to subscribe to. */
 enum subs_type{ SUBS_NONE = 0, SUBS_DOWNLOADS, SUBS_CONFIG };
+
+/** */
+enum reason_type{ UPDATE = 0, NEW, DELETE, MOVEUP, MOVEDOWN };
 
 /** DownloadClient Class, makes communication with DownloadDaemon easier */
 class downloadc{

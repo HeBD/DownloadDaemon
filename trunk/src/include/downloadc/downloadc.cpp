@@ -130,7 +130,12 @@ std::vector<std::string> downloadc::get_updates(){
     check_connection();
 
     std::string answer;
-    std::vector<std::string> all_answers;
+    std::vector<std::string> all_answers, splitted_line;
+    std::vector<std::string>::reverse_iterator rit;
+    std::vector<int> ids;
+    std::vector<int>::iterator id_it;
+    int id;
+    bool push;
 
     while(true){
         if(!skip_update){
@@ -149,6 +154,32 @@ std::vector<std::string> downloadc::get_updates(){
 
         sleep(1);
     }
+
+    // delete messages from the queue
+    for(rit = all_answers.rbegin(); rit != all_answers.rend(); ++rit){
+        push = true;
+
+        if(rit->find("SUBS_DOWNLOADS:UPDATE") == 0){
+            splitted_line = this->split_string(*rit, ":");
+            if(splitted_line.size() < 3)
+                continue;
+
+            id = atoi(splitted_line[2].c_str()); // here might be an ERROR
+
+            for(id_it = ids.begin(); id_it != ids.end(); ++id_it){
+                if(id == *id_it){
+                    *rit = "";
+                    push = false;
+                    break;
+
+                }
+            }
+
+            if(push)
+                ids.push_back(id);
+        }
+    }
+
 
     return all_answers;
 }
