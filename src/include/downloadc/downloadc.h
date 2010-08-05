@@ -76,6 +76,7 @@ struct update_content{
     int id;
 
     // dl attributes
+    int pkg_id;
     std::string date;
     std::string title;
     std::string url;
@@ -100,6 +101,9 @@ class downloadc{
 
         /** Destructor */
         ~downloadc();
+
+        /** Sets the bool term to true to signalize that get_updates() should terminate */
+        void set_term();
 
         /** Connects to a DownloadDaemon, successful or not shown by exception
         *    @param host ip where the daemon runs
@@ -350,6 +354,7 @@ class downloadc{
         tkSock *mysock;
         std::mutex mx;
         bool skip_update;
+        bool term;
 
         void split_special_string(std::vector<std::vector<std::string> > &new_content, std::string &answer);
         void check_error_code(std::string check_me);

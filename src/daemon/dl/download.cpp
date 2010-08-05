@@ -220,7 +220,7 @@ void download::post_subscribers(connection_manager::reason_type reason) {
 	create_client_line(line);
 	connection_manager::reason_to_string(reason, reason_str);
 
-	line = reason_str + ":" + line;
+        line = reason_str + ":" + int_to_string(get_parent()) + ":" + line; // contains the parent id after "reason:"
 
 	if((line != last_posted_message) || (reason == connection_manager::MOVEDOWN) || (reason == connection_manager::MOVEUP)) {
 		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
