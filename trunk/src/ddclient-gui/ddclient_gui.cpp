@@ -40,7 +40,7 @@
 using namespace std;
 
 
-ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(config_dir) {
+ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(config_dir), full_list_update(true) {
     setWindowTitle("DownloadDaemon Client GUI");
     this->resize(750, 500);
     setWindowIcon(QIcon("img/logoDD.png"));
@@ -111,6 +111,7 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 
 ddclient_gui::~ddclient_gui(){
     mx.lock();
+    dclient->set_term();
     delete dclient;
     ((update_thread *)thread)->terminate_yourself();
     thread->wait();
@@ -212,14 +213,27 @@ downloadc *ddclient_gui::get_connection(){
 }
 
 
-void ddclient_gui::get_content(){
-    mx.lock();
-    new_content.clear();
+void ddclient_gui::get_content(bool update){
+    vector<package> tmp_content;
+    vector<update_content> tmp_updates;
 
     try{
-        new_content = dclient->get_list();
+        if(update){ // receive updates
+            full_list_update = false;
+            tmp_updates = dclient->get_updates();
+        }else{ // receive whole list
+            full_list_update = true;
+            tmp_content = dclient->get_list();
+        }
 
     }catch(client_exception &e){}
+
+    mx.lock();
+    new_updates.clear();
+    new_content.clear();
+    new_updates = tmp_updates;
+    new_content = tmp_content;
+    mx.unlock();
 
     // send event to reload list
     mx.unlock();
@@ -251,6 +265,20 @@ bool ddclient_gui::check_connection(bool tell_user, string individual_message){
     }
     mx.unlock();
     return true;
+}
+
+
+bool ddclient_gui::check_subscritpion(){
+    mx.lock();
+
+    try{
+        dclient->add_subscription(SUBS_DOWNLOADS);
+        mx.unlock();
+        return true;
+    }catch(client_exception &e){
+        mx.unlock();
+        return false;
+    }
 }
 
 
@@ -851,6 +879,90 @@ vector<view_info> ddclient_gui::get_current_view(){
 }
 
 
+void ddclient_gui::update_packages(){
+    vector<package>::iterator pkg_it;
+    vector<download>::iterator dl_it;
+    vector<update_content>::iterator up_it = new_updates.begin();
+    package pkg;
+    download dl;
+    QStandardItem *pkg_gui;
+    QStandardItem *dl_gui;
+    int line_nr;
+
+    for(; up_it != new_updates.end(); ++up_it){
+        if(up_it->sub != SUBS_DOWNLOADS) // we just need SUBS_DOWNLOADS informaition
+            continue;
+
+        if(up_it->package){ // dealing with a package update
+
+            if(up_it->reason == NEW){ // new package
+                pkg.id = up_it->id;
+                pkg.password = up_it->password;
+                pkg.name = up_it->name;
+
+                content.push_back(pkg);
+                line_nr = list_model->rowCount();
+
+                pkg_gui = new QStandardItem(QIcon("img/package.png"), QString("%1").arg(pkg.id));
+                pkg_gui->setEditable(false);
+                list_model->setItem(line_nr, 0, pkg_gui);
+
+                pkg_gui = new QStandardItem(QString(pkg.name.c_str()));
+                pkg_gui->setEditable(false);
+
+                if(pkg.password != "")
+                    pkg_gui->setIcon(QIcon("img/key.png"));
+                list_model->setItem(line_nr, 1, pkg_gui);
+
+                for(int i=2; i<5; i++){
+                    pkg_gui = new QStandardItem(QString(""));
+                    pkg_gui->setEditable(false);
+                    list_model->setItem(line_nr, i, pkg_gui);
+                }
+
+                continue;
+            }
+
+
+            line_nr = 0;
+            for(pkg_it = content.begin(); pkg_it != content.end(); ++pkg_it){
+
+                if(up_it->id == pkg_it->id){ // found right package
+                    if(up_it->reason == UPDATE){
+
+                    }else if(up_it->reason == DELETE){
+                        list_model->removeRow(line_nr);
+                        content.erase(pkg_it);
+                        break;
+
+                    }else if(up_it->reason == MOVEUP){
+
+                    }else if(up_it->reason == MOVEDOWN){
+
+                    }
+
+
+
+                }
+
+                ++line_nr;
+
+            }
+
+
+
+        }else{ // dealing with a download
+
+
+        }
+
+
+    }
+
+
+}
+
+
 void ddclient_gui::compare_packages(){
     vector<package>::iterator old_it = content.begin();
     vector<package>::iterator new_it = new_content.begin();
@@ -974,7 +1086,7 @@ void ddclient_gui::compare_packages(){
             list->expand(index);
 
             line_nr++;
-            new_it++;
+            ++new_it;
         }
     }
 
@@ -1088,6 +1200,7 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
             dl_line++;
             new_dit++;
         }
+        list->collapse(index);
         list->expand(index);
     }
 }
@@ -2016,18 +2129,23 @@ void ddclient_gui::on_reload(){
     mx.lock();
 
     // update download list
-    download_speed = 0;
-    not_downloaded_yet = 0;
-    selected_downloads_size = 0;
-    selected_downloads_count = 0;
+    if(full_list_update){ // normal update mode without subscriptions
+        download_speed = 0;
+        not_downloaded_yet = 0;
+        selected_downloads_size = 0;
+        selected_downloads_count = 0;
 
-    if(content.size() == 0) // the content gets deleted whenever the language changes
-        list_model->setRowCount(0);
+        if(content.size() == 0) // the content gets deleted whenever the language changes
+            list_model->setRowCount(0);
 
-    compare_packages();
+        compare_packages();
 
-    content.clear();
-    content = new_content;
+        content.clear();
+        content = new_content;
+    }else{ // subscription update mode => less cpu usage
+        update_packages();
+    }
+
 
     // update statusbar
     if(selected_downloads_size != 0){ // something is selected and the total size is known

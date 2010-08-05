@@ -98,8 +98,10 @@ class ddclient_gui : public QMainWindow{
         */
         downloadc *get_connection();
 
-        /** Gets the download list from Daemon and emits do_reload() signal */
-        void get_content();
+        /** Gets the download list from Daemon and emits do_reload() signal
+        *   @param update only get updates, not the whole list (subscriptions)
+        */
+        void get_content(bool update = false);
 
         /** Checks connection
         *    @param tell_user show to user via message box if connection is lost
@@ -107,6 +109,11 @@ class ddclient_gui : public QMainWindow{
         *    @returns connection available or not
         */
         bool check_connection(bool tell_user = false, std::string individual_message = "");
+
+        /** Checks if there is subscription enabled and subscribes to SUBS_DOWNLOADS, if so
+        *   @return enabled or not
+        */
+        bool check_subscritpion();
 
         /** Clears the error message cache, so that they will be shown again */
         void clear_last_error_message();
@@ -133,6 +140,7 @@ class ddclient_gui : public QMainWindow{
         void get_selected_lines();
         static bool sort_selected_info(selected_info i1, selected_info i2);
         std::vector<view_info> get_current_view();
+        void update_packages();
         void compare_packages();
         void compare_downloads(QModelIndex &index, std::vector<package>::iterator &new_it, std::vector<package>::iterator &old_it, std::vector<view_info> &info);
 
@@ -148,8 +156,10 @@ class ddclient_gui : public QMainWindow{
         std::vector<selected_info> selected_lines;
         std::vector<package> content;
         std::vector<package> new_content;
+        std::vector<update_content> new_updates;
         QString config_dir;
         QThread *thread;
+        bool full_list_update;
 
         QTreeView *list;
         QStandardItemModel *list_model;

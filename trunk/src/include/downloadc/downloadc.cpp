@@ -15,7 +15,7 @@
 #include <sstream>
 
 
-downloadc::downloadc() : skip_update(false){
+downloadc::downloadc() : skip_update(false), term(false){
     mysock = NULL;
 }
 
@@ -24,6 +24,11 @@ downloadc::~downloadc(){
     std::lock_guard<std::mutex> lock(mx);
     delete mysock;
     mysock = NULL;
+}
+
+
+void downloadc::set_term(){
+    term = true;
 }
 
 
@@ -134,10 +139,14 @@ std::vector<update_content> downloadc::get_updates(){
     std::vector<std::string>::reverse_iterator rit;
     std::vector<int> ids;
     std::vector<int>::iterator id_it;
+    std::vector<update_content> updates;
     int id;
     bool push;
 
     while(true){
+        if(term) // terminate signal
+            return updates;
+
         if(!skip_update){
             mx.lock();
 
@@ -163,10 +172,10 @@ std::vector<update_content> downloadc::get_updates(){
         if(rit->find("SUBS_DOWNLOADS:UPDATE") == 0){
 
             splitted_line = this->split_string(*rit, ":");
-            if(splitted_line.size() < 3) // corrupt line
+            if(splitted_line.size() < 4) // corrupt line
                 continue;
 
-            id = atoi(splitted_line[2].c_str());
+            id = atoi(splitted_line[3].c_str());
 
             for(id_it = ids.begin(); id_it != ids.end(); ++id_it){
                 if(id == *id_it){
@@ -193,13 +202,12 @@ std::vector<update_content> downloadc::get_updates(){
 
     // now we have to pack the vector into a nicer structure
     std::vector<std::string>::iterator it = all_answers.begin();
-    std::vector<update_content> updates;
     update_content update;
     size_t pos;
 
     /* Lines look like this:
      * SUBS_CONFIG:var=value
-     * SUBS_DOWNLOADS:UPDATE:id|date|title|...
+     * SUBS_DOWNLOADS:UPDATE:package_id:id|date|title|...
      * SUBS_DOWNLOADS:NEW:PACKAGE|id|name|...
      */
 
@@ -273,6 +281,7 @@ std::vector<update_content> downloadc::get_updates(){
                 update.package = false;
 
                 // defaults
+                update.pkg_id = -1;
                 update.id = -1;
                 update.date = "";
                 update.title = "";
@@ -284,8 +293,15 @@ std::vector<update_content> downloadc::get_updates(){
                 update.error = "";
                 update.speed = 0;
 
+                if((pos = answer.find(":")) != std::string::npos){
+                    update.pkg_id = atoi(answer.c_str()); // answer should look like this: 1:25, so pkg_id is 1
+                    answer = answer.substr(pos+1);
+
+                }else
+                    continue; // corrupt line
+
                 try{
-                    update.id = atoi(splitted_line.at(0).c_str());
+                    update.id = atoi(answer.c_str());
                     update.date = splitted_line.at(1);
                     update.title = splitted_line.at(2);
                     update.url = splitted_line.at(3);

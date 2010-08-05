@@ -42,6 +42,7 @@ class update_thread : public QThread{
 
     private:
         ddclient_gui *parent;
+        bool subscription_enabled;
         bool told;
         bool update;
         int interval;
