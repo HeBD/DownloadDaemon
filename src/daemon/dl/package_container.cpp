@@ -501,12 +501,14 @@ void  package_container::move_pkg(int dl, package_container::direction d) {
 	if(it == packages.end()) return;
 	package_container::iterator it2 = it;
 	if(d == DIRECTION_UP && it != packages.begin()) {
+		(*it)->post_subscribers(connection_manager::MOVEUP);
 		--it2;
 		download_container* tmp = *it;
 		*it = *it2;
 		*it2 = tmp;
 	}
 	if(d == DIRECTION_DOWN) {
+		(*it)->post_subscribers(connection_manager::MOVEDOWN);
 		++it;
 		if(it == packages.end()) return;
 		download_container* tmp = *it;
