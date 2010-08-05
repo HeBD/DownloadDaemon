@@ -36,12 +36,14 @@
 using namespace std;
 
 download_container::download_container(int id, std::string container_name) : container_id(id), name(container_name), subs_enabled(true) {
+	post_subscribers(connection_manager::NEW);
 }
 
 download_container::download_container(const download_container &cnt) : download_list(cnt.download_list), container_id(cnt.container_id), name(cnt.name), subs_enabled(true) {
 }
 
 download_container::~download_container() {
+	post_subscribers(connection_manager::DELETE);
 	lock_guard<recursive_mutex> lock(download_mutex);
 	#ifndef IS_PLUGIN
 	if(!download_list.empty()) {
@@ -422,6 +424,7 @@ std::string download_container::get_host(int dl) {
 void download_container::set_password(const std::string& passwd) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	password = passwd;
+	post_subscribers(connection_manager::UPDATE);
 }
 
 std::string download_container::get_password() {
@@ -432,6 +435,7 @@ std::string download_container::get_password() {
 void download_container::set_pkg_name(const std::string& pkg_name) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	name = pkg_name;
+	post_subscribers(connection_manager::UPDATE);
 }
 
 std::string download_container::get_pkg_name() {
