@@ -2178,6 +2178,8 @@ void ddclient_gui::on_reload(){
         full_list_update = false;
     }else{ // subscription update mode => less cpu usage
         update_packages();
+        if(reload_list)
+            get_content();
     }
 
 
