@@ -159,7 +159,7 @@ class ddclient_gui : public QMainWindow{
         std::vector<update_content> new_updates;
         QString config_dir;
         QThread *thread;
-        bool full_list_update;
+        bool full_list_update, reload_list;
 
         QTreeView *list;
         QStandardItemModel *list_model;

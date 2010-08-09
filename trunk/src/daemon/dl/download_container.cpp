@@ -477,7 +477,7 @@ std::string download_container::create_client_list(bool header) {
 	std::stringstream ss;
 
 	if(header) {
-		ss << "PACKAGE|" << container_id << "|" << name;
+                ss << "PACKAGE|" << container_id << "|" << name << "|" << password;
 
 	} else {
 		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {

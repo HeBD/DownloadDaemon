@@ -355,9 +355,11 @@ class downloadc{
         std::mutex mx;
         bool skip_update;
         bool term;
+        std::vector<std::string> old_updates;
 
         void split_special_string(std::vector<std::vector<std::string> > &new_content, std::string &answer);
         void check_error_code(std::string check_me);
+        bool check_correct_answer(std::string check_me);
         void subs_to_string(subs_type t, std::string &ret);
 };
 
