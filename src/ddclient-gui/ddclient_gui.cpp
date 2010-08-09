@@ -40,7 +40,7 @@
 using namespace std;
 
 
-ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(config_dir), full_list_update(true) {
+ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(config_dir), full_list_update(true), reload_list(false) {
     setWindowTitle("DownloadDaemon Client GUI");
     this->resize(750, 500);
     setWindowIcon(QIcon("img/logoDD.png"));
@@ -218,11 +218,11 @@ void ddclient_gui::get_content(bool update){
     vector<update_content> tmp_updates;
 
     try{
-        if(update){ // receive updates
-            full_list_update = false;
+        if(update && !reload_list){ // receive updates
             tmp_updates = dclient->get_updates();
         }else{ // receive whole list
             full_list_update = true;
+            reload_list = false;
             tmp_content = dclient->get_list();
         }
 
@@ -888,14 +888,25 @@ void ddclient_gui::update_packages(){
     QStandardItem *pkg_gui;
     QStandardItem *dl_gui;
     int line_nr;
+    bool exists;
 
     for(; up_it != new_updates.end(); ++up_it){
+        exists = false;
         if(up_it->sub != SUBS_DOWNLOADS) // we just need SUBS_DOWNLOADS informaition
             continue;
 
         if(up_it->package){ // dealing with a package update
 
             if(up_it->reason == NEW){ // new package
+
+                for(pkg_it = content.begin(); pkg_it != content.end(); ++pkg_it){
+                    if(up_it->id == pkg_it->id) // found right package
+                        exists = true;
+                }
+
+                if(exists) // got a new update even though we already have the package in the list
+                    continue;
+
                 pkg.id = up_it->id;
                 pkg.password = up_it->password;
                 pkg.name = up_it->name;
@@ -921,28 +932,40 @@ void ddclient_gui::update_packages(){
                 }
 
                 continue;
+            }else if(up_it->reason == MOVEUP){
+                // instead of messing with the list we just get the whole new list
+                // user interactions cause a new list reload anyway (and if another connected user used move it really gets confusing)
+                // => reload is the easiest way to keep the list up to date
+                reload_list = true;
+                continue;
+            }else if(up_it->reason == MOVEDOWN){
+                // same as MOVEUP
+                reload_list = true;
+                continue;
             }
-
 
             line_nr = 0;
             for(pkg_it = content.begin(); pkg_it != content.end(); ++pkg_it){
 
                 if(up_it->id == pkg_it->id){ // found right package
+
                     if(up_it->reason == UPDATE){
+                        pkg_it->name = up_it->name;
+                        pkg_it->password = up_it->password;
+
+                        pkg_gui = list_model->item(line_nr, 1);
+                        pkg_gui->setText(QString(up_it->name.c_str()));
+
+                        if(up_it->password != "")
+                            pkg_gui->setIcon(QIcon("img/key.png"));
+                        else
+                            pkg_gui->setIcon(QIcon());
 
                     }else if(up_it->reason == DELETE){
                         list_model->removeRow(line_nr);
                         content.erase(pkg_it);
                         break;
-
-                    }else if(up_it->reason == MOVEUP){
-
-                    }else if(up_it->reason == MOVEDOWN){
-
                     }
-
-
-
                 }
 
                 ++line_nr;
@@ -1111,16 +1134,22 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
 
         if(old_dit->id != new_dit->id){
             dl = pkg->child(dl_line, 0);
+            if(dl == 0)
+                continue;
             dl->setText(QString("%1").arg(new_dit->id));
         }
 
         if(old_dit->title != new_dit->title){
             dl = pkg->child(dl_line, 1);
+            if(dl == 0)
+                continue;
             dl->setText(QString(new_dit->title.c_str()));
         }
 
         if(old_dit->url != new_dit->url){
             dl = pkg->child(dl_line, 2);
+            if(dl == 0)
+                continue;
             dl->setText(QString(new_dit->url.c_str()));
         }
 
@@ -1128,11 +1157,15 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
            (new_dit->wait != old_dit->wait) || (new_dit->error != old_dit->error) || (new_dit->speed != old_dit->speed)){
 
             dl = pkg->child(dl_line, 3);
+            if(dl == 0)
+                continue;
             dl->setText(QString(time_left.c_str()));
 
             string colorstring = "img/bullet_" + color + ".png";
 
             dl = pkg->child(dl_line, 4);
+            if(dl == 0)
+                continue;
             dl->setText(QString(trUtf8(status_text.c_str())));
             dl->setIcon(QIcon(colorstring.c_str()));
 
@@ -2142,6 +2175,7 @@ void ddclient_gui::on_reload(){
 
         content.clear();
         content = new_content;
+        full_list_update = false;
     }else{ // subscription update mode => less cpu usage
         update_packages();
     }

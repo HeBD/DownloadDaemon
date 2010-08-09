@@ -150,6 +150,12 @@ std::vector<update_content> downloadc::get_updates(){
         if(!skip_update){
             mx.lock();
 
+            for(size_t i = 0; i < old_updates.size(); i++){ // copy all old updates into the working vector all_answers
+                all_answers.push_back(old_updates[i]);
+            }
+            old_updates.clear();
+
+
             while(mysock->select(0)){
                 mysock->recv(answer);
                 all_answers.push_back(answer);
@@ -336,6 +342,9 @@ std::vector<package> downloadc::get_list(){
     mx.lock();
     mysock->send("DDP DL LIST");
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
     mx.unlock();
     skip_update = false;
 
@@ -438,11 +447,15 @@ void downloadc::add_download(int package, std::string url, std::string title){
 
     mysock->send("DDP PKG EXISTS " + pkg.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     int id = atoi(answer.c_str());
     if(id == 0){ // package doesn't exist => create empty package
         mysock->send("DDP PKG ADD");
         mysock->recv(answer);
+        while(!check_correct_answer(answer))
+            mysock->recv(answer);
 
         id = atoi(answer.c_str());
         if(id == -1){
@@ -457,6 +470,8 @@ void downloadc::add_download(int package, std::string url, std::string title){
     // finally adding the download
     mysock->send("DDP DL ADD " + pkg_exists.str() + " " + url + " " + title);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -477,6 +492,8 @@ void downloadc::delete_download(int id, file_delete fdelete){
     // test if there is a file on the server
     mysock->send("DDP FILE GETPATH " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     if(!answer.empty() && (fdelete == dont_know)){ // file exists and user didn't decide to delete
         throw client_exception(7, "file exists, call again with del_file or dont_delete");
@@ -486,9 +503,13 @@ void downloadc::delete_download(int id, file_delete fdelete){
     if(!answer.empty() && (fdelete == del_file)){ // file exists and should be deleted
         mysock->send("DDP DL DEACTIVATE " + id_str.str());
         mysock->recv(answer);
+        while(!check_correct_answer(answer))
+            mysock->recv(answer);
 
         mysock->send("DDP FILE DEL " + id_str.str());
         mysock->recv(answer);
+        while(!check_correct_answer(answer))
+            mysock->recv(answer);
 
         if(answer.find("109") == 0){ // 109 FILE <-- file operation on a file that does not exist
             error = true; // exception will be thrown later so we can still delete the download
@@ -497,6 +518,8 @@ void downloadc::delete_download(int id, file_delete fdelete){
 
     mysock->send("DDP DL DEL " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -520,6 +543,8 @@ void downloadc::stop_download(int id){
 
     mysock->send("DDP DL STOP " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -538,6 +563,8 @@ void downloadc::priority_up(int id){
 
     mysock->send("DDP DL UP " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -556,6 +583,8 @@ void downloadc::priority_down(int id){
 
     mysock->send("DDP DL DOWN " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -574,6 +603,8 @@ void downloadc::activate_download(int id){
 
     mysock->send("DDP DL ACTIVATE " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -592,6 +623,8 @@ void downloadc::deactivate_download(int id){
 
     mysock->send("DDP DL DEACTIVATE " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -609,6 +642,8 @@ void downloadc::set_download_var(int id, std::string var, std::string value){
 
     mysock->send("DDP DL SET " + s.str() + " " + var + "=" + value);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer); // set DL_URL can throw 108 variable if download is running or finished
@@ -626,6 +661,8 @@ std::string downloadc::get_download_var(int id, std::string var){
 
     mysock->send("DDP DL GET " + s.str() + " " + var);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     return answer;
@@ -642,6 +679,8 @@ std::vector<package> downloadc::get_packages(){
     mx.lock();
     mysock->send("DDP DL LIST");
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
     mx.unlock();
     skip_update = false;
 
@@ -701,6 +740,9 @@ int downloadc::add_package(std::string name){
 
     mysock->send("DDP PKG ADD " + name);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
     skip_update = false;
 
     int id = atoi(answer.c_str());
@@ -723,6 +765,9 @@ void downloadc::delete_package(int id){
 
     mysock->send("DDP PKG DEL " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
     skip_update = false;
 }
 
@@ -739,6 +784,9 @@ void downloadc::package_priority_up(int id){
 
     mysock->send("DDP PKG UP " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
     skip_update = false;
 }
 
@@ -755,6 +803,9 @@ void downloadc::package_priority_down(int id){
 
     mysock->send("DDP PKG DOWN " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
     skip_update = false;
 }
 
@@ -771,6 +822,9 @@ bool downloadc::package_exists(int id){
 
     mysock->send("DDP PKG EXISTS " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
     skip_update = false;
 
     if(answer == "0")
@@ -791,6 +845,8 @@ void downloadc::set_package_var(int id, std::string var, std::string value){
 
     mysock->send("DDP PKG SET " + s.str() + " " + var + " = " + value);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -808,6 +864,8 @@ std::string downloadc::get_package_var(int id, std::string var){
 
     mysock->send("DDP PKG GET " + s.str() + " " + var);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     return answer;
@@ -823,6 +881,8 @@ void downloadc::pkg_container(std::string type, std::string content){
 
     mysock->send("DDP PKG CONTAINER " + type + ":" + content);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -842,6 +902,8 @@ void downloadc::set_var(std::string var, std::string value, std::string old_valu
 
     mysock->send("DDP VAR SET " + var + " = " + value);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -857,6 +919,8 @@ std::string downloadc::get_var(std::string var){
 
     mysock->send("DDP VAR GET " + var);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     return answer;
@@ -876,15 +940,21 @@ void downloadc::delete_file(int id){
 
     mysock->send("DDP FILE GETPATH " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     if(answer.empty()) // no error if file doesn't exist
         return;
 
     mysock->send("DDP DL DEACTIVATE " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     mysock->send("DDP FILE DEL " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -903,6 +973,8 @@ std::string downloadc::get_file_path(int id){
 
     mysock->send("DDP FILE GETPATH " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     return answer;
@@ -921,6 +993,9 @@ uint64_t downloadc::get_file_size(int id){
 
     mysock->send("DDP FILE GETSIZE " + id_str.str());
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
     skip_update = false;
 
     return atol(answer.c_str());
@@ -937,6 +1012,8 @@ std::vector<std::string> downloadc::get_router_list(){
     mx.lock();
     mysock->send("DDP ROUTER LIST");
     mysock->recv(model_list);
+    while(!check_correct_answer(model_list))
+        mysock->recv(model_list);
     mx.unlock();
     skip_update = false;
 
@@ -954,6 +1031,8 @@ void downloadc::set_router_model(std::string model){
 
     mysock->send("DDP ROUTER SETMODEL " + model);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -970,6 +1049,8 @@ void downloadc::set_router_var(std::string var, std::string value){
 
     mysock->send("DDP ROUTER SET " + var + " = " + value);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -986,6 +1067,8 @@ std::string downloadc::get_router_var(std::string var){
 
     mysock->send("DDP ROUTER GET " + var);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     return answer;
@@ -1002,6 +1085,8 @@ std::vector<std::string> downloadc::get_premium_list(){
     mx.lock();
     mysock->send("DDP PREMIUM LIST");
     mysock->recv(host_list);
+    while(!check_correct_answer(host_list))
+        mysock->recv(host_list);
     mx.unlock();
     skip_update = false;
 
@@ -1019,6 +1104,8 @@ void downloadc::set_premium_var(std::string host, std::string user, std::string 
 
     mysock->send("DDP PREMIUM SET " + host + " " + user + ";" + password);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -1035,6 +1122,8 @@ std::string downloadc::get_premium_var(std::string host){
 
     mysock->send("DDP PREMIUM GET " + host);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     return answer;
@@ -1050,6 +1139,8 @@ std::vector<std::string> downloadc::get_subscription_list(){
     mx.lock();
     mysock->send("DDP SUBSCRIPTION LIST");
     mysock->recv(sub_list);
+    while(!check_correct_answer(sub_list))
+        mysock->recv(sub_list);
     mx.unlock();
     skip_update = false;
 
@@ -1068,6 +1159,8 @@ void downloadc::add_subscription(subs_type type){
 
     mysock->send("DDP SUBSCRIPTION ADD " + t_subs);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -1085,6 +1178,8 @@ void downloadc::remove_subscription(subs_type type){
 
     mysock->send("DDP SUBSCRIPTION DEL " + t_subs);
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
 
     skip_update = false;
     check_error_code(answer);
@@ -1105,6 +1200,9 @@ void downloadc::check_connection(){
 
     mysock->send("hello :3"); // send something, so we can test the connection
     mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
     skip_update = false;
 
     if(!*mysock){ // if there is no active connection
@@ -1253,6 +1351,20 @@ void downloadc::check_error_code(std::string check_me){
         return;
     }
 
+}
+
+
+bool downloadc::check_correct_answer(std::string check_me){
+// returns true if check_me is a real answer and not a subscription string
+// if check_me is a subscription string, it will get stored for later use
+    bool correct = true;
+
+    if(check_me.find("SUBS") == 0){ // it's a subscription string!
+        old_updates.push_back(check_me); // store check_me
+        correct = false;
+    }
+
+    return correct;
 }
 
 

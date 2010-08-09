@@ -29,7 +29,7 @@ void update_thread::run(){
 
     parent->clear_last_error_message();
 
-/*
+
     // check if downloaddaemon supports subscription
     subscription_enabled = parent->check_subscritpion();
 
@@ -40,7 +40,7 @@ void update_thread::run(){
 
 
     // behaviour with subscriptions => less traffic and cpu usage
-    if(subscription_enabled){
+    /*if(subscription_enabled){
         while(true){
 
             if(term)
