@@ -73,6 +73,7 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 	data.pass.push_back(file.get_cfg_value("pass" + s.str()));
 
 	set_language(file.get_cfg_value("language")); // set program language
+        status_connection->setText(tsl("Not connected"));
 
         try{
 	    dclient->connect(data.host[0], data.port[0], data.pass[0], true);
@@ -196,6 +197,7 @@ void ddclient_gui::set_language(std::string lang_to_set){
 
     mx.lock();
     content.clear();
+    full_list_update = true;
     mx.unlock();
 
     // send event to reload list
@@ -220,20 +222,24 @@ void ddclient_gui::get_content(bool update){
     try{
         if(update && !reload_list){ // receive updates
             tmp_updates = dclient->get_updates();
+
+            mx.lock();
+            new_updates.clear();
+            new_updates = tmp_updates;
+            mx.unlock();
+
         }else{ // receive whole list
             full_list_update = true;
             reload_list = false;
             tmp_content = dclient->get_list();
+
+            mx.lock();
+            new_content.clear();
+            new_content = tmp_content;
+            mx.unlock();
         }
 
     }catch(client_exception &e){}
-
-    mx.lock();
-    new_updates.clear();
-    new_content.clear();
-    new_updates = tmp_updates;
-    new_content = tmp_content;
-    mx.unlock();
 
     // send event to reload list
     mx.unlock();
@@ -249,6 +255,7 @@ bool ddclient_gui::check_connection(bool tell_user, string individual_message){
 
     }catch(client_exception &e){
         if(e.get_id() == 10){ //connection lost
+            status_connection->setText(tsl("Not connected"));
 
             if(tell_user && (last_error_message != error_connected)){
                 QMessageBox::information(this, tsl("No Connection to Server"), tsl(individual_message));
@@ -273,6 +280,7 @@ bool ddclient_gui::check_subscritpion(){
 
     try{
         dclient->add_subscription(SUBS_DOWNLOADS);
+        dclient->add_subscription(SUBS_CONFIG);
         mx.unlock();
         return true;
     }catch(client_exception &e){
@@ -887,12 +895,36 @@ void ddclient_gui::update_packages(){
     download dl;
     QStandardItem *pkg_gui;
     QStandardItem *dl_gui;
-    int line_nr;
+    int line_nr, dl_line;
     bool exists;
+    string colorstring, color, status_text, time_left;
 
     for(; up_it != new_updates.end(); ++up_it){
         exists = false;
-        if(up_it->sub != SUBS_DOWNLOADS) // we just need SUBS_DOWNLOADS informaition
+
+        if((up_it->sub == SUBS_CONFIG) && (up_it->var_name == "downloading_active")){
+
+            // update toolbar
+            if(up_it->value == "1"){
+                activate_action->setEnabled(false);
+                deactivate_action->setEnabled(true);
+                downloading_menu->removeAction(activate_action);
+                downloading_menu->removeAction(deactivate_action); // just to be save
+                downloading_menu->addAction(deactivate_action);
+
+            }else{
+                activate_action->setEnabled(true);
+                deactivate_action->setEnabled(false);
+                downloading_menu->removeAction(activate_action);
+                downloading_menu->removeAction(deactivate_action); // just to be save
+                downloading_menu->addAction(activate_action);
+            }
+
+            continue;
+        }
+
+
+        if(up_it->sub != SUBS_DOWNLOADS) // we just need SUBS_DOWNLOADS information
             continue;
 
         if(up_it->package){ // dealing with a package update
@@ -972,17 +1004,188 @@ void ddclient_gui::update_packages(){
 
             }
 
-
-
         }else{ // dealing with a download
 
+            if(up_it->reason == MOVEUP){
+                // instead of messing with the list we just get the whole new list
+                // user interactions cause a new list reload anyway (and if another connected user used move it really gets confusing)
+                // => reload is the easiest way to keep the list up to date
+                reload_list = true;
+                continue;
+            }else if(up_it->reason == MOVEDOWN){
+                // same as MOVEUP
+                reload_list = true;
+                continue;
+            }
 
+
+            // find right package
+            line_nr = 0;
+            for(pkg_it = content.begin(); pkg_it != content.end(); ++pkg_it){
+                if(up_it->pkg_id == pkg_it->id){ // found right package
+                    exists = true;
+                    break;
+                }
+                line_nr++;
+            }
+
+            if(!exists) // couldn't find right package
+                continue;
+
+            exists = false;
+
+            dl_line = 0;
+            for(dl_it = pkg_it->dls.begin(); dl_it != pkg_it->dls.end(); ++dl_it){
+                if(up_it->id == dl_it->id){ // found right download
+                    exists = true;
+                    break;
+                }
+                dl_line++;
+            }
+
+            QModelIndex index = list_model->index(line_nr, 0, QModelIndex()); // downloads need the parent index
+            pkg_gui = list_model->itemFromIndex(index);
+
+
+            if(up_it->reason == NEW){ // new download
+
+                if(exists) // download already exists
+                    continue;
+
+                dl.id = up_it->id;
+                dl.date = up_it->date;
+                dl.title = up_it->title;
+                dl.url = up_it->url;
+                dl.status = up_it->status;
+                dl.downloaded = up_it->downloaded;
+                dl.size = up_it->size;
+                dl.wait = up_it->wait;
+                dl.error = up_it->error;
+                dl.speed = up_it->speed;
+
+                pkg_it->dls.push_back(dl);
+
+                dl_line = pkg_it->dls.size(); // size = 1 => the next line which we need is 1 too
+
+                color = build_status(status_text, time_left, dl);
+
+                dl_gui = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(up_it->id));
+                dl_gui->setEditable(false);
+                pkg_gui->setChild(dl_line, 0, dl_gui);
+
+                dl_gui = new QStandardItem(QString(up_it->title.c_str()));
+                dl_gui->setEditable(false);
+                pkg_gui->setChild(dl_line, 1, dl_gui);
+
+                dl_gui = new QStandardItem(QString(up_it->url.c_str()));
+                dl_gui->setEditable(false);
+                pkg_gui->setChild(dl_line, 2, dl_gui);
+
+                dl_gui = new QStandardItem(QString(time_left.c_str()));
+                dl_gui->setEditable(false);
+                pkg_gui->setChild(dl_line, 3, dl_gui);
+
+                string colorstring = "img/bullet_" + color + ".png";
+                dl_gui = new QStandardItem(QIcon(colorstring.c_str()), trUtf8(status_text.c_str()));
+                dl_gui->setEditable(false);
+                pkg_gui->setChild(dl_line, 4, dl_gui);
+
+                list->expand(index);
+
+                continue;
+
+
+            }else if(up_it->reason == UPDATE){
+                if(!exists) // couldn't find right download
+                    continue;
+
+                if(dl_it->title != up_it->title){
+                    dl_it->title = up_it->title;
+
+                    dl_gui = pkg_gui->child(dl_line, 1);
+                    dl_gui->setText(QString(up_it->title.c_str()));
+                }
+
+                if(dl_it->url != up_it->url){
+                    dl_it->url = up_it->url;
+
+                    dl_gui = pkg_gui->child(dl_line, 2);
+                    dl_gui->setText(QString(up_it->url.c_str()));
+                }
+
+                if((dl_it->status != up_it->status) || (dl_it->downloaded != up_it->downloaded) || (dl_it->size != up_it->size) ||
+                   (dl_it->wait != up_it->wait) || (dl_it->error != up_it->error) || (dl_it->speed != up_it->speed)){
+
+                    dl_it->status = up_it->status;
+                    dl_it->downloaded = up_it->downloaded;
+                    dl_it->size = up_it->size;
+                    dl_it->wait = up_it->wait;
+                    dl_it->error = up_it->error;
+                    dl_it->speed = up_it->speed;
+                    dl_it->title = up_it->title;
+
+                    color = build_status(status_text, time_left, *dl_it);
+
+                    dl_gui = pkg_gui->child(dl_line, 3);
+                    dl_gui->setText(QString(time_left.c_str()));
+
+                    string colorstring = "img/bullet_" + color + ".png";
+
+                    dl_gui = pkg_gui->child(dl_line, 4);
+                    dl_gui->setText(QString(trUtf8(status_text.c_str())));
+                    dl_gui->setIcon(QIcon(colorstring.c_str()));
+
+                }
+            }else if(up_it->reason == DELETE){
+                if(!exists) // couldn't find right download
+                    continue;
+
+                pkg_gui->takeRow(dl_line);
+                pkg_it->dls.erase(dl_it);
+                break;
+            }
         }
-
-
     }
 
+    // calculate information for statusbar display
+    vector<view_info>::iterator vit;
+    vector<view_info> info = get_current_view();
 
+    download_speed = 0;
+    not_downloaded_yet = 0;
+    selected_downloads_size = 0;
+    selected_downloads_count = 0;
+
+    for(pkg_it = content.begin(); pkg_it != content.end(); ++pkg_it){
+        for(dl_it = pkg_it->dls.begin(); dl_it != pkg_it->dls.end(); ++dl_it){
+
+            for(vit = info.begin(); vit != info.end(); ++vit){
+                if(!(vit->package) && (vit->id == dl_it->id) && (vit->selected)){ // the download we have is selected
+
+                    if(dl_it->size != 0 && dl_it->size != 1){
+                        selected_downloads_size += (double)dl_it->size / 1048576;
+                        selected_downloads_count++;
+                    }
+                    break;
+                }
+            }
+
+
+            if(dl_it->status == "DOWNLOAD_RUNNING" && dl_it->speed != 0 && dl_it->speed != -1)
+                download_speed += (double)dl_it->speed / 1024;
+
+            if(dl_it->size != 0 && dl_it->size != 1){
+
+                if(dl_it->status == "DOWNLOAD_RUNNING" || dl_it->status == "DOWNLOAD_PENDING" || dl_it->status == "DOWNLOAD_WAITING"){
+
+                    if(dl_it->downloaded == 0 || dl_it->downloaded == 1)
+                        not_downloaded_yet += (double)dl_it->size / 1048576;
+                    else
+                        not_downloaded_yet += ((double)dl_it->size / 1048576) - (double)dl_it->downloaded / 1048576;
+                }
+            }
+        }
+    }
 }
 
 
@@ -1042,8 +1245,8 @@ void ddclient_gui::compare_packages(){
         if(expanded)
             list->expand(index);
 
-        old_it++;
-        new_it++;
+        ++old_it;
+        ++new_it;
         line_nr++;
     }
 
@@ -1052,7 +1255,7 @@ void ddclient_gui::compare_packages(){
 
             // delete packages out of model
             list_model->removeRow(line_nr);
-            old_it++;
+            ++old_it;
         }
 
     }else if(new_it != new_content.end()){ // there are more new lines then old ones
@@ -1134,22 +1337,16 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
 
         if(old_dit->id != new_dit->id){
             dl = pkg->child(dl_line, 0);
-            if(dl == 0)
-                continue;
             dl->setText(QString("%1").arg(new_dit->id));
         }
 
         if(old_dit->title != new_dit->title){
             dl = pkg->child(dl_line, 1);
-            if(dl == 0)
-                continue;
             dl->setText(QString(new_dit->title.c_str()));
         }
 
         if(old_dit->url != new_dit->url){
             dl = pkg->child(dl_line, 2);
-            if(dl == 0)
-                continue;
             dl->setText(QString(new_dit->url.c_str()));
         }
 
@@ -1157,15 +1354,11 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
            (new_dit->wait != old_dit->wait) || (new_dit->error != old_dit->error) || (new_dit->speed != old_dit->speed)){
 
             dl = pkg->child(dl_line, 3);
-            if(dl == 0)
-                continue;
             dl->setText(QString(time_left.c_str()));
 
             string colorstring = "img/bullet_" + color + ".png";
 
             dl = pkg->child(dl_line, 4);
-            if(dl == 0)
-                continue;
             dl->setText(QString(trUtf8(status_text.c_str())));
             dl->setIcon(QIcon(colorstring.c_str()));
 
@@ -1185,8 +1378,8 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
             }
         }
 
-        old_dit++;
-        new_dit++;
+        ++old_dit;
+        ++new_dit;
         dl_line++;
     }
 
@@ -1201,7 +1394,7 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
 
             pkg->takeRow(dl_line);
 
-            old_dit++;
+            ++old_dit;
         }
 
     }else if(new_dit != new_it->dls.end()){ // there are more new lines than old ones
@@ -1231,7 +1424,7 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
             pkg->setChild(dl_line, 4, dl);
 
             dl_line++;
-            new_dit++;
+            ++new_dit;
         }
         list->collapse(index);
         list->expand(index);
@@ -2161,12 +2354,13 @@ void ddclient_gui::on_reload(){
 
     mx.lock();
 
+    download_speed = 0;
+    not_downloaded_yet = 0;
+    selected_downloads_size = 0;
+    selected_downloads_count = 0;
+
     // update download list
     if(full_list_update){ // normal update mode without subscriptions
-        download_speed = 0;
-        not_downloaded_yet = 0;
-        selected_downloads_size = 0;
-        selected_downloads_count = 0;
 
         if(content.size() == 0) // the content gets deleted whenever the language changes
             list_model->setRowCount(0);
@@ -2178,6 +2372,7 @@ void ddclient_gui::on_reload(){
         full_list_update = false;
     }else{ // subscription update mode => less cpu usage
         update_packages();
+
         if(reload_list)
             get_content();
     }
