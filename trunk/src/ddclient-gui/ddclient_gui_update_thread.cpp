@@ -32,15 +32,10 @@ void update_thread::run(){
 
     // check if downloaddaemon supports subscription
     subscription_enabled = parent->check_subscritpion();
-
-
-
-    // CAREFUL: what happens, when subscriptions is enabled and you reconnect?
-    // do you see the whole list?
-
+    subscription_enabled = false; // just to turn it off till everything is implemented
 
     // behaviour with subscriptions => less traffic and cpu usage
-    /*if(subscription_enabled){
+    if(subscription_enabled){
         while(true){
 
             if(term)
@@ -60,7 +55,7 @@ void update_thread::run(){
             parent->clear_last_error_message();
         }
 
-    }*/
+    }
 
     // normal behaviour, if subscription is not enabled
     while(true){

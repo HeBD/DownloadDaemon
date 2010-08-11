@@ -50,7 +50,7 @@ download::download(const std::string& dl_url)
 	char timestr[20];
 	strftime(timestr, 20, "%Y-%m-%d %X", timeinfo);
 	add_date = timestr;
-	//post_subscribers();
+        post_subscribers(connection_manager::NEW);
 	//add_date.erase(add_date.length() - 1);
 }
 
@@ -152,7 +152,7 @@ download::~download() {
 		status = DOWNLOAD_DELETED;
 		usleep(10);
 	}
-	post_subscribers();
+        post_subscribers(connection_manager::DELETE);
 }
 
 std::string download::serialize() {
