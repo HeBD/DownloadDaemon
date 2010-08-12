@@ -186,7 +186,7 @@ public:
 	/** Gets the lowest unused ID that should be used for the next download
 	*	@returns ID
 	*/
-	int get_next_id();
+        int get_next_id();
 
 	/** Stops a download and sets its status
 	*	@param id Download to stop
