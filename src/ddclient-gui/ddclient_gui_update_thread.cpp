@@ -32,7 +32,7 @@ void update_thread::run(){
 
     // check if downloaddaemon supports subscription
     subscription_enabled = parent->check_subscritpion();
-    //subscription_enabled = false; // just to turn it off till everything is implemented
+    subscription_enabled = false; // just to turn it off till everything is implemented
 
     // behaviour with subscriptions => less traffic and cpu usage
     if(subscription_enabled){

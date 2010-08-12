@@ -69,6 +69,7 @@ int download_container::add_download(download *dl, int dl_id) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	dl->set_id(dl_id);
 	dl->set_parent(container_id);
+        dl->post_subscribers(connection_manager::NEW);
 	download_list.push_back(dl);
 	return LIST_SUCCESS;
 }

@@ -134,7 +134,7 @@ public:
 	void set_add_date(const std::string &new_add_date) { std::lock_guard<std::recursive_mutex> lock(mx); add_date = new_add_date; post_subscribers(); }
 
 	int get_id() const							{ std::lock_guard<std::recursive_mutex> lock(mx); return id; }
-	void set_id(int new_id) 					{ std::lock_guard<std::recursive_mutex> lock(mx); id = new_id; post_subscribers(); }
+        void set_id(int new_id) 					{ std::lock_guard<std::recursive_mutex> lock(mx); id = new_id; }
 
 	filesize_t get_downloaded_bytes() const		{ std::lock_guard<std::recursive_mutex> lock(mx); return downloaded_bytes; }
 	void set_downloaded_bytes(filesize_t b) 		{ std::lock_guard<std::recursive_mutex> lock(mx); downloaded_bytes = b; post_subscribers(); }

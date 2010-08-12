@@ -601,6 +601,7 @@ void ddclient_gui::cut_time(string &time_left){
 string ddclient_gui::build_status(string &status_text, string &time_left, download &dl){
     string color;
     color = "white";
+    status_text = time_left = "";
 
     if(dl.status == "DOWNLOAD_RUNNING"){
         color = "green";
@@ -1066,7 +1067,7 @@ void ddclient_gui::update_packages(){
 
                 pkg_it->dls.push_back(dl);
 
-                dl_line = pkg_it->dls.size(); // size = 1 => the next line which we need is 1 too
+                dl_line = pkg_it->dls.size() - 1;
 
                 color = build_status(status_text, time_left, dl);
 
@@ -1104,14 +1105,16 @@ void ddclient_gui::update_packages(){
                     dl_it->title = up_it->title;
 
                     dl_gui = pkg_gui->child(dl_line, 1);
-                    dl_gui->setText(QString(up_it->title.c_str()));
+                    if(dl_gui != NULL)
+                        dl_gui->setText(QString(up_it->title.c_str()));
                 }
 
                 if(dl_it->url != up_it->url){
                     dl_it->url = up_it->url;
 
                     dl_gui = pkg_gui->child(dl_line, 2);
-                    dl_gui->setText(QString(up_it->url.c_str()));
+                    if(dl_gui != NULL)
+                        dl_gui->setText(QString(up_it->url.c_str()));
                 }
 
                 if((dl_it->status != up_it->status) || (dl_it->downloaded != up_it->downloaded) || (dl_it->size != up_it->size) ||
@@ -1128,13 +1131,16 @@ void ddclient_gui::update_packages(){
                     color = build_status(status_text, time_left, *dl_it);
 
                     dl_gui = pkg_gui->child(dl_line, 3);
-                    dl_gui->setText(QString(time_left.c_str()));
+                    if(dl_gui != NULL)
+                        dl_gui->setText(QString(time_left.c_str()));
 
                     string colorstring = "img/bullet_" + color + ".png";
 
                     dl_gui = pkg_gui->child(dl_line, 4);
-                    dl_gui->setText(QString(trUtf8(status_text.c_str())));
-                    dl_gui->setIcon(QIcon(colorstring.c_str()));
+                    if(dl_gui != NULL){
+                        dl_gui->setText(QString(trUtf8(status_text.c_str())));
+                        dl_gui->setIcon(QIcon(colorstring.c_str()));
+                    }
 
                 }
             }else if(up_it->reason == DELETE){
