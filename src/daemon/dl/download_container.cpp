@@ -88,6 +88,8 @@ int download_container::move_up(int id) {
 	}
 	location2 = location1;
 
+        (*it)->post_subscribers(connection_manager::MOVEUP);
+
 	download_container::iterator it2 = it;
 	--it2;
 	--location2;
@@ -124,6 +126,8 @@ int download_container::move_down(int id) {
 		return LIST_ID;
 	}
 	location2 = location1;
+
+        (*it)->post_subscribers(connection_manager::MOVEDOWN);
 
 	download_container::iterator it2 = it;
 	++it2;
