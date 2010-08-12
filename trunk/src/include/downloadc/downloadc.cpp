@@ -27,8 +27,8 @@ downloadc::~downloadc(){
 }
 
 
-void downloadc::set_term(){
-    term = true;
+void downloadc::set_term(bool value){
+    term = value;
 }
 
 
@@ -158,6 +158,8 @@ std::vector<update_content> downloadc::get_updates(){
 
             while(mysock->select(0)){
                 mysock->recv(answer);
+                if(answer == "") // if there is no connection anymore select might return true even though there is nothing
+                    break;
                 all_answers.push_back(answer);
             }
 
