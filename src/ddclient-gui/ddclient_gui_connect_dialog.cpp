@@ -155,6 +155,7 @@ void connect_dialog::ok(){
 
     mx->lock();
     try{
+        dclient->set_term(true);
         dclient->connect(host, port, password, true);
 
     }catch(client_exception &e){

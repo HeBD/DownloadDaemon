@@ -112,7 +112,7 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 
 ddclient_gui::~ddclient_gui(){
     mx.lock();
-    dclient->set_term();
+    dclient->set_term(true);
     delete dclient;
     ((update_thread *)thread)->terminate_yourself();
     thread->wait();
@@ -265,6 +265,7 @@ bool ddclient_gui::check_connection(bool tell_user, string individual_message){
                     this->show();
                     this->hide();
                 }
+                emit do_reload();
             }
             mx.unlock();
             return false;
@@ -1466,6 +1467,19 @@ void ddclient_gui::on_connect(){
     connect_dialog dialog(this, config_dir);
     dialog.setModal(true);
     dialog.exec();
+
+    mx.lock();
+    int interval = ((update_thread *)thread)->get_update_interval();
+    ((update_thread *)thread)->terminate_yourself();
+    thread->wait();
+    delete thread;
+
+    dclient->set_term(false); // the old thread got terminated, now we have to set term to false again
+
+    update_thread *new_thread = new update_thread(this, interval);
+    new_thread->start();
+    thread = new_thread;
+    mx.unlock();
 
     get_content();
 }

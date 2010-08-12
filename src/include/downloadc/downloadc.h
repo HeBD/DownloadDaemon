@@ -102,8 +102,10 @@ class downloadc{
         /** Destructor */
         ~downloadc();
 
-        /** Sets the bool term to true to signalize that get_updates() should terminate */
-        void set_term();
+        /** Sets the bool term to value to signalize that get_updates() should terminate or not
+        *   @param value value of term
+        */
+        void set_term(bool value);
 
         /** Connects to a DownloadDaemon, successful or not shown by exception
         *    @param host ip where the daemon runs
