@@ -931,7 +931,7 @@ void ddclient_gui::update_packages(){
 
         if(up_it->package){ // dealing with a package update
 
-            if(up_it->reason == NEW){ // new package
+            if(up_it->reason == R_NEW){ // new package
 
                 for(pkg_it = content.begin(); pkg_it != content.end(); ++pkg_it){
                     if(up_it->id == pkg_it->id) // found right package
@@ -966,13 +966,13 @@ void ddclient_gui::update_packages(){
                 }
 
                 continue;
-            }else if(up_it->reason == MOVEUP){
+            }else if(up_it->reason == R_MOVEUP){
                 // instead of messing with the list we just get the whole new list
                 // user interactions cause a new list reload anyway (and if another connected user used move it really gets confusing)
                 // => reload is the easiest way to keep the list up to date
                 reload_list = true;
                 continue;
-            }else if(up_it->reason == MOVEDOWN){
+            }else if(up_it->reason == R_MOVEDOWN){
                 // same as MOVEUP
                 reload_list = true;
                 continue;
@@ -983,7 +983,7 @@ void ddclient_gui::update_packages(){
 
                 if(up_it->id == pkg_it->id){ // found right package
 
-                    if(up_it->reason == UPDATE){
+                    if(up_it->reason == R_UPDATE){
                         pkg_it->name = up_it->name;
                         pkg_it->password = up_it->password;
 
@@ -1008,13 +1008,13 @@ void ddclient_gui::update_packages(){
 
         }else{ // dealing with a download
 
-            if(up_it->reason == MOVEUP){
+            if(up_it->reason == R_MOVEUP){
                 // instead of messing with the list we just get the whole new list
                 // user interactions cause a new list reload anyway (and if another connected user used move it really gets confusing)
                 // => reload is the easiest way to keep the list up to date
                 reload_list = true;
                 continue;
-            }else if(up_it->reason == MOVEDOWN){
+            }else if(up_it->reason == R_MOVEDOWN){
                 // same as MOVEUP
                 reload_list = true;
                 continue;
@@ -1049,7 +1049,7 @@ void ddclient_gui::update_packages(){
             pkg_gui = list_model->itemFromIndex(index);
 
 
-            if(up_it->reason == NEW){ // new download
+            if(up_it->reason == R_NEW){ // new download
 
                 if(exists) // download already exists
                     continue;
@@ -1097,7 +1097,7 @@ void ddclient_gui::update_packages(){
                 continue;
 
 
-            }else if(up_it->reason == UPDATE){
+            }else if(up_it->reason == R_UPDATE){
                 if(!exists) // couldn't find right download
                     continue;
 
@@ -1143,7 +1143,7 @@ void ddclient_gui::update_packages(){
                     }
 
                 }
-            }else if(up_it->reason == DELETE){
+            }else if(up_it->reason == R_DELETE){
                 if(!exists) // couldn't find right download
                     continue;
 

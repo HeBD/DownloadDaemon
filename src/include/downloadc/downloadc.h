@@ -36,7 +36,7 @@ enum file_delete{ del_file = 0, dont_delete, dont_know };
 enum subs_type{ SUBS_NONE = 0, SUBS_DOWNLOADS, SUBS_CONFIG };
 
 /** Reason Type, describes the reason for an update. */
-enum reason_type{ UPDATE = 0, NEW, DELETE, MOVEUP, MOVEDOWN };
+enum reason_type{ R_UPDATE = 0, R_NEW, R_DELETE, R_MOVEUP, R_MOVEDOWN };
 
 
 /** Download Struct, defines one single Download */

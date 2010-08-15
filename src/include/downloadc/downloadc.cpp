@@ -14,6 +14,10 @@
 #include <crypt/md5.h>
 #include <sstream>
 
+#ifdef _WIN32
+    #define sleep(x) Sleep(x*1000)
+#endif
+
 
 downloadc::downloadc() : skip_update(false), term(false){
     mysock = NULL;
@@ -246,19 +250,19 @@ std::vector<update_content> downloadc::get_updates(){
             answer = splitted_line[0].substr(15); // cut away SUBS_DOWNLOAD:
 
             if(answer.find("UPDATE") == 0){
-                update.reason = UPDATE;
+                update.reason = R_UPDATE;
                 answer = answer.substr(7);
             }else if(answer.find("NEW") == 0){
-                update.reason = NEW;
+                update.reason = R_NEW;
                 answer = answer.substr(4);
             }else if(answer.find("DELETE") == 0){
-                update.reason = DELETE;
+                update.reason = R_DELETE;
                 answer = answer.substr(7);
             }else if(answer.find("MOVEUP") == 0){
-                update.reason = MOVEUP;
+                update.reason = R_MOVEUP;
                 answer = answer.substr(7);
             }else if(answer.find("MOVEDOWN") == 0){
-                update.reason = MOVEDOWN;
+                update.reason = R_MOVEDOWN;
                 answer = answer.substr(9);
             }else // corrupt line or don't know reason_type
                 continue;
