@@ -201,6 +201,7 @@ void ddclient_gui::set_language(std::string lang_to_set){
     mx.unlock();
 
     // send event to reload list
+    get_content();
     emit do_reload();
 }
 
@@ -1149,7 +1150,6 @@ void ddclient_gui::update_packages(){
 
                 pkg_gui->takeRow(dl_line);
                 pkg_it->dls.erase(dl_it);
-                break;
             }
         }
     }
