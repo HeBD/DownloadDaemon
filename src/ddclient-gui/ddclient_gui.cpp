@@ -995,7 +995,7 @@ void ddclient_gui::update_packages(){
                         else
                             pkg_gui->setIcon(QIcon());
 
-                    }else if(up_it->reason == DELETE){
+                    }else if(up_it->reason == R_DELETE){
                         list_model->removeRow(line_nr);
                         content.erase(pkg_it);
                         break;
