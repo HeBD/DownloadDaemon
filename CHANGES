@@ -1,3 +1,7 @@
+2010-08-17
+   [susanne]
+	- added support for client-subscriptions at ddclient-gui: there will only be list updates when there is actually something changing in the list
+
 2010-07-31
    [susanne]
    	- Added insecure mode, in which all variables of the config file can be changed remotely
