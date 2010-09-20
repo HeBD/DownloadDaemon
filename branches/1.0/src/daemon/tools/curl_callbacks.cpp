@@ -18,6 +18,7 @@
 #include "../dl/download_container.h"
 #include "helperfunctions.h"
 #include "../global.h"
+#include <ddcurl.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -42,7 +43,8 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 				make_valid_filename(info->filename);
 				info->filename_from_effective_url = true;
 			}
-			info->filename = ddcurl::unescape(info->filename);
+			ddcurl tmph;
+			info->filename = tmph.unescape(info->filename);
 			make_valid_filename(info->filename);
 
 			if(info->download_dir.empty()) {
