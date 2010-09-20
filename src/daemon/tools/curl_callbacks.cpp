@@ -40,10 +40,10 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 				char* fn_cstr = 0;
 				info->curl_handle->getinfo(CURLINFO_EFFECTIVE_URL, &fn_cstr);
 				info->filename = filename_from_url(fn_cstr);
-				make_valid_filename(info->filename);
 				info->filename_from_effective_url = true;
 			}
 			info->filename = ddcurl::unescape(info->filename);
+			make_valid_filename(info->filename);
 
 			if(info->download_dir.empty()) {
 				log_string("Failed to get download folder", LOG_ERR);
