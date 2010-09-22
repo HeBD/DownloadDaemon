@@ -217,7 +217,7 @@ void add_dialog::find_parts(vector<new_download> &all_dls){
     // finally send downloads
     for(it = all_dls.begin(); it != all_dls.end(); ++it){
         try{
-            if((this->fill_title) && it->title.size() < 1)
+			if((this->fill_title->isChecked()) && it->title.size() < 1)
                 it->title = find_title(it->url, false);
 
             dclient->add_download(it->package, it->url, it->title);
@@ -446,7 +446,7 @@ void add_dialog::ok(){
                 if(package_many_id == -1) // create a new package
                     package_many_id = dclient->add_package(package_many);
 
-                if((this->fill_title) && title.size() < 1)
+				if((this->fill_title->isChecked()) && title.size() < 1)
                     title = find_title(url, false);
 
                 dclient->add_download(package_many_id, url, title);
