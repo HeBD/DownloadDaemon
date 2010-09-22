@@ -44,6 +44,8 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 			}
 			info->filename = ddcurl::unescape(info->filename);
 			make_valid_filename(info->filename);
+			if (global_config.get_int_value("autofill_title") == 2 || (global_config.get_int_value("autofill_title") == 1 && global_download_list.get_title(info->id).empty()))
+				global_download_list.set_title(info->id, info->filename);
 
 			if(info->download_dir.empty()) {
 				log_string("Failed to get download folder", LOG_ERR);
@@ -134,8 +136,8 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 size_t parse_header( void *ptr, size_t size, size_t nmemb, void *clientp) {
 	dl_cb_info *info = (dl_cb_info*)clientp;
 	string* filename = & (info->filename);
-        string header((char*)ptr, size * nmemb);
-        if(!filename->empty()) return nmemb; // the filename has been set by the plugin -- priority
+	string header((char*)ptr, size * nmemb);
+	if(!filename->empty()) return nmemb; // the filename has been set by the plugin -- priority
 	size_t n;
 	if((n = header.find("Content-Disposition:")) != string::npos) {
 		n += 20;
@@ -155,9 +157,9 @@ size_t parse_header( void *ptr, size_t size, size_t nmemb, void *clientp) {
 }
 
 int get_size_progress_callback(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
-	if(dltotal < 1. && dlnow < 100.) { // the first time this function is called, dltotal is 0. We have to try again. but not too often
+	if(dltotal < 1. && dlnow < 1024.) { // the first time this function is called, dltotal is 0. We have to try again. but not too often
 		return 0;					 // because dltotal might be 0 through the whole download process, if curl fails to get the size.
-	}								 // so if we downloaded 100 bytes and still don't know the size, we give up
+	}								 // so if we downloaded 1024 bytes and still don't know the size, we give up
 
 	filesize_t *result = (filesize_t*)clientp;
 	#ifdef HAVE_UINT64_T

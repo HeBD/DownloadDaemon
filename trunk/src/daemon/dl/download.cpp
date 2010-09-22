@@ -839,8 +839,6 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 		return PLUGIN_SUCCESS;
 	}
 
-
-
 	plugin_status (*plugin_exec_func)(download_container*, download*, int, plugin_input&, plugin_output&, int, std::string, std::string);
 	bool ret = plugin_cache.load_function(get_host(), "plugin_exec_wrapper", plugin_exec_func);
 
@@ -938,33 +936,47 @@ void download::preset_file_status() {
 
 	// If the generic plugin is used (no real host-plugin is found), we do "parsing" right here
 	if(plugin_cache[get_host()] == 0) {
-                log_string("No plugin found, using generic download to preset the file-status", LOG_DEBUG);
-                ddcurl precheck_handle;
-                precheck_handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
-                precheck_handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
-                precheck_handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
-                precheck_handle.setopt(CURLOPT_NOSIGNAL, 1);
-                precheck_handle.setopt(CURLOPT_URL, url.c_str());
+		log_string("No plugin found, using generic download to preset the file-status", LOG_DEBUG);
+		ddcurl precheck_handle;
+		dl_cb_info cb_info;
+		cb_info.curl_handle = &precheck_handle;
+		precheck_handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+		precheck_handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+		precheck_handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+		precheck_handle.setopt(CURLOPT_NOSIGNAL, 1);
+		precheck_handle.setopt(CURLOPT_URL, url.c_str());
+		precheck_handle.setopt(CURLOPT_HEADERFUNCTION, parse_header);
+		precheck_handle.setopt(CURLOPT_WRITEHEADER, &cb_info);
 		// set url
-                precheck_handle.setopt(CURLOPT_FOLLOWLOCATION, 1);
+		precheck_handle.setopt(CURLOPT_FOLLOWLOCATION, 1);
 		// set file-writing function as callback
-                precheck_handle.setopt(CURLOPT_WRITEFUNCTION, pretend_write_file);
+		precheck_handle.setopt(CURLOPT_WRITEFUNCTION, pretend_write_file);
 		// show progress
-                precheck_handle.setopt(CURLOPT_NOPROGRESS, 0);
+		precheck_handle.setopt(CURLOPT_NOPROGRESS, 0);
 
 		filesize_t new_size;
 
-                precheck_handle.setopt(CURLOPT_PROGRESSFUNCTION, get_size_progress_callback);
-                precheck_handle.setopt(CURLOPT_PROGRESSDATA, &new_size);
+		precheck_handle.setopt(CURLOPT_PROGRESSFUNCTION, get_size_progress_callback);
+		precheck_handle.setopt(CURLOPT_PROGRESSDATA, &new_size);
 
 		lock.unlock();
-                int curlsucces = precheck_handle.perform();
+		int curlsucces = precheck_handle.perform();
 		lock.lock();
-
-                precheck_handle.cleanup();;
+		if(cb_info.filename.empty()) {
+			char *res_cs = 0;
+			precheck_handle.getinfo(CURLINFO_EFFECTIVE_URL, &res_cs);
+			string res;
+			if(res_cs) {
+				string res = res_cs;
+				if(res.find("/") != string::npos)
+					cb_info.filename = res.substr(res.rfind("/") + 1);
+			}
+		}
 
 		long http_code;
-                precheck_handle.getinfo(CURLINFO_RESPONSE_CODE, &http_code);
+		precheck_handle.getinfo(CURLINFO_RESPONSE_CODE, &http_code);
+
+		precheck_handle.cleanup();
 
 		switch(http_code) {
 			case 401:
@@ -985,6 +997,10 @@ void download::preset_file_status() {
 			status = DOWNLOAD_INACTIVE;
 		}
 		is_running = false;
+
+
+		if(global_config.get_int_value("autofill_title") == 2 || (global_config.get_int_value("autofill_title") == 1 && comment.empty()))
+			comment = cb_info.filename;
 		post_subscribers();
 		return;
 	}
@@ -993,8 +1009,8 @@ void download::preset_file_status() {
 
 	plugin_input pinp;
 
-        bool (*file_status_func)(download_container& dlc, download*, int id, plugin_input& pinp, plugin_output &outp);
-        bool ret = plugin_cache.load_function(get_host(), "get_file_status_init", file_status_func, false);
+	bool (*file_status_func)(download_container& dlc, download*, int id, plugin_input& pinp, plugin_output &outp);
+	bool ret = plugin_cache.load_function(get_host(), "get_file_status_init", file_status_func, false);
 
 	if (!ret)  {
 		is_running = false;
@@ -1010,7 +1026,7 @@ void download::preset_file_status() {
 
 	bool is_host = true;
 	try {
-                is_host = file_status_func(*global_download_list.get_listptr(parent), this, id, pinp, outp);
+		is_host = file_status_func(*global_download_list.get_listptr(parent), this, id, pinp, outp);
 	} catch(...) {}
 
 	if(!is_host) {
@@ -1026,6 +1042,9 @@ void download::preset_file_status() {
 		error = outp.file_online;
 		if(error == PLUGIN_FILE_NOT_FOUND) {
 			set_status(DOWNLOAD_INACTIVE);
+		} else {
+			if(global_config.get_int_value("autofill_title") == 2 || (global_config.get_int_value("autofill_title") == 1 && comment.empty()))
+				comment = outp.download_filename;
 		}
 	}
 	is_running = false;
