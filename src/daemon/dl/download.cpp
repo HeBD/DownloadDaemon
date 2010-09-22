@@ -931,6 +931,7 @@ void download::post_process_download() {
 
 void download::preset_file_status() {
 	unique_lock<recursive_mutex> lock(mx);
+	if (already_prechecked) return;
 	already_prechecked = true;
 	is_running = true;
 	plugin_output outp;
@@ -1002,10 +1003,10 @@ void download::preset_file_status() {
 
 		if(global_config.get_int_value("autofill_title") == 2 || (global_config.get_int_value("autofill_title") == 1 && comment.empty()))
 			comment = cb_info.filename;
+
 		post_subscribers();
-		global_mgmt::ns_mutex.lock();
-		global_mgmt::start_presetter = true;
-		global_mgmt::ns_mutex.unlock();
+		mx.unlock();
+		global_download_list.preset_file_status();
 		return;
 	}
 
@@ -1018,9 +1019,8 @@ void download::preset_file_status() {
 
 	if (!ret)  {
 		is_running = false;
-		global_mgmt::ns_mutex.lock();
-		global_mgmt::start_presetter = true;
-		global_mgmt::ns_mutex.unlock();
+		mx.unlock();
+		global_download_list.preset_file_status();
 		return;
 	}
 
@@ -1056,9 +1056,8 @@ void download::preset_file_status() {
 	}
 	is_running = false;
 	post_subscribers();
-	global_mgmt::ns_mutex.lock();
-	global_mgmt::start_presetter = true;
-	global_mgmt::ns_mutex.unlock();
+	mx.unlock();
+	global_download_list.preset_file_status();
 }
 
 std::string download::get_plugin_file() {

@@ -36,7 +36,7 @@ namespace global_mgmt {
 	std::string curr_end_time;
 	bool downloading_active;
 
-        bool start_presetter = true;
+	bool presetter_running = false;
 	// for sync signal handling
 	std::condition_variable sig_handle_cond;
 	int curr_sig = -1;
@@ -56,10 +56,10 @@ void do_once_per_second() {
 
 		if(global_download_list.total_downloads() > 0) {
 			global_download_list.decrease_waits();
-			if (global_mgmt::start_presetter && global_config.get_bool_value("precheck_links")) {
-				thread t(bind(&package_container::preset_file_status, &global_download_list));
-				t.detach();
-			}
+			//if (global_mgmt::start_presetter && global_config.get_bool_value("precheck_links")) {
+			//	thread t(bind(&package_container::preset_file_status, &global_download_list));
+			//	t.detach();
+			//}
 		}
 		global_mgmt::ns_mutex.unlock();
 

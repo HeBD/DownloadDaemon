@@ -148,7 +148,9 @@ void connection_handler(client *connection) {
 			// the client subscribed to something, so we have to check for commands and subscription updates at the same time
 			while(true) {
 				if(connection->messagecount() > 0) {
-					*sock << connection->pop_message();
+					string msg = connection->pop_message();
+					*sock << msg;
+					log_string(msg, LOG_DEBUG);
 				} else if(sock->select(50) || !*sock) {
 					break;
 				}
@@ -241,7 +243,6 @@ void connection_handler(client *connection) {
 				global_mgmt::curr_start_time = global_config.get_cfg_value("download_timing_start");
 				global_mgmt::curr_end_time = global_config.get_cfg_value("download_timing_end");
 				global_mgmt::downloading_active = global_config.get_bool_value("downloading_active");
-				global_mgmt::start_presetter = true;
 				global_mgmt::ns_mutex.unlock();
 			}
 		}
@@ -391,9 +392,6 @@ void target_dl_add(std::string &data, tkSock *sock) {
 			*sock << "104 ID";
 		} else {
 			*sock << "100 SUCCESS";
-                        global_mgmt::ns_mutex.lock();
-                        global_mgmt::start_presetter = true;
-                        global_mgmt::ns_mutex.unlock();
 		}
 		return;
 	}

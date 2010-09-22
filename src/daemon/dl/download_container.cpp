@@ -67,9 +67,9 @@ int download_container::total_downloads() {
 
 int download_container::add_download(download *dl, int dl_id) {
 	lock_guard<recursive_mutex> lock(download_mutex);
-	dl->set_id(dl_id);
 	dl->set_parent(container_id);
-        dl->post_subscribers(connection_manager::NEW);
+	dl->set_id(dl_id);
+	dl->post_subscribers(connection_manager::NEW);
 	download_list.push_back(dl);
 	return LIST_SUCCESS;
 }
@@ -592,9 +592,6 @@ void download_container::insert_downloads(int pos, download_container &dl) {
 		dl.download_list.erase(dl.download_list.begin());
 	}
 	dl.download_mutex.unlock();
-	global_mgmt::ns_mutex.lock(); // when there is a possibility that downloads have to be started, there is also the possibility that downloads
-	global_mgmt::start_presetter = true; // have to be checked for availability.
-	global_mgmt::ns_mutex.unlock();
 }
 
 #ifndef IS_PLUGIN
@@ -615,22 +612,16 @@ void download_container::do_download(int id) {
 void download_container::preset_file_status() {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	try {
-		size_t calls = 0;
 		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 			if(!(*it)->get_prechecked() && (*it)->get_size() < 2 && global_config.get_bool_value("precheck_links") && !(*it)->get_running()
 				&& (*it)->get_status() != DOWNLOAD_FINISHED) {
+				global_mgmt::presetter_running = true;
 				thread t(bind(&download::preset_file_status, *it));
 				t.detach();
-				++calls;
+				return;
 			}
-
-			if(calls >=3) return; // we start 3 threads per second as a maximum, so we don't get problems with boost::thread_resource_error
 		}
-		if(calls == 0) {
-			global_mgmt::ns_mutex.lock();
-			global_mgmt::start_presetter = false;
-			global_mgmt::ns_mutex.unlock();
-		}
+		global_mgmt::presetter_running = false;
 	} catch(...) {
 		// boost might throw a thread_resource_error if too many threads are created at the same time. We just ignore it
 		// and retry in a second, when this function is called again. Maybe some threads have closed then.
