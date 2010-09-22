@@ -24,13 +24,13 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-        ddcurl* handle = get_handle();
+	ddcurl* handle = get_handle();
 	string result;
-        handle->setopt(CURLOPT_URL, get_url());
-        handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-        handle->setopt(CURLOPT_WRITEDATA, &result);
-        handle->setopt(CURLOPT_COOKIEFILE, "");
-        int res = handle->perform();
+	handle->setopt(CURLOPT_URL, get_url());
+	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+	handle->setopt(CURLOPT_WRITEDATA, &result);
+	handle->setopt(CURLOPT_COOKIEFILE, "");
+	int res = handle->perform();
 	if(res != 0) {
 		return PLUGIN_ERROR;
 	}

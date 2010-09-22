@@ -1,3 +1,7 @@
+2010-09-22
+   [adrian]
+	- fixed netfolder.in plugin, fixed bug that after calling a replace-plugin (netfolder/youtube playlist), downloading did not start immediately
+
 2010-08-17
    [susanne]
 	- added support for client-subscriptions at ddclient-gui: there will only be list updates when there is actually something changing in the list
