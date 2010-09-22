@@ -150,7 +150,7 @@ void connection_handler(client *connection) {
 				if(connection->messagecount() > 0) {
 					string msg = connection->pop_message();
 					*sock << msg;
-					log_string(msg, LOG_DEBUG);
+					//log_string(msg, LOG_DEBUG);
 				} else if(sock->select(50) || !*sock) {
 					break;
 				}
