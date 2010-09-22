@@ -30,7 +30,7 @@ namespace global_mgmt {
 	extern std::string curr_end_time;
 	extern bool downloading_active;
 
-	extern bool start_presetter;
+	extern bool presetter_running;
 	// for sync signal handling
 	extern std::condition_variable sig_handle_cond;
 	extern int curr_sig;
