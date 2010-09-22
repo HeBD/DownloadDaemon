@@ -149,7 +149,7 @@ void connection_handler(client *connection) {
 			while(true) {
 				if(connection->messagecount() > 0) {
 					*sock << connection->pop_message();
-				} else if(sock->select(100) || !*sock) {
+				} else if(sock->select(50) || !*sock) {
 					break;
 				}
 			}

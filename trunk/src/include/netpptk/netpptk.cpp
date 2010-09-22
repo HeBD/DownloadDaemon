@@ -404,7 +404,7 @@ bool tkSock::select(long msec) {
 	 FD_SET(m_sock, &set);
 	 struct timeval t;
 	 t.tv_sec = 0;
-	 t.tv_usec = msec;
+	 t.tv_usec = msec * 1000;
 	 int ret = ::select(m_sock + 1, &set, 0, 0, &t);
 	 if(ret < 0) valid = false;
 	 if(ret == 1)
