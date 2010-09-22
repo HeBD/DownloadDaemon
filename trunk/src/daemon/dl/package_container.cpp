@@ -792,6 +792,7 @@ void package_container::correct_invalid_ids() {
 		}
 		(*it)->download_mutex.unlock();
 	}
+	start_next_downloadable();
 }
 
 int package_container::count_running_waiting_dls_of_host(const std::string& host) {
