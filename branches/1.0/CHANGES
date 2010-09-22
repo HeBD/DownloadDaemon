@@ -1,3 +1,7 @@
+2010-09-22
+   [adrian]
+	- fixed netfolder.in plugin, fixed bug that after calling a replace-plugin (netfolder/youtube playlist), downloading did not start immediately
+
 2010-07-13
    [adrian]
 	- Implementation of ddproxy.php. This lets you use a proxy for downloading/traffic limit bypassing without even having access
