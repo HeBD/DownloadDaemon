@@ -612,18 +612,14 @@ void download_container::preset_file_status() {
 				t.detach();
 				++calls;
 			}
-			// we set prechecked here to make HDD spin-down possible. If we don't do this, it can happen that the config-value is checked every round.
-			//(*it)->set_prechecked(true);
-			if(calls >=3) {
-				// we start 3 threads per second as a maximum, so we don't get problems with boost::thread_resource_error
-				return;
-			}
+
+			if(calls >=3) return; // we start 3 threads per second as a maximum, so we don't get problems with boost::thread_resource_error
 		}
-                if(calls == 0) {
-                    global_mgmt::ns_mutex.lock();
-                    global_mgmt::start_presetter = false;
-                    global_mgmt::ns_mutex.unlock();
-                }
+		if(calls == 0) {
+			global_mgmt::ns_mutex.lock();
+			global_mgmt::start_presetter = false;
+			global_mgmt::ns_mutex.unlock();
+		}
 	} catch(...) {
 		// boost might throw a thread_resource_error if too many threads are created at the same time. We just ignore it
 		// and retry in a second, when this function is called again. Maybe some threads have closed then.

@@ -1,6 +1,7 @@
 2010-09-22
    [adrian]
 	- fixed netfolder.in plugin, fixed bug that after calling a replace-plugin (netfolder/youtube playlist), downloading did not start immediately
+	- improvement of status-presetter: it should now always get called in the right moment
 
 2010-07-13
    [adrian]

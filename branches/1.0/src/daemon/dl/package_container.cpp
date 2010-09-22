@@ -819,6 +819,9 @@ void package_container::start_next_downloadable() {
 			}
 		}
 	}
+	global_mgmt::ns_mutex.lock(); // when there is a possibility that downloads have to be started, there is also the possibility that downloads
+	global_mgmt::start_presetter = true; // have to be checked for availability.
+	global_mgmt::ns_mutex.unlock();
 }
 
 bool package_container::in_dl_time_and_dl_active() {
