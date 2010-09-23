@@ -65,10 +65,12 @@ public:
 		if(!h) return false;
 		ret = (func)dlsym(h, sym.c_str());
 		const char *dl_error;
-                if ((dl_error = dlerror()) != NULL && log_error)  {
+		if ((dl_error = dlerror()) != NULL && log_error)  {
 			log_string(std::string("Unable to execute plugin function: ") + dl_error, LOG_ERR);
 			return false;
 		}
+		if (dl_error || !ret) return false;
+
 		return true;
 	}
 

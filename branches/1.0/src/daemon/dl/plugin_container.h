@@ -69,6 +69,7 @@ public:
 			log_string(std::string("Unable to execute plugin function: ") + dl_error, LOG_ERR);
 			return false;
 		}
+		if (dl_error || !ret) return false;
 		return true;
 	}
 
