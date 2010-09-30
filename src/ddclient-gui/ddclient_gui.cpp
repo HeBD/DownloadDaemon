@@ -524,6 +524,9 @@ void ddclient_gui::add_list_components(){
     list->setSelectionModel(selection_model);
     list->setSelectionMode(QAbstractItemView::ExtendedSelection);
     list->setSelectionBehavior(QAbstractItemView::SelectRows);
+    connect(selection_model, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(on_reload()));
+
+
     status_bar *status_bar_delegate = new status_bar(this);
     list->setItemDelegateForColumn(4, status_bar_delegate);
     list->setAnimated(true);
