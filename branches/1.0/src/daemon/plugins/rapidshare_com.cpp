@@ -28,16 +28,16 @@ bool use_premium = true; // if the premium limit is exceeded, this is set to fal
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	if(!inp.premium_user.empty() && !inp.premium_password.empty() && use_premium) {
-                ddcurl* handle = get_handle();
+		ddcurl* handle = get_handle();
 		outp.allows_multiple = true;
 		outp.allows_resumption = true;
-		string post_data("sub=getaccountdetails_v1&withcookie=1&type=prem&login=" + inp.premium_user + "&password=" + inp.premium_password);
+		string post_data("sub=getaccountdetails_v1&withcookie=1&login=" + ddcurl::escape(inp.premium_user) + "&password=" + ddcurl::escape(inp.premium_password));
 		string result;
-                handle->setopt(CURLOPT_URL, string("http://api.rapidshare.com/cgi-bin/rsapi.cgi?" + post_data).c_str());
-                handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-                handle->setopt(CURLOPT_WRITEDATA, &result);
-                handle->setopt(CURLOPT_COOKIEFILE, "");
-                int res = handle->perform();
+		handle->setopt(CURLOPT_URL, string("http://api.rapidshare.com/cgi-bin/rsapi.cgi?" + post_data).c_str());
+		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+		handle->setopt(CURLOPT_WRITEDATA, &result);
+		handle->setopt(CURLOPT_COOKIEFILE, "");
+		int res = handle->perform();
 		if(res == 0) {
 			if(result.find("Login failed") != string::npos) {
 				return PLUGIN_AUTH_FAIL;
@@ -45,137 +45,81 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 			outp.download_url = get_url();
 			// get the handle ready (get cookies)
-                        handle->setopt(CURLOPT_POST, 0);
+			handle->setopt(CURLOPT_POST, 0);
 			size_t pos = result.find("cookie=");
 			if(pos == string::npos)
 				return PLUGIN_AUTH_FAIL;
 
 			string tmp = result.substr(pos + 7);
 			tmp = tmp.substr(0, tmp.find_first_of(" \r\n"));
-                        handle->setopt(CURLOPT_COOKIE, string("enc=" + tmp).c_str());
-
+			handle->setopt(CURLOPT_COOKIE, string("enc=" + tmp).c_str());
 			return PLUGIN_SUCCESS;
 		}
 		return PLUGIN_ERROR;
 	}
 	use_premium = true;
 
-        ddcurl* handle = get_handle();
+	ddcurl* handle = get_handle();
 
 	std::string resultstr;
-        handle->setopt(CURLOPT_URL, get_url());
-        handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-        handle->setopt(CURLOPT_WRITEDATA, &resultstr);
-        int success = handle->perform();
+	string url = get_url();
+	vector<string> splitted_url = split_string(url, "/");
+	string filename = splitted_url.back();
+	string fileid = *(splitted_url.end() - 2);
+	string dispatch_url = "http://api.rapidshare.com/cgi-bin/rsapi.cgi?sub=download_v1&fileid=" + fileid + "&filename=" + filename + "&try=1&cbf=RSAPIDispatcher&cbid=1";
+	handle->setopt(CURLOPT_URL, dispatch_url);
+	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+	handle->setopt(CURLOPT_WRITEDATA, &resultstr);
+	int success = handle->perform();
 
 	if(success != 0) {
 		return PLUGIN_CONNECTION_ERROR;
 	}
 
-	if(resultstr.find("The file could not be found") != std::string::npos || resultstr.find("404 Not Found") != std::string::npos || resultstr.find("file has been removed") != std::string::npos
-		|| resultstr.find("suspected to contain illegal content and has been blocked") != std::string::npos || resultstr.find("The uploader has removed this file from the server") != std::string::npos) {
-		return PLUGIN_FILE_NOT_FOUND;
-	}
-
-	size_t pos;
-	if((pos = resultstr.find("<form id=\"ff\"")) == std::string::npos) {
-		return PLUGIN_ERROR;
-	}
-
-	std::string url;
-	pos = resultstr.find("http://", pos);
-	size_t end = resultstr.find('\"', pos);
-
-	url = resultstr.substr(pos, end - pos);
-
-	resultstr.clear();
-        handle->setopt(CURLOPT_URL, url.c_str());
-        handle->setopt(CURLOPT_POST, 1);
-        handle->setopt(CURLOPT_COPYPOSTFIELDS, "dl.start=\"Free\"");
-        handle->perform();
-        handle->setopt(CURLOPT_POST, 0);
-        handle->setopt(CURLOPT_COPYPOSTFIELDS, "");
-
-        ofstream ofs("/home/ben/out.html");
-        ofs.write(resultstr.c_str(), resultstr.size());
-
-	if(resultstr.find("Or try again in about") != std::string::npos) {
-		pos = resultstr.find("Or try again in about");
-		pos = resultstr.find("about", pos);
-		pos = resultstr.find(' ', pos);
-		++pos;
-		end = resultstr.find(' ', pos);
-		std::string have_to_wait(resultstr.substr(pos, end - pos));
-		set_wait_time(atoi(have_to_wait.c_str()) * 60);
-		return PLUGIN_LIMIT_REACHED;
-	} else if(resultstr.find("Please try again in 2 minutes") != std::string::npos
-			  || resultstr.find("wait 2 minutes") != std::string::npos
-			  || resultstr.find("our servers are overloaded") != std::string::npos) {
-		set_wait_time(120);
-		return PLUGIN_SERVER_OVERLOADED;
-	} else if(resultstr.find("is already downloading a file.  Please wait until the download is completed.") != std::string::npos) {
-		set_wait_time(120);
-		return PLUGIN_LIMIT_REACHED;
-	} else {
-		if((pos = resultstr.find("var c")) == std::string::npos) {
-			// Unable to get the wait time, will wait 135 seconds
-			set_wait_time(135);
-		} else {
-			pos = resultstr.find("=", pos) + 1;
-			end = resultstr.find(";", pos) - 1;
-			set_wait_time(atoi(resultstr.substr(pos, end).c_str()));
-		}
-
-		if((pos = resultstr.find("<form name=\"dlf\"")) == std::string::npos) {
-			return PLUGIN_ERROR;
-		}
-
-		pos = resultstr.find("http://", pos);
-		end = resultstr.find('\"', pos);
-		if(pos == string::npos || end == string::npos || pos == end) {
-			return PLUGIN_ERROR;
-		}
-
-		outp.download_url = resultstr.substr(pos, end - pos);
-                handle->setopt(CURLOPT_POST, 1);
-                handle->setopt(CURLOPT_COPYPOSTFIELDS, "mirror=on&x=66&y=61");
+	vector<string> dispatch_data = split_string(resultstr, ",");
+	if(dispatch_data.size() >= 2) {
+		// everything seems okay
+		if(dispatch_data[1].find("DL:") == string::npos) return PLUGIN_FILE_NOT_FOUND;
+		url = "http://" + dispatch_data[1].substr(dispatch_data[1].find(":") + 1) + "/cgi-bin/rsapi.cgi?sub=download_v1&editparentlocation=0&bin=1&fileid=" + fileid;
+		url += "&filename=" + filename + "&dlauth=" + dispatch_data[2];
+		handle->setopt(CURLOPT_URL, url.c_str());
+		set_wait_time(atoi(dispatch_data[3].c_str()) + 1);
+		outp.download_filename = handle->unescape(filename);
+		outp.download_url = url;
 		return PLUGIN_SUCCESS;
 	}
+	return PLUGIN_ERROR;
 }
 
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
-	std::string url = get_url();
+	vector<string> splitted_url = split_string(get_url(), "/");
+	if(splitted_url.size() <= 2) return true;
+	string filename = splitted_url.back();
+	string fileid = *(splitted_url.end() - 2);
+	string url = "http://api.rapidshare.com/cgi-bin/rsapi.cgi?sub=checkfiles_v1&files=" + fileid + "&filenames=" + filename;
 	std::string result;
-        ddcurl handle;
-        handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
-        handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
-        handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
-        handle.setopt(CURLOPT_NOSIGNAL, 1);
-        handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
-        handle.setopt(CURLOPT_WRITEDATA, &result);
-        handle.setopt(CURLOPT_COOKIEFILE, "");
-        handle.setopt(CURLOPT_URL, url.c_str());
-        int res = handle.perform();
-        handle.cleanup();
+	ddcurl handle;
+	handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+	handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+	handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+	handle.setopt(CURLOPT_NOSIGNAL, 1);
+	handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
+	handle.setopt(CURLOPT_WRITEDATA, &result);
+	handle.setopt(CURLOPT_COOKIEFILE, "");
+	handle.setopt(CURLOPT_URL, url.c_str());
+	int res = handle.perform();
+	handle.cleanup();
 	if(res != 0) {
 		outp.file_online = PLUGIN_CONNECTION_LOST;
 		return true;
 	}
 	try {
-		size_t n = result.find("<p class=\"downloadlink\">");
-		if(n == string::npos) {
+		vector<string> answer = split_string(result, ",");
+		long size = atoi(answer[2].c_str());
+		if (size == 0) {
 			outp.file_online = PLUGIN_FILE_NOT_FOUND;
 			return true;
 		}
-		n = result.find("| ", n);
-		if(n == string::npos) {
-			outp.file_online = PLUGIN_FILE_NOT_FOUND;
-			return true;
-		}
-		n += 2;
-		size_t end = result.find(" ", n);
-		int size = atoi(result.substr(n, end - n).c_str()); // int is enough. rapidshare files are max. 200 MB
-		size *= 1000; // yes, rapidshare uses this factor.
 		outp.file_online = PLUGIN_SUCCESS;
 		outp.file_size = size;
 	} catch(...) {
