@@ -1,6 +1,8 @@
 2010-10-04
    [adrian]
 	- added project-support and flattr-button to ddclient-gui's toolbar
+	- fixed rapidshare.com free download support for their new page-layout
+	- removed uploaded.to free download support because they switched to recaptcha
 
 2010-09-22
    [adrian]

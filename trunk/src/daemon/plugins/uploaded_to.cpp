@@ -65,15 +65,17 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_SUCCESS;
 	}
 
-
-        ddcurl* handle = get_handle();
+	// ul.to moved to recatcha :( can't solve this with gocr, so the free-download code is disabled for now.
+	return PLUGIN_AUTH_FAIL;
+/*
+	ddcurl* handle = get_handle();
 	std::string resultstr;
-        handle->setopt(CURLOPT_COOKIEFILE, "");
-        handle->setopt(CURLOPT_URL, get_url());
-        handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-        handle->setopt(CURLOPT_WRITEDATA, &resultstr);
-        handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
-        int success = handle->perform();
+	handle->setopt(CURLOPT_COOKIEFILE, "");
+	handle->setopt(CURLOPT_URL, get_url());
+	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+	handle->setopt(CURLOPT_WRITEDATA, &resultstr);
+	handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+	int success = handle->perform();
 
 	if(success != 0) {
 		return PLUGIN_CONNECTION_ERROR;
@@ -122,6 +124,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	filename += filetype;
 	outp.download_filename = filename;
 	return PLUGIN_SUCCESS;
+*/
 }
 
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
