@@ -35,6 +35,8 @@
 #include <QModelIndex>
 #include <QtGui/QInputDialog>
 #include <QFileDialog>
+#include <QDesktopServices>
+#include <QUrl>
 //#include <QtGui> // this is only for testing if includes are the problem
 
 using namespace std;
@@ -135,14 +137,14 @@ void ddclient_gui::update_status(QString server){
     // removing both icons/deactivating both menuentrys, even when maybe only one is shown
     activate_action->setEnabled(false);
     deactivate_action->setEnabled(false);
-    downloading_menu->removeAction(activate_action);
-    downloading_menu->removeAction(deactivate_action);
+	configure_menu->removeAction(activate_action);
+	configure_menu->removeAction(deactivate_action);
     
     if(answer == "1"){ // downloading active
-        downloading_menu->addAction(deactivate_action);
+		configure_menu->addAction(deactivate_action);
         deactivate_action->setEnabled(true);
     }else if(answer =="0"){ // downloading not active
-        downloading_menu->addAction(activate_action);
+		configure_menu->addAction(activate_action);
         activate_action->setEnabled(true);
     }else{
         // should never be reached
@@ -388,11 +390,15 @@ void ddclient_gui::add_bars(){
     download_menu->addAction(up_action);
     download_menu->addAction(down_action);
 
-    QToolBar *configure_menu = addToolBar(tsl("Configure"));
+	configure_menu = addToolBar(tsl("Configure"));
     configure_menu->addAction(configure_action);
+	configure_menu->addAction(activate_action);
 
-    downloading_menu = addToolBar(tsl("Downloading"));
-    downloading_menu->addAction(activate_action);
+	QToolBar *donate_bar = addToolBar(tsl("Flattr"));
+	QAction *flattr_action = new QAction(QIcon("img/flattr.png"), "Flattr", this);
+	donate_bar->addAction(flattr_action);
+	QAction *donate_action = new QAction(QIcon("img/coins.png"), "Project-Support", this);
+	donate_bar->addAction(donate_action);
 
     connect(connect_action, SIGNAL(triggered()), this, SLOT(on_connect()));
     connect(configure_action, SIGNAL(triggered()), this, SLOT(on_configure()));
@@ -412,6 +418,9 @@ void ddclient_gui::add_bars(){
     connect(about_action, SIGNAL(triggered()), this, SLOT(on_about()));
     connect(up_action, SIGNAL(triggered()), this, SLOT(on_priority_up()));
     connect(down_action, SIGNAL(triggered()), this, SLOT(on_priority_down()));
+
+	connect(flattr_action, SIGNAL(triggered()), this, SLOT(donate_flattr()));
+	connect(donate_action, SIGNAL(triggered()), this, SLOT(donate_sf()));
 }
 
 
@@ -1665,9 +1674,9 @@ void ddclient_gui::on_downloading_activate(){
     // update toolbar
     activate_action->setEnabled(false);
     deactivate_action->setEnabled(true);
-    downloading_menu->removeAction(activate_action);
-    downloading_menu->removeAction(deactivate_action); // just to be save
-    downloading_menu->addAction(deactivate_action);
+	configure_menu->removeAction(activate_action);
+	configure_menu->removeAction(deactivate_action); // just to be save
+	configure_menu->addAction(deactivate_action);
 
     if(!this->isVisible()){ // workaround: if the user closes an error message and there is no window visible the whole programm closes!
         this->show();
@@ -1689,9 +1698,9 @@ void ddclient_gui::on_downloading_deactivate(){
     // update toolbar
     activate_action->setEnabled(true);
     deactivate_action->setEnabled(false);
-    downloading_menu->removeAction(activate_action);
-    downloading_menu->removeAction(deactivate_action); // just to be save
-    downloading_menu->addAction(activate_action);
+	configure_menu->removeAction(activate_action);
+	configure_menu->removeAction(deactivate_action); // just to be save
+	configure_menu->addAction(activate_action);
 
     if(!this->isVisible()){ // workaround: if the user closes an error message and there is no window visible the whole programm closes!
         this->show();
@@ -2060,6 +2069,13 @@ void ddclient_gui::on_reload(){
     mx.unlock();
 }
 
+void ddclient_gui::donate_flattr(){
+	QDesktopServices::openUrl(QUrl(QString("http://flattr.com/thing/65487/DownloadDaemon")));
+}
+
+void ddclient_gui::donate_sf(){
+	QDesktopServices::openUrl(QUrl(QString("http://sourceforge.net/donate/index.php?group_id=278029")));
+}
 
 void ddclient_gui::contextMenuEvent(QContextMenuEvent *event){
     QMenu menu(this);

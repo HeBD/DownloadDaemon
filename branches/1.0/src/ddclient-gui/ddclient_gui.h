@@ -176,7 +176,7 @@ class ddclient_gui : public QMainWindow{
         QAction *about_action;
         QAction *down_action;
         QAction *up_action;
-        QToolBar *downloading_menu;
+		QToolBar *configure_menu;
         QMenu *tray_menu;
         QSystemTrayIcon *tray_icon;
 
@@ -203,6 +203,8 @@ class ddclient_gui : public QMainWindow{
         void on_load_container();
         void on_activate_tray_icon(QSystemTrayIcon::ActivationReason reason);
         void on_reload();
+		void donate_flattr();
+		void donate_sf();
 
     protected:
         void contextMenuEvent(QContextMenuEvent *event);
