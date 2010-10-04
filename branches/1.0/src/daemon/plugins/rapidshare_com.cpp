@@ -31,7 +31,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		ddcurl* handle = get_handle();
 		outp.allows_multiple = true;
 		outp.allows_resumption = true;
-		string post_data("sub=getaccountdetails_v1&withcookie=1&login=" + ddcurl::escape(inp.premium_user) + "&password=" + ddcurl::escape(inp.premium_password));
+		string post_data("sub=getaccountdetails_v1&withcookie=1&login=" + handle->escape(inp.premium_user) + "&password=" + handle->escape(inp.premium_password));
 		string result;
 		handle->setopt(CURLOPT_URL, string("http://api.rapidshare.com/cgi-bin/rsapi.cgi?" + post_data).c_str());
 		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
