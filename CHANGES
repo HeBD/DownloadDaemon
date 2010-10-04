@@ -1,3 +1,7 @@
+2010-10-04
+   [adrian]
+	- added project-support and flattr-button to ddclient-gui's toolbar
+
 2010-09-22
    [adrian]
 	- fixed netfolder.in plugin, fixed bug that after calling a replace-plugin (netfolder/youtube playlist), downloading did not start immediately
