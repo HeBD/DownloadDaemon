@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# debian target distribution
-DEB_DIST="lucid"
+# debian target distributions
+DEB_DISTS=("lucid" "maverick")
 
 # upstream authors "Name LastName <mail@foo.foo>", seperated by newline and 4 spaces
-UPSTREAM_AUTHORS="Adrian Batzill <adrian # batzill ! com>
+UPSTREAM_AUTHORS="Adrian Batzill <downloaddaemon # batzill ! com>
     Susanne Eichel <susanne.eichel # web ! de>"
 
 # copyright holders "Copyright (C) {Year(s)} by {Author(s)} {Email address(es)}", seperated by newline and 4 spaces
@@ -12,7 +12,7 @@ COPYRIGHT_HOLDERS="Copyright (C) 2009, 2010 by Adrian Batzill <adrian # batzill 
     Copyright (C) 2009, 2010 by Susanne Eichel <susanne.eichel # web ! de>"
 
 # build dependencies
-BUILDDEP_DD="debhelper (>= 7), cmake, libboost-thread-dev (>=1.37.0), libcurl4-gnutls-dev"
+BUILDDEP_DD="debhelper (>= 7), cmake, libcurl4-gnutls-dev"
 
 # dependencies (leave empty for auto-detection)
 DEP_DD=""
@@ -77,6 +77,7 @@ for path in $(seq 0 $((${#FILES_DD[@]} - 1))); do
 	mkdir -p ../version/${VERSION}/downloaddaemon-${VERSION}/${PATHS_DD[${path}]}
 	cp -r ${FILES_DD[${path}]} ../version/${VERSION}/downloaddaemon-${VERSION}/${PATHS_DD[${path}]}
 done
+	
 
 
 cd ../version/${VERSION}
@@ -89,6 +90,7 @@ add_subdirectory(src/daemon)" > downloaddaemon-${VERSION}/CMakeLists.txt
 echo "removing unneeded files..."
 find -name .svn | xargs rm -rf
 find -name "*~" | xargs rm -f
+find -name "CMakeLists*.user*" | xargs rm -f
 
 
 echo "BUILDING SOURCE ARCHIVES..."
@@ -96,124 +98,127 @@ tar -cz downloaddaemon-${VERSION} > downloaddaemon-${1}.tar.gz
 
 echo "DONE"
 echo "PREPARING DEBIAN ARCHIVES..."
-mkdir debs_${VERSION}
-# only if it's the first ubuntu rev, we copy the .orig files. otherwise we just update.
-if [ "$UBUNTU_REV" == "1" ]; then
-	cp downloaddaemon-${VERSION}.tar.gz debs_${VERSION}/downloaddaemon_${VERSION}.orig.tar.gz
-fi
 
-cd debs_${VERSION}
-rm -rf downloaddaemon-${VERSION}
-cp -rf ../downloaddaemon-${VERSION} .
-
-cd downloaddaemon-${VERSION}
-echo "Settings for DownloadDaemon:"
-dh_make -m -c gpl -e ${EMAIL}
-cd debian
-cd ../..
-
-
-if [ "$DEP_DD" == "" ]; then
-	DEP_DD='${shlibs:Depends}, ${misc:Depends}'
-fi
-
-################################################################################ DOWNLOADDAEMON PREPARATION
-echo "Preparing debian/* files for DownloadDaemon"
-cd downloaddaemon-${VERSION}/debian
-replace="$(<changelog)"
-replace="${replace/${VERSION}-1/${VERSION}-0ubuntu${UBUNTU_REV}}"
-replace="${replace/unstable/$DEB_DIST}"
-echo "$replace" > changelog
-
-replace=$(<control)
-replace="${replace/'Section: unknown'/Section: net}"
-replace="${replace/'Homepage: <insert the upstream URL, if relevant>'/Homepage: http://downloaddaemon.sourceforge.net/
-Recommends: gocr, tar, unrar, ddclient-gui, ddconsole}"
-replace="${replace/'Description: <insert up to 60 chars description>'/Description: $SYN_DD}"
-replace="${replace/'Build-Depends: debhelper (>= 7), cmake'/Build-Depends: $BUILDDEP_DD}"
-replace="${replace/'Depends: ${shlibs:Depends}, ${misc:Depends}'/Depends: $DEP_DD}"
-replace="${replace/'<insert long description, indented with spaces>'/$DESC_DD}"
-echo "$replace" > control
-
-replace="$(<copyright)"
-replace="${replace/<url:\/\/example.com>/http://downloaddaemon.sourceforge.net/}"
-replace="${replace/<put author\'s name and email here>
-    <likewise for another author>/$UPSTREAM_AUTHORS}"
-replace="${replace/<Copyright (C) YYYY Firtname Lastname>
-    <likewise for another author>/$COPYRIGHT_HOLDERS}"
-replace="${replace/
-### SELECT: ###/}"
-replace="${replace/
-### OR ###
-   This package is free software; you can redistribute it and\/or modify
-   it under the terms of the GNU General Public License version 2 as
-   published by the Free Software Foundation.
-##########/}"
-replace="${replace/
-# Please also look if there are files or directories which have a
-# different copyright\/license attached and list them here./}"
-echo "$replace" > copyright
-
-#replace="$(<dirs)"
-#replace+="
-#/etc/downloaddaemon
-#/usr/share"
-#echo "$replace" > dirs
-
-mv postinst.ex postinst
-mv postrm.ex postrm
-replace="$(<postinst)"
-replace="${replace/'    configure)'/    configure)
-	if ! getent group downloadd >/dev/null; then
-        	addgroup --system downloadd
+for dist in ${DEB_DISTS[@]}; do
+	mkdir -p "debs_${VERSION}/$dist"
+	# only if it's the first ubuntu rev, we copy the .orig files. otherwise we just update.
+	if [ "$UBUNTU_REV" == "1" ]; then
+		cp "downloaddaemon-${VERSION}.tar.gz" "debs_${VERSION}/$dist/downloaddaemon_${VERSION}.orig.tar.gz"
 	fi
 
-	if ! getent passwd downloadd >/dev/null; then
-        	adduser --system --ingroup downloadd --home /etc/downloaddaemon downloadd
-        	usermod -c DownloadDaemon downloadd
+	cd "debs_${VERSION}/$dist"
+	rm -rf downloaddaemon-${VERSION}
+	cp -rf ../../downloaddaemon-${VERSION} .
+
+	cd downloaddaemon-${VERSION}
+	echo "Settings for DownloadDaemon:"
+	dh_make -m -c gpl -e ${EMAIL}
+	cd debian
+	cd ../..
+
+
+	if [ "$DEP_DD" == "" ]; then
+		DEP_DD='${shlibs:Depends}, ${misc:Depends}'
 	fi
 
-	if [ -d /etc/downloaddaemon ]; then
-  		chown -R downloadd:downloadd /etc/downloaddaemon
+	################################################################################ DOWNLOADDAEMON PREPARATION
+	echo "Preparing debian/* files for DownloadDaemon"
+	cd downloaddaemon-${VERSION}/debian
+	replace="$(<changelog)"
+	replace="${replace/${VERSION}-1/${VERSION}-0ubuntu${UBUNTU_REV}+agib~${dist}1}"
+	replace="${replace/unstable/$dist}"
+	echo "$replace" > changelog
+
+	replace=$(<control)
+	replace="${replace/'Section: unknown'/Section: net}"
+	replace="${replace/'Homepage: <insert the upstream URL, if relevant>'/Homepage: http://downloaddaemon.sourceforge.net/
+	Recommends: gocr, tar, unrar, ddclient-gui, ddconsole}"
+	replace="${replace/'Description: <insert up to 60 chars description>'/Description: $SYN_DD}"
+	replace="${replace/'Build-Depends: debhelper (>= 7), cmake'/Build-Depends: $BUILDDEP_DD}"
+	replace="${replace/'Depends: ${shlibs:Depends}, ${misc:Depends}'/Depends: $DEP_DD}"
+	replace="${replace/'<insert long description, indented with spaces>'/$DESC_DD}"
+	echo "$replace" > control
+
+	replace="$(<copyright)"
+	replace="${replace/<url:\/\/example.com>/http://downloaddaemon.sourceforge.net/}"
+	replace="${replace/<put author\'s name and email here>
+	    <likewise for another author>/$UPSTREAM_AUTHORS}"
+	replace="${replace/<Copyright (C) YYYY Firtname Lastname>
+	    <likewise for another author>/$COPYRIGHT_HOLDERS}"
+	replace="${replace/
+	### SELECT: ###/}"
+	replace="${replace/
+	### OR ###
+	   This package is free software; you can redistribute it and\/or modify
+	   it under the terms of the GNU General Public License version 2 as
+	   published by the Free Software Foundation.
+	##########/}"
+	replace="${replace/
+	# Please also look if there are files or directories which have a
+	# different copyright\/license attached and list them here./}"
+	echo "$replace" > copyright
+
+	#replace="$(<dirs)"
+	#replace+="
+	#/etc/downloaddaemon
+	#/usr/share"
+	#echo "$replace" > dirs
+
+	mv postinst.ex postinst
+	mv postrm.ex postrm
+	replace="$(<postinst)"
+	replace="${replace/'    configure)'/    configure)
+		if ! getent group downloadd >/dev/null; then
+			addgroup --system downloadd
+		fi
+
+		if ! getent passwd downloadd >/dev/null; then
+			adduser --system --ingroup downloadd --home /etc/downloaddaemon downloadd
+			usermod -c DownloadDaemon downloadd
+		fi
+
+		if [ -d /etc/downloaddaemon ]; then
+	  		chown -R downloadd:downloadd /etc/downloaddaemon
+		fi
+		if [ -d /var/downloads ]; then
+	  		chown -R downloadd:downloadd /var/downloads
+		fi
+		if [ -x /etc/init.d/downloadd ]; then
+			update-rc.d downloadd defaults >/dev/null
+			/etc/init.d/downloadd start
+		fi
+	}"
+	echo "$replace" > postinst
+
+	replace="$(<postrm)"
+	replace="${replace/'    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)'/    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+		if [ \"\$1\" = \"purge\" ] ; then
+			update-rc.d downloadd remove >/dev/null || exit \$?
+		fi
+	}"
+
+	echo "$replace" > postrm
+
+	cp $script_dir/rules_tpl rules
+
+	rm docs cron.d.ex downloaddaemon.default.ex downloaddaemon.doc-base.EX emacsen-install.ex emacsen-remove.ex emacsen-startup.ex init.d.ex init.d.lsb.ex manpage.* menu.ex README.Debian watch.ex  preinst.ex  prerm.ex
+	cd ..
+
+	echo "
+
+
+	"
+	read -p "Basic debian package preparation for the clients is done. Please move to <svn root>/version/debs_${1}/$dist/downloaddaemon-${1}/debian and modify the files as you need them. 
+	Then press [enter] to continue package building. expecially the changelog file should be changed."
+
+	echo "building downloaddaemon packages..."
+	echo "currently in `pwd`"
+	if [ $BINARY == true ]; then
+		debuild -d -sa
+	else
+		debuild -S -sa
 	fi
-	if [ -d /var/downloads ]; then
-  		chown -R downloadd:downloadd /var/downloads
-	fi
-	if [ -x /etc/init.d/downloadd ]; then
-		update-rc.d downloadd defaults >/dev/null
-		/etc/init.d/downloadd start
-	fi
-}"
-echo "$replace" > postinst
 
-replace="$(<postrm)"
-replace="${replace/'    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)'/    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
-	if [ \"\$1\" = \"purge\" ] ; then
-		update-rc.d downloadd remove >/dev/null || exit \$?
-	fi
-}"
-
-echo "$replace" > postrm
-
-cp $script_dir/rules_tpl rules
-
-rm docs cron.d.ex downloaddaemon.default.ex downloaddaemon.doc-base.EX emacsen-install.ex emacsen-remove.ex emacsen-startup.ex init.d.ex init.d.lsb.ex manpage.* menu.ex README.Debian watch.ex  preinst.ex  prerm.ex
-cd ../..
-
-echo "
-
-
-"
-read -p "Basic debian package preparation for the clients is done. Please move to <svn root>/version/debs_${1}/downloaddaemon-${1}/debian and modify the files as you need them. 
-Then press [enter] to continue package building. expecially the changelog file should be changed."
-
-echo "building downloaddaemon package..."
-cd downloaddaemon-${VERSION}
-if [ $BINARY == true ]; then
-	debuild -d -sa
-else
-	debuild -S -sa
-fi
-
-cd ..
+	cd ../../..
+done
 
