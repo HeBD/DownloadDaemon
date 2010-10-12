@@ -352,7 +352,7 @@ void target_dl_add(std::string &data, tkSock *sock) {
 	int package;
 	std::string url;
 	std::string comment;
-	if(data.find_first_of("|\n\r") != string::npos) {
+	if(data.find_first_of("\n\r") != string::npos) {
 		*sock << "108 VARIABLE";
 		return;
 	} else {
