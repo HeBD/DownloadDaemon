@@ -79,6 +79,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	vector<string> dispatch_data = split_string(resultstr, ",");
 	if(dispatch_data.size() >= 2) {
 		// everything seems okay
+		size_t waitpos = dispatch_data[1].find("need to wait ");
+		if(waitpos != string::npos) {
+			waitpos += 13;
+			if(waitpos >= dispatch_data[1].size()) return PLUGIN_FILE_NOT_FOUND;
+			set_wait_time(atoi(dispatch_data[1].substr(waitpos).c_str()));
+			return PLUGIN_LIMIT_REACHED;
+		}
 		if(dispatch_data[1].find("DL:") == string::npos) return PLUGIN_FILE_NOT_FOUND;
 		url = "http://" + dispatch_data[1].substr(dispatch_data[1].find(":") + 1) + "/cgi-bin/rsapi.cgi?sub=download_v1&editparentlocation=0&bin=1&fileid=" + fileid;
 		url += "&filename=" + filename + "&dlauth=" + dispatch_data[2];
@@ -92,11 +99,20 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 }
 
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
-	vector<string> splitted_url = split_string(get_url(), "/");
-	if(splitted_url.size() <= 2) return true;
-	string filename = splitted_url.back();
-	string fileid = *(splitted_url.end() - 2);
-	string url = "http://api.rapidshare.com/cgi-bin/rsapi.cgi?sub=checkfiles_v1&files=" + fileid + "&filenames=" + filename;
+	string url = get_url();
+	string filename, fileid;
+	if(url.find("#!download") == string::npos) {
+		vector<string> splitted_url = split_string(url, "/");
+		if(splitted_url.size() <= 2) return true;
+		filename = splitted_url.back();
+		fileid = *(splitted_url.end() - 2);
+	} else {
+		vector<string> splitted_url = split_string(url, "|");
+		if(splitted_url.size() < 5) return true;
+		filename = *(splitted_url.end() - 2);
+		fileid = *(splitted_url.end() - 3);
+	}
+	url = "http://api.rapidshare.com/cgi-bin/rsapi.cgi?sub=checkfiles_v1&files=" + fileid + "&filenames=" + filename;
 	std::string result;
 	ddcurl handle;
 	handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
@@ -115,8 +131,10 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	}
 	try {
 		vector<string> answer = split_string(result, ",");
-		long size = atoi(answer[2].c_str());
-		if (size == 0) {
+		long size = 0;
+		if(answer.size() >= 3)
+			size = atoi(answer[2].c_str());
+		if(size == 0) {
 			outp.file_online = PLUGIN_FILE_NOT_FOUND;
 			return true;
 		}
