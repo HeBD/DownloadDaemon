@@ -81,7 +81,7 @@ public:
             if (m_sUrl.empty()) return CURLE_URL_MALFORMAT;
             std::string url = m_sUrl;
             if(!m_sProxy.empty()) {
-                url = m_sProxy + "?ddproxy_pass=" + m_sProxyPass + "&ddproxy_url=" + escape(m_sUrl);
+				url = m_sProxy + "?ddproxy_pass=" + escape(m_sProxyPass) + "&ddproxy_url=" + escape(m_sUrl);
             } else {
                 curl_easy_setopt(handle, CURLOPT_PROXYUSERNAME, m_sProxyUser.c_str());
                 curl_easy_setopt(handle, CURLOPT_PROXYPASSWORD, m_sProxyPass.c_str());

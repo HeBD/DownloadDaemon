@@ -86,6 +86,10 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			set_wait_time(atoi(dispatch_data[1].substr(waitpos).c_str()));
 			return PLUGIN_LIMIT_REACHED;
 		}
+		if(dispatch_data[1].find("You need RapidPro to download more files") != string::npos) {
+			set_wait_time(30);
+			return PLUGIN_LIMIT_REACHED;
+		}
 		if(dispatch_data[1].find("DL:") == string::npos) return PLUGIN_FILE_NOT_FOUND;
 		url = "http://" + dispatch_data[1].substr(dispatch_data[1].find(":") + 1) + "/cgi-bin/rsapi.cgi?sub=download_v1&editparentlocation=0&bin=1&fileid=" + fileid;
 		url += "&filename=" + filename + "&dlauth=" + dispatch_data[2];
