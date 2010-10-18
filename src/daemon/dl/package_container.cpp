@@ -443,6 +443,7 @@ void package_container::decrease_waits() {
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
 		(*it)->decrease_waits();
 	}
+	//start_next_downloadable();
 }
 
 void package_container::purge_deleted() {
