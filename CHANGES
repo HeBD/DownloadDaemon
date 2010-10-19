@@ -1,6 +1,8 @@
 2010-10-19
    [adrian]
 	- correctly clean up curl handles to fix proxy-alternation support
+	- implemented hotfile.com premium download (free download will not work)
+
 2010-10-04
    [adrian]
 	- added project-support and flattr-button to ddclient-gui's toolbar
