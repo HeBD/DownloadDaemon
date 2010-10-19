@@ -13,23 +13,27 @@ public:
 	}
 
 	~ddcurl() {
-		if(handle) curl_easy_cleanup(handle);
+		if(handle) cleanup();
 	}
 
 	void init() {
-		if(handle) curl_easy_cleanup(handle);
+		if(handle) cleanup();
 		handle = curl_easy_init();
 	}
 
-        void cleanup() {
-            if(handle) curl_easy_cleanup(handle);
-            handle = 0;
-        }
+	void cleanup() {
+		if(handle) curl_easy_cleanup(handle);
+		handle = 0;
+		m_sProxy.clear();
+		m_sProxyUser.clear();
+		m_sProxyPass.clear();
+		m_sUrl.clear();
+	}
 
-        template <typename T>
-        CURLcode setopt(CURLoption opt, const T &val) {
+	template <typename T>
+	CURLcode setopt(CURLoption opt, const T &val) {
 		if(!handle) handle = curl_easy_init();
-                return curl_easy_setopt(handle, opt, val);
+			return curl_easy_setopt(handle, opt, val);
 	}
 
         CURLcode setopt(CURLoption opt, const std::string &val) {
@@ -119,8 +123,12 @@ public:
         }
 
         void reset() {
-            if(!handle) handle = curl_easy_init();
-            else curl_easy_reset(handle);
+			if(!handle) handle = curl_easy_init();
+			else curl_easy_reset(handle);
+			m_sProxy.clear();
+			m_sProxyUser.clear();
+			m_sProxyPass.clear();
+			m_sUrl.clear();
         }
 
 private:

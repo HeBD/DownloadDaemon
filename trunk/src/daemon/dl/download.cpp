@@ -359,7 +359,7 @@ void download::download_me() {
 	} else {
 		proxy = "";
 	}
-        handle.cleanup();
+	handle.cleanup();
 
 
 	if(status == DOWNLOAD_FINISHED) {
