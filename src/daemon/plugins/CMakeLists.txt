@@ -50,9 +50,9 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	ADD_LIBRARY(netfolder.in MODULE netfolder_in.cpp)
 	ADD_LIBRARY(filefactory.com MODULE filefactory_com.cpp)
 	ADD_LIBRARY(depositfiles.com MODULE depositfiles_com.cpp)
-        #ADD_LIBRARY(hotfile.com MODULE hotfile_com.cpp)
+        ADD_LIBRARY(hotfile.com MODULE hotfile_com.cpp)
 
-	SET(plugins rapidshare.com uploaded.to youtube.com netload.in megaupload.com netfolder.in filefactory.com depositfiles.com)
+	SET(plugins rapidshare.com uploaded.to youtube.com netload.in megaupload.com netfolder.in filefactory.com depositfiles.com hotfile.com)
 
         set_target_properties(${plugins} PROPERTIES PREFIX lib SUFFIX .so)
 	# !!!! add new plugins here !!!!)
@@ -86,6 +86,7 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	TARGET_LINK_LIBRARIES(netfolder.in ${link_libs})
 	TARGET_LINK_LIBRARIES(filefactory.com ${link_libs})
 	TARGET_LINK_LIBRARIES(depositfiles.com ${link_libs})
+	TARGET_LINK_LIBRARIES(hotfile.com ${link_libs})
 
 
 	install(TARGETS ${plugins} DESTINATION share/downloaddaemon/plugins)
