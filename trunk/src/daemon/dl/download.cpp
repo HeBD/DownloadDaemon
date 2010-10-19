@@ -800,6 +800,11 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 				status = DOWNLOAD_INACTIVE;
 				error = PLUGIN_CONNECTION_ERROR;
 				return;
+			case CURLE_RANGE_ERROR:
+				log_string("Unable to continue downlading ID: " + dlid_log + ". Maybe the file has changed serverside?", LOG_WARNING);
+				status = DOWNLOAD_INACTIVE;
+				error = PLUGIN_FILE_NOT_FOUND;
+				return;
 			default:
 				log_string(std::string("Download error for download ID: ") + dlid_log, LOG_WARNING);
 				log_string(string("Unhandled curl error: ") + curl_easy_strerror((CURLcode)curlsucces) + string(". Please report this error."), LOG_ERR);
@@ -912,7 +917,7 @@ void download::post_process_download() {
 
 	// Load the plugin function needed
 	void (*post_process_func)(download_container& dlc, download*, int id, plugin_input& pinp);
-	bool ret = plugin_cache.load_function(host, "post_process_dl_init", post_process_func);
+	bool ret = plugin_cache.load_function(host, "post_process_dl_init", post_process_func, false);
 
 	if(!ret) {
 		return;
