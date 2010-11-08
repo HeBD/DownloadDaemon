@@ -28,6 +28,7 @@
 #include "../plugins/captcha.h"
 #include "plugin_container.h"
 #include "../mgmt/global_management.h"
+#include "curl_speeder.h"
 #endif
 
 #include <string>
@@ -306,17 +307,16 @@ plugin_output download::get_hostinfo() {
 void download::download_me() {
 	unique_lock<recursive_mutex> lock(mx);
 	need_stop = false;
-        handle.init();
+	handle.init();
 	dl_cb_info cb_info;
-        handle.setopt(CURLOPT_LOW_SPEED_LIMIT,(long)10);
-        handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
-        handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
-        handle.setopt(CURLOPT_NOSIGNAL, 1);
+	handle.setopt(CURLOPT_LOW_SPEED_LIMIT,(long)10);
+	handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+	handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+	handle.setopt(CURLOPT_NOSIGNAL, 1);
 
-	curl_off_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
-	if(dl_speed > 0) {
-                handle.setopt(CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
-	}
+	filesize_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
+	curl_speeder::instance()->set_glob_speed(dl_speed);
+
 	lock.unlock();
 	download_me_worker(cb_info);
 	lock.lock();
@@ -367,12 +367,6 @@ void download::download_me() {
 		if(global_download_list.package_finished(parent)) {
 			// we don't have to do that in a seperate thread, we are in a non-blocking thread already, so unlock is enough
 			global_download_list.extract_package(parent);
-			//try {
-			//	thread t(bind(&package_container::extract_package, &global_download_list, parent));
-			//	t.detach();
-			//} catch(...) {
-			//	log_string("Failed to start extractor-thread. There are probably too many running threads.", LOG_ERR);
-			//}
 		}
 		lock.lock();
 	}
@@ -565,9 +559,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 				lock.lock();
 				if(dl_subfolder.find(".") != string::npos) {
 					dl_subfolder = dl_subfolder.substr(0, dl_subfolder.rfind("."));
-				}// else {
-				//	dl_subfolder = "";
-				//}
+				}
 			}
 			cb_info.download_dir += "/" + dl_subfolder;
 		}
@@ -582,26 +574,8 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 			cb_info.filename = plug_outp.download_filename;
 			make_valid_filename(cb_info.filename);
 		}
-//		if(plug_outp.download_filename == "") {
-//			if(plug_outp.download_url != "") {
-//				std::string fn = filename_from_url(plug_outp.download_url);
-//				output_filename = download_folder + '/';
-//				if(fn.empty()) {
-//					output_filename += "file";
-//				} else {
-//					output_filename += fn;
-//				}
-//			}
-//		} else {
-//			output_filename += download_folder;
-//			make_valid_filename(plug_outp.download_filename);
-//			output_filename += '/' + plug_outp.download_filename;
-//		}
-
-//		output_filename += ".part";
 
 		struct pstat st;
-
 
 		// Check if we can do a download resume or if we have to start from the beginning
 		fstream output_file_s;
@@ -618,8 +592,6 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		} else {
 			downloaded_bytes = 0;
 		}
-
-
 
 
 		if(plug_outp.download_url.empty()) {
@@ -642,14 +614,11 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		handle.setopt(CURLOPT_WRITEFUNCTION, write_file);
 		// reserve a cache of 512 kb
 		cb_info.cache.reserve(512000);
-		//std::pair<fstream*, std::string*> callback_opt_left(&output_file_s, &cache);
-		//std::pair<std::pair<fstream*, std::string*>, CURL*> callback_opt(callback_opt_left, handle);
+
 		handle.setopt(CURLOPT_WRITEDATA, &cb_info);
 		// show progress
 		handle.setopt(CURLOPT_NOPROGRESS, 0);
 		handle.setopt(CURLOPT_PROGRESSFUNCTION, report_progress);
-
-		//std::pair<dlindex, filesize_t> progressdata(dl, resume_size);
 
 		handle.setopt(CURLOPT_PROGRESSDATA, &cb_info);
 		// set timeouts
@@ -669,14 +638,11 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		cb_info.dl_ptr = this;
 
 		log_string(std::string("Starting download ID: ") + dlid_log, LOG_DEBUG);
+		curl_speeder::instance()->add_dl(handle.raw_handle());
 		lock.unlock();
-                int curlsucces = handle.perform();
+		int curlsucces = handle.perform();
 		lock.lock();
-
-		//if(plug_outp.download_filename.empty() && !fn_from_header.empty()) {
-		//	final_filename = final_filename.substr(0, final_filename.find_last_of("/\\"));
-		//	final_filename += "/" + fn_from_header;
-		//}
+		curl_speeder::instance()->del_dl(handle.raw_handle());
 
 		// because the callback only safes every half second, there is still an unsafed rest-data:
 		output_file_s.write(cb_info.cache.c_str(), cb_info.cache.size());
@@ -685,7 +651,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		post_subscribers();
 
 		long http_code;
-                handle.getinfo(CURLINFO_RESPONSE_CODE, &http_code);
+		handle.getinfo(CURLINFO_RESPONSE_CODE, &http_code);
 
 		switch(http_code) {
 			case 401:
@@ -716,29 +682,6 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 				return;
 		}
 		string new_fn;
-
-		//if(!global_config.get_bool_value("overwrite_files") && pstat.c_str(), &st) == 0) {
-		//			status = DOWNLOAD_INACTIVE;
-		//			error = PLUGIN_WRITE_FILE_ERROR;
-		//			return;
-		//	}
-			//output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::trunc);
-		//}
-
-		//cb_info.filename = output_filename;
-
-		//if(!output_file_s.good()) {
-		//	log_string(std::string("Could not write to file: ") + output_filename, LOG_ERR);
-		//	error = PLUGIN_WRITE_FILE_ERROR;
-		//	wait_n = global_config.get_int_value("write_error_wait");
-		//	if(wait_n == 0) {
-		//		status = DOWNLOAD_INACTIVE;
-		//	} else {
-		//		status = DOWNLOAD_PENDING;
-		//		wait_seconds = wait_n;
-		//	}
-		//	return;
-		//}
 
 		switch(curlsucces) {
 			case CURLE_OK:

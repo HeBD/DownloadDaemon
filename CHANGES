@@ -1,3 +1,8 @@
+2010-11-07
+   [adrian]
+	- added possibility to delete multiple downloads at once my supplying a ,-seperated list
+	- properly handle download speed limits: It's now a global limit that DD may use (still needs some more testing)
+
 2010-10-19
    [adrian]
 	- correctly clean up curl handles to fix proxy-alternation support

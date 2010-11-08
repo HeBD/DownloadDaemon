@@ -16,6 +16,7 @@
 
 #include "../dl/download.h"
 #include "../dl/download_container.h"
+#include "../dl/curl_speeder.h"
 #include "helperfunctions.h"
 #include "../global.h"
 #include <ddcurl.h>
@@ -112,15 +113,6 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	info->dl_ptr->set_size(dl_size);
 	info->dl_ptr->set_speed(curr_speed);
 	info->dl_ptr->subs_enabled = true;
-	//global_download_list.set_speed(id, curr_speed);
-
-	//filesize_t downloaded = info->resume_from + (filesize_t)(dlnow + 0.5);
-	//struct pstat st;
-	//if(pstat(output_file.c_str(), &st) == 0) {
-	//	global_download_list.set_downloaded_bytes(id, downloaded);
-	//}
-
-	//if(global_download_list.get_need_stop(id)) {
 
 	if(time(NULL) > info->last_postmsg) { // post at maximum once per second
 		info->last_postmsg = time(NULL);
@@ -130,6 +122,7 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 		// break up the download
 		return -1;
 	}
+	curl_speeder::instance()->speed_me(info->curl_handle);
 	return 0;
 }
 
