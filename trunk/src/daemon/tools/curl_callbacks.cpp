@@ -98,7 +98,7 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 
 	double curr_speed_param;
 	curr_handle->getinfo(CURLINFO_SPEED_DOWNLOAD, &curr_speed_param);
-	filesize_t curr_speed = (filesize_t)(curr_speed_param + 0.5);
+	filesize_t curr_speed = curl_speeder::instance()->get_curr_speed(info->curl_handle->raw_handle());
 
 	filesize_t  dl_size = info->resume_from + (filesize_t)(dltotal + 0.5);
 
@@ -122,7 +122,8 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 		// break up the download
 		return -1;
 	}
-	curl_speeder::instance()->speed_me(info->curl_handle);
+	lock.unlock();
+	curl_speeder::instance()->speed_me(info->curl_handle->raw_handle());
 	return 0;
 }
 
