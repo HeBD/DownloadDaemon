@@ -18,6 +18,7 @@
 #include <sstream>
 #include <ctime>
 #include <cstring>
+#include <cctype>
 #include <algorithm>
 
 #include <sys/socket.h>
@@ -36,6 +37,7 @@
 #include <crypt/base64.h>
 #include "../tools/helperfunctions.h"
 #include "../dl/download_container.h"
+#include "../dl/curl_speeder.h"
 #include "../global.h"
 #include "global_management.h"
 #include "connection_manager.h"
@@ -404,15 +406,28 @@ void target_dl_del(std::string &data, tkSock *sock) {
 		*sock << "104 ID";
 		return;
 	}
-	dlindex id;
-	id.second = atoi(data.c_str());
-	id.first = global_download_list.pkg_that_contains_download(id.second);
-	if(id.first == LIST_ID) {
-		*sock << "104 ID";
-		return;
+	vector <string> ids = split_string(data, ",");
+	bool bret = true;
+	for (vector<string>::iterator it = ids.begin(); it != ids.end(); ++it) {
+		trim_string(*it);
+		if (it->size() > 0 && isalnum(it->at(0))) {
+			dlindex id;
+			id.second = atoi(it->c_str());
+			id.first = global_download_list.pkg_that_contains_download(id.second);
+			if(id.first == LIST_ID) {global_download_list.set_status(id, DOWNLOAD_DELETED);
+				bret = false;
+			} else {
+
+			}
+		} else {
+			bret = false;
+		}
 	}
-	global_download_list.set_status(id, DOWNLOAD_DELETED);
-	*sock << "100 SUCCESS";
+
+	if(!bret)
+		*sock << "104 ID";
+	else
+		*sock << "100 SUCCESS";
 }
 
 void target_dl_stop(std::string &data, tkSock *sock) {

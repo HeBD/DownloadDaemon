@@ -38,6 +38,7 @@ namespace std {
 #include <cfgfile/cfgfile.h>
 #include "../dl/download.h"
 #include "../dl/download_container.h"
+#include "../dl/curl_speeder.h"
 #include "../global.h"
 using namespace std;
 
@@ -55,12 +56,12 @@ int string_to_int(const std::string str) {
 }
 
 const std::string& trim_string(std::string &str) {
-	while(str.length() > 0 && isspace(str[0])) {
-		str.erase(str.begin());
-	}
-	while(str.length() > 0 && isspace(*(str.end() - 1))) {
-		str.erase(str.end() -1);
-	}
+	size_t pos = str.find_first_not_of("\t\r\n\v\f ");
+	size_t end = str.find_last_not_of("\t\r\n\v\f ");
+	if(pos == string::npos)
+		str.clear();
+	else
+		str = str.substr(pos, end + 1);
 	return str;
 }
 
@@ -224,6 +225,9 @@ bool proceed_variable(const std::string &variable, std::string value) {
 		if(value == pd || value == rcp || value.find("/etc") == 0) {
 			return false;
 		}
+	} else if(variable == "max_dl_speed") {
+		filesize_t dl_speed = atol(variable.c_str()) * 1024;
+		curl_speeder::instance()->set_glob_speed(dl_speed);
 	}
 
 	return true;
