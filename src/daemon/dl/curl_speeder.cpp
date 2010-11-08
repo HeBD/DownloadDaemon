@@ -77,7 +77,7 @@ void curl_speeder::speed_me(CURL* dl) {
 		usleep(20000);
 		add_speed_to_list(dl);
 	}
-	while(glob_speed > 0 && get_curr_glob_speed() > glob_speed) {
+	while(glob_speed > 0 && get_curr_glob_speed() > glob_speed && it->second.get_curr_speed() > glob_speed / (10 * handles.size())) {
 		usleep(20000);
 		add_speed_to_list(dl);
 	}
@@ -86,6 +86,7 @@ void curl_speeder::speed_me(CURL* dl) {
 void curl_speeder::add_speed_to_list(CURL* dl) {
 	unique_lock<recursive_mutex> lock(mx);
 	speedmap::iterator it = handles.find(dl);
+	if(it == handles.end()) return;
 	double size;
 	curl_easy_getinfo(dl, CURLINFO_SIZE_DOWNLOAD, &size);
 	struct timespec t;
