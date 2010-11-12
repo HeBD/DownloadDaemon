@@ -4,7 +4,7 @@
 #include <deque>
 #include <curl/curl.h>
 #include <config.h>
-#define USE_STD_THREAD
+
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
 namespace std {
