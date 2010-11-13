@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <cstdlib>
 
 #include <curl/curl.h>
 

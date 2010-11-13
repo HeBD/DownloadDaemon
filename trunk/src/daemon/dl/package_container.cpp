@@ -22,6 +22,7 @@
 
 #include <string>
 #include <cstring>
+#include <cstdlib>
 
 #include <sys/types.h>
 #include <sys/stat.h>

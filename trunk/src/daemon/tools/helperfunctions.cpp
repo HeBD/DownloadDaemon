@@ -18,6 +18,7 @@
 #include <ctime>
 #include <cstring>
 #include <vector>
+#include <cstdlib>
 
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
