@@ -92,9 +92,9 @@ void curl_speeder::add_speed_to_list(CURL* dl) {
 	struct timespec t;
 	#ifdef CLOCK_MONOTONC_RAW
 		clock_gettime(CLOCK_MONOTONIC_RAW, &t);
-	#elif CLOCK_MONOTONIC
+	#elif defined(CLOCK_MONOTONIC)
 		clock_gettime(CLOCK_MONOTONIC, &t);
-	#elif CLOCK_REALTIME
+	#elif defined(CLOCK_REALTIME)
 		clock_gettime(CLOCK_REALTIME, &t);
 	#else
 		#warning No realtime/high resolution clock was found on your machine. Download speed settings will not work correctly.
