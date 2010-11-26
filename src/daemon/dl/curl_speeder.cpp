@@ -74,11 +74,15 @@ void curl_speeder::speed_me(CURL* dl) {
 		return;
 
 	while(it->second.desired_speed > 0 && it->second.get_curr_speed() > it->second.desired_speed) {
+		lock.unlock();
 		usleep(20000);
+		lock.lock();
 		add_speed_to_list(dl);
 	}
-	while(glob_speed > 0 && get_curr_glob_speed() > glob_speed && it->second.get_curr_speed() > glob_speed / (10 * handles.size())) {
+	while(glob_speed > 0 && get_curr_glob_speed() > glob_speed && it->second.get_curr_speed() > 100) { // make sure we are never slower than 100 bytes/s because of timeouts
+		lock.unlock(); // these unlock makes sure that multiple downloads can reach this point at the same time and can all be slowed down in parallel
 		usleep(20000);
+		lock.lock();
 		add_speed_to_list(dl);
 	}
 }
