@@ -17,14 +17,15 @@ function log () {
 	echo "[`date`]: $1" >> $trunk_root/tools/autobuild.log
 }
 
-cd "${trunk_root}/tools"
-svn up
 cd "$trunk_root/src/daemon"
 if [ `svn up | wc -l` -le 1 ]; then
 	log "no updates available to build"
 	exit 0;
 fi
 
+log "DD updates available.. building nightly"
+cd "$trunk_root"
+svn up
 
 cd "$trunk_root/tools"
 version="`svn info | grep Revision | cut -f2 -d ' ' /dev/stdin`"
