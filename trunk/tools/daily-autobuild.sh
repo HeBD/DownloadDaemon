@@ -1,5 +1,9 @@
 #!/bin/bash
-
+# takes only one argument: the passphrase for your private key to sign the files
+if [ "$1" == "" ]; then
+	echo "Usage: $0 <passphrase>"
+	exit -1
+fi
 
 # set this variable to the svn-trunk directory to manage
 trunk_root="/home/adrian/downloaddaemon/trunk"
@@ -30,7 +34,20 @@ svn up
 cd "$trunk_root/tools"
 version="`svn info | grep Revision | cut -f2 -d ' ' /dev/stdin`"
 
-./make_daemon.sh $version $sign_email 1 nightly
+expect -c "
+set timeout 120
+match_max 100000
+spawn ./make_daemon.sh $version $sign_email 1 nightly
+expect {
+	\"*assphrase:\" {
+		send \"$1\r\"
+		exp_continue
+	}
+	eof {
+		exit
+	}	
+}
+"
 
 cd ../version/${version}/debs_${version}
 
