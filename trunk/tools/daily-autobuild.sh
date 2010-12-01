@@ -67,7 +67,7 @@ cd "$trunk_root/tools"
 
 version="`svn info | grep Revision | cut -f2 -d ' ' /dev/stdin`"
 
-<<<<<<< .mine
+
 if [ $dd_up ]; then 
 	cd "$trunk_root/tools"
 	expect -c "
@@ -85,22 +85,7 @@ expect {
 }
 "
 	cd ../version/${version}/debs_${version}
-=======
-expect -c "
-set timeout 120
-match_max 100000
-spawn ./make_daemon.sh $version $sign_email 1 nightly
-expect {
-	\"*assphrase:\" {
-		send \"$1\r\"
-		exp_continue
-	}
-	eof {
-		exit
-	}	
-}
-"
->>>>>>> .r917
+
 
 	for f in $( ls ); do
 		dput $ppa ${f}/downloaddaemon-nightly_${version}-0ubuntu1+agib~${f}1_source.changes
