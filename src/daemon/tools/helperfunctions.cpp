@@ -70,9 +70,6 @@ const std::string& trim_string(std::string &str) {
 bool validate_url(std::string &url) {
 	bool valid = true;
 	// needed for security reason - so the dlist file can't be corrupted
-	if(url.find('|') != std::string::npos) {
-		valid = false;
-	}
 	if(url.find("http://") != 0 && url.find("ftp://") != 0 && url.find("https://") != 0) {
 		valid = false;
 	}
@@ -398,18 +395,19 @@ std::vector<std::string> split_string(const std::string& inp_string, const std::
 		n = inp_string.find(seperator, n);
 
 		if(respect_escape && (n != string::npos) && (n != 0)) {
-			if(inp_string[n-1] == '\\') {
+			// count the number of escape-backslashes before the occurence.. if %2 == 0, this char is not escaped
+			int num_escapes = 0;
+			int i = (int)n-1; // has to be int.. size_t will not work			
+			while(i >= 0 && inp_string[i] == '\\') {
+				++num_escapes; --i;
+			}
+			if(num_escapes % 2 != 0) {
 				++n;
 				continue;
 			}
 		}
 
 		ret.push_back(inp_string.substr(last_n, n - last_n));
-		size_t esc_pos = 0;
-		if(respect_escape) {
-			while((esc_pos = ret.back().find('\\' + seperator)) != string::npos)
-				ret.back().erase(esc_pos, 1);
-		}
 
 		if(n == std::string::npos) break;
 		n += seperator.size();
@@ -417,6 +415,34 @@ std::vector<std::string> split_string(const std::string& inp_string, const std::
 
 	}
 	return ret;
+}
+
+string escape_string(string s, string escape_chars, const string& escape_sequence) {
+	escape_chars.append(escape_sequence); // the escape-sequence itsself has to be escaped, too
+	size_t n = 0;
+	while(true) {
+		n = s.find_first_of(escape_chars, n);
+		if(n == string::npos) return s;
+			s.insert(n, escape_sequence);
+			n += escape_sequence.size() + 1;
+	}
+}
+
+string unescape_string(string s, string escape_chars, const string &escape_sequence) {
+	escape_chars.append(escape_sequence);
+	size_t n = s.find(escape_sequence);
+	bool escape = false;
+	while(true) {
+		if(n == string::npos) return s;
+		
+		if(escape) {
+			n = s.find(escape_sequence, n + 1);
+			escape = false;
+		} else {
+			s.erase(n, escape_sequence.size());
+			escape = true;
+		}
+	}
 }
 
 std::mutex dlc_mutex;
@@ -462,6 +488,7 @@ bool decode_dlc(const std::string& content) {
 	}
 	return true;
 }
+
 
 
 #ifdef BACKTRACE_ON_CRASH

@@ -764,17 +764,11 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 			replace_all(data, "\r\n", "=\r\n");
 		}
 
+		vector<string> linkvec = split_string(data, "=", false);
 		string links;
 		size_t last_found = 0;
-		for(size_t i = 0; i < data.size(); ++i) {
-			if(data[i] == '=') {
-				string tmp = data.substr(last_found, i + 1 - last_found);
-				replace_all(tmp, "\r\n", "");
-				replace_all(tmp, "\n", "");
-				links += base64_decode(tmp);
-				++i;
-				last_found = i + 1;
-			}
+		for(size_t i = 0; i < linkvec.size(); ++i) {
+			links += base64_decode(linkvec[i]);
 		}
 		data = links;
 
@@ -793,18 +787,13 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 		replace_all(result, "CCF: ", "\r\n");
 		trim_string(result);
 		result.append("\r\n");
-		while((n = result.find_first_of("\r\n")) != string::npos) {
-			std::string this_link = result.substr(0, n);
-			result = result.substr(n);
-			trim_string(this_link);
-			trim_string(result);
-			result.append("\r\n");
-			if(this_link.empty()) continue;
-
-			download* dl = new download(this_link);
+		vector<string> final = split_string(result, "\r\n");
+		for(vector<string>::iterator it = final.begin(); it != final.end(); ++it) {
+			trim_string(*it);
+			download* dl = new download(*it);
 			global_download_list.add_dl_to_pkg(dl, pkg_id);
 			if(first) {
-				string pkg_name = filename_from_url(this_link);
+				string pkg_name = filename_from_url(*it);
 				size_t last_dot = pkg_name.find_last_of(".");
 				if(last_dot != 0)
 					pkg_name = pkg_name.substr(0, last_dot);
