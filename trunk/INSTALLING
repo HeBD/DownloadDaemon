@@ -6,15 +6,14 @@ This guide is seperated in 5 parts:
 5: Doing a user-only installation (which does not require root privileges for execution)
 
 1:	To build DownloadDaemon, you need to have libcurl (libcurl-dev) and libboost-thread (at least version 1.36.0) installed.
-	As of version 0.9, you can use DownloadDaemon without libboost-thread, if it is compiled with a recent g++ version (>= 4.4),
+	As of version 0.9, you can use DownloadDaemon without libboost-thread, if it is compiled with a recent g++ version (>= 4.4, but not on cygwin),
 	that includes c++0x threading support. the CMake configuration will automatically detect if you have std::thread and will tell
 	you if you have to install boost-thread.
 	DownloadDaemon only runs on Unix-systems (Linux tested). However, by using Cygwin, a POSIX-emulation environment for Windows,
 	you can also run DownloadDaemon under Windows. For instructions on how to do it, check out the DownloadDaemon Wiki.
 	Or just use the packages provided in the download-section on http://downloaddaemon.sourceforge.net.
 	To build ddconsole, you don't have to meet any special dependencies, except for a compiler and the c++ standard library
-	To build ddclient-wx, you need to have libboost-thread (at least version 1.36.0) and wxWidgets development packages installed.
-	To build ddclient-gui, the successor of ddclient-wx (ddclient-wx will have its last release in version 0.9), you only need
+	To build ddclient-gui, you only need
 	to have the Qt-development files installed.
 	You also need cmake in order to build any of the packages.
 	There are also some features that require additional programs. If you want them, you have to install that programs. If you
@@ -48,14 +47,12 @@ This guide is seperated in 5 parts:
 	First, create a directory in your svn root where you want to build:
 	mkdir build
 	cd build
-	If you want to build all programs (downloaddaemon, ddclient, ddclient-wx, ddclient-gui), you simply run
+	If you want to build all programs (downloaddaemon, ddconsole, ddclient-gui), you simply run
 	cmake .. && make
 	If you only want to build a single program, you have to run cmake on their source folders, eg:
 	cmake ../src/daemon
 	or
 	cmake ../src/ddconsole
-	or
-	cmake ../src/ddclient-wx
 	or
 	cmake ../src/ddclient-gui
 	
@@ -97,6 +94,6 @@ This guide is seperated in 5 parts:
 	When compiling, run cmake with the -DDD_CONF_DIR flag (like that: cmake . -DDDCONF_DIR="/home/.../.downloaddaemon").
 	This will install the configuration to that place and makes downloaddaemon search it there instead of /etc/downloaddaemon.
 	Also, instead of running "make install", you should run "DESTDIR=/desired/install/path make install". This will install
-	the DownloadDaemon binaries and data-files to another pass. You probably have to run some chown/chmods before you can run
+	the DownloadDaemon binaries and data-files to another place. You might have to run some chown/chmods before you can run
 	DownloadDaemon. Especially the configuration folder has to be writeable for DownloadDaemon.
 	  

@@ -62,54 +62,24 @@ download::download(const std::string& dl_url)
 #ifndef IS_PLUGIN
 void download::from_serialized(std::string& serializedDL) {
 	lock_guard<recursive_mutex> lock(mx);
-	std::string current_entry;
-	size_t curr_pos = 0;
-	size_t entry_num = 0;
-	while(serializedDL.find('|', curr_pos) != std::string::npos) {
-		current_entry = serializedDL.substr(curr_pos, serializedDL.find('|', curr_pos) - curr_pos);
-		curr_pos = serializedDL.find('|', curr_pos);
-		if(serializedDL[curr_pos - 1] == '\\') {
-			++curr_pos;
-			continue;
-		}
-
-		switch(entry_num) {
-			case 0:
-				id = atoi(current_entry.c_str());
-				break;
-			case 1:
-				add_date = current_entry;
-				break;
-			case 2:
-				comment = current_entry;
-				break;
-			case 3:
-				url = current_entry;
-				break;
-			case 4:
-				if(current_entry == "1") {
-					status = DOWNLOAD_PENDING;
-				} else if(current_entry == "2") {
-					status = DOWNLOAD_INACTIVE;
-				} else if(current_entry == "3") {
-					status = DOWNLOAD_FINISHED;
-				} else {
-					status = DOWNLOAD_PENDING;
-				}
-				break;
-			case 5:
-				downloaded_bytes = string_to_long(current_entry.c_str());
-				break;
-			case 6:
-				size = string_to_long(current_entry.c_str());
-				break;
-			case 7:
-				output_file = current_entry;
-				break;
-		}
-		++curr_pos;
-		++entry_num;
+	vector<string> splitted = split_string(serializedDL, "|", true);
+        if(splitted.size() < 8) {
+		log_string("Unable to restore the Download-list from the saved dlist-file: Not enough columns", LOG_ERR);
+		return;
 	}
+	id = atoi(splitted[0].c_str());
+	add_date = splitted[1];
+	comment = unescape_string(splitted[2]);
+	url = unescape_string(splitted[3]);
+
+	if     (splitted[4] == "1") status = DOWNLOAD_PENDING;
+	else if(splitted[4] == "2") status = DOWNLOAD_INACTIVE;
+	else if(splitted[4] == "3") status = DOWNLOAD_FINISHED;
+	else                        status = DOWNLOAD_PENDING;
+
+	downloaded_bytes = string_to_long(splitted[5]);
+	size = string_to_long(splitted[6]);
+	output_file = splitted[7];
 	error = PLUGIN_SUCCESS;
 	wait_seconds = 0;
 	is_running = false;
@@ -182,8 +152,8 @@ std::string download::serialize() {
 	while(dl_size.size() > 1 && dl_size[0] == '0') dl_size.erase(0, 1);
 
 	stringstream ss;
-	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << status << '|'
-	<< dl_bytes << '|' << dl_size << '|' << output_file << "|\n";
+	ss << id << '|' << add_date << '|' << escape_string(comment) << '|' << escape_string(url) << '|' << status << '|'
+	<< dl_bytes << '|' << dl_size << '|' << escape_string(output_file) << "|\n";
 	return ss.str();
 }
 
@@ -208,7 +178,7 @@ void download::create_client_line(std::string &ret) {
 	while(dl_bytes.size() > 1 && dl_bytes[0] == '0') dl_bytes.erase(0, 1);
 	while(dl_size.size() > 1 && dl_size[0] == '0') dl_size.erase(0, 1);
 	std::stringstream ss;
-	ss << id << '|' << add_date << '|' << comment << '|' << url << '|' << get_status_str() << '|' << dl_bytes << '|'
+	ss << id << '|' << add_date << '|' << escape_string(comment) << '|' << escape_string(url) << '|' << get_status_str() << '|' << dl_bytes << '|'
 	   << dl_size << '|' << wait_seconds << '|' << get_error_str() << '|' << speed;
 	ret = ss.str();
 }

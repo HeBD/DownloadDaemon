@@ -50,6 +50,7 @@ For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "
 	LIST will return the current list of downloads in the following format:
 	     PACKAGE|<pkg_id>|<pkg_title>
 	     id|date added|title|url|status|downloaded bytes|file size|wait seconds|error message|download speed
+	     if a | or \ is in the title or in the URL, it will be escaped by \ (| -> \|; \ -> \\)
 	ADD <package ID> <url> <comment> will add a download. the ADD command needs to be followed by at least one whitespace, followed by the download url.
 	    if a title for the download should be set, it should be added after another whitespace. If the same link is already in the list
 	    and the config file forbids adding the same links twice, you will receive a 108 VARIABLE
@@ -110,7 +111,8 @@ For the target PREMIUM, you can use the following commands:
 	    
 For the target SUBSCRIPTION, you can use the following commands:
 	LIST will list everything you have currently subscribed
-	ADD <topic> will add a subscription to the executing client. Currently you can subscribe to SUBS_DOWNLOADS and SUBS_CONFIG (which you have to give the ADD command as a parameter
+	ADD <topic> will add a subscription to the executing client. Currently you can subscribe to SUBS_DOWNLOADS and SUBS_CONFIG (which you have to give the ADD command as a parameter). For escaping of
+	            "bad" characters (| and \), see the DL LIST command.
 	DEL <topic> will remove a subscription from the executing client. Again, specify which topic's subscription you want to remove, either SUBS_DOWNLOADS or SUBS_CONFIG.
 
 All error codes may vary between 100 and 999, to make parsing simple.

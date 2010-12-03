@@ -140,10 +140,26 @@ bool fequal(double p1, double p2);
 
 /** Splits a string into many strings, seperating them with the seperator
  *  @param inp_string string to split
- *	@param seperator Seperator to use for splitting
- *	@returns Vector of all the strings
+ *  @param seperator Seperator to use for splitting
+ *  @returns Vector of all the strings
  */
 std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape = false);
+
+/** Escapes characters in a string, see also unescape_string to revert this function
+ *  @param s String in which to escape characters
+ *  @param escape_chars a list of characters that should be escaped
+ *  @param escape_sequence the sequence to escape the characters with (usually a \)
+ *  @returns reference to s
+ */
+std::string escape_string(std::string s, std::string escape_chars = "|", const std::string& escape_sequence = "\\");
+
+/** Unescapes characters in a string, reverse to escape_string
+ *  @param s the string in which to revert escape_string
+ *  @param escape_chars the characters that were escaped in the original string
+ *  @param escape_sequence the escape-sequence that was used for escaping
+ *  @returns reference to s
+ */
+std::string unescape_string(std::string s, std::string escape_chars = "|", const std::string& escape_sequence = "\\");
 
 /** add a dlc-container to the download list
  * @param content the contents of the container file

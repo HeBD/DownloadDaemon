@@ -21,6 +21,7 @@
 #include "../dl/package_extractor.h"
 
 #include <string>
+#include <sstream>
 #include <cstring>
 #include <cstdlib>
 
@@ -699,19 +700,28 @@ void package_container::do_reconnect() {
 
 void package_container::dump_to_file(bool do_lock) {
 	lock_guard<recursive_mutex> lock(mx);
-	try {
-		ofstream ofs;
-		ofs.exceptions(ofstream::eofbit | ofstream::failbit | ofstream::badbit);
-		ofs.open(list_file.c_str(), ios::trunc);
-		for(package_container::iterator pkg = packages.begin(); pkg != packages.end(); ++pkg) {
-			(*pkg)->download_mutex.lock();
-			ofs << "PKG|" << (*pkg)->container_id << "|" << (*pkg)->name << "|" << (*pkg)->password << endl;
-			for(download_container::iterator it = (*pkg)->download_list.begin(); it != (*pkg)->download_list.end(); ++it) {
-				ofs << (*it)->serialize();
+	ostringstream oss;
+	static string last_dlist; // save the last dlist so we don't write the file if not neccessary
+
+	for(package_container::iterator pkg = packages.begin(); pkg != packages.end(); ++pkg) {
+		(*pkg)->download_mutex.lock();
+		oss << "PKG|" << (*pkg)->container_id << "|" << escape_string((*pkg)->name) << "|"
+ 		    << escape_string((*pkg)->password) << endl;
+		for(download_container::iterator it = (*pkg)->download_list.begin(); it != (*pkg)->download_list.end(); ++it) {
+			oss << (*it)->serialize();
 			}
-			(*pkg)->download_mutex.unlock();
+		(*pkg)->download_mutex.unlock();
+	}
+	if(last_dlist != oss.str()) {
+		ofstream ofs;
+		ofs.open(list_file.c_str(), ios::trunc);
+		if(!ofs.good()) {
+			log_string("Failed to open dlist file", LOG_ERR);
+			return;
 		}
-	} catch(std::exception &e) {
+		last_dlist = oss.str();
+		ofs.write(last_dlist.c_str(), last_dlist.size());
+		ofs.close();
 	}
 }
 
