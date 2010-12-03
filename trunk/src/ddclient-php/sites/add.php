@@ -70,6 +70,13 @@ if($connect != 'SUCCESS') {
 			$err_message .= msg_generate($LANG['SUCC_ADD_MULTI'], 'success');
 		}
 	}
+} elseif(isset($_FILES['dlcfile'])) {
+	$tmpfn = $_FILES['dlcfile']['tmp_name'];
+	$fh = fopen($tmpfn, "r");
+	$data = fread($fh, filesize($tmpfn));
+	send_all($socket, "DDP PKG CONTAINER DLC:" . $data);
+	$recv = "";
+	recv_all($socket, $recv); // we can ignore this.. DD doesn't really check for success, because it would take too long
 }
 
 $download_index[] = array();

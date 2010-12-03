@@ -1,6 +1,7 @@
 2010-12-03
    [adrian]
 	- finally added support for dlc-containers by contacting dcrypt.it
+	- added a dlc-upload form to ddclient-php, extended ddclient-gui's container upload to also upload dlcs
 
 2010-11-07
    [adrian]

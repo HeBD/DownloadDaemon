@@ -32,6 +32,8 @@ $LANG = array(
 	'SUCC_ADD_MULTI' => 'All Downloads added successfully!',
 	'package' => 'Package',
 	'sel_or_type' => 'Select or type',
+	'L_Add_DLC' => 'Add a DLC download container',
+	'L_DLCFILE' => 'Choose file',
 
 // Manage
 	'ID' => 'ID',
