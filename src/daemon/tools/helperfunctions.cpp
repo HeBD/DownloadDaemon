@@ -11,6 +11,7 @@
 
 #include <config.h>
 #include "helperfunctions.h"
+#include "curl_callbacks.h"
 #include <sstream>
 #include <string>
 #include <iostream>
@@ -416,6 +417,50 @@ std::vector<std::string> split_string(const std::string& inp_string, const std::
 
 	}
 	return ret;
+}
+
+std::mutex dlc_mutex;
+bool decode_dlc(const std::string& content) {
+	lock_guard<mutex> lock(dlc_mutex);
+	ofstream ofs("/tmp/dd_dlc_file.dlc");
+	if(!ofs.good()) {
+		log_string("Could not decode DLC container: Unable to write temporary file", LOG_ERR);
+		return false;
+	}
+	ofs.write(content.c_str(), content.size());
+	ofs.close();
+	ddcurl handle;
+	handle.setopt(CURLOPT_URL, "http://dcrypt.it/decrypt/upload");
+	struct curl_httppost* post = NULL;
+	struct curl_httppost* last = NULL;
+	curl_formadd(&post, &last, CURLFORM_COPYNAME, "dlcfile", CURLFORM_FILE, "/tmp/dd_dlc_file.dlc", CURLFORM_END);
+	handle.setopt(CURLOPT_HTTPPOST, post);
+	handle.setopt(CURLOPT_WRITEFUNCTION, write_to_string);
+	std::string result;
+	handle.setopt(CURLOPT_WRITEDATA, &result);
+	if(handle.perform() != CURLE_OK) {
+		log_string("Failed to decrypt DLC container: Couldn't contact decryption-server", LOG_ERR);
+		curl_formfree(post);
+		return false;
+	}
+	handle.cleanup();
+	curl_formfree(post);
+	try {
+		result = result.substr(result.find("[") + 2);
+		result = result.substr(0, result.find("]") - 1);
+		vector<string> links = split_string(result, "\", \"");
+		links.erase(links.begin()); // the first link has nothing to do with the download
+		int pkg_id = global_download_list.add_package("");
+		for(vector<string>::iterator it = links.begin(); it != links.end(); ++it) {
+			download *dl = new download(*it);
+			global_download_list.add_dl_to_pkg(dl, pkg_id);
+		}
+		global_download_list.start_next_downloadable();
+	} catch(exception &e) {
+		log_string("Failed to decrypt DLC container: " + string(e.what()), LOG_ERR);
+		return false;
+	}
+	return true;
 }
 
 

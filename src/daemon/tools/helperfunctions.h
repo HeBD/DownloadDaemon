@@ -145,6 +145,12 @@ bool fequal(double p1, double p2);
  */
 std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape = false);
 
+/** add a dlc-container to the download list
+ * @param content the contents of the container file
+ * @returns true on success
+ */
+bool decode_dlc(const std::string& content);
+
 #ifdef BACKTRACE_ON_CRASH
 void print_backtrace(int sig);
 #endif

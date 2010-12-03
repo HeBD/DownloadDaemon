@@ -740,7 +740,7 @@ void target_pkg_get(std::string &data, tkSock *sock) {
 
 void target_pkg_container(std::string &data, tkSock *sock) {
 	// format:
-	// container <TYPE>\n<data>
+	// container <TYPE>:<data>
 	size_t n;
 
 	string type = data.substr(0, (n = data.find(":")));
@@ -812,6 +812,11 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 				first = false;
 			}
 		}
+		*sock << "100 SUCCESS";
+		return;
+	} else if(type == "DLC") {
+		thread d(decode_dlc, data);
+		d.detach();
 		*sock << "100 SUCCESS";
 		return;
 	} else {

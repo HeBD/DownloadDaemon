@@ -70,7 +70,7 @@ For the target PKG, the following commands exist: "ADD", "DEL", "UP", "DOWN", "E
 	EXISTS <id> checks if a container exists. returns "1" if it exists or "0" if it doesnt.
 	SET <id> <option>=<value> sets an option of a package. options are: PKG_NAME, PKG_PASSWORD 
 	GET <id> <option> returns a package-parameter. options are: PKG_NAME, PKG_PASSWORD
-	CONTAINER <type>:<content> creates a packages and puts the contents of the container into it. currently only the type RSDF is supported. more to come.
+	CONTAINER <type>:<xcontent> creates a packages and puts the contents of the container into it. currently the type can be RSDF or DLC
 
 For the target VAR, the following commands exist: "SET", "GET".
 	SET <var>=<value> will set a configuration variable and needs to be in the format <variable> = <value>. the variable identifier is just the same
