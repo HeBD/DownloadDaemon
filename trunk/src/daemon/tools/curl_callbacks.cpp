@@ -167,3 +167,12 @@ int get_size_progress_callback(void *clientp, double dltotal, double dlnow, doub
 size_t pretend_write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 	return nmemb;
 }
+
+size_t write_to_string(void *buffer, size_t size, size_t nmemb, void *userp) {
+	string *str = (string*)userp;
+	if(str != 0) {
+		str->append((char *)buffer, nmemb);
+		return nmemb;
+	}
+	return 0;
+}
