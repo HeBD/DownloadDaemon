@@ -482,7 +482,7 @@ bool decode_dlc(const std::string& content) {
 			global_download_list.add_dl_to_pkg(dl, pkg_id);
 		}
 		global_download_list.start_next_downloadable();
-	} catch(exception &e) {
+	} catch(std::exception &e) {
 		log_string("Failed to decrypt DLC container: " + string(e.what()), LOG_ERR);
 		return false;
 	}
