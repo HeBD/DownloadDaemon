@@ -759,17 +759,16 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 		string iv = ascii_hex_to_bin("a3d5a33cb95ac1f5cbdb1ad25cb0a7aa");
 
 		std::basic_stringstream<unsigned char> container;
-		data = ascii_hex_to_bin(data);
-		if(data.find("=") == string::npos) {
-			replace_all(data, "\r\n", "=\r\n");
-		}
+                data = ascii_hex_to_bin(data);
+                replace_all(data, "\r\n", "");
+                replace_all(data, "\n", "");
+                replace_all(data, "\r", "");
 
-		vector<string> linkvec = split_string(data, "=", false);
-		string links;
+                vector<string> linkvec = split_string(data, "==", false);
+                data.clear();
 		for(size_t i = 0; i < linkvec.size(); ++i) {
-			links += base64_decode(linkvec[i]);
+                        data += base64_decode(linkvec[i]);
 		}
-		data = links;
 
 		AES_KEY aes_key;
 		AES_set_encrypt_key((const unsigned char*)key.c_str(), 192, &aes_key);
@@ -778,17 +777,22 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 		char* plaintext = new char[data.size() + 17];
 		memset(plaintext, 0, data.size() + 17);
 		AES_cfb8_encrypt((const unsigned char*)data.c_str(), (unsigned char*)plaintext, data.size() + 17, &aes_key, (unsigned char*)iv_c, 0, AES_DECRYPT);
-		string result(plaintext, links.size());
+                string result(plaintext, data.size());
 		delete [] plaintext;
 
 		bool first = true;
 		int pkg_id = global_download_list.add_package("");
 		replace_all(result, "CCF: ", "\r\n");
 		trim_string(result);
-		result.append("\r\n");
-		vector<string> final = split_string(result, "\r\n");
+                vector<string> final = split_string(result, "\r\n");
+                if(final.size() == 1) { // sometimes the CCF: is missing
+                    final = split_string(result, "http://");
+                    final.erase(final.begin());
+                    for(vector<string>::iterator it = final.begin(); it != final.end(); ++it) *it = "http://" + *it;
+                }
 		for(vector<string>::iterator it = final.begin(); it != final.end(); ++it) {
 			trim_string(*it);
+                        if(it->empty()) continue;
 			download* dl = new download(*it);
 			global_download_list.add_dl_to_pkg(dl, pkg_id);
 			if(first) {
