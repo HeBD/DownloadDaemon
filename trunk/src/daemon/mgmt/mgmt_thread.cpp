@@ -414,10 +414,10 @@ void target_dl_del(std::string &data, tkSock *sock) {
 			dlindex id;
 			id.second = atoi(it->c_str());
 			id.first = global_download_list.pkg_that_contains_download(id.second);
-			if(id.first == LIST_ID) {global_download_list.set_status(id, DOWNLOAD_DELETED);
+			if(id.first == LIST_ID) {
 				bret = false;
 			} else {
-
+				global_download_list.set_status(id, DOWNLOAD_DELETED);
 			}
 		} else {
 			bret = false;
@@ -766,7 +766,6 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 
 		vector<string> linkvec = split_string(data, "=", false);
 		string links;
-		size_t last_found = 0;
 		for(size_t i = 0; i < linkvec.size(); ++i) {
 			links += base64_decode(linkvec[i]);
 		}
