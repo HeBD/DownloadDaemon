@@ -144,11 +144,13 @@ for dist in ${DEB_DISTS[@]}; do
 	# DO NOT INDENT THESE LINES!
 	if [ "${pkg_name}" = "downloaddaemon" ]; then
 		replace="${replace/'Depends: ${shlibs:Depends}, ${misc:Depends}'/Depends: $DEP_DD
-Recommends: gocr, tar, unzip, unrar, ddclient-gui, ddconsole
+Recommends: gocr, tar, unzip, unrar
+Suggests: ddclient-gui, ddconsole
 Conflicts: downloaddaemon-nightly}"
 	else
 		replace="${replace/'Depends: ${shlibs:Depends}, ${misc:Depends}'/Depends: $DEP_DD
-Recommends: gocr, tar, unzip, unrar, ddclient-gui, ddconsole
+Recommends: gocr, tar, unzip, unrar
+Suggests: ddclient-gui, ddconsole
 Conflicts: downloaddaemon}"
 	fi
 
