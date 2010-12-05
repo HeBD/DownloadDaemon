@@ -216,6 +216,11 @@ Conflicts: downloaddaemon}"
 	echo "$replace" > postrm
 
 	cp $script_dir/rules_tpl rules
+	if [ "$4" == "nightly" ]; then
+		replace="$(<rules)"
+		replace="${replace//downloaddaemon/downloaddaemon-nightly}"
+		echo "$replace" > rules
+	fi
 
 	rm docs cron.d.ex ${pkg_name}.default.ex ${pkg_name}.doc-base.EX emacsen-install.ex emacsen-remove.ex emacsen-startup.ex init.d.ex init.d.lsb.ex manpage.* menu.ex README.Debian watch.ex  preinst.ex  prerm.ex
 	cd ..

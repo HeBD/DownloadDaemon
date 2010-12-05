@@ -56,7 +56,7 @@ if [ `svn up | wc -l` -gt 1 ]; then
 	log "New ddclient-php version available"
 fi
 
-if [ $dd_up == false -a $gui_up == false -a $con_up == false -a $php_up == false]; then
+if [ $dd_up == false -a $gui_up == false -a $con_up == false -a $php_up == false ]; then
 	log "No updates available tonight"
 	exit 0
 fi
