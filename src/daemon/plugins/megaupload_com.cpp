@@ -83,8 +83,14 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			return PLUGIN_SERVER_OVERLOADED;
 		}
 
-		if(result.find("gencap.php") == string::npos) {
+				if(result.find("gencap.php") == string::npos) {
+					// as of dec 2010, they don't want a captcha any more.
+					// I don't know if that's an exception, but I'm just leave the captcha-code here and ignore it if not needed
+					outp.download_url = search_between(result, "id=\"downloadlink\"><a href=\"", "\"");
+					set_wait_time(atoi(search_between(result, "count=", ";").c_str()));
+					if(outp.download_url.empty())
 			return PLUGIN_FILE_NOT_FOUND;
+					return PLUGIN_SUCCESS;
 		}
 
 		string captcha_url;
@@ -185,15 +191,18 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 		return true;
 	}
 	try {
+		outp.download_filename = search_between(result, "<span class=\"down_txt2\">", "</span>");
+		if(outp.download_filename.empty()) {
+			outp.file_online = PLUGIN_FILE_NOT_FOUND;
+			return true;
+		}
 		size_t n = result.find("File size:");
 		if(n == string::npos) {
 			outp.file_online = PLUGIN_FILE_NOT_FOUND;
 			return true;
 		}
-		n = result.find("13px;\">", n) + 7;
-		size_t end = result.find("</font>", n) - 1;
-
-		vector<string> value = split_string(result.substr(n, end - n), " ");
+		string fs_str = search_between(result, "</strong> ", "<br", n);
+		vector<string> value = split_string(fs_str, " ");
 
 		const char * oldlocale = setlocale(LC_NUMERIC, "C");
 
@@ -206,12 +215,6 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 		setlocale(LC_NUMERIC, oldlocale);
 
 		outp.file_size = size;
-		n = result.find(";\">Filename:</font>");
-		n = result.find(";\">", n + 3);
-		if(n == string::npos) return true;
-		n += 3;
-		end = result.find("</font>", n);
-		outp.download_filename = result.substr(n, end - n);
 	} catch(...) {
 		outp.file_online = PLUGIN_FILE_NOT_FOUND;
 	}

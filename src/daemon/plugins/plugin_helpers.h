@@ -102,6 +102,15 @@ namespace PLGFILE {
 	template <class PARAM>
 	std::string convert_to_string(PARAM p1);
 
+	/** Get text between two strings (searches for first occurence and the next one after it)
+	 *	@param searchIn string to search in
+	 *	@param before text before the desired string
+	 *	@param after text after the desired string
+	 *	@param start_from start searching from this position in the string (and ignore matches before it)
+	 *	@returns text between before and after, an empty string if before is not found, from before to the end of searchIn if after is not found
+	 */
+	std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from = 0);
+
 
 	/////////////////////// IMPLEMENTATION ////////////////////////
 
@@ -159,6 +168,14 @@ namespace PLGFILE {
 		std::stringstream ss;
 		ss << p1;
 		return ss.str();
+	}
+
+	std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t search_from) {
+		size_t pos = searchIn.find(before, search_from);
+                if(pos == std::string::npos) return "";
+		pos += before.size(); // go to the position right after the search term
+		if(pos >= searchIn.size()) return "";
+                return searchIn.substr(pos, searchIn.find(after, pos) - pos);
 	}
 }
 
