@@ -52,7 +52,7 @@ fi
 
 cd "$trunk_root/src/ddclient-php"
 if [ `svn up | wc -l` -gt 1 ]; then
-	dd_up=true
+	php_up=true
 	log "New ddclient-php version available"
 fi
 
@@ -68,7 +68,7 @@ cd "$trunk_root/tools"
 version="`svn info | grep Revision | cut -f2 -d ' ' /dev/stdin`"
 
 
-if [ $dd_up ]; then 
+if [ $dd_up == true ]; then 
 	cd "$trunk_root/tools"
 	expect -c "
 set timeout 120
@@ -97,6 +97,49 @@ expect {
 	cd ${trunk_root}/version
 	rm -r ${version}
 fi
+
+if [ $gui_up == true -o $php_up == true -o $con_up == true ]; then
+	cd "$trunk/tools"
+        expect -c "
+set timeout 120
+match_max 100000
+spawn ./make_clients.sh $version $sign_email 1 nightly
+expect {
+        \"*assphrase:\" {
+                send \"$1\r\"
+                exp_continue
+        }
+        eof {
+                exit
+        }
+}
+"
+	cd ../version/${version}/debs_${version}
+	for f in $( ls ); do
+		if [ $gui_up ]; then
+			dput $ppa ${f}/ddclient-gui-nightly_${version}-0ubuntu1+agib~${f}1_source.changes
+		fi
+		if [ $con_up ]; then
+			dput $ppa ${f}/ddconsole-nightly_${version}-0ubuntu1+agib~${f}1_source.changes
+		fi
+	done
+	cd ..
+	if [ $gui_up ]; then
+		cp ddclient-gui-nightly-${version}.tar.gz ${trunk_root}/../tags
+		svn add ${trunk_root}/../tags/ddclient-gui-nightly-${version}.tar.gz
+	fi
+	if [ $con_up ]; then
+		cp ddconsole-nightly-${version}.tar.gz ${trunk_root}/../tags
+		svn add ${trunk_root}/../tags/ddconsole-nightly-${version}.tar.gz
+	fi
+	cd ..
+	if [ $php_up ]; then
+		cp ddclient-php-nightly-${version} ${trunk_root}/../tags
+		svn add ${trunk_root}/../tags/ddclient-php-nightly-${version}.tar.gz
+	fi
+	cd ${trunk_root}/version
+	rm -r ${version}
+fi	
 
 cd $trunk_root/../tags
 svn ci -m "release of DownloadDaemon nightly revision ${version}"
