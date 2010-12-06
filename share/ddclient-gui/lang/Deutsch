@@ -49,7 +49,7 @@ You can force DownloadDaemon to only download at specific times by entering a st
 Start Time->Startzeit
 End Time->Endzeit
 This option specifies where finished downloads should be saved on the server.->Diese Option spezifiziert wo Downloads auf dem Server gespeichert werden sollen.
-Here you can specify how many downloads may run at the same time and regulate the\ndownload speed for each download (overall max speed is download number * max speed).->Hier kann man festlegen wieviele Downloads gleichzeitig laufen dürfen und die Download\nGeschwindigkeit für jeden Download (Gesamtgeschwindigkeit = Anzahl * Geschwindigkeit).
+Here you can specify how many downloads may run at the same time and regulate the\n overall download speed.->Hier kann man festlegen wieviele Downloads gleichzeitig laufen dürfen und die gesamte \nDownload Geschwindigkeit angeben.
 Simultaneous Downloads->Gleichzeitige Downloads
 Maximal Speed in kb/s->Maximale Geschwindigkeit in kb/s
 

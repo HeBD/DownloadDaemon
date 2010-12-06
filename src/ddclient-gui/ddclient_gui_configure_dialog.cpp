@@ -230,8 +230,7 @@ QWidget *configure_dialog::create_download_panel(){
     f_layout->addRow("", new QLabel(p->tsl("This option specifies where finished downloads should be saved on the server.")));
     f_layout->addRow("", folder);
 
-    o_layout->addWidget(new QLabel(p->tsl("Here you can specify how many downloads may run at the same time and regulate the"
-                                          "\ndownload speed for each download (overall max speed is download number * max speed).")));
+    o_layout->addWidget(new QLabel(p->tsl("Here you can specify how many downloads may run at the same time and regulate the\n overall download speed.")));
     o_layout->addLayout(inner_o_layout);
     inner_o_layout->addWidget(new QLabel(p->tsl("Simultaneous Downloads")));
     inner_o_layout->addWidget(count);
