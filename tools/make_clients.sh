@@ -45,14 +45,14 @@ PATHS_DDCLIENTGUI=("src/" "src/include/" "src/include" "src/include/crypt/" "src
 if [ "$1" == "" ]
 then
 	echo "No version number specified"
-	echo "usage: $0 version email [ubuntu revision] [binary|source]"
+	echo "usage: $0 version email [ubuntu revision] [binary|source|nightly]"
 	exit
 fi
 
 if [ "$2" == "" ]
 then
 	echo "No email address specified"
-	echo "usage: $0 version email [ubuntu revision] [binary|source]"	
+	echo "usage: $0 version email [ubuntu revision] [binary|source|nightly]"	
 	exit
 fi
 UBUNTU_REV=$3
@@ -70,22 +70,28 @@ fi
 VERSION=$1
 EMAIL=$2
 
+name_suffix=""
+opposite_suffix="-nightly" # needed to create the "Conflicts:" field
+if [ "$4" == "nightly" ]; then
+	name_suffix="-nightly"
+	opposite_suffix=""
+fi
 
 mkdir -p ../version/${VERSION}
 
 for path in $(seq 0 $((${#FILES_DDCONSOLE[@]} - 1))); do
-	mkdir -p ../version/${VERSION}/ddconsole-${VERSION}/${PATHS_DDCONSOLE[${path}]}
-	cp -r ${FILES_DDCONSOLE[${path}]} ../version/${VERSION}/ddconsole-${VERSION}/${PATHS_DDCONSOLE[${path}]}
+	mkdir -p ../version/${VERSION}/ddconsole${name_suffix}-${VERSION}/${PATHS_DDCONSOLE[${path}]}
+	cp -r ${FILES_DDCONSOLE[${path}]} ../version/${VERSION}/ddconsole${name_suffix}-${VERSION}/${PATHS_DDCONSOLE[${path}]}
 done
 
 for path in $(seq 0 $((${#FILES_DDCLIENTPHP[@]} - 1))); do
-	mkdir -p ../version/${VERSION}/ddclient-php-${VERSION}/${PATHS_DDCLIENTPHP[${path}]}
-	cp -r ${FILES_DDCLIENTPHP[${path}]} ../version/${VERSION}/ddclient-php-${VERSION}/${PATHS_DDCLIENTPHP[${path}]}
+	mkdir -p ../version/${VERSION}/ddclient-php${name_suffix}-${VERSION}/${PATHS_DDCLIENTPHP[${path}]}
+	cp -r ${FILES_DDCLIENTPHP[${path}]} ../version/${VERSION}/ddclient-php${name_suffix}-${VERSION}/${PATHS_DDCLIENTPHP[${path}]}
 done
 
 for path in $(seq 0 $((${#FILES_DDCLIENTGUI[@]} - 1))); do
-	mkdir -p ../version/${VERSION}/ddclient-gui-${VERSION}/${PATHS_DDCLIENTGUI[${path}]}
-	cp -r ${FILES_DDCLIENTGUI[${path}]} ../version/${VERSION}/ddclient-gui-${VERSION}/${PATHS_DDCLIENTGUI[${path}]}
+	mkdir -p ../version/${VERSION}/ddclient-gui${name_suffix}-${VERSION}/${PATHS_DDCLIENTGUI[${path}]}
+	cp -r ${FILES_DDCLIENTGUI[${path}]} ../version/${VERSION}/ddclient-gui${name_suffix}-${VERSION}/${PATHS_DDCLIENTGUI[${path}]}
 done
 
 cd ../version/${VERSION}
@@ -93,27 +99,27 @@ cd ../version/${VERSION}
 echo "cmake_minimum_required (VERSION 2.6)
 project(ddclient-gui)
 SET(VERSION "${VERSION}")
-add_subdirectory(src/ddclient-gui)" > ddclient-gui-${VERSION}/CMakeLists.txt
+add_subdirectory(src/ddclient-gui)" > ddclient-gui${name_suffix}-${VERSION}/CMakeLists.txt
 
 echo "cmake_minimum_required (VERSION 2.6)
 project(ddconsole)
 SET(VERSION "${VERSION}")
-add_subdirectory(src/ddconsole)" > ddconsole-${VERSION}/CMakeLists.txt
+add_subdirectory(src/ddconsole)" > ddconsole${name_suffix}-${VERSION}/CMakeLists.txt
 
 echo "removing unneeded files..."
 find -name .svn | xargs rm -rf
 find -name "*~" | xargs rm -f
 find -name "*.o" | xargs rm -f
 find -name "CMakeLists*.user*" | xargs rm -f
-cd ddclient-gui-${VERSION}/src/ddclient-gui
+cd ddclient-gui${name_suffix}-${VERSION}/src/ddclient-gui
 rm Makefile *.user moc_*.cpp
 cd ../../..
 
 
 echo "BUILDING SOURCE ARCHIVES..."
-tar -cz ddconsole-${VERSION} > ddconsole-${1}.tar.gz
-tar -cz ddclient-php-${VERSION} > ddclient-php-${1}.tar.gz
-tar -cz ddclient-gui-${VERSION} > ddclient-gui-${1}.tar.gz
+tar -cz ddconsole${name_suffix}-${VERSION} > ddconsole${name_suffix}-${1}.tar.gz
+tar -cz ddclient-php${name_suffix}-${VERSION} > ddclient-php${name_suffix}-${1}.tar.gz
+tar -cz ddclient-gui${name_suffix}-${VERSION} > ddclient-gui${name_suffix}-${1}.tar.gz
 echo "DONE"
 echo "PREPARING DEBIAN ARCHIVES..."
 
@@ -122,24 +128,24 @@ for dist in ${DEB_DISTS[@]}; do
 
 	# only if it's the first ubuntu rev, we copy the .orig files. otherwise we just update.
 	if [ "$UBUNTU_REV" == "1" ]; then
-		cp ddconsole-${VERSION}.tar.gz debs_${VERSION}/$dist/ddconsole_${VERSION}.orig.tar.gz
-		cp ddclient-gui-${VERSION}.tar.gz debs_${VERSION}/$dist/ddclient-gui_${VERSION}.orig.tar.gz
+		cp ddconsole${name_suffix}-${VERSION}.tar.gz debs_${VERSION}/$dist/ddconsole${name_suffix}_${VERSION}.orig.tar.gz
+		cp ddclient-gui${name_suffix}-${VERSION}.tar.gz debs_${VERSION}/$dist/ddclient-gui${name_suffix}_${VERSION}.orig.tar.gz
 	fi
 
 	cd debs_${VERSION}/$dist
-	rm -rf ddconsole-${VERSION} ddclient-gui-${VERSION}
-	cp -rf ../../ddconsole-${VERSION} ../../ddclient-gui-${VERSION} .
+	rm -rf ddconsole${name_suffix}-${VERSION} ddclient-gui${name_suffix}-${VERSION}
+	cp -rf ../../ddconsole${name_suffix}-${VERSION} ../../ddclient-gui${name_suffix}-${VERSION} .
 
-	cd ddclient-gui-${VERSION}
+	cd ddclient-gui${name_suffix}-${VERSION}
 	echo "Settings for ddclient-gui:"
 	echo "in `pwd`"
-	dh_make -s -c gpl -e ${EMAIL}
+	echo "\n" | dh_make -s -c gpl -e ${EMAIL}
 	cd debian
 
 	#rm *.ex *.EX
-	cd ../../ddconsole-${VERSION}
+	cd ../../ddconsole${name_suffix}-${VERSION}
 	echo "Settings for ddconsole:"
-	dh_make -s -c gpl -e ${EMAIL}
+	echo "\n" | dh_make -s -c gpl -e ${EMAIL}
 	cd debian
 	#rm *.ex *.EX
 	cd ../..
@@ -154,7 +160,7 @@ for dist in ${DEB_DISTS[@]}; do
 
 	######################################################################## DDCLIENT-GUI PREPARATION
 	echo "Preparing debian/* files for ddclient-gui"
-	cd ddclient-gui-${VERSION}/debian
+	cd ddclient-gui${name_suffix}-${VERSION}/debian
 	replace="$(<changelog)"
 	replace="${replace/${VERSION}-1/${VERSION}-0ubuntu${UBUNTU_REV}+agib~${dist}1}"
 	replace="${replace/unstable/$dist}"
@@ -162,11 +168,12 @@ for dist in ${DEB_DISTS[@]}; do
 
 	replace=$(<control)
 	replace="${replace/'Section: unknown'/Section: net}"
-	replace="${replace/'Homepage: <insert the upstream URL, if relevant>'/Homepage: http://downloaddaemon.sourceforge.net/
-	Suggests: downloaddaemon, ddconsole}"
+	replace="${replace/'Homepage: <insert the upstream URL, if relevant>'/Homepage: http://downloaddaemon.sourceforge.net/}"
 	replace="${replace/'Description: <insert up to 60 chars description>'/Description: $SYN_DDCLIENTGUI}"
 	replace="${replace/'Build-Depends: debhelper (>= 7), cmake'/Build-Depends: $BUILDDEP_DDCLIENTGUI}"
-	replace="${replace/'Depends: ${shlibs:Depends}, ${misc:Depends}'/Depends: $DEP_DDCLIENTGUI}"
+	replace="${replace/'Depends: ${shlibs:Depends}, ${misc:Depends}'/Depends: $DEP_DDCLIENTGUI
+Suggests: downloaddaemon, ddconsole
+Conflicts: ddclient-gui${opposite_suffix}}"
 	replace="${replace/'<insert long description, indented with spaces>'/$DESC_DDCLIENTGUI}"
 	echo "$replace" > control
 
@@ -200,7 +207,7 @@ for dist in ${DEB_DISTS[@]}; do
 
 	###################################################################### DDCONSOLE PREPARATION
 	echo "Preparing debian/* files for ddconsole"
-	cd ddconsole-${VERSION}/debian
+	cd ddconsole${name_suffix}-${VERSION}/debian
 	replace="$(<changelog)"
 	replace="${replace/${VERSION}-1/${VERSION}-0ubuntu${UBUNTU_REV}+agib~${dist}1}"
 	replace="${replace/unstable/$dist}"
@@ -208,11 +215,12 @@ for dist in ${DEB_DISTS[@]}; do
 
 	replace=$(<control)
 	replace="${replace/'Section: unknown'/Section: net}"
-	replace="${replace/'Homepage: <insert the upstream URL, if relevant>'/Homepage: http://downloaddaemon.sourceforge.net/
-	Suggests: downloaddaemon, ddclient-wx}"
+	replace="${replace/'Homepage: <insert the upstream URL, if relevant>'/Homepage: http://downloaddaemon.sourceforge.net/}"
 	replace="${replace/'Description: <insert up to 60 chars description>'/Description: $SYN_DDCONSOLE}"
 	replace="${replace/'Build-Depends: debhelper (>= 7), cmake'/Build-Depends: $BUILDDEP_DDCONSOLE}"
-	replace="${replace/'Depends: ${shlibs:Depends}, ${misc:Depends}'/Depends: $DEP_DDCONSOLE}"
+	replace="${replace/'Depends: ${shlibs:Depends}, ${misc:Depends}'/Depends: $DEP_DDCONSOLE
+Suggests: downloaddaemon, ddclient-gui
+Conflicts: ddconsole${opposite_suffix}}"
 	replace="${replace/'<insert long description, indented with spaces>'/$DESC_DDCONSOLE}"
 	echo "$replace" > control
 
@@ -243,23 +251,25 @@ for dist in ${DEB_DISTS[@]}; do
 
 
 	"
+	if [ "$4" != "nightly" ]; then
 	read -p "Basic debian package preparation for the clients is done. Please move to <svn root>/version/debs_${1}/*/debian and modify the files as you need them. 
 	Then press [enter] to continue package building. expecially the changelog file should be changed."
+	fi
 
 	if [ $BINARY == true ]; then
 		echo "building client packages..."
-		cd ddconsole-${VERSION}
+		cd ddconsole${name_suffix}-${VERSION}
 		debuild -d -sa
 		cd ..
-		cd ddclient-gui-${VERSION}
+		cd ddclient-gui${name_suffix}-${VERSION}
 		debuild -d -sa
 		cd ..
 	else
 		echo "building client packages..."
-		cd ddconsole-${VERSION}
+		cd ddconsole${name_suffix}-${VERSION}
 		debuild -S -sa
 		cd ..
-		cd ddclient-gui-${VERSION}
+		cd ddclient-gui${name_suffix}-${VERSION}
 		debuild -S -sa
 		cd ..
 	fi
