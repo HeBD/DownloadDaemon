@@ -39,19 +39,19 @@ if [ `svn up | wc -l` -gt 1 ]; then
 fi
 
 cd "$trunk_root/src/ddclient-gui"
-if [ `svn up | wc -l` -gt 1 ]; then
+if [ `svn up | wc -l` -gt 0 ]; then
 	gui_up=true
 	log "New ddclient-gui version available"
 fi
 
 cd "$trunk_root/src/ddconsole"
-if [ `svn up | wc -l` -gt 1 ]; then
+if [ `svn up | wc -l` -gt 0 ]; then
 	con_up=true
 	log "New ddconsole version available"
 fi
 
 cd "$trunk_root/src/ddclient-php"
-if [ `svn up | wc -l` -gt 1 ]; then
+if [ `svn up | wc -l` -gt 0 ]; then
 	php_up=true
 	log "New ddclient-php version available"
 fi
@@ -116,24 +116,23 @@ expect {
 "
 	cd ../version/${version}/debs_${version}
 	for f in $( ls ); do
-		if [ $gui_up ]; then
+		if [ $gui_up == true ]; then
 			dput $ppa ${f}/ddclient-gui-nightly_${version}-0ubuntu1+agib~${f}1_source.changes
 		fi
-		if [ $con_up ]; then
+		if [ $con_up == true ]; then
 			dput $ppa ${f}/ddconsole-nightly_${version}-0ubuntu1+agib~${f}1_source.changes
 		fi
 	done
 	cd ..
-	if [ $gui_up ]; then
+	if [ $gui_up == true ]; then
 		cp ddclient-gui-nightly-${version}.tar.gz ${trunk_root}/../tags
 		svn add ${trunk_root}/../tags/ddclient-gui-nightly-${version}.tar.gz
 	fi
-	if [ $con_up ]; then
+	if [ $con_up == true ]; then
 		cp ddconsole-nightly-${version}.tar.gz ${trunk_root}/../tags
 		svn add ${trunk_root}/../tags/ddconsole-nightly-${version}.tar.gz
 	fi
-	cd ..
-	if [ $php_up ]; then
+	if [ $php_up == true ]; then
 		cp ddclient-php-nightly-${version} ${trunk_root}/../tags
 		svn add ${trunk_root}/../tags/ddclient-php-nightly-${version}.tar.gz
 	fi
