@@ -213,8 +213,8 @@ class ddclient_gui : public QMainWindow{
         void on_load_container();
         void on_activate_tray_icon(QSystemTrayIcon::ActivationReason reason);
         void on_reload();
-		void donate_flattr();
-		void donate_sf();
+        void donate_flattr();
+        void donate_sf();
 
     protected:
         void contextMenuEvent(QContextMenuEvent *event);
