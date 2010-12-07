@@ -39,19 +39,19 @@ if [ `svn up | wc -l` -gt 1 ]; then
 fi
 
 cd "$trunk_root/src/ddclient-gui"
-if [ `svn up | wc -l` -gt 0 ]; then
+if [ `svn up | wc -l` -gt 1 ]; then
 	gui_up=true
 	log "New ddclient-gui version available"
 fi
 
 cd "$trunk_root/src/ddconsole"
-if [ `svn up | wc -l` -gt 0 ]; then
+if [ `svn up | wc -l` -gt 1 ]; then
 	con_up=true
 	log "New ddconsole version available"
 fi
 
 cd "$trunk_root/src/ddclient-php"
-if [ `svn up | wc -l` -gt 0 ]; then
+if [ `svn up | wc -l` -gt 1 ]; then
 	php_up=true
 	log "New ddclient-php version available"
 fi
@@ -133,7 +133,7 @@ expect {
 		svn add ${trunk_root}/../tags/ddconsole-nightly-${version}.tar.gz
 	fi
 	if [ $php_up == true ]; then
-		cp ddclient-php-nightly-${version} ${trunk_root}/../tags
+		cp ddclient-php-nightly-${version}.tar.gz ${trunk_root}/../tags
 		svn add ${trunk_root}/../tags/ddclient-php-nightly-${version}.tar.gz
 	fi
 	cd ${trunk_root}/version
