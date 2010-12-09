@@ -107,7 +107,7 @@ CHECK_FUNCTION_EXISTS(popen HAVE_POPEN)
 
 IF(CYGWIN)
 	#add_definitions(-Wl,-out-implib,libDownloadDaemon.dll.a)
-	set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-all-symbols,--enable-runtime-pseudo-reloc,-out-implib,libDownloadDaemon.dll.a)
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-all-symbols,--enable-runtime-pseudo-reloc,-out-implib,libDownloadDaemon.dll.a")
 ELSE(CYGWIN)
 	add_definitions(-rdynamic)
 ENDIF(CYGWIN)
