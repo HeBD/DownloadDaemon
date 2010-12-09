@@ -1,4 +1,8 @@
-2010-11-08
+2010-12-09
+   [adrian]
+	- Added premium support for fileserve.com
+
+2010-12-04
    [adrian]
 	- proper handling of escaped URLs and download-titles. you should now be able to add urls with a |-symbol inside (needed for the new rapidshare links)
 	- removed ddclient-wx from the source tree. It is no longer maintained and was replaced by ddclient-gui
