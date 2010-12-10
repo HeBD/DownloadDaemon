@@ -30,7 +30,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	string result;
 	ddcurl* handle = get_handle();
 	string data = "loginUserName=" + handle->escape(inp.premium_user) + "&loginUserPassword=" + handle->escape(inp.premium_password);
-	data += "	&autoLogin=on&recaptcha_response_field=&recaptcha_challenge_field=&recaptcha_shortencode_field=&loginFormSubmit=Login";
+	data += "+&autoLogin=on&recaptcha_response_field=&recaptcha_challenge_field=&recaptcha_shortencode_field=&loginFormSubmit=Login";
 	handle->setopt(CURLOPT_URL, "http://www.fileserve.com/login.php");
 	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
 	handle->setopt(CURLOPT_WRITEDATA, &result);
@@ -67,6 +67,8 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 			size *= 1024*1024;
 		else if(size_split[1] == "KB")
 			size *= 1024;
+		else if(size_split[1] == "GB")
+			size *= 1024*1024*1024;
 
 		outp.file_size = size;
 	} catch(...) {
