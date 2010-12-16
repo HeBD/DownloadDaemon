@@ -112,7 +112,9 @@ if($connect != 'SUCCESS') {
 				'T_DL_ID' => '',
 				'T_DL_Date' => '',
 				'T_DL_Title' => $exp_dls[$i][2],
+				'T_DL_Title_short' => $exp_dls[$i][2],
 				'T_DL_URL' => '',
+				'T_DL_URL_short' => '',
 				'T_DL_Class' => '',
 				'T_DL_Status' => '',
 				'T_SITE_URL' => $tpl_vars['T_SITE_URL'],
@@ -140,7 +142,7 @@ if($connect != 'SUCCESS') {
 		}
 	
 		$dl_status = '';
-		
+		$percent = $percent = number_format($exp_dls[$i][5] / $exp_dls[$i][6] * 100, 1);
 		switch($exp_dls[$i][4]){
 			case 'DOWNLOAD_RUNNING':
 				$any_download_running = true;
@@ -152,7 +154,7 @@ if($connect != 'SUCCESS') {
 					if($exp_dls[$i][6] == 0) {
 						$dl_status .= 'Running, fetched ' . number_format($exp_dls[$i][5] / 1048576, 1) . 'MB';
 					} else {
-						$dl_status .= number_format($exp_dls[$i][9] / 1024) . 'kb/s - ' . number_format($exp_dls[$i][5] / 1048576, 1) . '/' . number_format($exp_dls[$i][6] / 1048576, 1) . 'MB - ' . number_format($exp_dls[$i][5] / $exp_dls[$i][6] * 100, 1) . '%';
+						$dl_status .= number_format($exp_dls[$i][9] / 1024) . 'kb/s - ' . number_format($exp_dls[$i][5] / 1048576, 1) . '/' . number_format($exp_dls[$i][6] / 1048576, 1) . 'MB - ' . $percent . '%';
 					}
 				}
 				break;
@@ -213,9 +215,12 @@ if($connect != 'SUCCESS') {
 		'T_DL_ID' => $exp_dls[$i][0],
 		'T_DL_Date' => $exp_dls[$i][1],
 		'T_DL_Title' => $exp_dls[$i][2],
+		'T_DL_Title_short' => substr($exp_dls[$i][2], 0, 15),
 		'T_DL_URL' => $exp_dls[$i][3],
+		'T_DL_URL_short' => substr($exp_dls[$i][3], 0, 20) . "..." . substr($exp_dls[$i][3], -20, 20),
 		'T_DL_Class' => strtolower($exp_dls[$i][4]),
 		'T_DL_Status' => $dl_status,
+		'T_DL_Percent' => $percent,
 		'T_SITE_URL' => $tpl_vars['T_SITE_URL'],
 		'L_Activate' => $LANG['Activate'],
 		'L_Delete' => $LANG['Delete'],
@@ -223,6 +228,10 @@ if($connect != 'SUCCESS') {
 		'L_Delete_File' => $LANG['Delete_File'],
 		'T_EDIT_SITE' => 'dl_edit',
 	);
+	if(strlen($tpl_manage_vars['T_DL_URL']) <= 42)
+		$tpl_manage_vars['T_DL_URL_short'] = $tpl_manage_vars['T_DL_URL'];
+	if(strlen($tpl_manage_vars['T_DL_Title']) > 15)
+		$tpl_manage_vars['T_DL_Title_short'] .= "...";
 	
 	$dl_list .= template_parse('manage_line', $tpl_manage_vars);
 }
@@ -234,8 +243,8 @@ $tpl_vars['L_ID'] = $LANG['ID'];
 $tpl_vars['L_Date'] = $LANG['Date'];
 $tpl_vars['L_Status'] = $LANG['Status'];
 $tpl_vars['T_List'] = $dl_list;
-if(AUTO_REFRESH && $any_download_running) {
-	$tpl_vars['T_META'] = '<meta http-equiv="refresh" content="5; URL=index.php?site=manage" />';
-}
+//if(AUTO_REFRESH && $any_download_running) {
+//	$tpl_vars['T_META'] = '<meta http-equiv="refresh" content="5; URL=index.php?site=manage" />';
+//}
 
 ?>

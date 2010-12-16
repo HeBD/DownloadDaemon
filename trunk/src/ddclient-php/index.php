@@ -51,5 +51,9 @@ include 'sites/'.$site.'.php';
 
 $tpl_vars['err_message'] = $err_message;
 
-echo template_parse_site($site, $tpl_vars);
+if (!isset($_GET["echo"])) {
+	eval("?>" . template_parse_site($site, $tpl_vars));
+} else {
+	eval("?>" . template_parse($site, $tpl_vars));
+}
 ?>

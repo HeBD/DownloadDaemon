@@ -36,6 +36,31 @@
 		
 			t.parentNode.insertBefore(s, t);
 		    })();
+
+		<?php if(AUTO_REFRESH) echo '
+		if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp=new XMLHttpRequest();
+		}
+		else {// code for IE6, IE5
+			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlhttp.onreadystatechange=function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {	
+				var tmpdiv = document.createElement("div");
+				tmpdiv.innerHTML = xmlhttp.responseText;
+				for (var i = 0; i < tmpdiv.childNodes.length; i++) {
+					if (tmpdiv.childNodes[i].id == "mgmt_table") {
+						document.getElementById("mgmt_table").innerHTML = tmpdiv.childNodes[i].innerHTML;
+						break;
+					}
+				}
+				xmlhttp.open("GET", "index.php?site=manage&echo=1", true);
+				setTimeout("xmlhttp.send()", 3000);
+			}
+		}
+		xmlhttp.open("GET","index.php?site=manage&echo=1",true);
+		setTimeout("xmlhttp.send()", 3000);
+		'; ?>
 		/* ]]> */
 		</script>
 	</head>
