@@ -37,7 +37,7 @@
 			t.parentNode.insertBefore(s, t);
 		    })();
 
-		<?php if(AUTO_REFRESH) echo '
+		<?php if(AUTO_REFRESH && $site == "manage") echo '
 		if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
 			xmlhttp=new XMLHttpRequest();
 		}

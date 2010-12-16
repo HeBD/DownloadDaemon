@@ -207,6 +207,7 @@ table {
 	position: relative;
 	border: 1px solid #ddd;
 	border-radius: 8px;
+	-moz-border-radios: 8px;
 	margin: 0 auto;
 }
 
@@ -264,11 +265,15 @@ div.progress-container {
 	float: left;
 	background: white; 
 	position:relative;
+	border-radius: 8px;
+	-moz-border-radios: 8px;
 }
 
 div.progress-container div { 
 	background-color: #ACE97C; 
-	height: 20px; 
+	height: 20px;
+	border-radius: 8px;
+	-moz-border-radios: 8px;
 }
 
 div.progress-container span { 
@@ -277,6 +282,8 @@ div.progress-container span {
 	float:left; 
 	font: normal 12px Arial,sans-serif; 
 	margin-top: 3px;
+	border-radius: 8px;
+	-moz-border-radios: 8px;
 } 
 
 
