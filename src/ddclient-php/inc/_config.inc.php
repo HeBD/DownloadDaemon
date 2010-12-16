@@ -22,8 +22,8 @@ define('LANG', 'en');
 
 /*
  If this is set to true, ddclient-php will automatically refresh the displayed download list if
- there are running downloads. If no download is running, the page will not reload, so it doesn't
- prevent the machine where DownloadDaemon runs on from spinning down the hard-disk.
+ there are running downloads. Careful: This might prevent the machine where DD runs on from
+ spinning down its hard-disk if no download is running and you leave ddclient-php open in your browser
 */
 define('AUTO_REFRESH', true);
 

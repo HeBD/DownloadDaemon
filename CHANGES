@@ -1,3 +1,7 @@
+2010-12-16
+   [adrian]
+	- ddclient-php improvements: removed date-added column, added progress bar, shortened titles and links if they are too long, update the list with ajax instead of a page reload
+
 2010-12-09
    [adrian]
 	- Added premium support for fileserve.com
