@@ -207,14 +207,14 @@ void reconnect::request() {
 				cmd = "";
 				continue;
 			}
-
-			if(cmd.find("GET") == 0 || cmd.find("POST") == 0) {
+			bool do_post = (cmd.find("POST") == 0);
+			if(cmd.find("GET") == 0 || do_post) {
 				cmd = cmd.substr(4);
 				trim_string(cmd);
 				cmd = cmd.substr(0, cmd.find_first_of(" \t\n"));
 				cmd = "http://" + host + cmd;
 				handle.setopt(CURLOPT_URL, cmd.c_str());
-				if(cmd.find("POST") == 0)
+				if(do_post)
 					handle.setopt(CURLOPT_POST, true);
 				continue;
 			}
@@ -255,7 +255,7 @@ void reconnect::wait() {
 		int secs = atoi(num_secs.c_str());
 		sleep(secs);
 	}
-	if(curr_line.find("]]]")) {
+	if(curr_line.find("]]]") != string::npos) {
 		curr_line = curr_line.substr(curr_line.find("]]]") + 3);
 		trim_string(curr_line);
 	} else {

@@ -1088,7 +1088,7 @@ void target_router_list(std::string &data, tkSock *sock) {
 	struct dirent *ep;
 	vector<std::string> content;
 	std::string current;
-	std::string path = program_root + "reconnect/";
+	std::string path = program_root + "/reconnect/";
 	dp = opendir (path.c_str());
 	if (dp == NULL) {
 		log_string("Could not open reconnect script directory", LOG_ERR);

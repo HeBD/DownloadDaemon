@@ -663,7 +663,7 @@ void package_container::do_reconnect() {
 	}
 
 	reconnect rc(reconnect_script, router_ip, router_username, router_password);
-	log_string("Reconnecting now!", LOG_WARNING);
+	log_string("Reconnecting now using script: " + reconnect_plugin, LOG_WARNING);
 	for(package_container::iterator pkg = packages.begin(); pkg != packages.end(); ++pkg) {
 		(*pkg)->download_mutex.lock();
 		for(download_container::iterator it = (*pkg)->download_list.begin(); it != (*pkg)->download_list.end(); ++it) {
