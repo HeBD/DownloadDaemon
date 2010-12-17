@@ -22,29 +22,30 @@ reconnect::reconnect(const std::string &path_p, const std::string &host_p, const
 	variables.insert(pair<string, string>("%user%", user));
 	variables.insert(pair<string, string>("%pass%", pass));
 	variables.insert(pair<string, string>("%routerip%", host));
-        handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)1024);
-        handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
-        handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)1024);
-        handle.setopt(CURLOPT_NOSIGNAL, 1);
+	handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)1024);
+	handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+	handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)1024);
+	handle.setopt(CURLOPT_NOSIGNAL, 1);
+	handle.setopt(CURLOPT_COOKIEFILE, "");
 }
 
 reconnect::~reconnect() {
-    handle.cleanup();
+	handle.cleanup();
 }
 
 std::string reconnect::get_current_ip() {
-        ddcurl ip_handle;
-        ip_handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
-        ip_handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)5);
-        ip_handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)5);
-        ip_handle.setopt(CURLOPT_NOSIGNAL, 1);
+	ddcurl ip_handle;
+	ip_handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+	ip_handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)5);
+	ip_handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)5);
+	ip_handle.setopt(CURLOPT_NOSIGNAL, 1);
 	string ip_srv = global_router_config.get_cfg_value("ip_server");
-        ip_handle.setopt(CURLOPT_URL, ip_srv.c_str());
+	ip_handle.setopt(CURLOPT_URL, ip_srv.c_str());
 	std::string resultstr;
-        ip_handle.setopt(CURLOPT_WRITEFUNCTION, reconnect::write_data);
-        ip_handle.setopt(CURLOPT_WRITEDATA, &resultstr);
-        ip_handle.perform();
-        ip_handle.cleanup();
+	ip_handle.setopt(CURLOPT_WRITEFUNCTION, reconnect::write_data);
+	ip_handle.setopt(CURLOPT_WRITEDATA, &resultstr);
+	ip_handle.perform();
+	ip_handle.cleanup();
 	trim_string(resultstr);
 	return resultstr;
 }
@@ -159,12 +160,12 @@ void reconnect::request() {
 	}
 	curr_line = curr_line.substr(curr_line.find("]]]") + 3);
 	trim_string(curr_line);
-        handle.reset();
+	handle.reset();
 	std::string resultstr;
-        handle.setopt(CURLOPT_COOKIEFILE, "");
-        handle.setopt(CURLOPT_WRITEFUNCTION, reconnect::write_data);
-        handle.setopt(CURLOPT_WRITEDATA, &resultstr);
-        handle.setopt(CURLOPT_URL, string("http://" + host).c_str());
+
+	handle.setopt(CURLOPT_WRITEFUNCTION, reconnect::write_data);
+	handle.setopt(CURLOPT_WRITEDATA, &resultstr);
+	handle.setopt(CURLOPT_URL, string("http://" + host).c_str());
 	struct curl_slist *header = NULL;
 
 	bool this_is_data = false;
@@ -184,12 +185,12 @@ void reconnect::request() {
 
 		if(cmd.empty() && curr_line.find("[[[/REQUEST]]]") == 0) {
 			if(header != NULL)
-                                handle.setopt(CURLOPT_HTTPHEADER, header);
+				handle.setopt(CURLOPT_HTTPHEADER, header);
 
 			if(!curr_post_data.empty()) {
-                                handle.setopt(CURLOPT_POSTFIELDS, curr_post_data.c_str());
+				handle.setopt(CURLOPT_POSTFIELDS, curr_post_data.c_str());
 			}
-                        handle.perform();
+			handle.perform();
 			if(header != NULL)
 				curl_slist_free_all(header);
 			curr_post_data.clear();
@@ -202,7 +203,7 @@ void reconnect::request() {
 			substitute_vars(cmd);
 			if(cmd.empty()) continue;
 			if(cmd.find("%basicauth%") != string::npos) {
-                                handle.setopt(CURLOPT_USERPWD, string(user + ':' + pass).c_str());
+				handle.setopt(CURLOPT_USERPWD, string(user + ':' + pass).c_str());
 				cmd = "";
 				continue;
 			}
@@ -212,9 +213,9 @@ void reconnect::request() {
 				trim_string(cmd);
 				cmd = cmd.substr(0, cmd.find_first_of(" \t\n"));
 				cmd = "http://" + host + cmd;
-                                handle.setopt(CURLOPT_URL, cmd.c_str());
+				handle.setopt(CURLOPT_URL, cmd.c_str());
 				if(cmd.find("POST") == 0)
-                                        handle.setopt(CURLOPT_POST, true);
+					handle.setopt(CURLOPT_POST, true);
 				continue;
 			}
 
