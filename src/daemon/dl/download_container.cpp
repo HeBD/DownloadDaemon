@@ -651,7 +651,7 @@ void download_container::extract_package() {
 			if (curr_password->empty())
 				log_string("Checking if file can be extracted " + output_file + " using no password", LOG_INFO);
 			else
-				log_string("Trying to extract " + output_file + " using password" + *curr_password, LOG_INFO);
+				log_string("Trying to extract " + output_file + " using password " + *curr_password, LOG_INFO);
 			lock.unlock();
 			pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, *curr_password);
 			lock.lock();

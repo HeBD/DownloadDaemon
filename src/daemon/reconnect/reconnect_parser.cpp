@@ -77,7 +77,7 @@ bool reconnect::do_reconnect() {
 		}
 		file.seekg(0);
 
-		long start_time = time(NULL);
+		unsigned long start_time = time(NULL);
 
 		while(start_time + ip_wait > time(NULL)) {
 			// while we diddn't wait lon enoguh, try to get the IP again
@@ -190,9 +190,19 @@ void reconnect::request() {
 			if(!curr_post_data.empty()) {
 				handle.setopt(CURLOPT_POSTFIELDS, curr_post_data.c_str());
 			}
+			header = curl_slist_append(header, "User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.2.14pre) Gecko/20101216 Ubuntu/10.10 (maverick) Namoroka/3.6.14pre");
+			header = curl_slist_append(header, "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+			header = curl_slist_append(header, "Accept-Language: de, en-gb;q=0.9, en;q=0.8");
+			header = curl_slist_append(header, "Accept-Encoding: gzip");
+			header = curl_slist_append(header, "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7");
+			header = curl_slist_append(header, "Cache-Control: no-cache");
+			header = curl_slist_append(header, "Pragma: no-cache");
+			header = curl_slist_append(header, "Connection: close");
 			handle.perform();
-			if(header != NULL)
+			if(header != NULL) {
 				curl_slist_free_all(header);
+				header = 0;
+			}
 			curr_post_data.clear();
 			curr_line = curr_line.substr(14);
 			return;
