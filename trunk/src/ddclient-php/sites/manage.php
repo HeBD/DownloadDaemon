@@ -142,7 +142,10 @@ if($connect != 'SUCCESS') {
 		}
 	
 		$dl_status = '';
-		$percent = $percent = number_format($exp_dls[$i][5] / $exp_dls[$i][6] * 100, 1);
+		$percent = $exp_dls[$i][6];
+		if($percent != 0)
+			$percent = number_format($exp_dls[$i][5] / $percent * 100, 1);
+
 		switch($exp_dls[$i][4]){
 			case 'DOWNLOAD_RUNNING':
 				$any_download_running = true;
