@@ -4,16 +4,18 @@
 }
 
 body {
-	font: normal 11px "Lucida Grande", "Lucida Sans Unicode", verdana, geneva, sans-serif;
+	font: normal 11px "Ubuntu", "Lucida Grande", "Lucida Sans Unicode", "verdana", "geneva", "sans-serif";
 	word-spacing:2px;
 	color:#444;
 	margin:20px;
 	background: #fff;
+	text-align: center;
 }
 
 #wrapper {
 	width: 800px;
-	margin:0 auto;
+	margin: 0 auto;
+	text-align: left;
 }
 
 #innerwrapper {
@@ -207,24 +209,33 @@ table {
 	position: relative;
 	border: 1px solid #ddd;
 	border-radius: 8px;
-	-moz-border-radios: 8px;
+	-moz-border-radius: 8px;
 	margin: 0 auto;
+	font-size: 1em;
 }
 
 table td {
 	padding: 0 2px;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
 }
 
 tr.even {
 	background-color: #fff;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
 }
 
 tr.odd {
 	background-color: #eee;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
 }
 
 tr.pkg {
 	background-color: #ccc;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
 }
 
 .download_finished {
@@ -264,16 +275,17 @@ div.progress-container {
 	padding: 1px; 
 	float: left;
 	background: white; 
-	position:relative;
-	border-radius: 8px;
-	-moz-border-radios: 8px;
+	position: relative;
+	border-radius: 8px; /* IE requires all 4 radius.. */
+	-moz-border-radius: 8px;
 }
 
 div.progress-container div { 
 	background-color: #ACE97C; 
 	height: 20px;
+	float: left
 	border-radius: 8px;
-	-moz-border-radios: 8px;
+	-moz-border-radius: 8px;
 }
 
 div.progress-container span { 
@@ -283,7 +295,7 @@ div.progress-container span {
 	font: normal 12px Arial,sans-serif; 
 	margin-top: 3px;
 	border-radius: 8px;
-	-moz-border-radios: 8px;
+	-moz-border-radius: 8px;
 } 
 
 
@@ -299,6 +311,10 @@ div.progress-container span {
 	position: absolute;
 	top: -8px;
 	left: 8px;
+}
+
+#add_form {
+	width: 85%;
 }
 
 #success {

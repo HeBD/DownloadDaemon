@@ -54,6 +54,11 @@ $tpl_vars['err_message'] = $err_message;
 if (!isset($_GET["echo"])) {
 	eval("?>" . template_parse_site($site, $tpl_vars));
 } else {
+	// stupid internet explorer caches ajax requests..
+	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+	header("Cache-Control: no-store, no-cache, must-revalidate");
+	header("Cache-Control: post-check=0, pre-check=0", false);
+	header("Pragma: no-cache");  
 	eval("?>" . template_parse($site, $tpl_vars));
 }
 ?>

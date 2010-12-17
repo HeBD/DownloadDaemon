@@ -19,6 +19,7 @@
 		<meta name="description" content="Web Admin Tool for DownloadDaemon" />
 		<meta name="keywords" content="DownloadDaemon," />
 		<meta name="robots" content="all" />
+		<meta http-equiv="X-UA-Compatible" content="IE=9" />
 		<meta http-equiv="language" content="{T_DEFAULT_LANG}" />
 		{T_META}
 		<base href="{T_SITE_URL}" />
@@ -54,7 +55,9 @@
 						break;
 					}
 				}
-				xmlhttp.open("GET", "index.php?site=manage&echo=1", true);
+				// we need this shitty dummy-parameter or IE will cache ajax requests and we will not receive updates at all in IE
+				// this is also why I have to use POST instead of GET
+				xmlhttp.open("GET", "index.php?site=manage&echo=1&dummy=" + new Date().getTime(), true);
 				setTimeout("xmlhttp.send()", 3000);
 			}
 		}
