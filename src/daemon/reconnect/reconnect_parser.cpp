@@ -184,11 +184,8 @@ void reconnect::request() {
 		}
 
 		if(cmd.empty() && curr_line.find("[[[/REQUEST]]]") == 0) {
-			if(header != NULL)
-				handle.setopt(CURLOPT_HTTPHEADER, header);
-
 			if(!curr_post_data.empty()) {
-				handle.setopt(CURLOPT_POSTFIELDS, curr_post_data.c_str());
+				handle.setopt(CURLOPT_COPYPOSTFIELDS, curr_post_data.c_str());
 			}
 			header = curl_slist_append(header, "User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.2.14pre) Gecko/20101216 Ubuntu/10.10 (maverick) Namoroka/3.6.14pre");
 			header = curl_slist_append(header, "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
@@ -198,6 +195,8 @@ void reconnect::request() {
 			header = curl_slist_append(header, "Cache-Control: no-cache");
 			header = curl_slist_append(header, "Pragma: no-cache");
 			header = curl_slist_append(header, "Connection: close");
+			if(header != NULL)
+				handle.setopt(CURLOPT_HTTPHEADER, header);
 			handle.perform();
 			if(header != NULL) {
 				curl_slist_free_all(header);
