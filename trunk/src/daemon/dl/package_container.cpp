@@ -169,7 +169,7 @@ dlindex package_container::get_next_downloadable() {
 	if(running_downloads < global_config.get_int_value("simultaneous_downloads")) {
 		return result;
 	} else {
-		return make_pair<int, int>(LIST_ID, LIST_ID);
+		return pair<int, int>(LIST_ID, LIST_ID);
 	}
 }
 

@@ -529,8 +529,8 @@ void target_dl_set(std::string &data, tkSock *sock) {
 		*sock << "104 ID";
 		return;
 	}
-	download_status st = global_download_list.get_status(make_pair<int, int>(pkg_id, id));
-	if(st == DOWNLOAD_RUNNING || st == DOWNLOAD_FINISHED || global_download_list.get_running(make_pair<int, int>(pkg_id, id))) {
+	download_status st = global_download_list.get_status(pair<int, int>(pkg_id, id));
+	if(st == DOWNLOAD_RUNNING || st == DOWNLOAD_FINISHED || global_download_list.get_running(pair<int, int>(pkg_id, id))) {
 		*sock << "108 VARIABLE";
 		return;
 	}
@@ -549,7 +549,7 @@ void target_dl_set(std::string &data, tkSock *sock) {
 	}
 	trim_string(option);
 	trim_string(value);
-	dlindex index = make_pair<int, int>(pkg_id, id);
+	dlindex index = pair<int, int>(pkg_id, id);
 	if(option == "DL_URL") {
 		if(validate_url(value) && (!global_download_list.get_running(index) || global_download_list.get_url(index) == value)) {
 			global_download_list.set_url(index, value);

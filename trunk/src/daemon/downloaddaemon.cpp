@@ -105,11 +105,11 @@ int main(int argc, char* argv[], char* env[]) {
 			#endif
 			return 0;
 		} else if(val == "-d" || val == "--daemon") {
-			args.insert(make_pair<string, string>("--daemon", ""));
+			args.insert(pair<string, string>("--daemon", ""));
 			continue;
 		}
 		if(i >= 2) {
-			args.insert(make_pair<string, string>(arg, argv[i]));
+			args.insert(pair<string, string>(arg, argv[i]));
 		}
 	}
 

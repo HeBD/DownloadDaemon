@@ -13,7 +13,7 @@ void curl_speeder::add_dl(CURL* dl) {
 	unique_lock<recursive_mutex> lock(mx);
 	curl_speeder::info info;
 	info.handle = dl;
-	handles.insert(make_pair<CURL*, curl_speeder::info>(dl, info));
+	handles.insert(pair<CURL*, curl_speeder::info>(dl, info));
 }
 
 void curl_speeder::del_dl(CURL* dl) {

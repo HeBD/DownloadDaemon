@@ -447,7 +447,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 	long wait_n;
 	error = success;
 
-	dlindex dl(make_pair<int, int>(parent, id));
+	dlindex dl(pair<int, int>(parent, id));
 
 	switch(success) {
 		case PLUGIN_INVALID_HOST:
@@ -525,7 +525,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 
 				if(dls.empty()) return;
 				int first_id = dls[0];
-				dl_subfolder = filename_from_url(global_download_list.get_url(make_pair<int, int>(parent, first_id)));
+				dl_subfolder = filename_from_url(global_download_list.get_url(pair<int, int>(parent, first_id)));
 				lock.lock();
 				if(dl_subfolder.find(".") != string::npos) {
 					dl_subfolder = dl_subfolder.substr(0, dl_subfolder.rfind("."));
@@ -604,7 +604,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		handle.setopt(CURLOPT_WRITEHEADER, &cb_info);
 
 		cb_info.curl_handle = &handle;
-		cb_info.id = make_pair<int, int>(parent, id);
+		cb_info.id = pair<int, int>(parent, id);
 		cb_info.dl_ptr = this;
 
 		log_string(std::string("Starting download ID: ") + dlid_log, LOG_DEBUG);

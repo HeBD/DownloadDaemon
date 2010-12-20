@@ -192,11 +192,11 @@ const std::vector<plugin>& plugin_container::get_all_infos() {
 std::pair<bool, plugin> plugin_container::search_info_in_cache(const std::string& info) {
 	for(vector<plugin>::iterator it = plugin_cache.begin(); it != plugin_cache.end(); ++it) {
 		if(info.find(it->host) != std::string::npos) {
-			return make_pair<bool, plugin>(true, *it);
+			return pair<bool, plugin>(true, *it);
 		}
 	}
 	plugin p;
-	return make_pair<bool, plugin>(false, p);
+	return pair<bool, plugin>(false, p);
 }
 
 void* plugin_container::operator[](std::string plg) {
