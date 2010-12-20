@@ -79,7 +79,7 @@ bool reconnect::do_reconnect() {
 
 		unsigned long start_time = time(NULL);
 
-		while(start_time + ip_wait > time(NULL)) {
+		while(start_time + ip_wait > (unsigned)time(NULL)) {
 			// while we diddn't wait lon enoguh, try to get the IP again
 			new_ip = get_current_ip();
 			if(new_ip != old_ip && !new_ip.empty())
