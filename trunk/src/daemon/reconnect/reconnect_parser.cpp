@@ -19,9 +19,9 @@ extern cfgfile global_router_config;
 
 reconnect::reconnect(const std::string &path_p, const std::string &host_p, const std::string &user_p, const std::string &pass_p)
 	: path(path_p), host(host_p), user(user_p), pass(pass_p) {
-	variables.insert(pair<string, string>("%user%", user));
-	variables.insert(pair<string, string>("%pass%", pass));
-	variables.insert(pair<string, string>("%routerip%", host));
+	variables.insert(pair<string, string>("user", user));
+	variables.insert(pair<string, string>("pass", pass));
+	variables.insert(pair<string, string>("routerip", host));
 	handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)1024);
 	handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
 	handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)1024);
@@ -47,6 +47,9 @@ std::string reconnect::get_current_ip() {
 	ip_handle.perform();
 	ip_handle.cleanup();
 	trim_string(resultstr);
+	if(resultstr.empty()) {
+		log_string("The specified IP-server did not return your IP address. DD will not be able to detect if your reconnects are successfull", LOG_WARNING);
+	}
 	return resultstr;
 }
 
@@ -80,10 +83,14 @@ bool reconnect::do_reconnect() {
 		unsigned long start_time = time(NULL);
 
 		while(start_time + ip_wait > (unsigned)time(NULL)) {
-			// while we diddn't wait lon enoguh, try to get the IP again
+			// while we diddn't wait long enoguh, try to get the IP again
+			long request_time = time(NULL);
 			new_ip = get_current_ip();
 			if(new_ip != old_ip && !new_ip.empty())
 				return true;
+			if(time(NULL) - request_time > 1) // request took more than a second.. try again
+				continue;
+			sleep(2); // request was very fast but we don't have a new IP (yet).. wait a bit
 		}
 	}
 	if(new_ip.empty())
@@ -187,14 +194,14 @@ void reconnect::request() {
 			if(!curr_post_data.empty()) {
 				handle.setopt(CURLOPT_COPYPOSTFIELDS, curr_post_data.c_str());
 			}
-			header = curl_slist_append(header, "User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.2.14pre) Gecko/20101216 Ubuntu/10.10 (maverick) Namoroka/3.6.14pre");
-			header = curl_slist_append(header, "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-			header = curl_slist_append(header, "Accept-Language: de, en-gb;q=0.9, en;q=0.8");
-			header = curl_slist_append(header, "Accept-Encoding: gzip");
-			header = curl_slist_append(header, "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7");
-			header = curl_slist_append(header, "Cache-Control: no-cache");
-			header = curl_slist_append(header, "Pragma: no-cache");
-			header = curl_slist_append(header, "Connection: close");
+//			header = curl_slist_append(header, "User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.2.14pre) Gecko/20101216 Ubuntu/10.10 (maverick) Namoroka/3.6.14pre");
+//			header = curl_slist_append(header, "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+//			header = curl_slist_append(header, "Accept-Language: de, en-gb;q=0.9, en;q=0.8");
+//			header = curl_slist_append(header, "Accept-Encoding: gzip");
+//			header = curl_slist_append(header, "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7");
+//			header = curl_slist_append(header, "Cache-Control: no-cache");
+//			header = curl_slist_append(header, "Pragma: no-cache");
+//			header = curl_slist_append(header, "Connection: close");
 			if(header != NULL)
 				handle.setopt(CURLOPT_HTTPHEADER, header);
 			handle.perform();
@@ -224,7 +231,7 @@ void reconnect::request() {
 				cmd = "http://" + host + cmd;
 				handle.setopt(CURLOPT_URL, cmd.c_str());
 				if(do_post)
-					handle.setopt(CURLOPT_POST, true);
+					handle.setopt(CURLOPT_POST, 1);
 				continue;
 			}
 
@@ -283,8 +290,6 @@ void reconnect::define() {
 		while(!isspace(cmd[j--]) && j != 0);
 		string varname = cmd.substr(j, i);
 		trim_string(varname);
-		varname += "%";
-		varname.insert(0, "%");
 
 		string value;
 		size_t start = cmd.find('"', i) + 1;
@@ -307,27 +312,16 @@ void reconnect::define() {
 
 
 size_t reconnect::write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
-	std::string *blubb = (std::string*)userp;
-	blubb->append((char*)buffer, nmemb);
+	std::string *result = (std::string*)userp;
+	result->append((char*)buffer, nmemb);
 	return nmemb;
 }
 
 void reconnect::substitute_vars(std::string& str) {
-	size_t n;
-
 	for(std::map<std::string, std::string>::iterator it = variables.begin(); it != variables.end(); ++it) {
-		if((n = str.find(it->first)) != string::npos) {
-			str.replace(n, it->first.length(), it->second);
-
-			while(str[--n] == '%') {
-				str.erase(n, 1);
-			}
-
-			n += it->second.length() + 1;
-			while(str.length() > n && str[n] == '%') {
-				str.erase(n, 1);
-			}
-		}
+		replace_all(str, "%%%" + it->first + "%%%", it->second);
+		replace_all(str, "%%" + it->first + "%%", it->second);
+		replace_all(str, "%" + it->first + "%", it->second);
 	}
 	if(str.find("%Set-Cookie%") != string::npos) {
 		str.clear();
