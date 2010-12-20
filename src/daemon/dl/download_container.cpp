@@ -318,7 +318,7 @@ void download_container::set_proxy(int id, std::string proxy) {
 std::string download_container::get_proxy(int id) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
-	if(dl == download_list.end()) return false;
+	if(dl == download_list.end()) return "";
 	return (*dl)->get_proxy();
 }
 
