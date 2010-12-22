@@ -49,9 +49,6 @@ std::string reconnect::get_current_ip() {
 	ip_handle.perform();
 	ip_handle.cleanup();
 	trim_string(resultstr);
-	if(resultstr.empty()) {
-		log_string("The specified IP-server did not return your IP address. DD will not be able to detect if your reconnects are successfull", LOG_WARNING);
-	}
 	return resultstr;
 }
 
