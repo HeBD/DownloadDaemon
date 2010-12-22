@@ -1296,8 +1296,8 @@ void ddclient_gui::compare_packages(){
                 dl->setEditable(false);
                 pkg->setChild(dl_line, 0, dl);
 
-                dl = new QStandardItem(QString(dit->title.c_str()));
-                dl->setEditable(false);
+				dl = new QStandardItem(QString(dit->title.c_str()));
+				dl->setEditable(false);
                 pkg->setChild(dl_line, 1, dl);
 
                 dl = new QStandardItem(QString(dit->url.c_str()));
@@ -1497,6 +1497,7 @@ void ddclient_gui::on_connect(){
     update_thread *new_thread = new update_thread(this, interval);
     new_thread->start();
     thread = new_thread;
+	this->content.clear();
     mx.unlock();
 
     get_content();
@@ -2413,7 +2414,7 @@ void ddclient_gui::on_reload(){
             get_content();
     }
 
-
+	int package_count = this->content.size(); // todo
     // update statusbar
     if(selected_downloads_size != 0){ // something is selected and the total size is known
         status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size) + ", " + QString("%1").arg(selected_downloads_count) + " " + tsl("Download(s)"));
@@ -2435,7 +2436,7 @@ void ddclient_gui::on_reload(){
             time_left = "-";
 
         status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
-                                   " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + " | " + tsl("Time left") + ": " + time_left.c_str());
+								   " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + " | " + tsl("Time left") + ": " + time_left.c_str() + " packages: " + QString("%1 Packages").arg(package_count)); // todo
 		if(QSystemTrayIcon::isSystemTrayAvailable())
                         tray_icon->setToolTip(tsl("Connected to") + " " + server + "\n" + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
                               "\n" + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + "\n" + tsl("Time left") + ": " + time_left.c_str());
