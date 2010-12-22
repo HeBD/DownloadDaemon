@@ -620,49 +620,12 @@ void package_container::do_reconnect() {
 	router_password = global_router_config.get_cfg_value("router_password");
 	reconnect_plugin = global_router_config.get_cfg_value("router_model");
 	if(reconnect_plugin.empty()) {
-		log_string("Reconnecting activated, but no router model specified", LOG_WARNING);
+		log_string("Reconnecting activated, but no router model/script specified", LOG_WARNING);
 		is_reconnecting = false;
 		return;
 	}
 
-	if(reconnect_plugin.find("file:") == 0) {
-		// using an external script/program
-		reconnect_plugin.erase(0, 5);
-		if(reconnect_plugin.size() > 255) {
-			log_string("Path to reconnect-script too long (> 255 characters)", LOG_ERR);
-			return;
-		}
-		char buf[512];
-		strncpy(buf, reconnect_plugin.c_str(), 511);
-		int j = fork();
-		if(j < 0) {
-			log_string("fork() failed when trying to execute a reconnect script", LOG_ERR);
-			return;
-		}
-		if(fork() == 0) {
-			// child process
-			 execlp("/bin/sh", "/bin/sh", "-c", buf, (char *)NULL);
-			 exit(0);
-		}
-		return;
-	}
-
-	if(router_ip.empty()) {
-		log_string("Reconnecting activated, but no router ip specified", LOG_WARNING);
-		is_reconnecting = false;
-		return;
-	}
-
-	std::string reconnect_script = program_root + "/reconnect/" + reconnect_plugin;
-	correct_path(reconnect_script);
-	struct pstat st;
-	if(pstat(reconnect_script.c_str(), &st) != 0) {
-		log_string("Reconnect plugin for selected router model not found!", LOG_ERR);
-		is_reconnecting = false;
-		return;
-	}
-
-	reconnect rc(reconnect_script, router_ip, router_username, router_password);
+	reconnect rc(reconnect_plugin, router_ip, router_username, router_password);
 	log_string("Reconnecting now using script: " + reconnect_plugin, LOG_WARNING);
 	for(package_container::iterator pkg = packages.begin(); pkg != packages.end(); ++pkg) {
 		(*pkg)->download_mutex.lock();

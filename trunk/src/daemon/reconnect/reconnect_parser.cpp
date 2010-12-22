@@ -11,8 +11,10 @@
 
 #include "reconnect_parser.h"
 #include "../tools/helperfunctions.h"
+#include "../global.h"
 #include <cfgfile/cfgfile.h>
 #include <cstdlib>
+#include <cstring>
 using namespace std;
 
 extern cfgfile global_router_config;
@@ -61,27 +63,48 @@ bool reconnect::do_reconnect() {
 		log_string("reconnect_tries not specified, but reconnects are enabled. Defaulting to 3", LOG_WARNING);
 		num_retries = 3;
 	}
-
-	file.open(path.c_str());
-	if(!file.good() || !file.is_open()) {
-		log_string("Unable to open reconnect script", LOG_WARNING);
-		return false;
-	}
+	trim_string(path);
 	int ip_wait = global_router_config.get_int_value("new_ip_wait");
-
+	int num_tries = global_router_config.get_int_value("reconnect_tries");
 	string new_ip;
-
-	while(tried < num_retries) {
-		++tried;
-		// try reconnecting n times
-		while(!curr_line.empty() || getline(file, curr_line)) {
-			trim_string(curr_line);
-			exec_next();
+	while(tried < num_tries) {
+		++tried; // try reconnectring num_tries times
+		if(path.find("file:") != 0) {
+			string script = program_root + "/reconnect/" + path;
+			correct_path(script);
+			file.open(script.c_str());
+			if(!file.good() || !file.is_open()) {
+				log_string("Unable to open reconnect script", LOG_WARNING);
+				return false;
+			}
+			while(!curr_line.empty() || getline(file, curr_line)) {
+				trim_string(curr_line);
+				exec_next();
+			}
+			file.close();
+		} else {
+			// reconnectring with the file: syntax -- external script
+			string script = path.substr(5);
+			trim_string(script);
+			if(script.size() > 255) {
+				log_string("Path to reconnect-script too long (> 255 characters)", LOG_ERR);
+				return false;
+			}
+			char buf[512];
+			strncpy(buf, script.c_str(), 511);
+			int j = fork();
+			if(j < 0) {
+				log_string("fork() failed when trying to execute a reconnect script", LOG_ERR);
+				return false;
+			}
+			if(j == 0) {
+				// child process
+				 execlp("/bin/sh", "/bin/sh", "-c", buf, (char *)NULL);
+				 exit(0);
+			}
 		}
-		file.seekg(0);
 
 		unsigned long start_time = time(NULL);
-
 		while(start_time + ip_wait > (unsigned)time(NULL)) {
 			// while we diddn't wait long enoguh, try to get the IP again
 			long request_time = time(NULL);
