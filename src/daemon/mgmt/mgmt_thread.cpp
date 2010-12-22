@@ -1121,7 +1121,7 @@ void target_router_list(std::string &data, tkSock *sock) {
 void target_router_setmodel(std::string &data, tkSock *sock) {
 	struct dirent *de = NULL;
 	DIR *d = NULL;
-	std::string dir = program_root + "reconnect/";
+	std::string dir = program_root + "/reconnect/";
 	d = opendir(dir.c_str());
 
 	if(d == NULL) {

@@ -1,3 +1,8 @@
+2010-12-22
+   [adrian]
+	- Improvements in external/script-based reconnect
+	- crashfix in environment-variable handling
+
 2010-12-16
    [adrian]
 	- ddclient-php improvements: removed date-added column, added progress bar, shortened titles and links if they are too long, update the list with ajax instead of a page reload
