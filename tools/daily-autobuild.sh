@@ -21,7 +21,6 @@ if [ "$1" == "" ]; then
 	exit -1
 fi
 
-set -x
 
 function log () {
 	echo "[`date`]: $1" >> $trunk_root/tools/autobuild.log
@@ -61,15 +60,15 @@ if [ $dd_up == false -a $gui_up == false -a $con_up == false -a $php_up == false
 	exit 0
 fi
 
-cd "$trunk_root/.."
+cd "${trunk_root}/.."
 svn up
-cd "$trunk_root/tools"
+cd "${trunk_root}/tools"
 
 version="`svn info | grep Revision | cut -f2 -d ' ' /dev/stdin`"
 
 
 if [ $dd_up == true ]; then 
-	cd "$trunk_root/tools"
+	cd "${trunk_root}/tools"
 	expect -c "
 set timeout 120
 match_max 100000
@@ -99,7 +98,7 @@ expect {
 fi
 
 if [ $gui_up == true -o $php_up == true -o $con_up == true ]; then
-	cd "$trunk/tools"
+	cd "${trunk_root}/tools"
         expect -c "
 set timeout 120
 match_max 100000
