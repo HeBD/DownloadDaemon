@@ -127,17 +127,17 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	std::string url = get_url();
 	url += "&lang=en";
 	std::string result;
-	CURL* handle = curl_easy_init();
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, (long)10);
-	curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)20);
-	curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)30);
-	curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
-	curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
-	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
-	curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "");
-	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
-	int res = curl_easy_perform(handle);
-	curl_easy_cleanup(handle);
+	ddcurl handle(true);
+	handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+	handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+	handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+	handle.setopt(CURLOPT_NOSIGNAL, 1);
+	handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
+	handle.setopt(CURLOPT_WRITEDATA, &result);
+	handle.setopt(CURLOPT_COOKIEFILE, "");
+	handle.setopt(CURLOPT_URL, url.c_str());
+	int res = handle.perform();
+	handle.cleanup();
 
 	if(res != 0) {
 		outp.file_online = PLUGIN_CONNECTION_LOST;
