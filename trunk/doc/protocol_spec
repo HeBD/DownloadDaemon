@@ -45,6 +45,8 @@ SUBSCRIPTION as of DD 1.1, a client can subscribe to changes, so you don't have 
 After specifing the target, at least one whitespace needs to follow, so now we got someting like "DDP DL ", "DDP VAR ", ...
 
 the third parameter is a command about what to do with the target.
+Please note, that many commands which require a <id> field, can also handle comma-sperated lists of IDs
+(as <id1>, <id2>, ... <idn>)
 
 For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "UP", "DOWN", "ACTIVATE", "DEACTIVATE", "SET", "GET".
 	LIST will return the current list of downloads in the following format:
@@ -63,7 +65,7 @@ For the target DL, the following commands exist: "LIST", "ADD", "DEL", "STOP", "
 	SET <id> <option>=<value> will change the property of a download. options are: DL_URL and DL_TITLE
 	GET <id> <option> returns a download-parameter. options are: DL_URL, DL_TITLE, DL_ADD_DATE
 
-For the target PKG, the following commands exist: "ADD", "DEL", "UP", "DOWN", "EXISTS", "SET", "GET".
+For the target PKG, the following commands exist: "ADD", "DEL", "UP", "DOWN", "EXISTS", "SET", "GET", "ACTIVATE", "DEACTIVATE".
 	ADD <name> adds an empty package to the list (add downloads to it with the DL ADD command). This command returns the ID of the newly created container or -1 on error
 	DEL <id> removes a package and all the downloads inside it
 	UP <id> moves a package up
@@ -72,6 +74,8 @@ For the target PKG, the following commands exist: "ADD", "DEL", "UP", "DOWN", "E
 	SET <id> <option>=<value> sets an option of a package. options are: PKG_NAME, PKG_PASSWORD 
 	GET <id> <option> returns a package-parameter. options are: PKG_NAME, PKG_PASSWORD
 	CONTAINER <type>:<xcontent> creates a packages and puts the contents of the container into it. currently the type can be RSDF or DLC
+	DEACTIVATE <id> deactivate all unfinished downloads in the package
+	ACTIVATE <id> activate all inactive downloads in the package
 
 For the target VAR, the following commands exist: "SET", "GET".
 	SET <var>=<value> will set a configuration variable and needs to be in the format <variable> = <value>. the variable identifier is just the same

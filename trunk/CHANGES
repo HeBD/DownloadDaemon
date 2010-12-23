@@ -1,3 +1,8 @@
+2010-12-23
+   [adrian]
+	- Implemented PKG ACTIVATE/DEACTIVATE commands and buttons in ddclient-php
+	- most commands taking Download/Package IDs can now handle comma-seperated ID-lists (not all)
+
 2010-12-22
    [adrian]
 	- Improvements in external/script-based reconnect

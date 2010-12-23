@@ -50,6 +50,8 @@ void target_pkg_exists(std::string &data, tkSock *sock);
 void target_pkg_set(std::string &data, tkSock *sock);
 void target_pkg_get(std::string &data, tkSock *sock);
 void target_pkg_container(std::string &data, tkSock *sock);
+void target_pkg_activate(std::string &data, tkSock *sock);
+void target_pkg_deactivate(std::string &data, tkSock *sock);
 
 void target_var_get(std::string &data, tkSock *sock);
 void target_var_set(std::string &data, tkSock *sock);

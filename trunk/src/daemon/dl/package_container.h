@@ -120,7 +120,7 @@ class package_container {
 	void set_pkg_name(int id, const std::string& name);
 	std::string get_pkg_name(int id);
 
-        ddcurl* get_handle(dlindex dl);
+	ddcurl* get_handle(dlindex dl);
 
 	/** will give you a list of all download IDs in the container
 	*	@param id ID of the container

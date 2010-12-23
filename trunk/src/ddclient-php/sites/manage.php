@@ -13,23 +13,31 @@ if($connect != 'SUCCESS') {
 }else{
 	if(isset($_GET['action'])){
 		switch ($_GET['action']) {
-    			case 'activate':
-				send_all($socket, "DDP DL ACTIVATE " . $_GET['id']);
+    		case 'activate':
+				if($_GET['id'] != "") {
+					send_all($socket, "DDP DL ACTIVATE " . $_GET['id']);
+				} else {
+					send_all($socket, "DDP PKG ACTIVATE " . $_GET['pkg_id']);
+				}
 				$buf = "";
 				recv_all($socket, $buf);
 				if(substr($buf, 0, 3) != "100") {
 					$err_message .= msg_generate($LANG['ERR_DL_ACTIVATE'], 'error');
 				}
         		break;
-    			case 'deactivate':
-				send_all($socket, "DDP DL DEACTIVATE " . $_GET['id']);
+    		case 'deactivate':
+    			if($_GET['id'] != "") {
+					send_all($socket, "DDP DL DEACTIVATE " . $_GET['id']);
+				} else {
+					send_all($socket, "DDP PKG DEACTIVATE " . $_GET['pkg_id']);
+				}
 				$buf = "";
 				recv_all($socket, $buf);
 				if(substr($buf, 0, 3) != "100") {
 					$err_message .= msg_generate($LANG['ERR_DL_DEACTIVATE'], 'error');
 				}
         		break;
-    			case 'delete':
+    		case 'delete':
 				$buf = "";
 				if($_GET['pkg_id'] != "") {
 					send_all($socket, "DDP PKG DEL " . $_GET['pkg_id']);
@@ -41,7 +49,7 @@ if($connect != 'SUCCESS') {
 					$err_message .= msg_generate($LANG['ERR_DL_DEL'], 'error');
 				}
         		break;
-    			case 'del_file':
+    		case 'del_file':
 				send_all($socket, "DDP FILE DEL " . $_GET['id']);
 				$buf = "";
 				recv_all($socket, $buf);
@@ -49,7 +57,7 @@ if($connect != 'SUCCESS') {
 					$err_message .= msg_generate($LANG['ERR_FILE_DEL'], 'error');
 				}
     			break;
-    			case 'move':
+    		case 'move':
 				$buf = "";
 				if($_GET['pkg_id'] != "") {
 					send_all($socket, "DDP PKG UP " . $_GET['pkg_id']);
