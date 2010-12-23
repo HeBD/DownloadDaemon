@@ -9,7 +9,8 @@
 class ddcurl {
 public:
 	ddcurl(bool do_init = false) : handle(0) {
-		if(do_init) handle = curl_easy_init();
+		if(do_init)
+			init();
 	}
 
 	~ddcurl() {
@@ -19,6 +20,7 @@ public:
 	void init() {
 		if(handle) cleanup();
 		handle = curl_easy_init();
+		set_defaultopts();
 	}
 
 	void cleanup() {
@@ -32,12 +34,12 @@ public:
 
 	template <typename T>
 	CURLcode setopt(CURLoption opt, const T &val) {
-		if(!handle) handle = curl_easy_init();
+		if(!handle) init();
 		return curl_easy_setopt(handle, opt, val);
 	}
 
 	CURLcode setopt(CURLoption opt, const std::string &val) {
-		if(!handle) handle = curl_easy_init();
+		if(!handle) init();
 		if(opt == CURLOPT_URL) { // the URL might have to be modified in the future because of ddproxy-settings.
 			// so we only save it and apply the URL to the curl handle just before perform()ing.
 			m_sUrl = val;
@@ -123,16 +125,25 @@ public:
 	}
 
 	void reset() {
-		if(!handle) handle = curl_easy_init();
+		if(!handle) init();
 		else curl_easy_reset(handle);
 		m_sProxy.clear();
 		m_sProxyUser.clear();
 		m_sProxyPass.clear();
 		m_sUrl.clear();
+		set_defaultopts();
 	}
 
 	CURL* raw_handle() {
 		return handle;
+	}
+	
+	static size_t dummy_writefkt(void *buffer, size_t size, size_t nmemb, void *userp) {
+		return nmemb;
+	}
+	
+	static int dummy_progress(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
+		return 0;
 	}
 
 private:
@@ -144,6 +155,17 @@ private:
 	std::string m_sProxyPass;
 
 	std::string m_sUrl;
+	void set_defaultopts() {
+		// set some default timeouts
+		setopt(CURLOPT_LOW_SPEED_LIMIT, (long)1024);
+		setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+		setopt(CURLOPT_CONNECTTIMEOUT, (long)1024);
+		setopt(CURLOPT_NOSIGNAL, 1);
+		setopt(CURLOPT_COOKIEFILE, "");
+		// set default write and progress functions, so curl will not write to stdout or something like thatc
+		setopt(CURLOPT_WRITEFUNCTION, ddcurl::dummy_writefkt);
+		setopt(CURLOPT_PROGRESSFUNCTION, ddcurl::dummy_progress);
+	}
 };
 
 #endif
