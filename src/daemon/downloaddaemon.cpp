@@ -210,26 +210,14 @@ int main(int argc, char* argv[], char* env[]) {
 		std::string curr_path;
 		size_t curr_pos = 0, last_pos = 0;
 		bool found = false;
-
-		while((curr_pos = env_path.find_first_of(":;", curr_pos)) != string::npos) {
-			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
-			curr_path += '/';
-			curr_path += argv[0];
+		
+		vector<string> paths = split_string(env_path, ":");
+		if(paths.size() == 1) paths = split_string(env_path, ";");
+		for(vector<string>::iterator it = paths.begin(); it != paths.end(); ++it) {
+			curr_path = *it + "/" + argv[0];
 			if(pstat(curr_path.c_str(), &st) == 0) {
 				found = true;
 				break;
-			}
-
-			last_pos = ++curr_pos;
-		}
-
-		if(!found) {
-			// search the last folder of $PATH which is not included in the while loop
-			curr_path = env_path.substr(last_pos, curr_pos -  last_pos);
-			curr_path += '/';
-			curr_path += argv[0];
-			if(pstat(curr_path.c_str(), &st) == 0) {
-				found = true;
 			}
 		}
 
@@ -238,7 +226,7 @@ int main(int argc, char* argv[], char* env[]) {
 			// resolve symlinks, etc
 			program_root = curr_path;
 			correct_path(program_root);
-                } else if(!getenv("DD_DATA_DIR")){
+		} else if(!getenv("DD_DATA_DIR")){
 			cerr << "Unable to locate executable!" << endl;
 			exit(-1);
 		}

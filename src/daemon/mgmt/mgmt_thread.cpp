@@ -435,15 +435,21 @@ void target_dl_stop(std::string &data, tkSock *sock) {
 		*sock << "104 ID";
 		return;
 	}
+	vector<string> ids = split_string(data, ",");
 	dlindex id;
-	id.second = atoi(data.c_str());
-	id.first = global_download_list.pkg_that_contains_download(id.second);
-	if(id.first == LIST_ID) {
-		*sock << "104 ID";
-		return;
+	bool fail = false;
+	for(vector<string>::iterator it = ids.begin(); it != ids.end(); ++it) {
+		id.second = atoi(it->c_str());
+		id.first = global_download_list.pkg_that_contains_download(id.second);
+		if(id.first == LIST_ID)
+			fail = true;
+		else
+			global_download_list.set_need_stop(id, true);
 	}
-	global_download_list.set_need_stop(id, true);
-	*sock << "100 SUCCESS";
+	if(!fail)
+		*sock << "100 SUCCESS";
+	else
+		*sock << "104 ID";
 }
 
 void target_dl_up(std::string &data, tkSock *sock) {
@@ -452,14 +458,20 @@ void target_dl_up(std::string &data, tkSock *sock) {
 		return;
 	}
 	dlindex id;
-	id.second = atoi(data.c_str());
-	id.first = global_download_list.pkg_that_contains_download(id.second);
-	if(id.first == LIST_ID) {
-		*sock << "104 ID";
-		return;
+	bool fail = false;
+	vector<string> ids = split_string(data, ",");
+	for(vector<string>::iterator it = ids.begin(); it != ids.end(); ++it) {
+		id.second = atoi(it->c_str());
+		id.first = global_download_list.pkg_that_contains_download(id.second);
+		if(id.first == LIST_ID)
+			fail = true;
+		else
+			global_download_list.move_dl(id, package_container::DIRECTION_UP);
 	}
-	global_download_list.move_dl(id, package_container::DIRECTION_UP);
-	*sock << "100 SUCCESS";
+	if(!fail)
+		*sock << "100 SUCCESS";
+	else
+		*sock << "104 ID";
 }
 
 void target_dl_down(std::string &data, tkSock *sock) {
@@ -468,14 +480,20 @@ void target_dl_down(std::string &data, tkSock *sock) {
 		return;
 	}
 	dlindex id;
-	id.second = atoi(data.c_str());
-	id.first = global_download_list.pkg_that_contains_download(id.second);
-	if(id.first == LIST_ID) {
-		*sock << "104 ID";
-		return;
+	bool fail = false;
+	vector<string> ids = split_string(data, ",");
+	for(vector<string>::iterator it = ids.begin(); it != ids.end(); ++it) {
+		id.second = atoi(it->c_str());
+		id.first = global_download_list.pkg_that_contains_download(id.second);
+		if(id.first == LIST_ID)
+			fail = true;
+		else
+			global_download_list.move_dl(id, package_container::DIRECTION_DOWN);
 	}
-	global_download_list.move_dl(id, package_container::DIRECTION_DOWN);
-	*sock << "100 SUCCESS";
+	if(!fail)
+		*sock << "100 SUCCESS";
+	else
+		*sock << "104 ID";
 }
 
 void target_dl_activate(std::string &data, tkSock *sock) {
@@ -652,6 +670,22 @@ void target_pkg(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_pkg_container(data, sock);
+	} else if(data.find("ACTIVATE") == 0) {
+		data = data.substr(8);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_activate(data, sock);
+	} else if(data.find("DEACTIVATE") == 0) {
+		data = data.substr(10);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_deactivate(data, sock);
 	} else {
 		*sock << "101 PROTOCOL";
 	}
@@ -815,6 +849,36 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 		*sock << "112 UNSUPPORTED";
 		return;
 	}
+}
+
+void target_pkg_activate(std::string &data, tkSock *sock) {
+	vector<string> pkgs = split_string(data, ",");
+	for(vector<string>::iterator pkg = pkgs.begin(); pkg != pkgs.end(); ++pkg) {
+		vector<int> dls = global_download_list.get_download_list(atoi(pkg->c_str()));
+
+		for(vector<int>::iterator dl =  dls.begin(); dl != dls.end(); ++dl) {
+			dlindex idx(atoi(pkg->c_str()), *dl);
+			if(global_download_list.get_status(idx) == DOWNLOAD_INACTIVE) {
+				global_download_list.set_status(idx, DOWNLOAD_PENDING);
+			}
+		}
+
+	}
+	*sock << "100 SUCCESS";
+}
+
+void target_pkg_deactivate(std::string &data, tkSock *sock) {
+	vector<string> pkgs = split_string(data, ",");
+	for(vector<string>::iterator pkg = pkgs.begin(); pkg != pkgs.end(); ++pkg) {
+		vector<int> dls = global_download_list.get_download_list(atoi(pkg->c_str()));
+
+		for(vector<int>::iterator dl =  dls.begin(); dl != dls.end(); ++dl) {
+			dlindex idx(atoi(pkg->c_str()), *dl);
+			if(global_download_list.get_status(idx) != DOWNLOAD_FINISHED)
+				global_download_list.set_status(idx, DOWNLOAD_INACTIVE);
+		}
+	}
+	*sock << "100 SUCCESS";
 }
 
 ////////////////////////////////////////////////

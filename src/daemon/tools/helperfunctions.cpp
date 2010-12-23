@@ -287,7 +287,7 @@ void correct_path(std::string &path) {
 std::string get_env_var(const std::string &var) {
 	const char* res = getenv(var.c_str());
 	if(res == NULL) return "";
-	return var;
+	return res;
 }
 
 void substitute_env_vars(std::string &str) {
