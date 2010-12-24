@@ -395,7 +395,7 @@ QWidget *configure_dialog::create_reconnect_panel(){
     model = new QListWidget();
     QStringList model_input;
     string line = "", old_model;
-    int selection = 0, i = 0;
+	int selection = 0, i = 0;
     vector<string> model_list;
 
     old_model = (get_var("router_model", ROUTER_T)).toStdString();
@@ -422,13 +422,20 @@ QWidget *configure_dialog::create_reconnect_panel(){
         if(*it == old_model)
             selection = i;
     }
+	if(selection == 0 && !old_model.empty()) {
+		// the model is not in the list - it's a custom line like file:..., add it to the list and select it
+		model_input << old_model.c_str();
+		router_model_list.push_back(old_model);
+		selection = i + 1;
+	}
 
-    model->addItems(model_input);
-    QListWidgetItem *sel_item = model->item(selection);
-    sel_item->setSelected(true);
+	model->addItems(model_input);
+	QListWidgetItem *sel_item = model->item(selection);
+	sel_item->setSelected(true);
 
     // router data
     model_search = new QLineEdit();
+	model_search->setText(old_model.c_str());
     ip = new QLineEdit(get_var("router_ip", ROUTER_T));
     username = new QLineEdit(get_var("router_username", ROUTER_T));
     password = new QLineEdit();
@@ -443,6 +450,7 @@ QWidget *configure_dialog::create_reconnect_panel(){
 
     connect(help_button, SIGNAL(clicked()), this, SLOT(help()));
     connect(model_search, SIGNAL(textEdited(const QString &)), this, SLOT(search_in_model()));
+	connect(model, SIGNAL(itemSelectionChanged()), this, SLOT(router_model_sel_changed()));
 
     layout->addWidget(reconnect_group_box);
     return page;
@@ -657,7 +665,6 @@ void configure_dialog::help(){
 
 
 void configure_dialog::search_in_model(){
-    model->clear();
     QStringList model_list;
 
     string search_input = model_search->text().toStdString();
@@ -666,17 +673,23 @@ void configure_dialog::search_in_model(){
         search_input[i] = tolower(search_input[i]);
 
     vector<string>::iterator it;
+	size_t index = 0;
     for(it = router_model_list.begin(); it != router_model_list.end(); it++){
         string lower = *it;
 
         for(size_t i=0; i<lower.length(); i++) // lower everything for case insensitivity
             lower[i] = tolower(lower[i]);
 
-        if(lower.find(search_input) != string::npos)
-            model_list << it->c_str();
+		if(lower.find(search_input) == 0) {
+			model->setCurrentItem(model->item(index));
+			break;
+		}
+		++index;
     }
+}
 
-    model->addItems(model_list);
+void configure_dialog::router_model_sel_changed(){
+	model_search->setText(model->selectedItems()[0]->text());
 }
 
 
@@ -768,12 +781,7 @@ void configure_dialog::ok(){
                         break;
         }
 
-        QList<QListWidgetItem *> list = model->selectedItems();
-        if(list.size() > 0) // there is only one or no item selected
-            router_model = list[0]->text().toStdString();
-        else
-            router_model = "";
-
+		router_model = model_search->text().toStdString();
         router_ip = ip->text().toStdString();
         router_user = username->text().toStdString();
         router_pass = password->text().toStdString();
