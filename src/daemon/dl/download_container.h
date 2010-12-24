@@ -99,14 +99,12 @@ public:
 	*/
 	int add_download(download *dl, int dl_id);
 
-	#ifdef IS_PLUGIN
 	/** Adds a download by strings
 	*	@param url URL of the download
 	*	@param title Title of the download
 	*	@returns LIST_SUCCESS, LIST_PERMISSION
 	*/
 	int add_download(const std::string& url, const std::string& title = "");
-	#endif
 
 	void set_url(int id, std::string url);
 	std::string get_url(int id);

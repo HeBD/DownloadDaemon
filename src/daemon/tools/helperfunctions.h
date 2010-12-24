@@ -161,11 +161,12 @@ std::string escape_string(std::string s, std::string escape_chars = "|", const s
  */
 std::string unescape_string(std::string s, std::string escape_chars = "|", const std::string& escape_sequence = "\\");
 
+class download_container;
 /** add a dlc-container to the download list
  * @param content the contents of the container file
  * @returns true on success
  */
-bool decode_dlc(const std::string& content);
+bool decode_dlc(const std::string& content, download_container *container = NULL);
 
 #ifdef BACKTRACE_ON_CRASH
 void print_backtrace(int sig);

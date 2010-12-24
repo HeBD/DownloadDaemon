@@ -2,6 +2,7 @@
    [adrian]
 	- New command: VAR LIST to get a list of configuration variables
 	- advanced configuration in ddclient-php which can modify all changeable variables (similar to firefox's about:config)
+	- experimental linksave.in plugin, probably not 100% working yet
 
 2010-12-23
    [adrian]

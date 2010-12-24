@@ -74,6 +74,15 @@ int download_container::add_download(download *dl, int dl_id) {
 	return LIST_SUCCESS;
 }
 
+int download_container::add_download(const std::string& url, const std::string& title) {
+	download* dl = new download(url);
+	dl->set_title(title);
+	dl->set_parent(container_id);
+	int ret = add_download(dl, -1);
+	if(ret != LIST_SUCCESS) delete dl;
+	return ret;
+}
+
 int download_container::move_up(int id) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it;

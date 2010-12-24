@@ -793,15 +793,15 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 		string iv = ascii_hex_to_bin("a3d5a33cb95ac1f5cbdb1ad25cb0a7aa");
 
 		std::basic_stringstream<unsigned char> container;
-                data = ascii_hex_to_bin(data);
-                replace_all(data, "\r\n", "");
-                replace_all(data, "\n", "");
-                replace_all(data, "\r", "");
+		data = ascii_hex_to_bin(data);
+		replace_all(data, "\r\n", "");
+		replace_all(data, "\n", "");
+		replace_all(data, "\r", "");
 
-                vector<string> linkvec = split_string(data, "==", false);
-                data.clear();
+		vector<string> linkvec = split_string(data, "==", false);
+		data.clear();
 		for(size_t i = 0; i < linkvec.size(); ++i) {
-                        data += base64_decode(linkvec[i]);
+			data += base64_decode(linkvec[i]);
 		}
 
 		AES_KEY aes_key;
@@ -841,7 +841,7 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 		*sock << "100 SUCCESS";
 		return;
 	} else if(type == "DLC") {
-		thread d(decode_dlc, data);
+		thread d(decode_dlc, data, (download_container*)0);
 		d.detach();
 		*sock << "100 SUCCESS";
 		return;

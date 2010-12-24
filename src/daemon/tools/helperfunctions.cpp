@@ -442,7 +442,7 @@ string unescape_string(string s, string escape_chars, const string &escape_seque
 }
 
 std::mutex dlc_mutex;
-bool decode_dlc(const std::string& content) {
+bool decode_dlc(const std::string& content, download_container* container) {
 	lock_guard<mutex> lock(dlc_mutex);
 	ofstream ofs("/tmp/dd_dlc_file.dlc");
 	if(!ofs.good()) {
@@ -472,12 +472,20 @@ bool decode_dlc(const std::string& content) {
 		result = result.substr(0, result.find("]") - 1);
 		vector<string> links = split_string(result, "\", \"");
 		links.erase(links.begin()); // the first link has nothing to do with the download
-		int pkg_id = global_download_list.add_package("");
-		for(vector<string>::iterator it = links.begin(); it != links.end(); ++it) {
-			download *dl = new download(*it);
-			global_download_list.add_dl_to_pkg(dl, pkg_id);
+		int pkg_id = -1;
+		if(container == 0) {
+			pkg_id = global_download_list.add_package("");
 		}
-		global_download_list.start_next_downloadable();
+		for(vector<string>::iterator it = links.begin(); it != links.end(); ++it) {
+			if(pkg_id != -1) {
+				download *dl = new download(*it);
+				global_download_list.add_dl_to_pkg(dl, pkg_id);
+			} else if(container) {
+				container->add_download(*it, "");
+			}
+		}
+		if(pkg_id != -1)
+			global_download_list.start_next_downloadable();
 	} catch(std::exception &e) {
 		log_string("Failed to decrypt DLC container: " + string(e.what()), LOG_ERR);
 		return false;
