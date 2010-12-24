@@ -104,6 +104,7 @@ class configure_dialog : public QDialog{
 		void change_page(QListWidgetItem *current, QListWidgetItem *previous);
         void help();
         void search_in_model();
+		void router_model_sel_changed();
         void premium_host_changed();
         void ok();
         void save_premium();
