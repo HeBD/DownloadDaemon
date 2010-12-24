@@ -126,6 +126,7 @@ if(isset($_POST['apply'])) {
 	$tpl_vars['L_log_level_desc'] = $LANG['log_level_desc'];
 	$tpl_vars['L_log_level'] = $LANG['log_level'];
 	$tpl_vars['L_max_speed_desc'] = $LANG['max_speed_desc'];
+	$tpl_vars['L_adv_config'] = $LANG['Adv_config'];
 	$tpl_vars['Content'] = $dl_list;
 	$tpl_vars['Debug'] = $debug;
 	$tpl_vars['DL_Start'] = $dl_start;
@@ -135,4 +136,5 @@ if(isset($_POST['apply'])) {
 	$tpl_vars['Log_File'] = $log_file;
 	$tpl_vars['Max_DL_Speed'] = $max_dl_speed;
 	$tpl_vars['err_message'] = $err_message;
+	
 ?>

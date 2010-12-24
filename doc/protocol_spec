@@ -84,7 +84,7 @@ For the target VAR, the following commands exist: "SET", "GET".
 	    first. In this case, the structure will be SET mgmt_password = old_password ; new_password
 	GET <var> will return a configuration variable. GET needs to be followed by the variable name that should be received and will return the value.
 	    you can not receive the password with this option. If you try to, you will receive an OPTION error
-	
+	LIST will return a list of all changeable configuration variables in the from <var> = <value> seperated by newlines	
 
 For the target FILE, the following commands exist:
 	DEL <id> will delete a downloaded file. and needs to be followed by the download ID. This can be run on any download. 
