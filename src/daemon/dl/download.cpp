@@ -689,6 +689,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 				return;
 			case CURLE_OPERATION_TIMEDOUT:
 			case CURLE_COULDNT_RESOLVE_HOST:
+			case CURLE_COULDNT_CONNECT:
 				log_string(std::string("Connection lost for download ID: ") + dlid_log, LOG_WARNING);
 				error = PLUGIN_CONNECTION_LOST;
 				wait_n = global_config.get_int_value("connection_lost_wait");
@@ -700,7 +701,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 				}
 				return;
 			case CURLE_ABORTED_BY_CALLBACK:
-                                log_string(std::string("Stopped download ID: ") + dlid_log, LOG_INFO);
+				log_string(std::string("Stopped download ID: ") + dlid_log, LOG_INFO);
 				return;
 			case CURLE_BAD_DOWNLOAD_RESUME:
 				// if download resumption fails, retry without resumption
