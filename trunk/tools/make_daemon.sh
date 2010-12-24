@@ -203,7 +203,7 @@ Conflicts: downloaddaemon}"
 		fi
 		if [ -x /etc/init.d/downloadd ]; then
 			update-rc.d downloadd defaults >/dev/null
-			/etc/init.d/downloadd start
+			/etc/init.d/downloadd restart
 		fi
 	}"
 	echo "$replace" > postinst
