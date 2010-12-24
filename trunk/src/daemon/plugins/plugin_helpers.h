@@ -110,6 +110,12 @@ namespace PLGFILE {
 	 *	@returns text between before and after, an empty string if before is not found, from before to the end of searchIn if after is not found
 	 */
 	std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from = 0);
+	
+	/** same as above, but returns all occurences from searchIn that match
+		There is the additional parameter by_end. If this is set to true, the after-string will be used for locating substrings
+		(this means, we search for "after", then search backward to "before" and take everything in between. This is useful if the "before" string
+		is not useful for identification, but the after string is */
+	std::vector<std::string> search_all_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from = 0, bool by_end = false);
 
 
 	/////////////////////// IMPLEMENTATION ////////////////////////
@@ -172,25 +178,34 @@ namespace PLGFILE {
 
 	std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t search_from) {
 		size_t pos = searchIn.find(before, search_from);
-                if(pos == std::string::npos) return "";
+		if(pos == std::string::npos) return "";
 		pos += before.size(); // go to the position right after the search term
 		if(pos >= searchIn.size()) return "";
-                return searchIn.substr(pos, searchIn.find(after, pos) - pos);
+		return searchIn.substr(pos, searchIn.find(after, pos) - pos);
+	}
+	
+	std::vector<std::string> search_all_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from, bool by_end) {
+		std::vector<std::string> result;
+		while(true) {
+			size_t pos = 0;
+			if(!by_end) {
+				pos = searchIn.find(before, start_from);
+				if(pos == std::string::npos) return result;
+			} else {
+				pos = searchIn.find(after, start_from);
+				if(pos == std::string::npos) return result;
+				pos = searchIn.rfind(before, pos);				
+			}
+			pos += before.size();
+			if(pos >= searchIn.size()) return result;
+			result.push_back(searchIn.substr(pos, searchIn.find(after, pos) - pos));
+			start_from = pos + result.back().size() + after.size();
+		}
+		return result;
 	}
 }
 
 using namespace PLGFILE;
-
-#ifdef IS_PLUGIN
-int download_container::add_download(const std::string& url, const std::string& title) {
-	download* dl = new download(url);
-	dl->set_title(title);
-	dl->set_parent(container_id);
-	int ret = add_download(dl, -1);
-	if(ret != LIST_SUCCESS) delete dl;
-	return ret;
-}
-#endif
 
 /** This function is just a wrapper for defining globals and calling your plugin */
 extern "C" plugin_status plugin_exec_wrapper(download_container* dlc, download* pdl, int id, plugin_input& pinp, plugin_output& poutp,

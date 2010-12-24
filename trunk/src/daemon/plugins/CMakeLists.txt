@@ -50,10 +50,12 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	ADD_LIBRARY(netfolder.in MODULE netfolder_in.cpp)
 	ADD_LIBRARY(filefactory.com MODULE filefactory_com.cpp)
 	ADD_LIBRARY(depositfiles.com MODULE depositfiles_com.cpp)
-        ADD_LIBRARY(hotfile.com MODULE hotfile_com.cpp)
+	ADD_LIBRARY(hotfile.com MODULE hotfile_com.cpp)
 	ADD_LIBRARY(fileserve.com MODULE fileserve_com.cpp)
+	ADD_LIBRARY(linksave.in MODULE linksave_in.cpp)
 
-	SET(plugins rapidshare.com uploaded.to youtube.com netload.in megaupload.com netfolder.in filefactory.com depositfiles.com hotfile.com fileserve.com)
+	SET(plugins rapidshare.com uploaded.to youtube.com netload.in megaupload.com netfolder.in filefactory.com depositfiles.com hotfile.com fileserve.com
+	            linksave.in)
 
         set_target_properties(${plugins} PROPERTIES PREFIX lib SUFFIX .so)
 	# !!!! add new plugins here !!!!)
@@ -89,6 +91,7 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	TARGET_LINK_LIBRARIES(depositfiles.com ${link_libs})
 	TARGET_LINK_LIBRARIES(hotfile.com ${link_libs})
 	TARGET_LINK_LIBRARIES(fileserve.com ${link_libs})
+	TARGET_LINK_LIBRARIES(linksave.in ${link_libs})
 
 
 	install(TARGETS ${plugins} DESTINATION share/downloaddaemon/plugins)
@@ -98,7 +101,7 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../share/downloaddaemon/plugins/captchadb/megaupload.com.tar.bz2 DESTINATION share/downloaddaemon/plugins/captchadb)
 
 	install(CODE "EXEC_PROGRAM(\"tar xjf \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/netload.in.tar.bz2 -C \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/ \")")
-	install(CODE "EXEC_PROGRAM(\"tar xjf \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/megaupload.com.tar.bz2 -C \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/ \")")
+#	install(CODE "EXEC_PROGRAM(\"tar xjf \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/megaupload.com.tar.bz2 -C \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/ \")")
 
 
 ENDIF(CURL_FOUND AND HAVE_POPEN)
