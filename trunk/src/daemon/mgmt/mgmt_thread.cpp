@@ -902,6 +902,10 @@ void target_var(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_var_set(data, sock);
+	} else if(data.find("LIST") == 0) {
+		data = data.substr(4);
+		trim_string(data);
+		target_var_list(data, sock);
 	}
 	else {
 		*sock << "101 PROTOCOL";
@@ -972,6 +976,30 @@ void target_var_set(std::string &data, tkSock *sock) {
 	}
 
 }
+
+void target_var_list(std::string &data, tkSock *sock) {
+	extern std::string possible_vars, insecure_vars;
+	vector<string> vars = split_string(possible_vars, ",");
+	if(global_config.get_bool_value("insecure_mode")) {
+		vector<string> ivars = split_string(insecure_vars, ",");
+		vars.insert(vars.end(), ivars.begin(), ivars.end());
+	}
+	sort(vars.begin(), vars.end(), CompareNoCase);
+	ostringstream ss;
+	bool first = true;
+	for(vector<string>::iterator it = vars.begin(); it != vars.end(); ++it) {
+		if(!it->empty()) {
+			if(!first) ss << "\n";
+			ss << *it << " = " << global_config.get_cfg_value(*it);
+			first = false;
+		}
+	}
+	*sock << ss.str();
+}
+
+/////////////////////////////
+////// Target File //////////
+/////////////////////////////
 
 void target_file(std::string &data, tkSock *sock) {
 	if(data.find("DEL") == 0) {

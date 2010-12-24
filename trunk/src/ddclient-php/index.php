@@ -43,7 +43,7 @@ $tpl_vars = array(
 	'L_Manage' => $LANG['Manage'],
 	'L_Config' => $LANG['Config'],
 	'L_Logout' => $LANG['Logout'],
-	'L_Site' => $LANG[ucfirst($site)],
+	'L_Site' => isset($LANG[ucfirst($site)]) ? $LANG[ucfirst($site)] : "",
 	'T_META' => '',
 );
 

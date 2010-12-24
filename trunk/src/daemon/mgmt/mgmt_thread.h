@@ -55,6 +55,7 @@ void target_pkg_deactivate(std::string &data, tkSock *sock);
 
 void target_var_get(std::string &data, tkSock *sock);
 void target_var_set(std::string &data, tkSock *sock);
+void target_var_list(std::string &data, tkSock *sock);
 
 void target_file_del(std::string &data, tkSock *sock);
 void target_file_getpath(std::string &data, tkSock *sock);

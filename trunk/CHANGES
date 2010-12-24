@@ -1,3 +1,8 @@
+2010-12-24
+   [adrian]
+	- New command: VAR LIST to get a list of configuration variables
+	- advanced configuration in ddclient-php which can modify all changeable variables (similar to firefox's about:config)
+
 2010-12-23
    [adrian]
 	- Implemented PKG ACTIVATE/DEACTIVATE commands and buttons in ddclient-php

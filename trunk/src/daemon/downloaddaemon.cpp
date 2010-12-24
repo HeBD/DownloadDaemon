@@ -208,7 +208,6 @@ int main(int argc, char* argv[], char* env[]) {
 		std::string env_path(get_env_var("PATH"));
 
 		std::string curr_path;
-		size_t curr_pos = 0, last_pos = 0;
 		bool found = false;
 		
 		vector<string> paths = split_string(env_path, ":");

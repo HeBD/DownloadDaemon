@@ -49,6 +49,14 @@ namespace {
 	mutex logfile_mutex;
 }
 
+std::string possible_vars = ",enable_resume,enable_reconnect,downloading_active,download_timing_start,download_timing_end,download_folder,"
+					   "simultaneous_downloads,log_level,log_procedure,mgmt_max_connections,mgmt_port,mgmt_password,mgmt_accept_enc,max_dl_speed,"
+					   "bind_addr,dlist_file,auth_fail_wait,write_error_wait,plugin_fail_wait,connection_lost_wait,refuse_existing_links,overwrite_files,"
+					   "recursive_ftp_download,assume_proxys_online,proxy_list,enable_pkg_extractor,pkg_extractor_passwords,download_to_subdirs,"
+					   "precheck_links,captcha_retrys,delete_extracted_archives,";
+std::string insecure_vars = ",daemon_umask,gocr_binary,tar_path,unrar_path,unzip_path,post_download_script,";
+
+
 int string_to_int(const std::string str) {
 	stringstream ss;
 	ss << str;
@@ -191,12 +199,6 @@ long string_to_long(std::string str) {
 
 bool variable_is_valid(std::string &variable) {
 	trim_string(variable);
-	std::string possible_vars = ",enable_resume,enable_reconnect,downloading_active,download_timing_start,download_timing_end,download_folder,"
-						   "simultaneous_downloads,log_level,log_procedure,mgmt_max_connections,mgmt_port,mgmt_password,mgmt_accept_enc,max_dl_speed,"
-						   "bind_addr,dlist_file,auth_fail_wait,write_error_wait,plugin_fail_wait,connection_lost_wait,refuse_existing_links,overwrite_files,"
-						   "recursive_ftp_download,assume_proxys_online,proxy_list,enable_pkg_extractor,pkg_extractor_passwords,download_to_subdirs,"
-						   "precheck_links,captcha_retrys,delete_extracted_archives,";
-	std::string insecure_vars = ",daemon_umask,gocr_binary,tar_path,unrar_path,unzip_path,post_download_script,";
 
 	if(possible_vars.find("," + variable + ",") != std::string::npos) {
 		return true;

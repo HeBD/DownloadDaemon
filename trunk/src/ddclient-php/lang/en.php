@@ -14,6 +14,7 @@ $LANG = array(
 	'Manager' => 'Manager',
 	'Dl_edit' => 'Download properties',
 	'Pkg_edit' => 'Package properties',
+	'Adv_config' => 'Advanced configuration',
 
 // Login Site
 	'Host' => 'Host',
@@ -70,6 +71,8 @@ $LANG = array(
 	'log_level_desc' => 'This option specifies DownloadDaemons logging activity.',
 	'log_level' => 'Logging activity:',
 	'max_speed_desc' => 'Max. download speed (will only be used for Downloads that are not yet running).',
+	'L_variable' => 'Variable',
+	'L_value' => 'Value',
 
 // Errors
 	'ERR_COOKIE' => 'Cookies missing. If you have cookies disabled on your machine, please enable them. Else, try to log on again by clicking <a href="index.php">here</a>',
