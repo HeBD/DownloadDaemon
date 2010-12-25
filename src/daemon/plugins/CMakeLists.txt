@@ -53,12 +53,13 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	ADD_LIBRARY(hotfile.com MODULE hotfile_com.cpp)
 	ADD_LIBRARY(fileserve.com MODULE fileserve_com.cpp)
 	ADD_LIBRARY(linksave.in MODULE linksave_in.cpp)
-
+	ADD_LIBRARY(relink.us MODULE relink_us.cpp)
+	
 	SET(plugins rapidshare.com uploaded.to youtube.com netload.in megaupload.com netfolder.in filefactory.com depositfiles.com hotfile.com fileserve.com
-	            linksave.in)
+	            linksave.in relink.us)
 
         set_target_properties(${plugins} PROPERTIES PREFIX lib SUFFIX .so)
-	# !!!! add new plugins here !!!!)
+
 	IF(CYGWIN)
 		set_target_properties(${plugins} PROPERTIES LINK_FLAGS "-L..")
 		#SET(CMAKE_MODULE_LINKER_FLAGS ${CMAKE_MODULE_LINKER_FLAGS} -L../ -lDownloadDaemon --enable-runtime-pseudo-reloc)
@@ -92,7 +93,7 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	TARGET_LINK_LIBRARIES(hotfile.com ${link_libs})
 	TARGET_LINK_LIBRARIES(fileserve.com ${link_libs})
 	TARGET_LINK_LIBRARIES(linksave.in ${link_libs})
-
+	TARGET_LINK_LIBRARIES(relink.us ${link_libs})
 
 	install(TARGETS ${plugins} DESTINATION share/downloaddaemon/plugins)
 
