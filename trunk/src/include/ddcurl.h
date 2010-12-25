@@ -162,6 +162,7 @@ private:
 		setopt(CURLOPT_CONNECTTIMEOUT, (long)1024);
 		setopt(CURLOPT_NOSIGNAL, 1);
 		setopt(CURLOPT_COOKIEFILE, "");
+		setopt(CURLOPT_FOLLOWLOCATION, 1);
 		// set default write and progress functions, so curl will not write to stdout or something like thatc
 		setopt(CURLOPT_WRITEFUNCTION, ddcurl::dummy_writefkt);
 		setopt(CURLOPT_PROGRESSFUNCTION, ddcurl::dummy_progress);

@@ -1,3 +1,7 @@
+2010-12-25
+   [adrian]
+	- Added experimental relink.us decrypter
+
 2010-12-24
    [adrian]
 	- New command: VAR LIST to get a list of configuration variables
