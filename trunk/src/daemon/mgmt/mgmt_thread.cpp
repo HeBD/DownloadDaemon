@@ -988,7 +988,7 @@ void target_var_list(std::string &data, tkSock *sock) {
 	ostringstream ss;
 	bool first = true;
 	for(vector<string>::iterator it = vars.begin(); it != vars.end(); ++it) {
-		if(!it->empty()) {
+		if(!it->empty() && *it != "mgmt_password") {
 			if(!first) ss << "\n";
 			ss << *it << " = " << global_config.get_cfg_value(*it);
 			first = false;
