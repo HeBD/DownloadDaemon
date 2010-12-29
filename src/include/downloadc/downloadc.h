@@ -23,6 +23,8 @@ namespace std {
 #endif
 
 #include <vector>
+#include <map>
+#include <utility>
 #include <string>
 #include <netpptk/netpptk.h>
 #include <downloadc/client_exception.h>
@@ -235,7 +237,12 @@ class downloadc{
 
 
         // target VAR
-        /** Setter for variables, successful or not shown by exception
+		/** Returns a map of all variables with values and an indicator if it's settable or not
+		*	@returns map with value pair<string, bool>, where the first value is the value and the second indicates if it's settable.
+		*/
+		std::map<std::string, std::pair<std::string, bool> > get_var_list();
+
+		/** Setter for variables, successful or not shown by exception
         *   @param var Name of the variable
         *   @param value Value to be set
         *   @param value Optional old value, needed if you set variable mgmt_password

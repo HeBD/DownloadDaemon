@@ -896,6 +896,54 @@ void downloadc::pkg_container(std::string type, std::string content){
 
 
 // target VAR
+std::map<std::string, std::pair<std::string, bool> > downloadc::get_var_list(){
+	check_connection();
+
+	skip_update = true;
+	std::lock_guard<std::mutex> lock(mx);
+	std::string answer;
+
+	mysock->send("DDP VAR LIST");
+	mysock->recv(answer);
+	while(!check_correct_answer(answer))
+		mysock->recv(answer);
+
+	skip_update = false;
+
+	// parse list and put it into a readable structure
+	std::map<std::string, std::pair<std::string, bool> > vars;
+	std::vector<std::string> lines = split_string(answer, "\n");
+
+	for(unsigned int i = 0; i < lines.size(); ++i){
+		// a line has the following structure: r|name = value
+		// first part will contain "r" and "name = value"
+		std::vector<std::string> first_part = this->split_string(lines[i], "|");
+		// second part will contain "name" and "value"
+		std::vector<std::string> second_part;
+
+		if(first_part.size() < 2){ // we couldn't find a pipe in the line, so there is only the name = value part
+			second_part = split_string(first_part[0], "=");
+			first_part[0] = "rw";
+		}else{
+			second_part = split_string(first_part[1], "=");
+		}
+
+		if(second_part.size() < 2) // if list is corrupt enter default value
+			second_part.push_back("ERROR");
+
+		std::pair<std::string, bool> info;
+		info.first = second_part[1];
+		if(first_part[0] == "rw")
+			info.second = true;
+		else
+			info.second = false;
+
+		vars.insert(std::pair<std::string, std::pair<std::string, bool> >(second_part[0], info));
+	}
+
+	return vars;
+}
+
 void downloadc::set_var(std::string var, std::string value, std::string old_value ){
     check_connection();
 
@@ -1229,8 +1277,9 @@ std::vector<std::string> downloadc::split_string(const std::string& inp_string, 
                     continue;
                 }
             }
-
-        ret.push_back(inp_string.substr(last_n, n - last_n));
+		std::string tmp_string = inp_string.substr(last_n, n - last_n);
+		trim_string(tmp_string);
+		ret.push_back(tmp_string);
         size_t esc_pos = 0;
 
         if(respect_escape){
