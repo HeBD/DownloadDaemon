@@ -1,3 +1,7 @@
+2010-12-29
+   [susanne]
+	- Changed behaviour of config dialog of ddclient-gui to use VAR LIST and only save changed items
+
 2010-12-25
    [adrian]
 	- Added experimental relink.us decrypter

@@ -24,6 +24,7 @@
 #include <QStackedWidget>
 #include <string>
 #include <vector>
+#include <map>
 
 class configure_dialog : public QDialog{
     Q_OBJECT
@@ -46,12 +47,14 @@ class configure_dialog : public QDialog{
         QWidget *create_proxy_panel();
         QWidget *create_client_panel();
         QWidget *create_extractor_panel();
+		void get_all_vars();
         QString get_var(const std::string &var, var_type typ = NORMAL_T);
         void set_var(const std::string &var, const std::string &value, var_type typ = NORMAL_T);
 
         QString config_dir;
 		QListWidget *tabs;
 		QStackedWidget *pages;
+		std::map<std::string, std::pair<std::string, bool> > all_variables;
 
         // general
         QComboBox *premium_host;
