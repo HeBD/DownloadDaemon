@@ -16,6 +16,7 @@
 #include <string>
 #include <fstream>
 #include "../mgmt/connection_manager.h"
+#include "../plugins/captcha.h"
 
 #include <ddcurl.h>
 
@@ -31,7 +32,7 @@ namespace std {
 
 enum download_status { DOWNLOAD_PENDING = 1, DOWNLOAD_INACTIVE, DOWNLOAD_FINISHED, DOWNLOAD_RUNNING, DOWNLOAD_WAITING, DOWNLOAD_DELETED, DOWNLOAD_RECONNECTING };
 enum plugin_status { PLUGIN_SUCCESS = 1, PLUGIN_ERROR, PLUGIN_LIMIT_REACHED, PLUGIN_FILE_NOT_FOUND, PLUGIN_CONNECTION_ERROR, PLUGIN_SERVER_OVERLOADED,
-					 PLUGIN_INVALID_HOST, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR, PLUGIN_AUTH_FAIL };
+					 PLUGIN_INVALID_HOST, PLUGIN_CONNECTION_LOST, PLUGIN_WRITE_FILE_ERROR, PLUGIN_AUTH_FAIL, PLUGIN_CAPTCHA };
 
 struct plugin_output {
 	plugin_output() : allows_resumption(true), allows_multiple(true), offers_premium(false), file_size(0), file_online(PLUGIN_SUCCESS) {}
@@ -183,6 +184,9 @@ public:
 	bool get_prechecked() const					{ std::lock_guard<std::recursive_mutex> lock(mx); return already_prechecked; }
 	void set_prechecked(bool p)					{ std::lock_guard<std::recursive_mutex> lock(mx); already_prechecked = p; }
 
+	captcha *get_captcha() const                { std::lock_guard<std::recursive_mutex> lock(mx); return cap; }
+	void set_captcha(captcha *c)                { std::lock_guard<std::recursive_mutex> lock(mx); cap = c; }
+
 	/** This function calls the plugin and checks if 1: the download is online and 2: what size it has.
 	*	Then it sets the PLUGIN_* error and the filesize for the download
 	*/
@@ -227,6 +231,9 @@ private:
 	bool            already_prechecked;
 	int             parent;
 	std::string     last_posted_message;
+
+	// captcha-solving stuff
+	captcha*        cap;
 
 
 	/** Simple constructor (private)

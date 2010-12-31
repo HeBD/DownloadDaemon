@@ -30,6 +30,7 @@ void target_file(std::string &data, tkSock *sock);
 void target_router(std::string &data, tkSock *sock);
 void target_premium(std::string &data, tkSock *sock);
 void target_subscription(std::string &data, client *cl);
+void target_captcha(std::string &data, tkSock *sock);
 
 void target_dl_list(std::string &data, tkSock *sock);
 void target_dl_add(std::string &data, tkSock *sock);
@@ -70,8 +71,11 @@ void target_premium_list(std::string &data, tkSock *sock);
 void target_premium_set(std::string &data, tkSock *sock);
 void target_premium_get(std::string &data, tkSock *sock);
 
-
 void target_subscription_add(std::string &data, client *cl);
 void target_subscription_del(std::string &data, client *cl);
 void target_subscription_list(std::string &data, client *cl);
+
+void target_captcha_request(std::string &data, tkSock *sock);
+void target_captcha_solve(std::string &data, tkSock *sock);
+
 #endif /*MGMT_THREAD_H_*/

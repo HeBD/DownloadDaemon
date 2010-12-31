@@ -114,6 +114,8 @@ class package_container {
 	void set_proxy(dlindex dl, std::string proxy);
 	std::string get_proxy(dlindex dl);
 
+	captcha* get_captcha(dlindex dl);
+
 	void set_password(int id, const std::string& passwd);
 	std::string get_password(int id);
 
@@ -270,6 +272,16 @@ class package_container {
 	/** presets the file-status for all downloads that still require it
 	*/
 	void preset_file_status();
+
+	/** Manually solve a captcha by notifying clients, etc
+	*	@param dl Download to which the captcha belongs
+	*	@param cap captcha
+	*	@param the result that was typed in by the user
+	*	@returns false if the timeout was reached, true if a solution was suppliad
+	*/
+	bool solve_captcha(dlindex dl, captcha &cap, std::string& result);
+
+	std::mutex captcha_solver_mutex;
 
 
 private:

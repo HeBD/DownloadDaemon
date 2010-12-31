@@ -290,7 +290,7 @@ void connect_request(tkSock &sock, std::string &host, const std::string &port, s
 
 
 		if(snd.find("100") == 0) {
-			cout << "Authentication success" << endl;
+			//cout << "Authentication success" << endl;
 		} else if(snd.find("102") == 0) {
 			cout << "Unable to authenticate" << endl;
 			exit(-2);

@@ -12,12 +12,12 @@
 #ifndef PLUGIN_HELPERS_H_INCLUDED
 #define PLUGIN_HELPERS_H_INCLUDED
 #define IS_PLUGIN
-
+#include "captcha.h"
 #include <sstream>
 #include <config.h>
 #include "../dl/download.h"
 #include "../dl/download_container.h"
-#include "captcha.h"
+
 
 /*
 The following types are imported from download.h and may be/have to be used for writing plugins:
@@ -82,7 +82,7 @@ namespace PLGFILE {
 	/** this returns the curl-handle which will be used for downloading later. You may need it for setting special options like cookies, etc.
 	 *	@returns the curl handle
 	 */
-        ddcurl* get_handle();
+	ddcurl* get_handle();
 
 	/** passing a download_container object to that function will delete the current download and replace it by all the links specified in lst.
 	 *	this is mainly for decrypter-plugins for hosters that contain several download-links of other hosters
@@ -129,6 +129,7 @@ namespace PLGFILE {
 	std::string gocr;
 	std::string host;
 	std::string share_directory;
+	captcha     Captcha;
 	std::mutex p_mutex;
 
 	void set_wait_time(int seconds) {
@@ -209,7 +210,7 @@ using namespace PLGFILE;
 
 /** This function is just a wrapper for defining globals and calling your plugin */
 extern "C" plugin_status plugin_exec_wrapper(download_container* dlc, download* pdl, int id, plugin_input& pinp, plugin_output& poutp,
-                                             int max_captcha_retrys, const std::string &gocr_path, const std::string &root_dir) {
+											 int max_captcha_retrys, const std::string &gocr_path, const std::string &root_dir) {
 	std::lock_guard<std::mutex> lock(p_mutex);
 	dl_ptr = pdl;
 	dl_list = dlc;
@@ -219,6 +220,7 @@ extern "C" plugin_status plugin_exec_wrapper(download_container* dlc, download* 
 	host = dlc->get_host(id);
 	retry_count = 0;
 	share_directory = root_dir;
+	Captcha.setup(gocr, max_retrys, share_directory, dlid, host);
 	return plugin_exec(pinp, poutp);
 }
 
@@ -245,7 +247,7 @@ extern "C" void post_process_dl_init(download_container& dlc, download *pdl, int
 }
 #endif
 
-
+// so every plugin gets its own implementation and uses its own retry-count
 #include "captcha.cpp"
 
 #endif // PLUGIN_HELPERS_H_INCLUDED

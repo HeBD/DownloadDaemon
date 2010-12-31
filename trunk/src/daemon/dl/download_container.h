@@ -154,7 +154,10 @@ public:
 	void set_pkg_name(const std::string& pkg_name);
 	std::string get_pkg_name();
 
-        ddcurl* get_handle(int id);
+	void set_captcha(int id, captcha *cap);
+	captcha* get_captcha(int id);
+
+	ddcurl* get_handle(int id);
 
 	/** strip the host from the URL
 	*	@param dl Download from which to get the host
