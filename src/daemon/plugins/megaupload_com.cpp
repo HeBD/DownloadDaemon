@@ -85,11 +85,11 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 				if(result.find("gencap.php") == string::npos) {
 					// as of dec 2010, they don't want a captcha any more.
-					// I don't know if that's an exception, but I'm just leave the captcha-code here and ignore it if not needed
+					// I don't know if that's an exception, but I'll just leave the captcha-code here and ignore it if not needed
 					outp.download_url = search_between(result, "id=\"downloadlink\"><a href=\"", "\"");
 					set_wait_time(atoi(search_between(result, "count=", ";").c_str()));
 					if(outp.download_url.empty())
-			return PLUGIN_FILE_NOT_FOUND;
+						return PLUGIN_FILE_NOT_FOUND;
 					return PLUGIN_SUCCESS;
 		}
 
@@ -135,9 +135,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 
 			pclose(captcha_as_pnm);
-			remove("/tmp/tmp_captcha_megaupload.gif");
-			captcha cap(result);
-			std::string captcha_text = cap.process_image("-C 1-9A-NP-Z", "pnm", 4, true);
+			remove("/tmp/tmp_captcha_megaupload.gif");;
+			std::string captcha_text = Captcha.process_image(result, "pnm", "-C 1-9A-NP-Z", 4, true);
 			if(captcha_text.empty()) continue;
 
 			std::string post_data = "captchacode=" + captchacode + "&megavar=" + megavar + "&captcha=" + captcha_text;

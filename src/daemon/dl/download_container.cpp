@@ -324,6 +324,13 @@ void download_container::set_proxy(int id, std::string proxy) {
 	(*dl)->set_proxy(proxy);
 }
 
+void download_container::set_captcha(int id, captcha *cap) {
+	lock_guard<recursive_mutex> lock(download_mutex);
+	download_container::iterator dl = get_download_by_id(id);
+	if(dl == download_list.end()) return;
+	(*dl)->set_captcha(cap);
+}
+
 std::string download_container::get_proxy(int id) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator dl = get_download_by_id(id);
@@ -433,6 +440,13 @@ std::string download_container::get_host(int dl) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it = get_download_by_id(dl);
 	return (*it)->get_host();
+}
+
+captcha* download_container::get_captcha(int id) {
+	lock_guard<recursive_mutex> lock(download_mutex);
+	download_container::iterator dl = get_download_by_id(id);
+	if(dl == download_list.end()) return NULL;
+	return (*dl)->get_captcha();
 }
 
 void download_container::set_password(const std::string& passwd) {

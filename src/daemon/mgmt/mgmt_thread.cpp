@@ -230,6 +230,14 @@ void connection_handler(client *connection) {
 			}
 			trim_string(data);
 			target_subscription(data, connection);
+		} else if(data.find("CAPTCHA") == 0) {
+			data.erase(0, 7);
+			if(data.length() == 0 || !isspace(data[0])) {
+				*sock << "101 PROTOCOL";
+				continue;
+			}
+			trim_string(data);
+			target_captcha(data, sock);
 		} else {
 			*sock << "101 PROTOCOL";
 			continue;
@@ -1363,6 +1371,74 @@ void target_premium_set(std::string &data, tkSock *sock) {
 
 }
 
+////////////////////////////////////////////
+////// CAPTCHA TARGET START ////////////////
+////////////////////////////////////////////
+
+void target_captcha(std::string &data, tkSock *sock) {
+	if(data.find("REQUEST") == 0) {
+		data.erase(0, 7);
+		if(data.size() < 2 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_captcha_request(data, sock);
+	} else if(data.find("SOLVE") == 0) {
+		data.erase(0, 5);
+		if(data.size() < 2 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_captcha_solve(data, sock);
+	}
+}
+
+void target_captcha_request(std::string &data, tkSock *sock) {
+	if(data.size() < 1 || !isdigit(data[0])) {
+		*sock << "101 PROTOCOL";
+		return;
+	}
+	int id = atoi(data.c_str());
+	lock_guard<mutex> lock(global_download_list.captcha_solver_mutex);
+	dlindex idx(global_download_list.pkg_that_contains_download(id), id);
+	download_status status = global_download_list.get_status(idx);
+	plugin_status ps = global_download_list.get_error(idx);
+	if(status == DOWNLOAD_RUNNING && ps == PLUGIN_CAPTCHA) {
+		captcha *c = global_download_list.get_captcha(idx);
+		if(c) {
+			string to_send = c->get_imgtype() + "|" + c->get_question() + "|" + c->get_image();
+			*sock << to_send;
+		}
+	}
+	*sock << "";
+}
+
+void target_captcha_solve(std::string &data, tkSock *sock) {
+	size_t spos = data.find_first_of("\r\n\t ");
+	if(data.size() < 1 || !isdigit(data[0]) || spos == string::npos) {
+		*sock << "101 PROTOCOL";
+		return;
+	}
+
+	string ids = data.substr(0, spos);
+	string answer = data.substr(spos);
+	trim_string(answer);
+	lock_guard<mutex> lock(global_download_list.captcha_solver_mutex);
+	int id = atoi(ids.c_str());
+	dlindex idx(global_download_list.pkg_that_contains_download(id), id);
+	download_status status = global_download_list.get_status(idx);
+	plugin_status ps = global_download_list.get_error(idx);
+	if(status == DOWNLOAD_RUNNING && ps == PLUGIN_CAPTCHA) {
+		captcha *c = global_download_list.get_captcha(idx);
+		if(c) {
+			c->set_result(answer);
+		}
+	}
+	*sock << "100 SUCCESS";
+}
+
 ///////////////////////////////////////////////////////
 ///////// SUBSCRIPTION TARGET START ///////////////////
 ///////////////////////////////////////////////////////
@@ -1431,4 +1507,5 @@ void target_subscription_list(std::string &data, client *cl) {
 	 }
 	 *sock << ss.str();
 }
+
 

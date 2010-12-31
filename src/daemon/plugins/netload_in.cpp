@@ -118,8 +118,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 				return PLUGIN_ERROR;
 			}
 
-			captcha cap(result);
-			std::string captcha_text = cap.process_image("-m 2 -a 20 -C 0-9", "png", 4, true);
+			std::string captcha_text = Captcha.process_image(result, "png", "-m 2 -a 20 -C 0-9", 4, true, false, captcha::SOLVE_AUTOMATIC);
 			if(captcha_text.empty()) continue;
 			post_data += "&captcha_check=" + captcha_text + "&start=";
 

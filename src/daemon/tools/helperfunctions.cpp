@@ -53,7 +53,7 @@ std::string possible_vars = ",enable_resume,enable_reconnect,downloading_active,
 					   "simultaneous_downloads,log_level,log_procedure,mgmt_max_connections,mgmt_port,mgmt_password,mgmt_accept_enc,max_dl_speed,"
 					   "bind_addr,dlist_file,auth_fail_wait,write_error_wait,plugin_fail_wait,connection_lost_wait,refuse_existing_links,overwrite_files,"
 					   "recursive_ftp_download,assume_proxys_online,proxy_list,enable_pkg_extractor,pkg_extractor_passwords,download_to_subdirs,"
-					   "precheck_links,captcha_retrys,delete_extracted_archives,";
+					   "precheck_links,captcha_retrys,delete_extracted_archives,captcha_manual,captcha_max_wait,";
 std::string insecure_vars = ",daemon_umask,gocr_binary,tar_path,unrar_path,unzip_path,post_download_script,";
 
 
@@ -514,3 +514,5 @@ void print_backtrace(int sig) {
   //exit(1);
 }
 #endif
+
+#include "../plugins/captcha.cpp"
