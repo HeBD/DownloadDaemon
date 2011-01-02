@@ -35,6 +35,23 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	if(res != 0) {
 		return PLUGIN_ERROR;
 	}
+	size_t pos;
+	while((pos = result.find("<img id=\"captcha\"")) != string::npos) {
+		string captcha_url = "http://linksave.in/" + search_between(result, "src=\"", "\"", pos);
+		handle->setopt(CURLOPT_URL, captcha_url);
+		result.clear();
+		handle->perform();
+		std::string captcha_text = Captcha.process_image(result, "gif", "", -1, false, false, captcha::SOLVE_MANUAL);
+		string id = search_between(captcha_url, "code=", "&");
+		string hsh = search_between(captcha_url, "hsh=", "&");
+		handle->setopt(CURLOPT_COPYPOSTFIELDS, "id=" + id + "&hash=" + hsh + "&code=" + captcha_text + "&login=submit");
+		handle->setopt(CURLOPT_POST, 1);
+		handle->setopt(CURLOPT_URL, get_url());
+		result.clear();
+		handle->perform();
+	}
+	handle->setopt(CURLOPT_POST, 0);
+
 	string dlclink = search_between(result, "document.getElementById('dlc_link').href=unescape('", "');");
 	if(!dlclink.empty()) {
 		string oldresult = result;
@@ -42,7 +59,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		handle->setopt(CURLOPT_URL, dlclink);
 		result.clear();
 		res = handle->perform();
-		if(res == CURLE_OK) {
+		long http_code;
+		handle->getinfo(CURLINFO_RESPONSE_CODE, &http_code);
+		if(res == CURLE_OK && http_code == 200) {
 			// we have a dlc file.. use it
 			download_container d;
 			decode_dlc(result, &d);
