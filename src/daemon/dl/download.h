@@ -164,7 +164,8 @@ public:
 	download_status get_status() const			{ std::lock_guard<std::recursive_mutex> lock(mx); return status; }
 	void set_status(download_status st)			{ std::lock_guard<std::recursive_mutex> lock(mx); if(status == DOWNLOAD_DELETED) return;
 												  status = st;
-												  if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) { need_stop = true; wait_seconds = 0; } post_subscribers(); }
+												  if(st == DOWNLOAD_INACTIVE || st == DOWNLOAD_DELETED) { need_stop = true; wait_seconds = 0; }
+												  if(st != DOWNLOAD_DELETED) post_subscribers(); }
 
 	int get_speed()	const						{ std::lock_guard<std::recursive_mutex> lock(mx); return speed; }
 	void set_speed(int s)						{ std::lock_guard<std::recursive_mutex> lock(mx); speed = s; post_subscribers(); }

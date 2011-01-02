@@ -277,6 +277,13 @@ captcha* package_container::get_captcha(dlindex dl) {
 	return (*it)->get_captcha(dl.second);
 }
 
+void package_container::set_captcha(dlindex dl, captcha *cap) {
+	unique_lock<recursive_mutex> lock(mx);
+	package_container::iterator it = package_by_id(dl.first);
+	if(it == packages.end()) return;
+	(*it)->set_captcha(dl.second, cap);
+}
+
 std::string package_container::get_proxy(dlindex dl) {
 	lock_guard<recursive_mutex> lock(mx);
 	package_container::iterator it = package_by_id(dl.first);
@@ -897,11 +904,7 @@ void package_container::preset_file_status() {
 
 bool package_container::solve_captcha(dlindex dl, captcha &cap, string& result) {
 	cap.set_result("");
-	unique_lock<recursive_mutex> llock(mx);
-	package_container::iterator it = package_by_id(dl.first);
-	if(it == packages.end()) return false;
-	(*it)->set_captcha(dl.second, &cap);
-	llock.unlock();
+	set_captcha(dl, &cap);
 
 	int max_wait = global_config.get_int_value("captcha_max_wait");
 	set_error(dl, PLUGIN_CAPTCHA);
@@ -910,11 +913,11 @@ bool package_container::solve_captcha(dlindex dl, captcha &cap, string& result) 
 	// replace this with a condition variable with timeout
 	while(true) {
 		sleep(1);
-		lock_guard<mutex> lock(captcha_solver_mutex);
 		if(start_time + max_wait < time(0)) {
 			set_status(dl, DOWNLOAD_INACTIVE);
 			set_error(dl, PLUGIN_SUCCESS);
 			set_wait(dl, 0);
+			set_captcha(dl, 0);
 			log_string("Manually solving the captcha of download " + int_to_string(dl.second) + " failed. No response from Client", LOG_WARNING);
 			break;
 		}
@@ -924,6 +927,7 @@ bool package_container::solve_captcha(dlindex dl, captcha &cap, string& result) 
 		if(!result.empty()) {
 			set_error(dl, PLUGIN_SUCCESS);
 			set_wait(dl, 0);
+			set_captcha(dl, 0);
 			return true;
 		}
 	}
