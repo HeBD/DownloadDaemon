@@ -897,11 +897,11 @@ void package_container::preset_file_status() {
 
 bool package_container::solve_captcha(dlindex dl, captcha &cap, string& result) {
 	cap.set_result("");
-	mx.lock();
+	unique_lock<recursive_mutex> llock(mx);
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return false;
 	(*it)->set_captcha(dl.second, &cap);
-	mx.unlock();
+	llock.unlock();
 
 	int max_wait = global_config.get_int_value("captcha_max_wait");
 	set_error(dl, PLUGIN_CAPTCHA);
@@ -913,6 +913,7 @@ bool package_container::solve_captcha(dlindex dl, captcha &cap, string& result) 
 		lock_guard<mutex> lock(captcha_solver_mutex);
 		if(start_time + max_wait < time(0)) {
 			set_status(dl, DOWNLOAD_INACTIVE);
+			set_error(dl, PLUGIN_SUCCESS);
 			set_wait(dl, 0);
 			log_string("Manually solving the captcha of download " + int_to_string(dl.second) + " failed. No response from Client", LOG_WARNING);
 			break;
