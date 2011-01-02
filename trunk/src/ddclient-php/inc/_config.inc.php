@@ -28,6 +28,11 @@ define('LANG', 'en');
 define('AUTO_REFRESH', true);
 
 /*
+ If AUTO_REFRESH is set to true, this sets the reload-interval in seconds.
+*/
+define('REFRESH_TIME', 3);
+
+/*
  If this is set to true, ddclient-php will check for the file-status of each file in the download
  list when updating. This can take a long time. Generally, you should only set this to true if your server
  runs on fast hardware or you usually only use small download lists (up to ~50 downloads at once).

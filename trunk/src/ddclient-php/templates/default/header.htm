@@ -58,13 +58,13 @@
 				// we need this shitty dummy-parameter or IE will cache ajax requests and we will not receive updates at all in IE
 				// this is also why I have to use POST instead of GET
 				xmlhttp.open("GET", "index.php?site=manage&echo=1&dummy=" + new Date().getTime(), true);
-				setTimeout("xmlhttp.send()", 3000);
+				setTimeout("xmlhttp.send()",' . REFRESH_TIME * 1000 . ');
 				tmpdiv = null;
 				delete tmpdiv;
 			}
 		}
 		xmlhttp.open("GET","index.php?site=manage&echo=1",true);
-		setTimeout("xmlhttp.send()", 3000);
+		setTimeout("xmlhttp.send()", ' . REFRESH_TIME * 1000 . ');
 		'; ?>
 		/* ]]> */
 		</script>

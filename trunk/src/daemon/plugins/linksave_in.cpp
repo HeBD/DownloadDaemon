@@ -119,7 +119,7 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 	outp.allows_resumption = false;
-	outp.allows_multiple = false;
+	outp.allows_multiple = true;
 
 	outp.offers_premium = false;
 }
