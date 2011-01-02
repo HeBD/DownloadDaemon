@@ -1401,7 +1401,6 @@ void target_captcha_request(std::string &data, tkSock *sock) {
 		return;
 	}
 	int id = atoi(data.c_str());
-	lock_guard<mutex> lock(global_download_list.captcha_solver_mutex);
 	dlindex idx(global_download_list.pkg_that_contains_download(id), id);
 	plugin_status ps = global_download_list.get_error(idx);
 	if(ps == PLUGIN_CAPTCHA) {
@@ -1424,7 +1423,6 @@ void target_captcha_solve(std::string &data, tkSock *sock) {
 	string ids = data.substr(0, spos);
 	string answer = data.substr(spos);
 	trim_string(answer);
-	lock_guard<mutex> lock(global_download_list.captcha_solver_mutex);
 	int id = atoi(ids.c_str());
 	dlindex idx(global_download_list.pkg_that_contains_download(id), id);
 	plugin_status ps = global_download_list.get_error(idx);

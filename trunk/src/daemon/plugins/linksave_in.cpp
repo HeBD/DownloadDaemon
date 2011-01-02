@@ -49,6 +49,12 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		handle->setopt(CURLOPT_URL, get_url());
 		result.clear();
 		handle->perform();
+		if(result.find("Wrong code. Please retry.") != string::npos) {
+			handle->setopt(CURLOPT_URL, get_url());
+			handle->setopt(CURLOPT_POST, 0);
+			result.clear();
+			handle->perform();
+		}
 	}
 	handle->setopt(CURLOPT_POST, 0);
 

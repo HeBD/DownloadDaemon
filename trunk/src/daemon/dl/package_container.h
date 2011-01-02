@@ -115,6 +115,7 @@ class package_container {
 	std::string get_proxy(dlindex dl);
 
 	captcha* get_captcha(dlindex dl);
+	void set_captcha(dlindex dl, captcha *cap);
 
 	void set_password(int id, const std::string& passwd);
 	std::string get_password(int id);
@@ -280,9 +281,6 @@ class package_container {
 	*	@returns false if the timeout was reached, true if a solution was suppliad
 	*/
 	bool solve_captcha(dlindex dl, captcha &cap, std::string& result);
-
-	std::mutex captcha_solver_mutex;
-
 
 private:
 	typedef std::vector<download_container*>::iterator iterator;

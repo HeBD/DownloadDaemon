@@ -52,6 +52,7 @@ download::download(const std::string& dl_url)
 	char timestr[20];
 	strftime(timestr, 20, "%Y-%m-%d %X", timeinfo);
 	add_date = timestr;
+	cap = 0;
 	//add_date.erase(add_date.length() - 1);
 }
 
@@ -88,6 +89,7 @@ void download::from_serialized(std::string& serializedDL) {
 	can_resume = true;
 	handle = NULL;
 	already_prechecked = false;
+	cap = 0;
 }
 #endif
 
@@ -114,6 +116,7 @@ void download::operator=(const download& dl) {
 	handle = dl.handle;
 	already_prechecked = dl.already_prechecked;
 	subs_enabled = dl.subs_enabled;
+	cap = dl.cap;
 }
 
 download::~download() {
@@ -123,7 +126,7 @@ download::~download() {
 		status = DOWNLOAD_DELETED;
 		usleep(10);
 	}
-        post_subscribers(connection_manager::DELETE);
+	post_subscribers(connection_manager::DELETE);
 }
 
 std::string download::serialize() {
@@ -191,7 +194,7 @@ void download::post_subscribers(connection_manager::reason_type reason) {
 	create_client_line(line);
 	connection_manager::reason_to_string(reason, reason_str);
 
-        line = reason_str + ":" + int_to_string(get_parent()) + ":" + line; // contains the parent id after "reason:"
+	line = reason_str + ":" + int_to_string(get_parent()) + ":" + line; // contains the parent id after "reason:"
 
 	if((line != last_posted_message) || (reason == connection_manager::MOVEDOWN) || (reason == connection_manager::MOVEUP)) {
 		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
