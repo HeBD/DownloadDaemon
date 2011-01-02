@@ -913,6 +913,7 @@ bool package_container::solve_captcha(dlindex dl, captcha &cap, string& result) 
 		lock_guard<mutex> lock(captcha_solver_mutex);
 		if(start_time + max_wait < time(0)) {
 			set_status(dl, DOWNLOAD_INACTIVE);
+			set_wait(dl, 0);
 			log_string("Manually solving the captcha of download " + int_to_string(dl.second) + " failed. No response from Client", LOG_WARNING);
 			break;
 		}
@@ -921,6 +922,7 @@ bool package_container::solve_captcha(dlindex dl, captcha &cap, string& result) 
 		result = cap.get_result();
 		if(!result.empty()) {
 			set_error(dl, PLUGIN_SUCCESS);
+			set_wait(dl, 0);
 			return true;
 		}
 	}

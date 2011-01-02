@@ -243,7 +243,7 @@ const char* download::get_error_str() {
 	case PLUGIN_AUTH_FAIL:
 			return "Authentication failed";
 	case PLUGIN_CAPTCHA:
-			return "Waiting for Captcha input";
+			return "Captcha";
 
 	}
 	return "Unknown plugin error - please report";

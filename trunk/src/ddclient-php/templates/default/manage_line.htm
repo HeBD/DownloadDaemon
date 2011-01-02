@@ -5,8 +5,16 @@
 	<td>{T_DL_URL_short}</td>
 	<td class="{T_DL_Class}">
 		<?php 
-		if ("{T_PKG_ID}" == "")
-			echo "<div class=\"progress-container\"><span>{T_DL_Status}</span><div style=\"width: {T_DL_Percent}%;\" align=\"left\"></div></div>";
+		if ("{T_PKG_ID}" == "") {
+			echo "<div class=\"progress-container\"><span>";
+			if (strpos("{T_DL_Status}", "Captcha") !== FALSE)
+				echo "<a href=\"index.php?site=get_captcha&id={T_DL_ID}\">";
+			echo "{T_DL_Status}";
+			if (strpos("{T_DL_Status}", "Captcha") !== FALSE)
+				echo "</a>";
+			echo "</span><div style=\"width: {T_DL_Percent}%;\" align=\"left\"></div></div>";
+		}
+		
 		?>
 	</td>
 	<td>
