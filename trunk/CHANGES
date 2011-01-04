@@ -1,6 +1,10 @@
+2011-01-04
+   [susanne]
+	- ddclient-gui can now remotely solve captchas
+
 2011-01-02
    [adrian]
-	- ddclient-php can now remotely solve captcas
+	- ddclient-php can now remotely solve captchas
 	- fixed linksave.in plugin if dlc is not available
 	- configurable reload-time in ddclient-php
 

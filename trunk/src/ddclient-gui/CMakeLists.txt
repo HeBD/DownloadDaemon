@@ -10,6 +10,7 @@ SET(ddclient_gui_SRCS   ddclient_gui.cpp
                         ddclient_gui_about_dialog.cpp
                         ddclient_gui_configure_dialog.cpp
                         ddclient_gui_status_bar.cpp
+                        ddclient_gui_captcha_dialog.cpp
                         ../include/netpptk/netpptk.cpp
                         ../include/crypt/md5.cpp
                         ../include/language/language.cpp
@@ -17,10 +18,11 @@ SET(ddclient_gui_SRCS   ddclient_gui.cpp
                         ../include/downloadc/client_exception.cpp
                         ../include/cfgfile/cfgfile.cpp)
 
-SET(moc_headers		ddclient_gui.h
+SET(moc_headers			ddclient_gui.h
                         ddclient_gui_connect_dialog.h
                         ddclient_gui_add_dialog.h
-                        ddclient_gui_configure_dialog.h)
+                        ddclient_gui_configure_dialog.h
+                        ddclient_gui_captcha_dialog.h)
 
 SET(libs                "")
 
@@ -129,6 +131,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/key.png D
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/project-support.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/flattr.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/coins.png DESTINATION share/ddclient-gui/img/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/bullet_captcha.png DESTINATION share/ddclient-gui/img/)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-gui.png DESTINATION share/pixmaps)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-gui.xpm DESTINATION share/pixmaps)

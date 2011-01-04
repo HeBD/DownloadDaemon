@@ -186,6 +186,7 @@ class ddclient_gui : public QMainWindow{
         QAction *about_action;
         QAction *down_action;
         QAction *up_action;
+		QAction *captcha_action;
 		QToolBar *configure_menu;
         QMenu *tray_menu;
         QSystemTrayIcon *tray_icon;
@@ -202,6 +203,7 @@ class ddclient_gui : public QMainWindow{
         void on_deactivate();
         void on_priority_up();
         void on_priority_down();
+		void on_enter_captcha();
         void on_configure();
         void on_downloading_activate();
         void on_downloading_deactivate();
