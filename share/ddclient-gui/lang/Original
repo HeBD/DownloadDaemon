@@ -172,6 +172,7 @@ Time left->Dauer
 Download(s)->Download(s)
 
 Download running. Waiting.->Download läuft. Warten.
+Enter Captcha->Captcha eingeben
 Error->Fehler
 Retrying soon.->Versuche es bald erneut.
 Running->Laufend
@@ -218,6 +219,7 @@ Please connect before you activate Downloading.->Bitte verbinden Sie bevor Sie d
 Please connect before you deactivate Downloading.->Bitte verbinden Sie bevor Sie das Downloaden deaktivieren.
 Please connect before copying URLs.->Bitte verbinden Sie bevor Sie URLs kopieren.
 Please connect before changing Packages.->Bitte verbinden Sie bevor Sie Pakete verändern.
+Please connect before entering a Captcha.->Bitte verbinden Sie bevor Sie einen Captcha eingeben.
 Couldn't write into clipboard.->Konnte nicht in Zwischenablage schreiben.
 Clipboard Error->Zwischenablagen-Fehler
 Enter Package Password->Paket Passwort eingeben

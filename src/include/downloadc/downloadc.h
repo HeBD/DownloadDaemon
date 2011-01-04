@@ -341,6 +341,22 @@ class downloadc{
         void remove_subscription(subs_type type);
 
 
+		// target CAPTCHA
+		/** Returns a captcha image for a specified download
+		*	@param id ID of download of requested captcha
+		*	@param type File Type of returned image
+		*	@param question Question asked with captcha if available
+		*	@returns Image information in binary form
+		*/
+		std::string get_captcha(int id, std::string &type, std::string &question);
+
+		/** Resolve a captcha with the given answer
+		*	@param id ID of download
+		*	@param answer Captcha answer
+		*/
+		void captcha_resolve(int id, std::string answer);
+
+
         // helper functions
         /** Checks connection, successful or not shown by exception*/
         void check_connection();
@@ -348,9 +364,11 @@ class downloadc{
         /** Splits a string into many strings, seperating them with the seperator
         *    @param inp_string string to split
         *    @param seperator Seperator to use for splitting
+		*	 @param respect_escape Respect an escape sequence
+		*	 @param max_elements Just split into a maximal number of elements
         *    @returns Vector of all the strings
         */
-        static std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape = false);
+		static std::vector<std::string> split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape = false, int max_elements = -1);
 
         /** Remove whitespaces from beginning and end of a string
         *   @param str string to process

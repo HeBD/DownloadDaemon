@@ -1239,6 +1239,54 @@ void downloadc::remove_subscription(subs_type type){
     check_error_code(answer);
 }
 
+std::string downloadc::get_captcha(int id, std::string &type, std::string &question){
+	check_connection();
+
+	skip_update = true;
+	std::lock_guard<std::mutex> lock(mx);
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP CAPTCHA REQUEST " + id_str.str() + " " + answer);
+	mysock->recv(answer);
+	while(!check_correct_answer(answer))
+		mysock->recv(answer);
+
+	skip_update = false;
+	check_error_code(answer);
+
+
+	// answer has the following structure: type|question|image content
+	std::vector<std::string> splitted = split_string(answer, "|", false, 3);
+	if(splitted.size() != 3)
+		return "";
+
+	type = splitted[0];
+	question = splitted[1];
+	return splitted[2];
+}
+
+void downloadc::captcha_resolve(int id, std::string answer){
+	check_connection();
+
+	skip_update = true;
+	std::lock_guard<std::mutex> lock(mx);
+
+	std::string daemon_answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP CAPTCHA SOLVE " + id_str.str() + " " + answer);
+	mysock->recv(daemon_answer);
+	while(!check_correct_answer(daemon_answer))
+		mysock->recv(daemon_answer);
+
+	skip_update = false;
+	check_error_code(daemon_answer);
+}
+
 
 // helper functions
 void downloadc::check_connection(){
@@ -1265,36 +1313,42 @@ void downloadc::check_connection(){
 }
 
 
-std::vector<std::string> downloadc::split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape){
-    std::vector<std::string> ret;
-        size_t n = 0, last_n = 0;
-        while(true){
-            n = inp_string.find(seperator, n);
+std::vector<std::string> downloadc::split_string(const std::string& inp_string, const std::string& seperator, bool respect_escape, int max_elements){
+	std::vector<std::string> ret;
+	size_t n = 0, last_n = 0;
+	int count = 1;
 
-            if(respect_escape && (n != std::string::npos) && (n != 0)){
-                if(inp_string[n-1] == '\\') {
-                    ++n;
-                    continue;
-                }
-            }
-		std::string tmp_string = inp_string.substr(last_n, n - last_n);
-		trim_string(tmp_string);
-		ret.push_back(tmp_string);
-        size_t esc_pos = 0;
+	while(true) {
+		if((max_elements != -1) && (count == max_elements)){
+			ret.push_back(inp_string.substr(last_n));
+			break;
+		}
 
-        if(respect_escape){
-            while((esc_pos = ret.back().find('\\' + seperator)) != std::string::npos)
-                ret.back().erase(esc_pos, 1);
-        }
+		n = inp_string.find(seperator, n);
 
-        if(n == std::string::npos)
-            break;
-        n += seperator.size();
-        last_n = n;
+		if(respect_escape && (n != std::string::npos) && (n != 0)) {
+			// count the number of escape-backslashes before the occurence.. if %2 == 0, this char is not escaped
+			int num_escapes = 0;
+			int i = (int)n-1; // has to be int.. size_t will not work
+			while(i >= 0 && inp_string[i] == '\\') {
+				++num_escapes; --i;
+			}
+			if(num_escapes % 2 != 0) {
+				++n;
+				continue;
+			}
+		}
 
-    }
+		ret.push_back(inp_string.substr(last_n, n - last_n));
 
-    return ret;
+		if(n == std::string::npos) break;
+		n += seperator.size();
+		last_n = n;
+
+		++count;
+
+	}
+	return ret;
 }
 
 
