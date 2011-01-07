@@ -97,6 +97,9 @@ enable->verwende
 delete extracted Archives->entpackte Archive löschen
 Supply a list of passwords that should always be tried to extract archives. If you set a password for a specific package, that password will be used. If you set no password, Extraction will be tried without a password and with this list. One entry per Line.->Passwortliste, die immer für das Entpacken von Archiven verwendet werden soll. Wenn man ein Passwort für ein Paket setzt, wird dieses Passwort benutzt. Wenn kein Passwort gesetzt ist, wird das Entpacken ohne Passwort und mit Hilfe dieser Passwortliste verwendet. Ein Eintrag pro Zeile.
 
+Advanced Configuration->Fortgeschrittene Konfiguration
+Advanced\nConfiguration->Fortgeschrittene\nKonfiguration
+
 #connect dialog
 Connect to Host->Mit Host verbinden
 Please insert Host Data->Bitte Hostdaten eingeben

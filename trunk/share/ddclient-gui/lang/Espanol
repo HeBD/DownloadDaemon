@@ -96,6 +96,8 @@ enable->Activar
 delete extracted Archives->Eliminar archivos extraidos
 Supply a list of passwords that should always be tried to extract archives. If you set a\npassword for a specific package, that password will be used. If you set no password,\nExtraction will be tried without a password and with this list.\nOne entry per Line.->Proporciona una lista de contraseñas con las que se debería intentar extraer siempre los archivos\nsi proporcionas una contraseña específica para un paquete, entonces se usara esa.\nSi no indicas ninguna se intentará sin contraseña y luego con todas las de la lista.\nSintaxis: Una contraseña por línea.
 
+Advanced Configuration->Advanced Configuration
+Advanced\nConfiguration->Advanced\nConfiguration
 
 #connect dialog
 Connect to Host->Conectar al servidor

@@ -1,3 +1,7 @@
+2011-01-07
+   [susanne]
+	- added advanced configuration in ddclient-gui which can modify all changeable variables (similar to firefox's about:config)
+
 2011-01-04
    [susanne]
 	- ddclient-gui can now remotely solve captchas

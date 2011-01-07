@@ -1339,7 +1339,8 @@ std::vector<std::string> downloadc::split_string(const std::string& inp_string, 
 			}
 		}
 
-		ret.push_back(inp_string.substr(last_n, n - last_n));
+		std::string tmp = inp_string.substr(last_n, n - last_n);
+		ret.push_back(trim_string(tmp));
 
 		if(n == std::string::npos) break;
 		n += seperator.size();
