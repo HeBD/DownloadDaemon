@@ -18,6 +18,7 @@
 #include "mgmt/global_management.h"
 #include "tools/helperfunctions.h"
 #include "mgmt/connection_manager.h"
+#include "plugins/ddapi.h"
 
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
@@ -78,6 +79,18 @@ std::string program_root;
 char** env_vars;
 
 int main(int argc, char* argv[], char* env[]) {
+	ddapi::start_engine();
+#define DD_DEVEL_CONSOLE
+#ifdef DD_DEVEL_CONSOLE
+	string tmp;
+	cout << "> ";
+	//while(getline(cin, tmp)) {
+	tmp = "string s = \"blah\"; s.substr(2, 1);";
+		ddapi::exec(tmp);
+		cout << "> ";
+	//}
+	exit(0);
+#endif
 	env_vars = env;
 	#ifdef BACKTRACE_ON_CRASH
 	signal(SIGSEGV, print_backtrace);
@@ -332,12 +345,8 @@ int main(int argc, char* argv[], char* env[]) {
 			setsid();	
 		}
 
-		plugin_cache.load_plugins();
-		stringstream plglog;
-		for(plugin_container::handleIter it = plugin_cache.handles.begin(); it != plugin_cache.handles.end(); ++it) {
-			plglog << it->first << " ";
-		}
-		log_string("DownloadDaemon started successfully with these plugins: " + plglog.str(), LOG_DEBUG);
+
+		log_string("DownloadDaemon started successfully", LOG_DEBUG);
 
 		thread mgmt_thread(mgmt_thread_main);
 		mgmt_thread.detach();

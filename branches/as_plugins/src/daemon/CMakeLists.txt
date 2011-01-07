@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 project(DownloadDaemon)
 
-add_subdirectory(plugins)
 
 SET(daemon_SRCS downloaddaemon.cpp
 		tools/helperfunctions.cpp 
@@ -23,7 +22,54 @@ SET(daemon_SRCS downloaddaemon.cpp
 		../include/crypt/AES/aes_cbc.cpp
 		../include/crypt/AES/aes_cfb.cpp
 		../include/crypt/AES/aes_core.cpp
-		../include/crypt/base64.cpp)
+		../include/crypt/base64.cpp
+		
+# sources for the angelscript plugin-parser:
+  plugins/as_atomic.cpp
+  plugins/as_builder.cpp  
+  plugins/as_bytecode.cpp 
+  plugins/as_callfunc.cpp 
+  plugins/as_callfunc_arm.cpp 
+  plugins/as_callfunc_mips.cpp 
+  plugins/as_callfunc_ppc.cpp 
+  plugins/as_callfunc_ppc_64.cpp
+  plugins/as_callfunc_sh4.cpp
+  plugins/as_callfunc_x86.cpp
+  plugins/as_callfunc_x64_gcc.cpp
+  plugins/as_compiler.cpp
+  plugins/as_context.cpp
+  plugins/as_configgroup.cpp
+  plugins/as_datatype.cpp
+  plugins/as_generic.cpp
+  plugins/as_gc.cpp
+  plugins/as_globalproperty.cpp
+  plugins/as_memory.cpp
+  plugins/as_module.cpp
+  plugins/as_objecttype.cpp
+  plugins/as_outputbuffer.cpp
+  plugins/as_parser.cpp
+  plugins/as_restore.cpp
+  plugins/as_scriptcode.cpp
+  plugins/as_scriptengine.cpp
+  plugins/as_scriptfunction.cpp
+  plugins/as_scriptnode.cpp
+  plugins/as_scriptobject.cpp
+  plugins/as_string.cpp
+  plugins/as_string_util.cpp
+  plugins/as_thread.cpp
+  plugins/as_tokenizer.cpp
+  plugins/as_typeinfo.cpp
+  plugins/as_variablescope.cpp
+  plugins/scriptstdstring.cpp
+  plugins/scriptbuilder.cpp
+  plugins/scriptmath.cpp
+  plugins/scriptany.cpp
+  plugins/scriptarray.cpp
+  plugins/scriptdictionary.cpp
+  plugins/scriptfile.cpp
+  plugins/scripthelper.cpp
+  plugins/ddapi.cpp
+)
 
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckIncludeFileCXX)
@@ -99,7 +145,7 @@ ENDIF(BACKTRACE_ON_CRASH)
 CHECK_FUNCTION_EXISTS(stat64 HAVE_STAT64)
 
 CONFIGURE_FILE(config.h.cmake ${CMAKE_BINARY_DIR}/include_downloadd/config.h)
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include_downloadd/ ../include)
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include_downloadd/ ../include ./plugins)
 
 
 CHECK_FUNCTION_EXISTS(popen HAVE_POPEN)
