@@ -24,6 +24,7 @@
 #include <QtGui/QMessageBox>
 #include <QStringList>
 #include <QtGui/QTextEdit>
+#include <QScrollArea>
 
 using namespace std;
 
@@ -55,6 +56,7 @@ configure_dialog::configure_dialog(QWidget *parent, QString config_dir) : QDialo
 	tabs->addItem(create_list_item("Proxy"));
 	tabs->addItem(create_list_item("Package Extractor"));
 	tabs->addItem(create_list_item("Client"));
+	tabs->addItem(create_list_item("Advanced\nConfiguration"));
 
 	tabs->setCurrentRow(0);
 
@@ -67,6 +69,7 @@ configure_dialog::configure_dialog(QWidget *parent, QString config_dir) : QDialo
 	pages->addWidget(create_proxy_panel());
 	pages->addWidget(create_extractor_panel());
 	pages->addWidget(create_client_panel());
+	pages->addWidget(create_advanced_panel());
 
 	QHBoxLayout *horizontalLayout = new QHBoxLayout;
 	horizontalLayout->addWidget(tabs);
@@ -604,6 +607,33 @@ QWidget *configure_dialog::create_extractor_panel(){
 	return page;
 }
 
+QWidget *configure_dialog::create_advanced_panel(){
+	ddclient_gui *p = (ddclient_gui *) this->parent();
+
+	QWidget *page = new QWidget();
+	QVBoxLayout *layout = new QVBoxLayout();
+	page->setLayout(layout);
+
+	QScrollArea *scroll = new QScrollArea(page);
+	QGroupBox *group_box = new QGroupBox(p->tsl("Advanced Configuration"), scroll);
+
+	QFormLayout *form_layout = new QFormLayout();
+	group_box->setLayout(form_layout);
+
+	std::map<std::string, std::pair<std::string, bool> >::iterator it;
+
+	for(it = all_variables.begin(); it != all_variables.end(); ++it){
+		QLineEdit *tmp = new QLineEdit((it->second.first).c_str());
+		tmp->setFixedWidth(300);
+		advanced.push_back(tmp);
+		form_layout->addRow((it->first).c_str(), tmp);
+	}
+
+	scroll->setWidget(group_box);
+	layout->addWidget(scroll);
+	return page;
+}
+
 void configure_dialog::get_all_vars(){
 	ddclient_gui *p = (ddclient_gui *) this->parent();
 	downloadc *dclient = p->get_connection();
@@ -619,6 +649,8 @@ void configure_dialog::get_all_vars(){
 	try{
 		this->all_variables = dclient->get_var_list();
 	}catch(client_exception &e){}
+
+	mx->unlock();
 
 	return;
 }
@@ -938,6 +970,17 @@ void configure_dialog::ok(){
 
 		// user pass
 		set_var("router_password", router_pass, ROUTER_T);
+	}
+
+	std::map<std::string, std::pair<std::string, bool> >::iterator it;
+	std::vector<QLineEdit *>::iterator gui_it = advanced.begin();
+
+	for(it = all_variables.begin(); it != all_variables.end(); ++it){
+		if((*gui_it)->text().toStdString() != it->second.first){
+			set_var((it->first).c_str(), (*gui_it)->text().toStdString());
+		}
+
+		++gui_it;
 	}
 
 	mx->unlock();

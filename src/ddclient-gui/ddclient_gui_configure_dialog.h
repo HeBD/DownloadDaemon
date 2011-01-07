@@ -27,91 +27,95 @@
 #include <map>
 
 class configure_dialog : public QDialog{
-    Q_OBJECT
+	Q_OBJECT
 
-    public:
-        /** Constructor
-        *   @param parent MainWindow, which calls the dialog
-        */
-        configure_dialog(QWidget *parent, QString config_dir);
+	public:
+		/** Constructor
+		*   @param parent MainWindow, which calls the dialog
+		*/
+		configure_dialog(QWidget *parent, QString config_dir);
 
-    private:
+	private:
 
-        enum var_type {NORMAL_T, ROUTER_T, PREMIUM_T};
+		enum var_type {NORMAL_T, ROUTER_T, PREMIUM_T};
 		QListWidgetItem *create_list_item(const std::string &name, const std::string &picture = "");
-        QWidget *create_general_panel();
-        QWidget *create_download_panel();
-        QWidget *create_password_panel();
-        QWidget *create_logging_panel();
-        QWidget *create_reconnect_panel();
-        QWidget *create_proxy_panel();
-        QWidget *create_client_panel();
-        QWidget *create_extractor_panel();
+		QWidget *create_general_panel();
+		QWidget *create_download_panel();
+		QWidget *create_password_panel();
+		QWidget *create_logging_panel();
+		QWidget *create_reconnect_panel();
+		QWidget *create_proxy_panel();
+		QWidget *create_client_panel();
+		QWidget *create_extractor_panel();
+		QWidget *create_advanced_panel();
 		void get_all_vars();
-        QString get_var(const std::string &var, var_type typ = NORMAL_T);
-        void set_var(const std::string &var, const std::string &value, var_type typ = NORMAL_T);
+		QString get_var(const std::string &var, var_type typ = NORMAL_T);
+		void set_var(const std::string &var, const std::string &value, var_type typ = NORMAL_T);
 
-        QString config_dir;
+		QString config_dir;
 		QListWidget *tabs;
 		QStackedWidget *pages;
 		std::map<std::string, std::pair<std::string, bool> > all_variables;
 
-        // general
-        QComboBox *premium_host;
-        QCheckBox *overwrite;
-        QCheckBox *refuse_existing;
-        QCheckBox *size_existing;
-        QLineEdit *captcha_retries;
-        QLineEdit *premium_user;
-        QLineEdit *premium_password;
+		// general
+		QComboBox *premium_host;
+		QCheckBox *overwrite;
+		QCheckBox *refuse_existing;
+		QCheckBox *size_existing;
+		QLineEdit *captcha_retries;
+		QLineEdit *premium_user;
+		QLineEdit *premium_password;
 
-        // download
-        QLineEdit *start_time;
-        QLineEdit *end_time;
-        QLineEdit *folder;
-        QLineEdit *count;
-        QLineEdit *speed;
+		// download
+		QLineEdit *start_time;
+		QLineEdit *end_time;
+		QLineEdit *folder;
+		QLineEdit *count;
+		QLineEdit *speed;
 
-        // password
-        QLineEdit *old_password;
-        QLineEdit *new_password;
+		// password
+		QLineEdit *old_password;
+		QLineEdit *new_password;
 
-        // log
-        QComboBox *activity;
-        QComboBox *procedure;
+		// log
+		QComboBox *activity;
+		QComboBox *procedure;
 
-        // reconnect
-        std::vector<std::string> router_model_list;
-        QGroupBox *reconnect_group_box;
-        QComboBox *reconnect_policy;
-        QLineEdit *model_search;
-        QListWidget *model;
-        QLineEdit *ip;
-        QLineEdit *username;
-        QLineEdit *password;
+		// reconnect
+		std::vector<std::string> router_model_list;
+		QGroupBox *reconnect_group_box;
+		QComboBox *reconnect_policy;
+		QLineEdit *model_search;
+		QListWidget *model;
+		QLineEdit *ip;
+		QLineEdit *username;
+		QLineEdit *password;
 
-        // proxy
-        QTextDocument *proxy;
-        QCheckBox *proxy_retry;
+		// proxy
+		QTextDocument *proxy;
+		QCheckBox *proxy_retry;
 
-        // client
-        QComboBox *language;
-        QLineEdit *update_interval;
+		// client
+		QComboBox *language;
+		QLineEdit *update_interval;
 
-        // extractor
-        QTextDocument *extractor_passwords;
-        QCheckBox *enable_extractor;
-        QCheckBox *delete_extracted;
+		// extractor
+		QTextDocument *extractor_passwords;
+		QCheckBox *enable_extractor;
+		QCheckBox *delete_extracted;
 
-    private slots:
+		// advanced configuration
+		std::vector<QLineEdit *> advanced;
+
+	private slots:
 		void change_page(QListWidgetItem *current, QListWidgetItem *previous);
-        void help();
-        void search_in_model();
+		void help();
+		void search_in_model();
 		void router_model_sel_changed();
-        void premium_host_changed();
-        void ok();
-        void save_premium();
-        void save_password();
+		void premium_host_changed();
+		void ok();
+		void save_premium();
+		void save_password();
 };
 
 #endif // DDCLIENT_GUI_CONFIGURE_DIALOG_H
