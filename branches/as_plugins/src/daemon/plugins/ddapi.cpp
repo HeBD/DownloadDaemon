@@ -14,6 +14,7 @@
 #include <sstream>
 #include <cassert>
 #include <iostream>
+#include <cstring>
 
 
 using namespace std;
