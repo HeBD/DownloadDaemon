@@ -85,9 +85,9 @@ int main(int argc, char* argv[], char* env[]) {
 	string tmp;
 	cout << "> ";
 	//while(getline(cin, tmp)) {
-	tmp = "string s = \"blah\"; s.substr(2, 1);";
+	tmp = "string s = \"blah\"; print(-1);";
 		ddapi::exec(tmp);
-		cout << "> ";
+		cout << endl << "> ";
 	//}
 	exit(0);
 #endif

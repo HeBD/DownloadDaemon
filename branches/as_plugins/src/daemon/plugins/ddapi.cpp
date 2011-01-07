@@ -39,6 +39,10 @@ void as_msg_cb_cerr(const asSMessageInfo *msg, void *param) {
 	cerr << type << ":" << msg->row << ":" << msg->col << " :: " << msg->message;
 }
 
+template <typename T>
+void print(const T &val) {
+	cout << val;
+}
 
 ddapi::ddapi() {
 	int r;
@@ -56,8 +60,12 @@ ddapi::ddapi() {
 		r = engine->RegisterTypedef("size_t", "uint64");
 	assert(r>=0);
 
+	r = engine->RegisterGlobalFunction("void print(const string &in)", asFUNCTION(print<string>), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("void print(const int64 &in)", asFUNCTION(print<int64_t>), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("void print(const uint64 &in)", asFUNCTION(print<uint64_t>), asCALL_CDECL); assert(r>=0);
+
 	// extend string type by everything we need
-	/*r=engine->RegisterObjectMethod("string", "void clear() const", asMETHOD(string,clear), asCALL_THISCALL); assert(r>=0);
+	r=engine->RegisterObjectMethod("string", "void clear() const", asMETHOD(string,clear), asCALL_THISCALL); assert(r>=0);
 	r=engine->RegisterObjectMethod("string", "bool empty() const", asMETHOD(string,empty), asCALL_THISCALL); assert(r>=0);
 	r=engine->RegisterObjectMethod("string", "void erase(size_t, size_t)", asMETHODPR(string,erase, (size_t, size_t), string&), asCALL_THISCALL); assert(r>=0);
 	r=engine->RegisterObjectMethod("string", "size_t find(string, size_t)", asMETHODPR(string,find, (const string&, size_t) const, size_t), asCALL_THISCALL); assert(r>=0);
@@ -65,9 +73,8 @@ ddapi::ddapi() {
 	r=engine->RegisterObjectMethod("string", "size_t find_first_not_of(string, size_t)", asMETHODPR(string,find_first_not_of, (const string&, size_t) const, size_t), asCALL_THISCALL); assert(r>=0);
 	r=engine->RegisterObjectMethod("string", "size_t find_last_of(string, size_t)", asMETHODPR(string,find_last_of, (const string&, size_t) const, size_t), asCALL_THISCALL); assert(r>=0);
 	r=engine->RegisterObjectMethod("string", "size_t find_last_not_of(string, size_t)", asMETHODPR(string,find_last_not_of, (const string&, size_t) const, size_t), asCALL_THISCALL); assert(r>=0);
-	r=engine->RegisterObjectMethod("string", "string substr(size_t n, size_t n", asMETHOD(string,substr), asCALL_THISCALL); assert(r>=0);
-*/	string s;
-
+	r=engine->RegisterObjectMethod("string", "string substr(size_t n, size_t n)", asMETHOD(string,substr), asCALL_THISCALL); assert(r>=0);
+	r=engine->RegisterGlobalProperty("const size_t string__npos", (void*)&string::npos); assert(r>=0);
 
 	// register math, dictionary, etc
 	// register more clib functions
