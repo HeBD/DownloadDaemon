@@ -216,6 +216,7 @@
 // right code.
 
 // AS_WIN     - Microsoft Windows
+// AS_CYGWIN  - Cygwin on Windows
 // AS_LINUX   - Linux
 // AS_MAC     - Apple Macintosh
 // AS_BSD     - BSD based OS (FreeBSD, DragonFly, OpenBSD, etc)
@@ -386,6 +387,10 @@
 		#define AS_WIN
 	#endif
 
+	#ifdef __CYGWIN__
+		#define AS_CYGWIN
+	#endif
+
 	#if _XBOX_VER >= 200
 		// 360 uses a Xenon processor (which is a modified 64bit PPC)
 		#define AS_XBOX360
@@ -491,7 +496,7 @@
 #endif
 
 // GNU C (and MinGW on Windows)
-#if (defined(__GNUC__) && !defined(__SNC__)) || defined(EPPC) // JWC -- use this instead for Wii
+#if (defined(__GNUC__) && !defined(__SNC__)) || defined(EPPC) || defined(__CYGWIN__) // JWC -- use this instead for Wii
 	#define GNU_STYLE_VIRTUAL_METHOD
 #if !defined( __amd64__ )
 	#define MULTI_BASE_OFFSET(x) (*((asDWORD*)(&x)+1))
@@ -573,7 +578,7 @@
 		#define AS_POSIX_THREADS
  
 	// Windows
-	#elif defined(WIN32) || defined(_WIN64)
+	#elif defined(WIN32) || defined(_WIN64) || defined(__CYGWIN__)
 		// On Windows the simple classes are returned in the EAX:EDX registers
 		//#define THISCALL_RETURN_SIMPLE_IN_MEMORY
 		//#define CDECL_RETURN_SIMPLE_IN_MEMORY

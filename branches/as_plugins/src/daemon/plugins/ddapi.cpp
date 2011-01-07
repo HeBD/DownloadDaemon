@@ -15,6 +15,7 @@
 #include <cassert>
 #include <iostream>
 
+
 using namespace std;
 
 ddapi* ddapi::instance = 0;
@@ -45,6 +46,10 @@ void print(const T &val) {
 }
 
 ddapi::ddapi() {
+	if(strstr(asGetLibraryOptions(), "AS_MAX_PORTABILITY")) {
+		cerr << "DD will not run with AS_MAX_PORTABILITY" << endl;
+		exit(-1);
+	}
 	int r;
 	engine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
 	engine->SetMessageCallback(asFUNCTION(as_msg_cb_log), 0, asCALL_CDECL);
