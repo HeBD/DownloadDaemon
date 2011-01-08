@@ -75,7 +75,7 @@ const std::string& trim_string(std::string &str) {
 	return str;
 }
 
-bool validate_url(std::string &url) {
+bool validate_url(const std::string &url) {
 	bool valid = true;
 	// needed for security reason - so the dlist file can't be corrupted
 	if(url.find("http://") != 0 && url.find("ftp://") != 0 && url.find("https://") != 0) {
@@ -162,13 +162,14 @@ void log_string(const std::string logstr, int level) {
 }
 
 
-void replace_all(std::string& searchIn, std::string searchFor, std::string ReplaceWith) {
+const string& replace_all(std::string& searchIn, const std::string &searchFor, const std::string &ReplaceWith) {
 	size_t old_pos = 0;
 	size_t new_pos;
 	while((new_pos = searchIn.find(searchFor, old_pos)) != std::string::npos) {
 		old_pos = new_pos + 2;
 		searchIn.replace(new_pos, searchFor.length(), ReplaceWith);
 	}
+	return searchIn;
 }
 
 std::string long_to_string(long i) {
@@ -348,7 +349,7 @@ bool CompareNoCase( const std::string& s1, const std::string& s2 ) {
 	return std::lexicographical_compare( s1.begin(), s1.end(), s2.begin(), s2.end(), lt_nocase());
 }
 
-void make_valid_filename(std::string &fn) {
+const string& make_valid_filename(std::string &fn) {
 	replace_all(fn, "\r\n", "");
 	replace_all(fn, "\r", "");
 	replace_all(fn, "\n", "");
@@ -365,6 +366,7 @@ void make_valid_filename(std::string &fn) {
 	replace_all(fn, "'", "");
 	replace_all(fn, "\"", "");
 	replace_all(fn, ";", "");
+	return fn;
 }
 
 std::string ascii_hex_to_bin(std::string ascii_hex) {

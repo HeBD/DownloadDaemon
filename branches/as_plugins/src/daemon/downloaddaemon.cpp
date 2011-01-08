@@ -87,7 +87,7 @@ int main(int argc, char* argv[], char* env[]) {
 	//while(getline(cin, tmp)) {
 	tmp = "string s = \"the lazy dog blah blah blah\"; print(s.substr(s.find(\"dog\", 0), string__npos));";
 		ddapi::exec(tmp);
-	//	cout << endl << "> ";
+		cout << endl << "> ";
 	//}
 	exit(0);
 #endif

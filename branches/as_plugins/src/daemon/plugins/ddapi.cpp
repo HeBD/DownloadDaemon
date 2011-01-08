@@ -1,14 +1,15 @@
 #include "ddapi.h"
 #include "angelscript.h"
+#include "stdvector.h"
 #include "scriptstdstring.h"
 #include "scriptbuilder.h"
 #include "scriptmath.h"
 #include "scriptany.h"
 #include "scriptarray.h"
 #include "scriptdictionary.h"
-#include "scriptfile.h"
 #include "scripthelper.h"
 #include "aswrappedcall.h"
+
 
 #include "../tools/helperfunctions.h"
 
@@ -16,11 +17,16 @@
 #include <cassert>
 #include <iostream>
 #include <cstring>
-
-
+#include <vector>
 using namespace std;
 
+#ifdef AS_MAX_PORTABILITY
+#error DownloadDaemon is not able to detect your hardware correctly and will therefore not run. Feel free to make a post in the DownloadDaemon forums and explain the details \
+of your hardware. A port is probably pretty simple.
+#endif
+
 ddapi* ddapi::instance = 0;
+
 
 void as_msg_cb_log(const asSMessageInfo *msg, void *param) {
 	int type = LOG_ERR;
@@ -95,7 +101,9 @@ ddapi::ddapi() {
 	RegisterScriptAny(engine);
 	RegisterScriptArray(engine, true);
 	RegisterScriptDictionary(engine);
-	RegisterScriptFile(engine);
+	RegisterVector<int>("int[]", "int", engine);
+	RegisterVector<double>("double[]", "double", engine);
+	RegisterVector<string>("string[]", "string", engine);
 	typedef_inttype((size_t)0, engine, "size_t", false);
 	typedef_inttype((time_t)0, engine, "time_t", false);
 
@@ -103,6 +111,7 @@ ddapi::ddapi() {
 	r = engine->RegisterGlobalFunction("void print(const int64 &in)", asFUNCTION(print<int64_t>), asCALL_CDECL); assert(r>=0);
 	r = engine->RegisterGlobalFunction("void print(const uint64 &in)", asFUNCTION(print<uint64_t>), asCALL_CDECL); assert(r>=0);
 	r = engine->RegisterGlobalFunction("void print(const double &in)", asFUNCTION(print<double>), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("void print(const bool &in)", asFUNCTION(print<bool>), asCALL_CDECL); assert(r>=0);
 
 	// extend string type by everything we need
 	r=engine->RegisterObjectMethod("string", "void clear() const", asMETHOD(string,clear), asCALL_THISCALL); assert(r>=0);
@@ -118,31 +127,52 @@ ddapi::ddapi() {
 	// TODO: more string methods, maybe vector
 
 	// cctype
-	r = engine->RegisterGlobalFunction("int isalnum(int)", asFUNCTIONPR(isalnum, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isalpha(int)", asFUNCTIONPR(isalpha, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int iscntrl(int)", asFUNCTIONPR(iscntrl, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isdigit(int)", asFUNCTIONPR(isdigit, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isgraph(int)", asFUNCTIONPR(isgraph, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int islower(int)", asFUNCTIONPR(islower, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isprint(int)", asFUNCTIONPR(isprint, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int ispunct(int)", asFUNCTIONPR(ispunct, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isupper(int)", asFUNCTIONPR(isupper, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isxdigit(int)", asFUNCTIONPR(isxdigit, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int tolower(int)", asFUNCTIONPR(tolower, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int toupper(int)", asFUNCTIONPR(toupper, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isspace(int)", asFUNCTIONPR(isspace, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int isalnum(int)", asFUNCTIONPR(isalnum, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int isalpha(int)", asFUNCTIONPR(isalpha, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int iscntrl(int)", asFUNCTIONPR(iscntrl, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int isdigit(int)", asFUNCTIONPR(isdigit, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int isgraph(int)", asFUNCTIONPR(isgraph, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int islower(int)", asFUNCTIONPR(islower, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int isprint(int)", asFUNCTIONPR(isprint, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int ispunct(int)", asFUNCTIONPR(ispunct, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int isupper(int)", asFUNCTIONPR(isupper, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int isxdigit(int)", asFUNCTIONPR(isxdigit, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int tolower(int)", asFUNCTIONPR(tolower, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int toupper(int)", asFUNCTIONPR(toupper, (int), int), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int isspace(int)", asFUNCTIONPR(isspace, (int), int), asCALL_CDECL); assert(r>=0);
 
 	// cstdlib
-	r = engine->RegisterGlobalFunction("double atof(string)", asFUNCTION(atof_wrap), asCALL_GENERIC); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int atoi(string)" , asFUNCTION(atol_wrap), asCALL_GENERIC); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int64 abs(int64)"   , asFUNCTION(labs), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("double atof(string)", asFUNCTION(atof_wrap), asCALL_GENERIC); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int atoi(string)" , asFUNCTION(atol_wrap), asCALL_GENERIC); assert(r>=0);
+	r = engine->RegisterGlobalFunction("int64 abs(int64)"   , asFUNCTION(labs), asCALL_CDECL); assert(r>=0);
 
 	// to-string conversions
-	r = engine->RegisterGlobalFunction("string itoa(int)"      , asFUNCTION(toa<int>), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("string dtoa(double)"   , asFUNCTION(toa<double>), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("string itoa(int)"      , asFUNCTION(toa<int>), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("string dtoa(double)"   , asFUNCTION(toa<double>), asCALL_CDECL); assert(r>=0);
 
 	// register curl functionality
-	// register DD functionality, helper functions, logging, etc
+
+	// register DD functionality
+
+
+	// helper functions, logging, etc
+	r = engine->RegisterEnum("log_level");
+	r = engine->RegisterEnumValue("log_level", "LOG_ERR"    , LOG_ERR); assert(r>=0);
+	r = engine->RegisterEnumValue("log_level", "LOG_WARNING", LOG_WARNING); assert(r>=0);
+	r = engine->RegisterEnumValue("log_level", "LOG_INFO"   , LOG_INFO); assert(r>=0);
+	r = engine->RegisterEnumValue("log_level", "LOG_DEBUG"  , LOG_DEBUG); assert(r>=0);
+	r = engine->RegisterGlobalFunction("void log_string(const string &in, log_level)", asFUNCTION(log_string), asCALL_CDECL); assert(r>=0);
+
+
+
+
+	r = engine->RegisterGlobalFunction("const string& trim_string(string &in)", asFUNCTION(trim_string), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("bool validate_url(const string &in)", asFUNCTION(validate_url), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("const string& replace_all(string &in, const string &in, const string &in)", asFUNCTION(replace_all), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("string getenv(const string &in)", asFUNCTION(get_env_var), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("string filename_from_url(const string &in)", asFUNCTION(filename_from_url), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("const string& make_valid_filename(string &in)", asFUNCTION(make_valid_filename), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("string[] split_string(const string &in, const string &in, bool)", asFUNCTION(split_string), asCALL_CDECL); assert(r>=0); // TODO: no vectors yet
 }
 
 ddapi::ddapi(const ddapi&) {

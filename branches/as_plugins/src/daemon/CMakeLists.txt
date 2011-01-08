@@ -66,7 +66,6 @@ SET(daemon_SRCS downloaddaemon.cpp
   plugins/scriptany.cpp
   plugins/scriptarray.cpp
   plugins/scriptdictionary.cpp
-  plugins/scriptfile.cpp
   plugins/scripthelper.cpp
   plugins/ddapi.cpp
 )

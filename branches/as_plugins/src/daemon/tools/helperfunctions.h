@@ -44,7 +44,7 @@ const std::string& trim_string(std::string &str);
 * @param url Url to check
 * @returns true if valid
 */
-bool validate_url(std::string &url);
+bool validate_url(const std::string &url);
 
 /** log a string with a specified log-level
 * @param logstr String to write to the log
@@ -57,7 +57,7 @@ void log_string(const std::string logstr, int level);
 * @param searchFor String with stuff to replace
 * @param ReplaceWith String that should be inserted instead
 */
-void replace_all(std::string& searchIn, std::string searchFor, std::string ReplaceWith);
+const std::string& replace_all(std::string& searchIn, const std::string &searchFor, const std::string &ReplaceWith);
 
 /** Dumps the current internal download list (in vector global_download_list) to the download list file on the harddisk.
 * @returns ture on success
@@ -124,7 +124,7 @@ bool CompareNoCase( const std::string& s1, const std::string& s2 );
 /** creates a filename from a string by replacing special chars (ONLY pass a filename, not a path. / and \ will also be replaced!)
 *	@param fn filename
 */
-void make_valid_filename(std::string &fn);
+const std::string& make_valid_filename(std::string &fn);
 
 /** create a binary string from ascii hex (e.g. FF will result ret.size() = 1, ret[0] = 255;)
 *	@param ascii_hex string to unhexlify

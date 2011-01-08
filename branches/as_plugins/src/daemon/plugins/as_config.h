@@ -615,13 +615,32 @@
 			// STDCALL is not available on 64bit Linux
 			#undef STDCALL
 			#define STDCALL
+		#elif defined(__ARMEL__) || defined(_ARM_)
+			#define AS_ARM
+			#define AS_ALIGN
+/*
+			#define CDECL_RETURN_SIMPLE_IN_MEMORY
+			#define STDCALL_RETURN_SIMPLE_IN_MEMORY
+			#define THISCALL_RETURN_SIMPLE_IN_MEMORY
+
+			#undef THISCALL_RETURN_SIMPLE_IN_MEMORY_MIN_SIZE
+			#undef CDECL_RETURN_SIMPLE_IN_MEMORY_MIN_SIZE
+			#undef STDCALL_RETURN_SIMPLE_IN_MEMORY_MIN_SIZE
+
+			#define THISCALL_RETURN_SIMPLE_IN_MEMORY_MIN_SIZE 2
+			#define CDECL_RETURN_SIMPLE_IN_MEMORY_MIN_SIZE 2
+			#define STDCALL_RETURN_SIMPLE_IN_MEMORY_MIN_SIZE 2
+			#define COMPLEX_OBJS_PASSED_BY_REF
+			#undef COMPLEX_MASK
+			#define COMPLEX_MASK asOBJ_APP_CLASS_DESTRUCTOR*/
+
 		#else
 			#define AS_MAX_PORTABILITY
 		#endif
        	#define AS_LINUX
        	#define AS_POSIX_THREADS
 
-		#if !( ( (__GNUC__ == 4) && (__GNUC_MINOR__ >= 1) || __GNUC__ > 4) )
+		#if (!( ( (__GNUC__ == 4) && (__GNUC_MINOR__ >= 1) || __GNUC__ > 4) )) || defined(__ARMEL__) || defined(__ARM__) || defined(_ARM_)
 			// Only with GCC 4.1 was the atomic instructions available
 			#define AS_NO_ATOMIC
 		#endif
