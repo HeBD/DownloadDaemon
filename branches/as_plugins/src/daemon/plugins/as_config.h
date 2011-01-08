@@ -618,7 +618,6 @@
 		#elif defined(__ARMEL__) || defined(_ARM_)
 			#define AS_ARM
 			#define AS_ALIGN
-			#define AS_ANDROID
 			#define AS_NO_ATOMIC
 
 			#define CDECL_RETURN_SIMPLE_IN_MEMORY

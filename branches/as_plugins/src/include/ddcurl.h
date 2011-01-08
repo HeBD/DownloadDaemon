@@ -5,6 +5,12 @@
 #include <curl/curl.h>
 #include <string>
 
+#ifndef CURLOPT_PROXYUSERNAME
+	#define CURLOPT_PROXYUSERNAME -1
+	#define CURLOPT_PROXYPASSWORD -2
+#endif
+
+
 /*! This class is a simple libcurl-wrapper that adds the possibility to use the ddproxy.php script in a simple way */
 class ddcurl {
 public:
@@ -45,6 +51,7 @@ public:
 			m_sUrl = val;
 			return CURLE_OK;
 		}
+
 		if(opt != CURLOPT_PROXY && opt != CURLOPT_PROXYUSERPWD && opt != CURLOPT_PROXYUSERNAME && opt != CURLOPT_PROXYPASSWORD)
 			return curl_easy_setopt(handle, opt, val.c_str());
 
@@ -89,9 +96,8 @@ public:
 		if(!m_sProxy.empty()) {
 			url = m_sProxy + "?ddproxy_pass=" + escape(m_sProxyPass) + "&ddproxy_url=" + escape(m_sUrl);
 		} else {
-			curl_easy_setopt(handle, CURLOPT_PROXYUSERNAME, m_sProxyUser.c_str());
-			curl_easy_setopt(handle, CURLOPT_PROXYPASSWORD, m_sProxyPass.c_str());
-
+			std::string userpwd = m_sProxyUser + ":" + m_sProxyPass;
+			curl_easy_setopt(handle, CURLOPT_PROXYUSERPWD, userpwd.c_str());
 		}
 		curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
 		return curl_easy_perform(handle);
