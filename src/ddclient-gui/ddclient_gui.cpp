@@ -2498,10 +2498,13 @@ void ddclient_gui::on_reload(){
 		}else
 			time_left = "-";
 
-		status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
+		stringstream speed;
+		speed << setprecision(1) << fixed << download_speed << " kb/s";
+
+		status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Total Speed") + ": " + speed.str().c_str() +
 								   " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + " | " + tsl("Time left") + ": " + time_left.c_str() + " packages: " + QString("%1 Packages").arg(package_count)); // todo
 		if(QSystemTrayIcon::isSystemTrayAvailable())
-						tray_icon->setToolTip(tsl("Connected to") + " " + server + "\n" + tsl("Total Speed") + ": " + QString("%1 kb/s").arg(download_speed) +
+						tray_icon->setToolTip(tsl("Connected to") + " " + server + "\n" + tsl("Total Speed") + ": " + speed.str().c_str() +
 							  "\n" + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + "\n" + tsl("Time left") + ": " + time_left.c_str());
 	}
 
