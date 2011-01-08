@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project(DownloadDaemon)
 
+enable_language(ASM)
 
 SET(daemon_SRCS downloaddaemon.cpp
 		tools/helperfunctions.cpp 
@@ -67,8 +68,12 @@ SET(daemon_SRCS downloaddaemon.cpp
   plugins/scriptarray.cpp
   plugins/scriptdictionary.cpp
   plugins/scripthelper.cpp
+  plugins/as_callfunc_arm_gcc.S
+
   plugins/ddapi.cpp
 )
+
+set_property (SOURCE ${daemon_SRCS} PROPERTY LANGUAGE CXX)
 
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckIncludeFileCXX)
