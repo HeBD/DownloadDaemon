@@ -2052,7 +2052,7 @@ void ddclient_gui::on_enter_captcha(){
 				continue;
 
 			// Create temporary image
-			fstream captcha_image("/tmp/captcha." + type, fstream::out);
+			fstream captcha_image(string("/tmp/captcha." + type).c_str(), fstream::out);
 			captcha_image << image;
 			captcha_image.close();
 
