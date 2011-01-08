@@ -615,7 +615,7 @@
 			// STDCALL is not available on 64bit Linux
 			#undef STDCALL
 			#define STDCALL
-		#elif defined(__ARMEL__) || defined(_ARM_)
+		#elif defined(__ARMEL__) || defined(__arm__)
 			#define AS_ARM
 			#define AS_ALIGN
 			#define AS_NO_ATOMIC
@@ -639,7 +639,7 @@
        	#define AS_LINUX
        	#define AS_POSIX_THREADS
 
-		#if (!( ( (__GNUC__ == 4) && (__GNUC_MINOR__ >= 1) || __GNUC__ > 4) )) || defined(__ARMEL__) || defined(__ARM__) || defined(_ARM_)
+		#if !( ( (__GNUC__ == 4) && (__GNUC_MINOR__ >= 1) || __GNUC__ > 4) )
 			// Only with GCC 4.1 was the atomic instructions available
 			#define AS_NO_ATOMIC
 		#endif

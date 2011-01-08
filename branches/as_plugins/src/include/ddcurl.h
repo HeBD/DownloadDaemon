@@ -5,10 +5,13 @@
 #include <curl/curl.h>
 #include <string>
 
-#ifndef CURLOPT_PROXYUSERNAME
+
+// CURLOPT_PROXYUSERNAME was added in 7.19.1.. support it, but don't require it
+#if !(LIBCURL_VERSION_MAJOR > 7 || (LIBCURL_VERSION_MAJOR == 7 && LIBCURL_VERSION_MINOR > 19) || (LIBCURL_VERSION_MAJOR == 7 && LIBCURL_VERSION_MINOR == 19 && LIBCURL_VERSION_PATCH >= 1))
 	#define CURLOPT_PROXYUSERNAME -1
 	#define CURLOPT_PROXYPASSWORD -2
 #endif
+
 
 
 /*! This class is a simple libcurl-wrapper that adds the possibility to use the ddproxy.php script in a simple way */
