@@ -8,6 +8,7 @@
 #include "scriptdictionary.h"
 #include "scriptfile.h"
 #include "scripthelper.h"
+#include "aswrappedcall.h"
 
 #include "../tools/helperfunctions.h"
 
@@ -46,6 +47,41 @@ void print(const T &val) {
 	cout << val;
 }
 
+template <typename T>
+void typedef_inttype(T dummy, asIScriptEngine *e, const string &type_name, bool _signed = true) {
+	int r;
+	string astype;
+	if(!_signed)
+		astype += "u";
+	switch(sizeof(T)) {
+	case 1:
+		astype += "int8";
+		break;
+	case 2:
+		astype += "int16";
+		break;
+	case 4:
+		astype += "int";
+		break;
+	case 8:
+		astype += "int64";
+		break;
+	default:
+		assert(false);
+	}
+	r = e->RegisterTypedef(type_name.c_str(), astype.c_str()); assert(r>=0);
+}
+
+template <typename T>
+string toa(T param) {
+	ostringstream ss;
+	ss << param;
+	return ss.str();
+}
+
+asDECLARE_FUNCTION_WRAPPER(atof_wrap, atof);
+asDECLARE_FUNCTION_WRAPPER(atol_wrap, atol);
+
 ddapi::ddapi() {
 	if(strstr(asGetLibraryOptions(), "AS_MAX_PORTABILITY")) {
 		cerr << "DD will not run with AS_MAX_PORTABILITY" << endl;
@@ -60,15 +96,13 @@ ddapi::ddapi() {
 	RegisterScriptArray(engine, true);
 	RegisterScriptDictionary(engine);
 	RegisterScriptFile(engine);
-	if(sizeof(size_t) == 4)
-		r = engine->RegisterTypedef("size_t", "uint");
-	else
-		r = engine->RegisterTypedef("size_t", "uint64");
-	assert(r>=0);
+	typedef_inttype((size_t)0, engine, "size_t", false);
+	typedef_inttype((time_t)0, engine, "time_t", false);
 
 	r = engine->RegisterGlobalFunction("void print(const string &in)", asFUNCTION(print<string>), asCALL_CDECL); assert(r>=0);
 	r = engine->RegisterGlobalFunction("void print(const int64 &in)", asFUNCTION(print<int64_t>), asCALL_CDECL); assert(r>=0);
 	r = engine->RegisterGlobalFunction("void print(const uint64 &in)", asFUNCTION(print<uint64_t>), asCALL_CDECL); assert(r>=0);
+	r = engine->RegisterGlobalFunction("void print(const double &in)", asFUNCTION(print<double>), asCALL_CDECL); assert(r>=0);
 
 	// extend string type by everything we need
 	r=engine->RegisterObjectMethod("string", "void clear() const", asMETHOD(string,clear), asCALL_THISCALL); assert(r>=0);
@@ -81,9 +115,32 @@ ddapi::ddapi() {
 	r=engine->RegisterObjectMethod("string", "size_t find_last_not_of(string, size_t)", asMETHODPR(string,find_last_not_of, (const string&, size_t) const, size_t), asCALL_THISCALL); assert(r>=0);
 	r=engine->RegisterObjectMethod("string", "string substr(size_t n, size_t n)", asMETHOD(string,substr), asCALL_THISCALL); assert(r>=0);
 	r=engine->RegisterGlobalProperty("const size_t string__npos", (void*)&string::npos); assert(r>=0);
+	// TODO: more string methods, maybe vector
 
-	// register math, dictionary, etc
-	// register more clib functions
+	// cctype
+	r = engine->RegisterGlobalFunction("int isalnum(int)", asFUNCTIONPR(isalnum, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int isalpha(int)", asFUNCTIONPR(isalpha, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int iscntrl(int)", asFUNCTIONPR(iscntrl, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int isdigit(int)", asFUNCTIONPR(isdigit, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int isgraph(int)", asFUNCTIONPR(isgraph, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int islower(int)", asFUNCTIONPR(islower, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int isprint(int)", asFUNCTIONPR(isprint, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int ispunct(int)", asFUNCTIONPR(ispunct, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int isupper(int)", asFUNCTIONPR(isupper, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int isxdigit(int)", asFUNCTIONPR(isxdigit, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int tolower(int)", asFUNCTIONPR(tolower, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int toupper(int)", asFUNCTIONPR(toupper, (int), int), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int isspace(int)", asFUNCTIONPR(isspace, (int), int), asCALL_CDECL); assert( r >= 0 );
+
+	// cstdlib
+	r = engine->RegisterGlobalFunction("double atof(string)", asFUNCTION(atof_wrap), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int atoi(string)" , asFUNCTION(atol_wrap), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("int64 abs(int64)"   , asFUNCTION(labs), asCALL_CDECL); assert( r >= 0 );
+
+	// to-string conversions
+	r = engine->RegisterGlobalFunction("string itoa(int)"      , asFUNCTION(toa<int>), asCALL_CDECL); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("string dtoa(double)"   , asFUNCTION(toa<double>), asCALL_CDECL); assert( r >= 0 );
+
 	// register curl functionality
 	// register DD functionality, helper functions, logging, etc
 }
@@ -138,9 +195,7 @@ using namespace std;
 
 asDECLARE_FUNCTION_WRAPPER(remove_wrap, remove);
 asDECLARE_FUNCTION_WRAPPER(rename_wrap, rename);
-asDECLARE_FUNCTION_WRAPPER(atof_wrap, atof);
-asDECLARE_FUNCTION_WRAPPER(atoi_wrap, atoi);
-asDECLARE_FUNCTION_WRAPPER(atol_wrap, atol);
+
 asDECLARE_FUNCTION_WRAPPER(system_wrap, system);
 
 string getenv_wrap(const string &v) { const char *c = getenv(v.c_str()); return (c ? string(c) : ""); }
@@ -149,49 +204,19 @@ string asctime_wrap(struct tm timeptr) { char *c = asctime(&timeptr); return (c 
 //string ctime_wrap(time_t timer) { char *c = ctime(&timer); return (c ? string(c) : ""); }
 //struct tm gmtime_wrap(time_t timer) { struct tm *t = gmtime(&timer); if(t) return *t; struct tm e; memset(&e, 0, sizeof(e)); return e; }
 
-template <typename T>
-string toa(T param) {
-	ostringstream ss;
-	ss << param;
-	return ss.str();
-}
+
 
 void RegisterScriptClib(asIScriptEngine *engine)
 {
 	int r;
-	// cctype
-	r = engine->RegisterGlobalFunction("int isalnum(int)", asFUNCTIONPR(isalnum, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isalpha(int)", asFUNCTIONPR(isalpha, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int iscntrl(int)", asFUNCTIONPR(iscntrl, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isdigit(int)", asFUNCTIONPR(isdigit, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isgraph(int)", asFUNCTIONPR(isgraph, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int islower(int)", asFUNCTIONPR(islower, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isprint(int)", asFUNCTIONPR(isprint, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int ispunct(int)", asFUNCTIONPR(ispunct, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isspace(int)", asFUNCTIONPR(isspace, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isupper(int)", asFUNCTIONPR(isupper, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isxdigit(int)", asFUNCTIONPR(isxdigit, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int tolower(int)", asFUNCTIONPR(tolower, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int toupper(int)", asFUNCTIONPR(toupper, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isspace(int)", asFUNCTIONPR(isspace, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isspace(int)", asFUNCTIONPR(isspace, (int), int), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int isspace(int)", asFUNCTIONPR(isspace, (int), int), asCALL_CDECL); assert( r >= 0 );
-	
-	// cstdio
-	r = engine->RegisterGlobalFunction("int remove(string)"        , asFUNCTION(remove_wrap), asCALL_GENERIC); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int rename(string, string)", asFUNCTION(rename_wrap), asCALL_GENERIC); assert( r >= 0 );
-	// tmpfile(), tmpnam() missing, file operations missing
-	
-	// cstdlib
-	r = engine->RegisterGlobalFunction("double atof(string)", asFUNCTION(atof_wrap), asCALL_GENERIC); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int atoi(string)"   , asFUNCTION(atoi_wrap), asCALL_GENERIC); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int64 atol(string)" , asFUNCTION(atol_wrap), asCALL_GENERIC); assert( r >= 0 );
+
+
 	r = engine->RegisterGlobalFunction("int system(string)" , asFUNCTION(system_wrap), asCALL_GENERIC); assert( r >= 0 );
 	
 	r = engine->RegisterGlobalFunction("int rand()"                     , asFUNCTION(rand), asCALL_CDECL); assert( r >= 0 );
 	r = engine->RegisterGlobalFunction("void srand(uint)"               , asFUNCTION(srand), asCALL_CDECL); assert( r >= 0 );
 	r = engine->RegisterGlobalFunction("string getenv(const string &in)", asFUNCTION(getenv_wrap), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("int64 abs(int64)"               , asFUNCTION(labs), asCALL_CDECL); assert( r >= 0 );
+
 	
 	// ctime (only time_t stuff implemented, no struct tm
 	r = engine->RegisterObjectType("time_t"   , sizeof(time_t)   , asOBJ_VALUE | asOBJ_POD | asOBJ_APP_PRIMITIVE); assert( r >= 0 );
@@ -205,11 +230,7 @@ void RegisterScriptClib(asIScriptEngine *engine)
 	//r = engine->RegisterGlobalFunction("struct tm gmtime(time_t)"       , asFUNCTION(gmtime_wrap), asCALL_CDECL); assert( r >= 0 );
 	
 	
-	// to-string conversions
-	r = engine->RegisterGlobalFunction("string itoa(int)"      , asFUNCTION(toa<int>), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("string i64toa(int64)"  , asFUNCTION(toa<long>), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("string dtoa(double)"   , asFUNCTION(toa<double>), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("string ftoa(float)"    , asFUNCTION(toa<float>), asCALL_CDECL); assert( r >= 0 );
+
 }
 
 
