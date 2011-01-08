@@ -618,7 +618,9 @@
 		#elif defined(__ARMEL__) || defined(_ARM_)
 			#define AS_ARM
 			#define AS_ALIGN
-/*
+			#define AS_ANDROID
+			#define AS_NO_ATOMIC
+
 			#define CDECL_RETURN_SIMPLE_IN_MEMORY
 			#define STDCALL_RETURN_SIMPLE_IN_MEMORY
 			#define THISCALL_RETURN_SIMPLE_IN_MEMORY
@@ -630,10 +632,8 @@
 			#define THISCALL_RETURN_SIMPLE_IN_MEMORY_MIN_SIZE 2
 			#define CDECL_RETURN_SIMPLE_IN_MEMORY_MIN_SIZE 2
 			#define STDCALL_RETURN_SIMPLE_IN_MEMORY_MIN_SIZE 2
-			#define COMPLEX_OBJS_PASSED_BY_REF
-			#undef COMPLEX_MASK
-			#define COMPLEX_MASK asOBJ_APP_CLASS_DESTRUCTOR*/
-
+		#elif (defined(_MIPS_ARCH) || defined(_mips) || defined(__MIPSEL__)) && !defined(__LP64__)
+			#define AS_MIPS
 		#else
 			#define AS_MAX_PORTABILITY
 		#endif
