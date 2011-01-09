@@ -30,6 +30,11 @@ class connect_dialog : public QDialog{
 		*/
 		connect_dialog(QWidget *parent, QString config_dir);
 
+		/** Indicateds what a user clicked in the dialog.
+		*	@returns If user clicked ok or not
+		*/
+		bool did_user_click_ok(){ return user_clicked_ok; }
+
 		private:
 		QComboBox *host;
 		QLineEdit *port;
@@ -39,6 +44,7 @@ class connect_dialog : public QDialog{
 		QString config_dir;
 		cfgfile file;
 		login_data data;
+		bool user_clicked_ok;
 
     private slots:
 		void host_selected();

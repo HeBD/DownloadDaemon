@@ -205,7 +205,6 @@ void ddclient_gui::set_language(std::string lang_to_set){
 
 	// send event to reload list
 	get_content();
-	emit do_reload();
 }
 
 
@@ -312,7 +311,6 @@ int ddclient_gui::calc_package_progress(int package_row){
 
 		if(downloads != 0) // we don't want x/0
 			progress = (finished * 100) / downloads;
-
 
 	}catch(...){}
 
@@ -927,7 +925,7 @@ void ddclient_gui::update_packages(){
 	QStandardItem *dl_gui;
 	int line_nr, dl_line;
 	bool exists;
-	string colorstring, color, status_text, time_left;
+	string color, status_text, time_left;
 
 	for(; up_it != new_updates.end(); ++up_it){
 		exists = false;
@@ -1056,7 +1054,7 @@ void ddclient_gui::update_packages(){
 					exists = true;
 					break;
 				}
-				line_nr++;
+				++line_nr;
 			}
 
 			if(!exists) // couldn't find right package
@@ -1070,12 +1068,13 @@ void ddclient_gui::update_packages(){
 					exists = true;
 					break;
 				}
-				dl_line++;
+				++dl_line;
 			}
 
 			QModelIndex index = list_model->index(line_nr, 0, QModelIndex()); // downloads need the parent index
 			pkg_gui = list_model->itemFromIndex(index);
-
+			if(pkg_gui == NULL)
+				continue;
 
 			if(up_it->reason == R_NEW){ // new download
 
@@ -1304,7 +1303,7 @@ void ddclient_gui::compare_packages(){
 
 			//insert downloads
 			int dl_line = 0;
-			for(dit = new_it->dls.begin(); dit != new_it->dls.end(); dit++){ // loop all downloads of that package
+			for(dit = new_it->dls.begin(); dit != new_it->dls.end(); ++dit){ // loop all downloads of that package
 				color = build_status(status_text, time_left, *dit);
 
 				dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(dit->id));
@@ -1328,7 +1327,7 @@ void ddclient_gui::compare_packages(){
 				dl->setEditable(false);
 				pkg->setChild(dl_line, 4, dl);
 
-				dl_line++;
+				++dl_line;
 			}
 
 			pkg = new QStandardItem(QString(new_it->name.c_str()));
@@ -1345,7 +1344,7 @@ void ddclient_gui::compare_packages(){
 
 			list->expand(index);
 
-			line_nr++;
+			++line_nr;
 			++new_it;
 		}
 	}
@@ -1501,7 +1500,9 @@ void ddclient_gui::on_connect(){
 	dialog.setModal(true);
 	dialog.exec();
 
-	mx.lock();
+	if(dialog.did_user_click_ok() != true) // stangely exec returns a nonusable value, so this has to be done manually
+		return;
+
 	int interval = ((update_thread *)thread)->get_update_interval();
 	((update_thread *)thread)->terminate_yourself();
 	thread->wait();
@@ -1512,7 +1513,8 @@ void ddclient_gui::on_connect(){
 	update_thread *new_thread = new update_thread(this, interval);
 	new_thread->start();
 	thread = new_thread;
-	this->content.clear();
+	mx.lock();
+	content.clear();
 	mx.unlock();
 
 	get_content();
@@ -1676,11 +1678,11 @@ void ddclient_gui::on_delete_finished(){
 
 	mx.lock();
 	vector<int> package_deletes; // prepare structure to save how many downloads of which package will be deleted
-	for(unsigned int i = 0; i < content.size(); i++)
+	for(unsigned int i = 0; i < content.size(); ++i)
 		package_deletes.push_back(0);
 
 	// delete all empty packages
-	for(content_it = content.begin(); content_it < content.end(); content_it++){
+	for(content_it = content.begin(); content_it < content.end(); ++content_it){
 		if(content_it->dls.size() == 0){
 			try{
 				dclient->delete_package(content_it->id);
@@ -1689,14 +1691,14 @@ void ddclient_gui::on_delete_finished(){
 	}
 
 	// find all finished downloads
-	for(content_it = content.begin(); content_it < content.end(); content_it++){
+	for(content_it = content.begin(); content_it < content.end(); ++content_it){
 		for(download_it = content_it->dls.begin(); download_it < content_it->dls.end(); download_it++){
 			if(download_it->status == "DOWNLOAD_FINISHED"){
 				finished_ids.push_back(download_it->id);
 				package_deletes[package_count]++;
 			}
 		}
-		package_count++;
+		++package_count;
 	}
 
 
@@ -1771,7 +1773,7 @@ void ddclient_gui::on_delete_finished(){
 				dclient->delete_package(content.at(i).id);
 			}catch(client_exception &e){}
 		}
-		i++;
+		++i;
 	}
 
 	mx.unlock();
@@ -2447,6 +2449,7 @@ void ddclient_gui::on_reload(){
 		status_connection->setText(tsl("Not connected"));
 		list_model->setRowCount(0);
 		mx.lock();
+		new_content.clear();
 		content.clear();
 		mx.unlock();
 		return;
@@ -2472,12 +2475,8 @@ void ddclient_gui::on_reload(){
 		full_list_update = false;
 	}else{ // subscription update mode => less cpu usage
 		update_packages();
-
-		if(reload_list)
-			get_content();
 	}
 
-	int package_count = this->content.size(); // todo
 	// update statusbar
 	if(selected_downloads_size != 0){ // something is selected and the total size is known
 		status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Selected Size") + ": " + QString("%1 MB").arg(selected_downloads_size) + ", " + QString("%1").arg(selected_downloads_count) + " " + tsl("Download(s)"));
@@ -2502,13 +2501,15 @@ void ddclient_gui::on_reload(){
 		speed << setprecision(1) << fixed << download_speed << " kb/s";
 
 		status_connection->setText(tsl("Connected to") + " " + server + " | " + tsl("Total Speed") + ": " + speed.str().c_str() +
-								   " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + " | " + tsl("Time left") + ": " + time_left.c_str() + " packages: " + QString("%1 Packages").arg(package_count)); // todo
+								   " | " + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + " | " + tsl("Time left") + ": " + time_left.c_str());
 		if(QSystemTrayIcon::isSystemTrayAvailable())
 						tray_icon->setToolTip(tsl("Connected to") + " " + server + "\n" + tsl("Total Speed") + ": " + speed.str().c_str() +
 							  "\n" + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + "\n" + tsl("Time left") + ": " + time_left.c_str());
 	}
 
 	mx.unlock();
+	if(reload_list)
+		get_content();
 }
 
 void ddclient_gui::donate_flattr(){
