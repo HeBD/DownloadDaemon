@@ -24,7 +24,7 @@
 
 using namespace std;
 
-connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(parent), config_dir(config_dir){
+connect_dialog::connect_dialog(QWidget *parent, QString config_dir) : QDialog(parent), config_dir(config_dir), user_clicked_ok(false){
     ddclient_gui *p = (ddclient_gui *) parent;
 
     setWindowTitle(p->tsl("Connect to Host"));
@@ -257,6 +257,7 @@ void connect_dialog::ok(){
 	    }catch(...){}
         }
 
+		user_clicked_ok = true;
         emit done(0);
     }
 }
