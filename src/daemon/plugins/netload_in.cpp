@@ -119,6 +119,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			}
 
 			std::string captcha_text = Captcha.process_image(result, "png", "-m 2 -a 20 -C 0-9", 4, true, false, captcha::SOLVE_AUTOMATIC);
+			log_string("netload: Solved captcha: " + captcha_text, LOG_DEBUG);
 			if(captcha_text.empty()) continue;
 			post_data += "&captcha_check=" + captcha_text + "&start=";
 
@@ -134,6 +135,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			}
 
 			if(result.find("You may forgot the security code or it might be wrong") != string::npos) {
+				log_string("netload: The entered captcha was incorrect", LOG_DEBUG);
 				continue;
 			}
 

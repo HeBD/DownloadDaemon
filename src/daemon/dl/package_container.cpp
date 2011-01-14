@@ -824,6 +824,10 @@ int package_container::count_running_waiting_dls_of_host(const std::string& host
 }
 
 void package_container::start_next_downloadable() {
+	if(is_reconnecting) {
+		// the reconnecter will call this function again when it's done
+		return;
+	}
 	if(total_downloads() > 0) {
 		while(true) {
 			dlindex downloadable = get_next_downloadable();
@@ -912,6 +916,7 @@ bool package_container::solve_captcha(dlindex dl, captcha &cap, string& result) 
 	long start_time = time(0);
 	// replace this with a condition variable with timeout
 	while(true) {
+		// TODO: this polling is really ugly.. make it event/condition-variable based..
 		sleep(1);
 		if(start_time + max_wait < time(0)) {
 			set_status(dl, DOWNLOAD_INACTIVE);

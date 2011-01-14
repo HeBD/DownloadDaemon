@@ -48,6 +48,7 @@ std::string captcha::process_image(const string &img_data, const string &img_typ
 			#endif
 		}
 		to_exec += " " + img_fn + " 2> /dev/null";
+		log_string("captcha: " + to_exec, LOG_DEBUG);
 		FILE* cap_result = popen(to_exec.c_str(), "r");
 		if(cap_result == NULL) {
 			captcha_exception e;
