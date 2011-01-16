@@ -11,6 +11,7 @@
 
 #include "plugin_container.h"
 #include "../global.h"
+#include "../plugins/ddapi.h"
 #include "../tools/helperfunctions.h"
 #include "download.h"
 
@@ -31,18 +32,10 @@ plugin_container::~plugin_container() {
 	handles.clear();
 }
 
-plugin_output plugin_container::get_info(const std::string& info, p_info kind) {
+plugin_output plugin_container::get_info(const std::string& info) {
 	unique_lock<recursive_mutex> lock(mx);
 
 	string host = info;
-	if(kind == P_FILE) {
-		try {
-			size_t pos = info.rfind("lib") + 3;
-			host = info.substr(pos, info.size() - 3 - pos);
-		} catch (...) {
-			log_string("plugin_container::get_info received invalid info: " + host + " which is of kind " + int_to_string((int)kind) + ". Please report this error.", LOG_ERR);
-		}
-	}
 
 	std::pair<bool, plugin> ret = search_info_in_cache(host);
 	plugin_output outp;
@@ -55,15 +48,13 @@ plugin_output plugin_container::get_info(const std::string& info, p_info kind) {
 	}
 
 	// put the plugin in the cache and return info
-
-
 	plugin_input inp;
 
 	outp.allows_resumption = false;
 	outp.allows_multiple = false;
 	outp.offers_premium = false;
 
-	if(handles.size() == 0) load_plugins();
+/*	if(handles.size() == 0) load_plugins();
 	// Load the plugin function needed
 	handleIter it = handles.find(host);
 
@@ -72,16 +63,20 @@ plugin_output plugin_container::get_info(const std::string& info, p_info kind) {
 		outp.allows_resumption = true;
 		outp.allows_multiple = true;
 		return outp;
-	}
+	}*/
 
-	void (*plugin_getinfo)(plugin_input&, plugin_output&);
-	plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(it->second, "plugin_getinfo");
+	//void (*plugin_getinfo)(plugin_input&, plugin_output&);
+	//plugin_getinfo = (void (*)(plugin_input&, plugin_output&))dlsym(it->second, "plugin_getinfo");
 
 	try {
 		string rhost = real_host(host);
 		inp.premium_user = global_premium_config.get_cfg_value(rhost + "_user");
 		inp.premium_password = global_premium_config.get_cfg_value(rhost + "_password");
-		plugin_getinfo(inp, outp);
+
+		//plugin_getinfo(inp, outp);
+
+		ddapi::call_function<bool, plugin_input, plugin_output>(rhost, "plugin_getinfo", inp, outp);
+
 
 		plugin new_p;
 		new_p.allows_multiple = outp.allows_multiple;
@@ -103,68 +98,18 @@ std::string plugin_container::real_host(std::string host) {
 	}
 	for(size_t i = 0; i < host.size(); ++i) host[i] = tolower(host[i]);
 
-	if(handles.empty()) load_plugins();
+	/*if(handles.empty()) load_plugins();
 
 	for(handleIter it = handles.begin(); it != handles.end(); ++it) {
 
 		if(host.find(it->first) != string::npos) {
 		   return it->first;
 		}
-	}
-	return "";
+	}*/
+	//return "";
+	return host;
 }
 
-void plugin_container::load_plugins() {
-	unique_lock<recursive_mutex> lock(mx);
-	string plugindir = program_root + "/plugins/";
-	correct_path(plugindir);
-
-	DIR *dp;
-	struct dirent *ep;
-	dp = opendir(plugindir.c_str());
-	if (dp == NULL) {
-		log_string("Could not open plugin directory!", LOG_ERR);
-		return;
-	}
-
-	for(handleIter it = handles.begin(); it != handles.end(); ++it) {
-		if(it->second) dlclose(it->second);
-	}
-
-	handles.clear();
-
-	struct pstat st;
-
-	while ((ep = readdir(dp))) {
-		if(ep->d_name[0] == '.') {
-			continue;
-		}
-		string current = plugindir + '/' + ep->d_name;
-
-		if(pstat(current.c_str(), &st) != 0) continue;
-
-		if(current.find("lib") == string::npos || current.rfind(".so") != current.size() - 3)
-			continue;
-
-		// Load the plugin needed
-                void* l_handle = dlopen(current.c_str(), RTLD_NOW | RTLD_LOCAL);
-		if (!l_handle) {
-			log_string(std::string("Unable to open plugin file: ") + dlerror() + '/' + current, LOG_ERR);
-			continue;
-		}
-
-		dlerror();	// Clear any existing error
-		string host = ep->d_name;
-		host = host.substr(3, host.size() - 6); // strip "lib" and ".so"
-		for(size_t i = 0; i < host.size(); ++i) host[i] = tolower(host[i]);
-		handles[host] = l_handle;
-
-
-	}
-
-	closedir(dp);
-
-}
 
 const std::vector<plugin>& plugin_container::get_all_infos() {
 	DIR *dp;
@@ -182,9 +127,9 @@ const std::vector<plugin>& plugin_container::get_all_infos() {
 			continue;
 		}
 		string current = ep->d_name;
-		if(current.find("lib") == string::npos || current.find(".so") == string::npos) continue;
-		current = plugindir + current;
-		get_info(current, P_FILE);
+		if(current.find(".as") != current.size() - 3) continue;
+		current.erase(current.size() - 3);
+		get_info(current);
 	}
 	return plugin_cache;
 }
@@ -201,13 +146,13 @@ std::pair<bool, plugin> plugin_container::search_info_in_cache(const std::string
 
 void* plugin_container::operator[](std::string plg) {
 	unique_lock<recursive_mutex> lock(mx);
-	for(size_t i = 0; i < plg.size(); ++i) plg[i] = tolower(plg[i]);
+	/*for(size_t i = 0; i < plg.size(); ++i) plg[i] = tolower(plg[i]);
 	if(handles.empty()) load_plugins();
 	for(handleIter it = handles.begin(); it != handles.end(); ++it) {
 		if(plg.find(it->first) != string::npos) {
 			return it->second;
 		}
-	}
+	}*/
 	return NULL;
 }
 

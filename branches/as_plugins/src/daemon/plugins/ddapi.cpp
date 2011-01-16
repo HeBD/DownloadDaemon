@@ -9,9 +9,12 @@
 #include "scriptdictionary.h"
 #include "scripthelper.h"
 #include "aswrappedcall.h"
+#include "as_config.h"
 
 
 #include "../tools/helperfunctions.h"
+#include "../dl/download.h"
+#include "../global.h"
 #include <ddcurl.h>
 
 #include <sstream>
@@ -19,11 +22,15 @@
 #include <iostream>
 #include <cstring>
 #include <vector>
+
+#include <dirent.h>
+#include <dlfcn.h>
+#include <sys/stat.h>
 using namespace std;
 
 #ifdef AS_MAX_PORTABILITY
-#error DownloadDaemon is not able to detect your hardware correctly and will therefore not run. Feel free to make a post in the DownloadDaemon forums and explain the details \
-of your hardware. A port is probably pretty simple.
+	#error DownloadDaemon is not able to detect your hardware correctly or doesnt support it. therefore it will not run.
+	#error Feel free to make a post in the DownloadDaemon forums and explain the details of your hardware. A port is probably pretty simple.
 #endif
 
 ddapi* ddapi::instance = 0;
@@ -49,9 +56,47 @@ void as_msg_cb_cerr(const asSMessageInfo *msg, void *param) {
 	cerr << type << ":" << msg->row << ":" << msg->col << " :: " << msg->message;
 }
 
+void ddapi::reload_plugins() {
+	asIScriptEngine *e = ddapi::instance->engine;
+	std::string plugindir = program_root + "plugins";
+	correct_path(plugindir);
+
+	DIR *dp;
+	struct dirent *ep;
+	dp = opendir(plugindir.c_str());
+	if (dp == NULL) {
+		log_string("Could not open plugin directory!", LOG_ERR);
+		return;
+	}
+
+	struct pstat st;
+	while ((ep = readdir(dp))) {
+		if(ep->d_name[0] == '.') {
+			continue;
+		}
+		string current = plugindir + '/' + ep->d_name;
+		string name = ep->d_name;
+		if(pstat(current.c_str(), &st) != 0) continue;
+
+		if(current.rfind(".as") != current.size() - 3)
+			continue;
+
+		name.erase(name.size() - 3);
+		e->DiscardModule(name.c_str());
+		CScriptBuilder b;
+		int r = b.StartNewModule(e, name.c_str()); assert(r>=0);
+		r = b.AddSectionFromFile(current.c_str());
+		int r2 = b.BuildModule();
+		if(r < 0 || r2 < 0) {
+			log_string("There appear to be errors in the " + name + " plugin. Please correct them", LOG_ERR);
+			continue;
+		}
+	}
+}
+
 template <typename T>
 void print(const T &val) {
-	cout << val;
+	cout << val << endl;
 }
 
 template <typename T>
@@ -94,20 +139,64 @@ string toa(T param) {
 
 int ddapi::progress_cb(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
 	i32 id = *((i32*)clientp);
-	// todo: call script function
-	return id;
+	chandle_info *i = ddapi::get_handle(id);
+	if(!i || i->progress_callback.empty()) return 0;
+	asIScriptContext *ctx = ddapi::instance->engine->CreateContext();
+	int funcId = ddapi::instance->engine->GetModule(ddapi::instance->curr_module.c_str())->GetFunctionIdByName(i->progress_callback.c_str());
+	ctx->Prepare(funcId);
+	ctx->SetArgObject(0, i->progress_data);
+	ctx->SetArgDouble(1, dltotal);
+	ctx->SetArgDouble(2, dlnow);
+	int r = ctx->Execute();
+	i32 ret = 0;
+	if(r == asEXECUTION_FINISHED) {
+		ret = ctx->GetReturnDWord();
+	}
+	ctx->Release();
+	return ret;
 }
 
-int ddapi::header_cb(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
+int ddapi::write_cb(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
 	i32 id = *((i32*)clientp);
-	// todo: call script function
-	return id;
+	chandle_info *i = ddapi::get_handle(id);
+	if(!i || i->write_callback.empty()) return 0;
+	asIScriptContext *ctx = ddapi::instance->engine->CreateContext();
+	int funcId = ddapi::instance->engine->GetModule(ddapi::instance->curr_module.c_str())->GetFunctionIdByName(i->header_callback.c_str());
+	ctx->Prepare(funcId);
+	ctx->SetArgObject(0, i->write_data);
+	ctx->SetArgDouble(1, dltotal);
+	ctx->SetArgDouble(2, dlnow);
+	int r = ctx->Execute();
+	i32 ret = 0;
+	if(r == asEXECUTION_FINISHED) {
+		ret = ctx->GetReturnDWord();
+	}
+	ctx->Release();
+	return ret;
 }
 
-size_t ddapi::write_cb( void *ptr, size_t size, size_t nmemb, void *userdata) {
+size_t ddapi::header_cb( void *ptr, size_t size, size_t nmemb, void *userdata) {
 	i32 id = *((i32*)userdata);
-	// todo: call script function
-	return id;
+	chandle_info *i = ddapi::get_handle(id);
+	if(!i || i->header_callback.empty()) return 0;
+	asIScriptContext *ctx = ddapi::instance->engine->CreateContext();
+	int funcId = ddapi::instance->engine->GetModule(ddapi::instance->curr_module.c_str())->GetFunctionIdByName(i->write_callback.c_str());
+	ctx->Prepare(funcId);
+	string data((const char*)ptr, nmemb * size);
+	ctx->SetArgObject(0, &data);
+	ctx->SetArgDouble(1, size);
+	ctx->SetArgDouble(2, nmemb);
+	ctx->SetArgObject(3, i->header_data);
+	int r = ctx->Execute();
+	size_t ret = 0;
+	if(r == asEXECUTION_FINISHED) {
+		if(sizeof(size_t) == 4)
+			ret = ctx->GetReturnDWord();
+		else
+			ret = ctx->GetReturnQWord();
+	}
+	ctx->Release();
+	return ret;
 }
 
 // for strings and callback-functions (which have to be passed as strings)
@@ -131,19 +220,19 @@ CURLcode ddapi::setopt_wrap(ui32 handle, CURLoption opt, void *value, int type) 
 		string &s = *((string*)value);
 		switch(opt) {
 		case CURLOPT_PROGRESSFUNCTION:
-			if(ddapi::script_func_exists(s)) {
+			if(ddapi::script_func_exists(ddapi::instance->curr_module, s)) {
 				i->progress_callback = s;
 				return CURLE_OK;
 			}
 			return CURLE_FUNCTION_NOT_FOUND;
 		case CURLOPT_WRITEFUNCTION:
-			if(ddapi::script_func_exists(s)) {
+			if(ddapi::script_func_exists(ddapi::instance->curr_module, s)) {
 				i->write_callback = s;
 				return CURLE_OK;
 			}
 			return CURLE_FUNCTION_NOT_FOUND;
 		case CURLOPT_HEADERFUNCTION:
-			if(ddapi::script_func_exists(s)) {
+			if(ddapi::script_func_exists(ddapi::instance->curr_module, s)) {
 				i->header_callback = s;
 				return CURLE_OK;
 			}
@@ -153,16 +242,16 @@ CURLcode ddapi::setopt_wrap(ui32 handle, CURLoption opt, void *value, int type) 
 			break;
 		}
 	} else if(type == e->GetTypeIdByDecl("any")) {
-		CScriptAny &a = *((CScriptAny*)value);
+		CScriptAny *a = (CScriptAny*)value;
 		switch(opt) {
 		case CURLOPT_PROGRESSDATA:
-			i->progress_data = a;
+			i->progress_data->CopyFrom(a);
 			return CURLE_OK;
 		case CURLOPT_WRITEDATA:
-			i->write_data = a;
+			i->write_data->CopyFrom(a);
 			return CURLE_OK;
 		case CURLOPT_WRITEHEADER:
-			i->header_data = a;
+			i->header_data->CopyFrom(a);
 			return CURLE_OK;
 		default:
 			log_string("ddapi::curl_setopt called with invalid argument type " + string(e->GetTypeDeclaration(type)), LOG_WARNING);
@@ -203,6 +292,7 @@ CURLcode ddapi::perform_wrap(ui32 id) {
 	h->setopt(CURLOPT_PROGRESSDATA, &id);
 	h->setopt(CURLOPT_WRITEDATA, &id);
 	h->setopt(CURLOPT_WRITEHEADER, &id);
+	h->setopt(CURLOPT_NOPROGRESS, 0);
 	return h->perform();
 }
 
@@ -234,13 +324,9 @@ chandle_info* ddapi::get_handle(ui32 id) {
 	return 0;
 }
 
-bool ddapi::script_func_exists(const std::string &name) {
-	asIScriptEngine *e = ddapi::instance->engine;
-	for(int i = 0; i < e->GetFuncdefCount(); ++i) {
-		if(e->GetFuncdefByIndex(i)->GetName() == name)
-			return true;
-	}
-	return false;
+bool ddapi::script_func_exists(const std::string &module, const std::string &name) {
+	// TODO
+	return true;
 }
 
 ddapi::ddapi() {
@@ -259,6 +345,7 @@ ddapi::ddapi() {
 
 	typedef_inttype<size_t>(engine, "size_t", false);
 	typedef_inttype<time_t>(engine, "time_t", false);
+	typedef_inttype<filesize_t>(engine, "filesize_t", false);
 
 	// register vector types
 	RegisterVector<int>("int[]", "int", engine);
@@ -352,7 +439,7 @@ ddapi::ddapi() {
 	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_DIRLISTONLY", CURLOPT_DIRLISTONLY); assert(r>=0);
 	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_FOLLOWLOCATION", CURLOPT_FOLLOWLOCATION); assert(r>=0);
 	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_TRANSFERTEXT", CURLOPT_TRANSFERTEXT); assert(r>=0);
-	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_PROGRESSFUNCTION", CURLOPT_PROGRESSDATA); assert(r>=0);
+	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_PROGRESSFUNCTION", CURLOPT_PROGRESSFUNCTION); assert(r>=0);
 	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_AUTOREFERER", CURLOPT_AUTOREFERER); assert(r>=0);
 	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_MAXREDIRS", CURLOPT_MAXREDIRS); assert(r>=0);
 	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_FILETIME", CURLOPT_FILETIME); assert(r>=0);
@@ -429,17 +516,58 @@ ddapi::ddapi() {
 
 
 	// register DD functionality
+	r = engine->RegisterEnum("download_status"); assert(r>=0);
+	r = engine->RegisterEnumValue("download_status", "DOWNLOAD_PENDING", DOWNLOAD_PENDING); assert(r>=0);
+	r = engine->RegisterEnumValue("download_status", "DOWNLOAD_INACTIVE", DOWNLOAD_INACTIVE); assert(r>=0);
+	r = engine->RegisterEnumValue("download_status", "DOWNLOAD_FINISHED", DOWNLOAD_FINISHED); assert(r>=0);
+	r = engine->RegisterEnumValue("download_status", "DOWNLOAD_RUNNING", DOWNLOAD_RUNNING); assert(r>=0);
+	r = engine->RegisterEnumValue("download_status", "DOWNLOAD_WAITING", DOWNLOAD_WAITING); assert(r>=0);
+	r = engine->RegisterEnumValue("download_status", "DOWNLOAD_DELETED", DOWNLOAD_DELETED); assert(r>=0);
+	r = engine->RegisterEnumValue("download_status", "DOWNLOAD_RECONNECTING", DOWNLOAD_RECONNECTING); assert(r>=0);
+	r = engine->RegisterEnum("plugin_status"); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_SUCCESS", PLUGIN_SUCCESS); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_ERROR", PLUGIN_ERROR); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_LIMIT_REACHED", PLUGIN_LIMIT_REACHED); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_FILE_NOT_FOUND", PLUGIN_FILE_NOT_FOUND); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_CONNECTION_ERROR", PLUGIN_CONNECTION_ERROR); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_SERVER_OVERLOADED", PLUGIN_SERVER_OVERLOADED); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_INVALID_HOST", PLUGIN_INVALID_HOST); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_CONNECTION_LOST", PLUGIN_CONNECTION_LOST); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_WRITE_FILE_ERROR", PLUGIN_WRITE_FILE_ERROR); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_AUTH_FAIL", PLUGIN_AUTH_FAIL); assert(r>=0);
+	r = engine->RegisterEnumValue("plugin_status", "PLUGIN_CAPTCHA", PLUGIN_CAPTCHA); assert(r>=0);
 
-
+	r = engine->RegisterObjectType("plugin_input", sizeof(plugin_input), asOBJ_VALUE | asOBJ_APP_CLASS_CDA); assert(r>=0);
+	r = engine->RegisterObjectType("plugin_output", sizeof(plugin_output), asOBJ_VALUE | asOBJ_APP_CLASS_CDA); assert(r>=0);
+	r = engine->RegisterObjectProperty("plugin_input", "string premium_password", offsetof(plugin_input,premium_password)); assert(r>=0);
+	r = engine->RegisterObjectProperty("plugin_input", "string premium_user", offsetof(plugin_input,premium_user)); assert(r>=0);
+	r = engine->RegisterObjectProperty("plugin_input", "string url", offsetof(plugin_input,url)); assert(r>=0);
+	r = engine->RegisterObjectProperty("plugin_output", "string download_url", offsetof(plugin_output,download_url)); assert(r>=0);
+	r = engine->RegisterObjectProperty("plugin_output", "string download_filename", offsetof(plugin_output,download_filename)); assert(r>=0);
+	r = engine->RegisterObjectProperty("plugin_output", "bool allows_resumption", offsetof(plugin_output,allows_resumption)); assert(r>=0);
+	r = engine->RegisterObjectProperty("plugin_output", "bool allows_multiple", offsetof(plugin_output,allows_multiple)); assert(r>=0);
+	r = engine->RegisterObjectProperty("plugin_output", "bool offers_premium", offsetof(plugin_output,offers_premium)); assert(r>=0);
+	r = engine->RegisterObjectProperty("plugin_output", "filesize_t file_size", offsetof(plugin_output,file_size)); assert(r>=0);
+	r = engine->RegisterObjectProperty("plugin_output", "plugin_status file_online", offsetof(plugin_output,file_online)); assert(r>=0);
+	r = engine->RegisterObjectBehaviour("plugin_input", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(plugin_input::cons), asCALL_CDECL_OBJLAST); assert(r>=0);
+	r = engine->RegisterObjectBehaviour("plugin_input", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(plugin_input::dest), asCALL_CDECL_OBJLAST); assert(r>=0);
+	r = engine->RegisterObjectBehaviour("plugin_output", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(plugin_output::cons), asCALL_CDECL_OBJLAST); assert(r>=0);
+	r = engine->RegisterObjectBehaviour("plugin_output", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(plugin_output::dest), asCALL_CDECL_OBJLAST); assert(r>=0);
+	// register the plugins interface(s)
 }
 
 ddapi::ddapi(const ddapi&) {
 
 }
 
+ddapi::~ddapi() {
+	engine->Release();
+}
+
 void ddapi::start_engine() {
 	if(ddapi::instance == 0)
 		ddapi::instance = new ddapi;
+	ddapi::reload_plugins();
 
 
 }
@@ -463,116 +591,3 @@ void ddapi::exec(const string &command) {
 	d->engine->SetMessageCallback(asFUNCTION(as_msg_cb_log), 0, asCALL_CDECL);
 	exec_str.clear();
 }
-
-
-
-// implementation
-#if 0
-// the code below are just my first experiments with angelscript. It's only partially
-// functional and does absolutely not what you want. Just ignore it, it's there for my
-// inspiration
-#include <assert.h>
-#include <cctype>
-#include <cstdio>
-#include <cstdlib>
-#include <string>
-#include <cstring>
-#include <ctime>
-#include <sstream>
-
-using namespace std;
-
-#include "aswrappedcall.h"
-#include "scriptclib.h"
-#include "scriptbuilder.h"
-
-
-asDECLARE_FUNCTION_WRAPPER(remove_wrap, remove);
-asDECLARE_FUNCTION_WRAPPER(rename_wrap, rename);
-
-asDECLARE_FUNCTION_WRAPPER(system_wrap, system);
-
-string getenv_wrap(const string &v) { const char *c = getenv(v.c_str()); return (c ? string(c) : ""); }
-time_t time_wrap() { return time(0); }
-string asctime_wrap(struct tm timeptr) { char *c = asctime(&timeptr); return (c ? string(c) : ""); }
-//string ctime_wrap(time_t timer) { char *c = ctime(&timer); return (c ? string(c) : ""); }
-//struct tm gmtime_wrap(time_t timer) { struct tm *t = gmtime(&timer); if(t) return *t; struct tm e; memset(&e, 0, sizeof(e)); return e; }
-
-
-
-void RegisterScriptClib(asIScriptEngine *engine)
-{
-	int r;
-
-
-	r = engine->RegisterGlobalFunction("int system(string)" , asFUNCTION(system_wrap), asCALL_GENERIC); assert( r >= 0 );
-	
-	r = engine->RegisterGlobalFunction("int rand()"                     , asFUNCTION(rand), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("void srand(uint)"               , asFUNCTION(srand), asCALL_CDECL); assert( r >= 0 );
-	r = engine->RegisterGlobalFunction("string getenv(const string &in)", asFUNCTION(getenv_wrap), asCALL_CDECL); assert( r >= 0 );
-
-	
-	// ctime (only time_t stuff implemented, no struct tm
-	r = engine->RegisterObjectType("time_t"   , sizeof(time_t)   , asOBJ_VALUE | asOBJ_POD | asOBJ_APP_PRIMITIVE); assert( r >= 0 );
-	r = engine->RegisterObjectType("size_t"   , sizeof(size_t)   , asOBJ_VALUE | asOBJ_POD | asOBJ_APP_PRIMITIVE); assert( r >= 0 );
-	//r = engine->RegisterObjectType("struct tm", sizeof(struct tm), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);     assert( r >= 0 );
-	
-	//r = engine->RegisterGlobalFunction("double difftime(time_t, time_t);" , asFUNCTION(difftime), asCALL_CDECL); assert( r >= 0 );
-	//r = engine->RegisterGlobalFunction("time_t time()"                    , asFUNCTION(time), asCALL_CDECL); assert( r >= 0 );
-	//r = engine->RegisterGlobalFunction("string asctime(struct tm)"      , asFUNCTION(asctime_wrap), asCALL_CDECL); assert( r >= 0 );
-	//r = engine->RegisterGlobalFunction("string ctime(time_t)"           , asFUNCTION(ctime_wrap), asCALL_CDECL); assert( r >= 0 );
-	//r = engine->RegisterGlobalFunction("struct tm gmtime(time_t)"       , asFUNCTION(gmtime_wrap), asCALL_CDECL); assert( r >= 0 );
-	
-	
-
-}
-
-
-#include "/home/ben/coding/downloaddaemon/trunk/src/include/ddcurl.h"
-
-ddcurl* ddcurl_factory() {
-	return new ddcurl(true);
-}
-
-template <typename T>
-CURLcode c_setopt(ddcurl *_this, CURLoption opt, T val) {
-	//return _this->setopt(opt, val);
-	return CURLE_OK;
-}
-/*
-CURLcode c_setopt(ddcurl *_this, CURLoption opt, const string &val) {
-	if(opt == CURLOPT_WRITEFUNCTION)
-		_this->as_writecb = val;
-	else if(opt == CURLOPT_PROGRESSFUNCTION)
-		_this->as_progresscb = val;
-	else
-		return _this->setopt(opt, val);
-	return CURLE_OK;
-}*/
-
-void RegisterScriptCurl(asIScriptEngine *engine) {
-	int r;
-	//r = engine->RegisterObjectType("CURL", sizeof(CURL*), asOBJ_VALUE | asOBJ_APP_PRIMITIVE); assert( r >= 0 );
-	//CScriptBuilder builder;
-	//builder.StartNewModule(engine, "ddcurl");
-	//builder.AddSectionFromFile("curl.as");
-	//builder.BuildModule();
-
-	r = engine->RegisterObjectType("ddcurl", 0, asOBJ_REF); assert( r >= 0 );
-	r = engine->RegisterObjectBehaviour("ddcurl", asBEHAVE_FACTORY, "ddcurl@ f()", asFUNCTION(ddcurl_factory), asCALL_CDECL); assert (r >= 0);
-	r = engine->RegisterObjectBehaviour("ddcurl", asBEHAVE_ADDREF, "void f()", asMETHOD(ddcurl,AddRef), asCALL_THISCALL); assert (r >= 0);
-	r = engine->RegisterObjectBehaviour("ddcurl", asBEHAVE_RELEASE, "void f()", asMETHOD(ddcurl,Release), asCALL_THISCALL); assert (r >= 0);
-	r = engine->RegisterObjectMethod("ddcurl", "void init()", asMETHOD(ddcurl, init), asCALL_THISCALL); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("ddcurl", "void cleanup()", asMETHOD(ddcurl, cleanup), asCALL_THISCALL); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("ddcurl", "void perform()", asMETHOD(ddcurl, perform), asCALL_THISCALL); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("ddcurl", "int setopt(int, string)", asFUNCTION(c_setopt<string>), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("ddcurl", "int setopt(int, int)", asFUNCTION(c_setopt<long>), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("ddcurl", "int setopt(int, uint64)", asFUNCTION(c_setopt<curl_off_t>), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("ddcurl", "int setopt(int, const ?&in)", asFUNCTION(c_setopt<void*>), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	
-}
-
-
-END_AS_NAMESPACE
-
-#endif

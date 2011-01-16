@@ -15,6 +15,7 @@
 #include <config.h>
 #include <string>
 #include <fstream>
+#include <new>
 #include "../mgmt/connection_manager.h"
 #include "../plugins/captcha.h"
 
@@ -43,12 +44,18 @@ struct plugin_output {
 	bool offers_premium;
 	filesize_t file_size;
 	plugin_status file_online;
+	// constructor and destructor below are needed for angelscript bindings
+	static void cons(void *memory) { new(memory) plugin_output; }
+	static void dest(void *memory) { ((plugin_output*)memory)->~plugin_output(); }
 };
 
 struct plugin_input {
 	std::string premium_user;
 	std::string premium_password;
 	std::string url;
+	// constructor and destructor below are needed for angelscript bindings
+	static void cons(void *memory) { new(memory) plugin_input; }
+	static void dest(void *memory) { ((plugin_input*)memory)->~plugin_input(); }
 };
 
 struct dl_cb_info ;

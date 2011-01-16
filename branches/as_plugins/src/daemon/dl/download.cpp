@@ -276,7 +276,7 @@ const char* download::get_status_str() {
 #ifndef IS_PLUGIN
 plugin_output download::get_hostinfo() {
 	lock_guard<recursive_mutex> lock(mx);
-	return plugin_cache.get_info(get_host(), plugin_container::P_HOST);
+	return plugin_cache.get_info(get_host());
 }
 
 

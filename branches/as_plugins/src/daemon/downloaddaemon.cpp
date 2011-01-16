@@ -80,17 +80,6 @@ char** env_vars;
 
 int main(int argc, char* argv[], char* env[]) {
 	ddapi::start_engine();
-#define DD_DEVEL_CONSOLE
-#ifdef DD_DEVEL_CONSOLE
-	string tmp;
-	cout << "> ";
-	while(getline(cin, tmp)) {
-	//tmp = "string s = \"the lazy dog blah blah blah\"; print(s.substr(s.find(\"dog\", 0), string__npos));";
-		ddapi::exec(tmp);
-		cout << endl << "> ";
-	}
-	exit(0);
-#endif
 	env_vars = env;
 	#ifdef BACKTRACE_ON_CRASH
 	signal(SIGSEGV, print_backtrace);
@@ -344,6 +333,18 @@ int main(int argc, char* argv[], char* env[]) {
 			/* child (daemon) continues */
 			setsid();	
 		}
+		plugin_cache.get_all_infos();
+#define DD_DEVEL_CONSOLE
+#ifdef DD_DEVEL_CONSOLE
+	string tmp;
+	cout << "> ";
+	while(getline(cin, tmp)) {
+	//tmp = "string s = \"the lazy dog blah blah blah\"; print(s.substr(s.find(\"dog\", 0), string__npos));";
+		ddapi::exec(tmp);
+		cout << endl << "> ";
+	}
+	exit(0);
+#endif
 
 
 		log_string("DownloadDaemon started successfully", LOG_DEBUG);

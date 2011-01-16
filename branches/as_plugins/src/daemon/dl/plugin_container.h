@@ -42,16 +42,14 @@ struct plugin {
 
 class plugin_container {
 public:
-	enum p_info { P_HOST, P_FILE };
 
-	plugin_output get_info(const std::string& info, p_info kind);
+	plugin_output get_info(const std::string& info);
 	const std::vector<plugin>& get_all_infos();
 
 
 
 	void clear_cache();
 
-	void load_plugins();
 	std::map<std::string, void*> handles;
 	typedef std::map<std::string, void*>::iterator handleIter;
 
@@ -60,7 +58,7 @@ public:
 	void* operator[](std::string plg);
 
 	template <typename func>
-        bool load_function(const std::string &host, const std::string& sym, func& ret, bool log_error = true) {
+	bool load_function(const std::string &host, const std::string& sym, func& ret, bool log_error = true) {
 		void* h = operator[](host);
 		if(!h) return false;
 		ret = (func)dlsym(h, sym.c_str());
