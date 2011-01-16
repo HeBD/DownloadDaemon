@@ -125,7 +125,6 @@ namespace PLGFILE {
 	download           *dl_ptr;
 	int dlid;
 	int max_retrys;
-	int retry_count;
 	std::string gocr;
 	std::string host;
 	std::string share_directory;
@@ -218,7 +217,6 @@ extern "C" plugin_status plugin_exec_wrapper(download_container* dlc, download* 
 	max_retrys = max_captcha_retrys;
 	gocr = gocr_path;
 	host = dlc->get_host(id);
-	retry_count = 0;
 	share_directory = root_dir;
 	Captcha.setup(gocr, max_retrys, share_directory, dlid, host);
 	return plugin_exec(pinp, poutp);
