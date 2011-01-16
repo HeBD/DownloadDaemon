@@ -153,5 +153,5 @@ void captcha::setup(const std::string &gocr, int max_retrys, const std::string &
 	this->dlid = dlid;
 	this->share_directory = data_dir;
 	this->host = host;
-
+	this->retry_count = 0;
 }
