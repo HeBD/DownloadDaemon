@@ -84,11 +84,11 @@ int main(int argc, char* argv[], char* env[]) {
 #ifdef DD_DEVEL_CONSOLE
 	string tmp;
 	cout << "> ";
-	//while(getline(cin, tmp)) {
-	tmp = "string s = \"the lazy dog blah blah blah\"; print(s.substr(s.find(\"dog\", 0), string__npos));";
+	while(getline(cin, tmp)) {
+	//tmp = "string s = \"the lazy dog blah blah blah\"; print(s.substr(s.find(\"dog\", 0), string__npos));";
 		ddapi::exec(tmp);
 		cout << endl << "> ";
-	//}
+	}
 	exit(0);
 #endif
 	env_vars = env;
