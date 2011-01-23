@@ -9,10 +9,13 @@
 #include <map>
 
 struct chandle_info;
+struct plugin_info;
 typedef std::map<ui32, chandle_info> handlemap;
+typedef std::map<std::string, plugin_info> pluginmap;
 
 class ddapi {
 	friend struct chandle_info;
+	friend struct plugin_info;
 public:
 	static void start_engine();
 	static void shutdown();
@@ -74,18 +77,36 @@ private:
 	asIScriptEngine *engine;
 
 	handlemap chandles;
+	pluginmap plugins;
 
 	static int progress_cb(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow);
-	static int write_cb(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow);
+	static size_t write_cb(char *buf, size_t size, size_t nitems, void *outstream);
 	static size_t header_cb( void *ptr, size_t size, size_t nmemb, void *userdata);
 
 };
+
+
+
 
 struct chandle_info {
 	chandle_info()
 		: write_data(new CScriptAny(ddapi::instance->engine)),
 		  progress_data(new CScriptAny(ddapi::instance->engine)),
 		  header_data(new CScriptAny(ddapi::instance->engine)) {}
+	chandle_info(const chandle_info &c)
+		: handle(c.handle),
+		  write_callback(c.write_callback),
+		  write_data(new CScriptAny(ddapi::instance->engine)),
+		  progress_callback(c.progress_callback),
+		  progress_data(new CScriptAny(ddapi::instance->engine)),
+		  header_callback(c.header_callback),
+		  header_data(new CScriptAny(ddapi::instance->engine)),
+		  module(c.module) {
+		write_data->CopyFrom(c.write_data);
+		progress_data->CopyFrom(c.progress_data);
+		header_data->CopyFrom(c.header_data);
+	}
+
 	~chandle_info() {
 		write_data->Release();
 		progress_data->Release();
@@ -102,7 +123,25 @@ struct chandle_info {
 	std::string module;
 };
 
-// RegisterDDApi...(asIScriptEngine *engine), maybe a class to access plugin-details, etc
+struct plugin_info {
+	plugin_info() { object = 0; type_id = -1; }
+	plugin_info(const plugin_info &i) {
+		module = i.module;
+		classname = i.classname;
+		interfaces = i.interfaces;
+		object = ddapi::instance->engine->CreateScriptObjectCopy(i.object, i.type_id);
+		type_id = i.type_id;
+	}
+
+	~plugin_info() { if(object && type_id != -1) ddapi::instance->engine->ReleaseScriptObject(object, type_id); }
+	enum interface { IF_PLUGIN, IF_DECRYPTER, IF_HOSTER, IF_PREPROCESSOR, IF_POSTPROCESSOR };
+	std::string module;
+	std::string classname;
+	std::vector<interface> interfaces;
+	void *object;
+	int type_id;
+};
+
 
 
 #endif

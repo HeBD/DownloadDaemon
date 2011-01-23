@@ -65,9 +65,11 @@ void ddapi::reload_plugins() {
 	struct dirent *ep;
 	dp = opendir(plugindir.c_str());
 	if (dp == NULL) {
-		log_string("Could not open plugin directory!", LOG_ERR);
+		log_string("Could not open plugin directory. Only generic downloading will be possible", LOG_ERR);
 		return;
 	}
+
+	ddapi::instance->plugins.clear();
 
 	struct pstat st;
 	while ((ep = readdir(dp))) {
@@ -90,6 +92,51 @@ void ddapi::reload_plugins() {
 		if(r < 0 || r2 < 0) {
 			log_string("There appear to be errors in the " + name + " plugin. Please correct them", LOG_ERR);
 			continue;
+		}
+
+		asIScriptModule *mod = e->GetModule(name.c_str());
+		// call init-functions if required, get the list of compatible hosters, fill pluginmap
+		for(int i = 0; i < mod->GetObjectTypeCount(); ++i) {
+			asIObjectType *ot = mod->GetObjectTypeByIndex(i);
+			plugin_info info;
+			for(int j = 0; j < ot->GetInterfaceCount(); ++j) {
+				asIObjectType *it = ot->GetInterface(j);
+				string ifname = it->GetName();
+				if(ifname == "plugin")
+					info.interfaces.push_back(plugin_info::IF_PLUGIN);
+				else if(ifname == "decrypter")
+					info.interfaces.push_back(plugin_info::IF_DECRYPTER);
+				else if(ifname == "hoster")
+					info.interfaces.push_back(plugin_info::IF_HOSTER);
+				else if(ifname == "preprocessor")
+					info.interfaces.push_back(plugin_info::IF_PREPROCESSOR);
+				else if(ifname == "postprocessor")
+					info.interfaces.push_back(plugin_info::IF_POSTPROCESSOR);
+
+			}
+			if(info.interfaces.empty()) continue; // only a plugin-internal class, doesn't fulfill any interface
+			info.classname = ot->GetName();
+			info.object = e->CreateScriptObject(ot->GetTypeId());
+			info.type_id = ot->GetTypeId();
+			info.module = name;
+			int func_id = ot->GetMethodIdByDecl("string[] getCompatibleHosters()");
+			if(func_id < 0) {
+				log_string("Plugin class " + info.classname + "not derived from interface \"plugin\"", LOG_ERR);
+				continue;
+			}
+			asIScriptContext *ctx = e->CreateContext();
+			ctx->Prepare(func_id);
+			ctx->SetObject(info.object);
+			int r = ctx->Execute();
+			if(r != asEXECUTION_FINISHED) {
+				log_string("Unable to execute " + info.classname + "::getCompatibleHosters()", LOG_ERR);
+				ctx->Release(); continue;
+			}
+			vector<string>* hosters = (vector<string>*)ctx->GetReturnObject();
+			for(vector<string>::iterator it = hosters->begin(); it != hosters->end(); ++it) {
+				ddapi::instance->plugins.insert(make_pair(*it, info));
+			}
+			ctx->Release();
 		}
 	}
 }
@@ -156,16 +203,18 @@ int ddapi::progress_cb(void *clientp, double dltotal, double dlnow, double ultot
 	return ret;
 }
 
-int ddapi::write_cb(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
-	i32 id = *((i32*)clientp);
+size_t ddapi::write_cb(char *buffer, size_t size, size_t nitems, void *outstream) {
+	i32 id = *((i32*)outstream);
 	chandle_info *i = ddapi::get_handle(id);
 	if(!i || i->write_callback.empty()) return 0;
 	asIScriptContext *ctx = ddapi::instance->engine->CreateContext();
-	int funcId = ddapi::instance->engine->GetModule(ddapi::instance->curr_module.c_str())->GetFunctionIdByName(i->header_callback.c_str());
+	int funcId = ddapi::instance->engine->GetModule(ddapi::instance->curr_module.c_str())->GetFunctionIdByName(i->write_callback.c_str());
 	ctx->Prepare(funcId);
-	ctx->SetArgObject(0, i->write_data);
-	ctx->SetArgDouble(1, dltotal);
-	ctx->SetArgDouble(2, dlnow);
+	string buf(buffer, size*nitems);
+	ctx->SetArgObject(0, &buf);
+	ctx->SetArgDWord(1, size);
+	ctx->SetArgDWord(2, nitems);
+	ctx->SetArgObject(3, outstream);
 	int r = ctx->Execute();
 	i32 ret = 0;
 	if(r == asEXECUTION_FINISHED) {
@@ -180,14 +229,14 @@ size_t ddapi::header_cb( void *ptr, size_t size, size_t nmemb, void *userdata) {
 	chandle_info *i = ddapi::get_handle(id);
 	if(!i || i->header_callback.empty()) return 0;
 	asIScriptContext *ctx = ddapi::instance->engine->CreateContext();
-	int funcId = ddapi::instance->engine->GetModule(ddapi::instance->curr_module.c_str())->GetFunctionIdByName(i->write_callback.c_str());
-	ctx->Prepare(funcId);
+	int funcId = ddapi::instance->engine->GetModule(ddapi::instance->curr_module.c_str())->GetFunctionIdByName(i->header_callback.c_str());
+	int r = ctx->Prepare(funcId);
 	string data((const char*)ptr, nmemb * size);
-	ctx->SetArgObject(0, &data);
-	ctx->SetArgDouble(1, size);
-	ctx->SetArgDouble(2, nmemb);
-	ctx->SetArgObject(3, i->header_data);
-	int r = ctx->Execute();
+	r = ctx->SetArgObject(0, &data);
+	r = ctx->SetArgDWord(1, size);
+	r = ctx->SetArgDWord(2, nmemb);
+	r = ctx->SetArgObject(3, i->header_data);
+	r = ctx->Execute();
 	size_t ret = 0;
 	if(r == asEXECUTION_FINISHED) {
 		if(sizeof(size_t) == 4)
@@ -207,6 +256,21 @@ CURLcode ddapi::setopt_wrap(ui32 handle, CURLoption opt, void *value, int type) 
 	ddcurl *h = i->handle;
 	if(opt == CURLOPT_POSTFIELDS)
 		opt = CURLOPT_COPYPOSTFIELDS;
+
+	CScriptAny *a = (CScriptAny*)value;
+	switch(opt) {
+	case CURLOPT_PROGRESSDATA:
+		i->progress_data->CopyFrom(a);
+		return CURLE_OK;
+	case CURLOPT_WRITEDATA:
+		i->write_data->CopyFrom(a);
+		return CURLE_OK;
+	case CURLOPT_WRITEHEADER:
+		i->header_data->CopyFrom(a);
+		return CURLE_OK;
+	default:
+		break;
+	}
 
 	if(type == e->GetTypeIdByDecl("int"))
 		return h->setopt(opt, *((i32*)value));
@@ -241,22 +305,6 @@ CURLcode ddapi::setopt_wrap(ui32 handle, CURLoption opt, void *value, int type) 
 			return h->setopt(opt, s.c_str());
 			break;
 		}
-	} else if(type == e->GetTypeIdByDecl("any")) {
-		CScriptAny *a = (CScriptAny*)value;
-		switch(opt) {
-		case CURLOPT_PROGRESSDATA:
-			i->progress_data->CopyFrom(a);
-			return CURLE_OK;
-		case CURLOPT_WRITEDATA:
-			i->write_data->CopyFrom(a);
-			return CURLE_OK;
-		case CURLOPT_WRITEHEADER:
-			i->header_data->CopyFrom(a);
-			return CURLE_OK;
-		default:
-			log_string("ddapi::curl_setopt called with invalid argument type " + string(e->GetTypeDeclaration(type)), LOG_WARNING);
-			break;
-		}
 	} else {
 		log_string("ddapi::curl_setopt called with invalid argument type " + string(e->GetTypeDeclaration(type)), LOG_WARNING);
 		return CURLE_FAILED_INIT;
@@ -286,13 +334,13 @@ CURLcode ddapi::perform_wrap(ui32 id) {
 	chandle_info *i = ddapi::get_handle(id);
 	if(!i) return CURLE_FAILED_INIT;
 	ddcurl *h = i->handle;
-	h->setopt(CURLOPT_PROGRESSFUNCTION, ddapi::progress_cb);
-	h->setopt(CURLOPT_WRITEFUNCTION, ddapi::write_cb);
-	h->setopt(CURLOPT_HEADERFUNCTION, ddapi::header_cb);
-	h->setopt(CURLOPT_PROGRESSDATA, &id);
-	h->setopt(CURLOPT_WRITEDATA, &id);
-	h->setopt(CURLOPT_WRITEHEADER, &id);
-	h->setopt(CURLOPT_NOPROGRESS, 0);
+	CURLcode r = h->setopt(CURLOPT_PROGRESSFUNCTION, ddapi::progress_cb);
+	r = h->setopt(CURLOPT_WRITEFUNCTION, ddapi::write_cb);
+	r = h->setopt(CURLOPT_HEADERFUNCTION, ddapi::header_cb);
+	r = h->setopt(CURLOPT_PROGRESSDATA, &id);
+	r = h->setopt(CURLOPT_WRITEDATA, &id);
+	r = h->setopt(CURLOPT_WRITEHEADER, &id);
+	r = h->setopt(CURLOPT_NOPROGRESS, 0);
 	return h->perform();
 }
 
@@ -456,6 +504,7 @@ ddapi::ddapi() {
 	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_USERNAME", CURLOPT_USERNAME); assert(r>=0);
 	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_PASSWORD", CURLOPT_PASSWORD); assert(r>=0);
 	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_NOPROXY", CURLOPT_NOPROXY); assert(r>=0);
+	r = engine->RegisterEnumValue("CURLoption", "CURLOPT_PROGRESSDATA", CURLOPT_PROGRESSDATA); assert(r>=0);
 
 	r = engine->RegisterEnum("CURLcode"); assert(r>=0);
 	r = engine->RegisterEnumValue("CURLcode", "CURLE_OK", CURLE_OK); assert(r>=0);
@@ -553,7 +602,32 @@ ddapi::ddapi() {
 	r = engine->RegisterObjectBehaviour("plugin_input", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(plugin_input::dest), asCALL_CDECL_OBJLAST); assert(r>=0);
 	r = engine->RegisterObjectBehaviour("plugin_output", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(plugin_output::cons), asCALL_CDECL_OBJLAST); assert(r>=0);
 	r = engine->RegisterObjectBehaviour("plugin_output", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(plugin_output::dest), asCALL_CDECL_OBJLAST); assert(r>=0);
+
 	// register the plugins interface(s)
+	r = engine->RegisterInterface("plugin"); assert(r>=0);
+	r = engine->RegisterInterface("decrypter"); assert(r>=0);
+	r = engine->RegisterInterface("hoster"); assert(r>=0);
+	r = engine->RegisterInterface("preprocessor"); assert(r>=0);
+	r = engine->RegisterInterface("postprocessor"); assert(r>=0);
+
+	r = engine->RegisterInterfaceMethod("plugin", "bool allowsMultiple()"); assert(r>=0);
+	r = engine->RegisterInterfaceMethod("plugin", "bool allowsResume()"); assert(r>=0);
+	r = engine->RegisterInterfaceMethod("plugin", "bool offersPremium()"); assert(r>=0);
+	r = engine->RegisterInterfaceMethod("plugin", "string[] getCompatibleHosters()"); assert(r>=0);
+
+	r = engine->RegisterInterfaceMethod("hoster", "void prepare()"); assert(r>=0);
+
+	r = engine->RegisterInterfaceMethod("preprocessor", "int64 fileSize()"); assert(r>=0);
+	r = engine->RegisterInterfaceMethod("preprocessor", "bool isOnline()"); assert(r>=0);
+	r = engine->RegisterInterfaceMethod("preprocessor", "void preprocess()"); assert(r>=0);
+
+	r = engine->RegisterInterfaceMethod("postprocessor", "void postProcess()"); assert(r>=0);
+
+	// functions for prepare-download, prepare-resume, etc
+
+
+
+
 }
 
 ddapi::ddapi(const ddapi&) {

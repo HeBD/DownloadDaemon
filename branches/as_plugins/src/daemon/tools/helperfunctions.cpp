@@ -495,6 +495,55 @@ bool decode_dlc(const std::string& content, download_container* container) {
 	return true;
 }
 
+void replace_html_special_chars(std::string& s) {
+	replace_all(s, "&quot;", "\"");
+	replace_all(s, "&lt;", "<");
+	replace_all(s, "&gt;", ">");
+	replace_all(s, "&apos;", "'");
+	replace_all(s, "&amp;", "&");
+}
+
+std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t search_from) {
+	size_t pos = searchIn.find(before, search_from);
+	if(pos == std::string::npos) return "";
+	pos += before.size(); // go to the position right after the search term
+	if(pos >= searchIn.size()) return "";
+	return searchIn.substr(pos, searchIn.find(after, pos) - pos);
+}
+
+std::vector<std::string> search_all_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from, bool by_end) {
+	std::vector<std::string> result;
+	while(true) {
+		size_t pos = 0;
+		if(!by_end) {
+			pos = searchIn.find(before, start_from);
+			if(pos == std::string::npos) return result;
+		} else {
+			pos = searchIn.find(after, start_from);
+			if(pos == std::string::npos) return result;
+			pos = searchIn.rfind(before, pos);
+		}
+		pos += before.size();
+		if(pos >= searchIn.size()) return result;
+		result.push_back(searchIn.substr(pos, searchIn.find(after, pos) - pos));
+		start_from = pos + result.back().size() + after.size();
+	}
+	return result;
+}
+
+bool wildcard_match(const std::string &wcstring, const std::string &searchIn) {
+	vector<string> parts = split_string(wcstring, "*", false);
+	for(size_t i = 0, pos = 0; i < parts.size(); ++i) {
+		pos = searchIn.find(parts[i], pos);
+		if(pos == string::npos)
+			return false;
+		if(i == 0 && !parts[i].empty() && pos != 0) return false; // no * in the beginning
+		if(i == parts.size() - 1 && !parts[i].empty()
+			&& searchIn.rfind(parts[i]) != searchIn.size() - parts[i].size()) return false;
+		pos += parts[i].size();
+	}
+	return true;
+}
 
 
 #ifdef BACKTRACE_ON_CRASH

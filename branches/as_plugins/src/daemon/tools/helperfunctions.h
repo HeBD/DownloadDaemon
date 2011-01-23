@@ -169,6 +169,33 @@ class download_container;
  */
 bool decode_dlc(const std::string& content, download_container *container = NULL);
 
+/** this function replaces some html-encoded characters with native ansi characters (eg replaces &quot; with " and &lt; with <)
+ *	@param s string in which to replace
+ */
+void replace_html_special_chars(std::string& s);
+
+/** Get text between two strings (searches for first occurence and the next one after it)
+ *	@param searchIn string to search in
+ *	@param before text before the desired string
+ *	@param after text after the desired string
+ *	@param start_from start searching from this position in the string (and ignore matches before it)
+ *	@returns text between before and after, an empty string if before is not found, from before to the end of searchIn if after is not found
+ */
+std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from = 0);
+
+/** same as above, but returns all occurences from searchIn that match
+	There is the additional parameter by_end. If this is set to true, the after-string will be used for locating substrings
+	(this means, we search for "after", then search backward to "before" and take everything in between. This is useful if the "before" string
+	is not useful for identification, but the after string is */
+std::vector<std::string> search_all_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from = 0, bool by_end = false);
+
+/** Checks if a string matches a wildcard-pattern (supports * and ? as wildcard-content)
+  * @param wcstring Your wildcard pattern
+  * @param searchIn the string to search in
+  * @returns true if the string matches the pattern
+  */
+bool wildcard_match(const std::string &wcstring, const std::string &searchIn);
+
 #ifdef BACKTRACE_ON_CRASH
 void print_backtrace(int sig);
 #endif
