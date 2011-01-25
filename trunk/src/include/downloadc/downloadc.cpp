@@ -25,6 +25,7 @@ downloadc::downloadc() : skip_update(false), term(false){
 
 
 downloadc::~downloadc(){
+	skip_update = true;
     std::lock_guard<std::mutex> lock(mx);
     delete mysock;
     mysock = NULL;
@@ -345,7 +346,7 @@ std::vector<package> downloadc::get_list(){
     std::string answer;
 
     skip_update = true;
-    mx.lock();
+	mx.lock();
     mysock->send("DDP DL LIST");
     mysock->recv(answer);
     while(!check_correct_answer(answer))

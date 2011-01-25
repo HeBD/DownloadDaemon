@@ -51,161 +51,157 @@ plugin_status plugin_exec(plugin_input &pinp, plugin_output &poutp);
 #include <vector>
 #include "../tools/helperfunctions.h"
 
-namespace PLGFILE {
+/** Set the wait-time for the currently active download. Set this whenever you have to wait for the host. DownloadDaemon will count down
+ *	that time until it reaches 0. This is just for the purpose of displaying a status to the user.
+ *	@param seconds Seconds to wait
+ */
+void set_wait_time(int seconds);
 
-	/** Set the wait-time for the currently active download. Set this whenever you have to wait for the host. DownloadDaemon will count down
-	 *	that time until it reaches 0. This is just for the purpose of displaying a status to the user.
-	 *	@param seconds Seconds to wait
-	 */
-	void set_wait_time(int seconds);
+/** returns the currently set wait-time for your download
+ *	@returns wait time in seconds
+ */
+int get_wait_time();
 
-	/** returns the currently set wait-time for your download
-	 *	@returns wait time in seconds
-	 */
-	int get_wait_time();
+/** Get the URL for your download, which was entered by the user
+ *	@returns the url
+ */
+const char* get_url();
 
-	/** Get the URL for your download, which was entered by the user
-	 *	@returns the url
-	 */
-	const char* get_url();
+/** allows you to change the URL in the download list
+ *	@param url URL to set
+ */
+void set_url(const char* url);
 
-	/** allows you to change the URL in the download list
-	 *	@param url URL to set
-	 */
-	void set_url(const char* url);
+/** gives you a pointer to the main download-list. With this, you can do almost anything with any download
+ *	@returns pointer to the main download list
+ */
+download_container* get_dl_container();
 
-	/** gives you a pointer to the main download-list. With this, you can do almost anything with any download
-	 *	@returns pointer to the main download list
-	 */
-	download_container* get_dl_container();
+/** this returns the curl-handle which will be used for downloading later. You may need it for setting special options like cookies, etc.
+ *	@returns the curl handle
+ */
+ddcurl* get_handle();
 
-	/** this returns the curl-handle which will be used for downloading later. You may need it for setting special options like cookies, etc.
-	 *	@returns the curl handle
-	 */
-	ddcurl* get_handle();
+/** passing a download_container object to that function will delete the current download and replace it by all the links specified in lst.
+ *	this is mainly for decrypter-plugins for hosters that contain several download-links of other hosters
+ *	@param lst the download list to use for replacing
+ */
+void replace_this_download(download_container &lst);
 
-	/** passing a download_container object to that function will delete the current download and replace it by all the links specified in lst.
-	 *	this is mainly for decrypter-plugins for hosters that contain several download-links of other hosters
-	 *	@param lst the download list to use for replacing
-	 */
-	void replace_this_download(download_container &lst);
+/** this function replaces some html-encoded characters with native ansi characters (eg replaces &quot; with " and &lt; with <)
+ *	@param s string in which to replace
+ */
+void replace_html_special_chars(std::string& s);
 
-	/** this function replaces some html-encoded characters with native ansi characters (eg replaces &quot; with " and &lt; with <)
-	 *	@param s string in which to replace
-	 */
-	void replace_html_special_chars(std::string& s);
+/** convert anything with an overloaded operator << to string (eg int, long, double, ...)
+ *	@param p1 any type to convert into std::string
+ *	@returns the result of the conversion
+ */
+template <class PARAM>
+std::string convert_to_string(PARAM p1);
 
-	/** convert anything with an overloaded operator << to string (eg int, long, double, ...)
-	 *	@param p1 any type to convert into std::string
-	 *	@returns the result of the conversion
-	 */
-	template <class PARAM>
-	std::string convert_to_string(PARAM p1);
+/** Get text between two strings (searches for first occurence and the next one after it)
+ *	@param searchIn string to search in
+ *	@param before text before the desired string
+ *	@param after text after the desired string
+ *	@param start_from start searching from this position in the string (and ignore matches before it)
+ *	@returns text between before and after, an empty string if before is not found, from before to the end of searchIn if after is not found
+ */
+std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from = 0);
 
-	/** Get text between two strings (searches for first occurence and the next one after it)
-	 *	@param searchIn string to search in
-	 *	@param before text before the desired string
-	 *	@param after text after the desired string
-	 *	@param start_from start searching from this position in the string (and ignore matches before it)
-	 *	@returns text between before and after, an empty string if before is not found, from before to the end of searchIn if after is not found
-	 */
-	std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from = 0);
-	
-	/** same as above, but returns all occurences from searchIn that match
-		There is the additional parameter by_end. If this is set to true, the after-string will be used for locating substrings
-		(this means, we search for "after", then search backward to "before" and take everything in between. This is useful if the "before" string
-		is not useful for identification, but the after string is */
-	std::vector<std::string> search_all_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from = 0, bool by_end = false);
+/** same as above, but returns all occurences from searchIn that match
+	There is the additional parameter by_end. If this is set to true, the after-string will be used for locating substrings
+	(this means, we search for "after", then search backward to "before" and take everything in between. This is useful if the "before" string
+	is not useful for identification, but the after string is */
+std::vector<std::string> search_all_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from = 0, bool by_end = false);
 
 
-	/////////////////////// IMPLEMENTATION ////////////////////////
+/////////////////////// IMPLEMENTATION ////////////////////////
 
 
-	download_container *dl_list;
-	download           *dl_ptr;
-	int dlid;
-	int max_retrys;
-	std::string gocr;
-	std::string host;
-	std::string share_directory;
-	captcha     Captcha;
-	std::mutex p_mutex;
+download_container *dl_list;
+download           *dl_ptr;
+int dlid;
+int max_retrys;
+std::string gocr;
+std::string host;
+std::string share_directory;
+captcha     Captcha;
+std::mutex p_mutex;
 
-	void set_wait_time(int seconds) {
-		dl_ptr->set_wait(seconds);
-	}
-
-	int get_wait_time() {
-		return dl_ptr->get_wait();
-	}
-
-	const char* get_url() {
-		return dl_ptr->get_url().c_str();
-	}
-
-	void set_url(const char* url) {
-		dl_ptr->set_url(url);
-	}
-
-	download_container* get_dl_container() {
-		return dl_list;
-	}
-
-        ddcurl* get_handle() {
-		return dl_ptr->get_handle();
-	}
-
-	void replace_this_download(download_container &lst) {
-		dl_list->insert_downloads(dl_list->get_list_position(dlid), lst);
-		dl_list->set_status(dlid, DOWNLOAD_DELETED);
-	}
-
-	void replace_html_special_chars(std::string& s) {
-		replace_all(s, "&quot;", "\"");
-		replace_all(s, "&lt;", "<");
-		replace_all(s, "&gt;", ">");
-		replace_all(s, "&apos;", "'");
-		replace_all(s, "&amp;", "&");
-	}
-
-
-	template <class PARAM>
-	std::string convert_to_string(PARAM p1) {
-		std::stringstream ss;
-		ss << p1;
-		return ss.str();
-	}
-
-	std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t search_from) {
-		size_t pos = searchIn.find(before, search_from);
-		if(pos == std::string::npos) return "";
-		pos += before.size(); // go to the position right after the search term
-		if(pos >= searchIn.size()) return "";
-		return searchIn.substr(pos, searchIn.find(after, pos) - pos);
-	}
-	
-	std::vector<std::string> search_all_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from, bool by_end) {
-		std::vector<std::string> result;
-		while(true) {
-			size_t pos = 0;
-			if(!by_end) {
-				pos = searchIn.find(before, start_from);
-				if(pos == std::string::npos) return result;
-			} else {
-				pos = searchIn.find(after, start_from);
-				if(pos == std::string::npos) return result;
-				pos = searchIn.rfind(before, pos);				
-			}
-			pos += before.size();
-			if(pos >= searchIn.size()) return result;
-			result.push_back(searchIn.substr(pos, searchIn.find(after, pos) - pos));
-			start_from = pos + result.back().size() + after.size();
-		}
-		return result;
-	}
+void set_wait_time(int seconds) {
+	dl_ptr->set_wait(seconds);
 }
 
-using namespace PLGFILE;
+int get_wait_time() {
+	return dl_ptr->get_wait();
+}
+
+const char* get_url() {
+	return dl_ptr->get_url().c_str();
+}
+
+void set_url(const char* url) {
+	dl_ptr->set_url(url);
+}
+
+download_container* get_dl_container() {
+	return dl_list;
+}
+
+	ddcurl* get_handle() {
+	return dl_ptr->get_handle();
+}
+
+void replace_this_download(download_container &lst) {
+	dl_list->insert_downloads(dl_list->get_list_position(dlid), lst);
+	dl_list->set_status(dlid, DOWNLOAD_DELETED);
+}
+
+void replace_html_special_chars(std::string& s) {
+	replace_all(s, "&quot;", "\"");
+	replace_all(s, "&lt;", "<");
+	replace_all(s, "&gt;", ">");
+	replace_all(s, "&apos;", "'");
+	replace_all(s, "&amp;", "&");
+}
+
+
+template <class PARAM>
+std::string convert_to_string(PARAM p1) {
+	std::stringstream ss;
+	ss << p1;
+	return ss.str();
+}
+
+std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t search_from) {
+	size_t pos = searchIn.find(before, search_from);
+	if(pos == std::string::npos) return "";
+	pos += before.size(); // go to the position right after the search term
+	if(pos >= searchIn.size()) return "";
+	return searchIn.substr(pos, searchIn.find(after, pos) - pos);
+}
+
+std::vector<std::string> search_all_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from, bool by_end) {
+	std::vector<std::string> result;
+	while(true) {
+		size_t pos = 0;
+		if(!by_end) {
+			pos = searchIn.find(before, start_from);
+			if(pos == std::string::npos) return result;
+		} else {
+			pos = searchIn.find(after, start_from);
+			if(pos == std::string::npos) return result;
+			pos = searchIn.rfind(before, pos);
+		}
+		pos += before.size();
+		if(pos >= searchIn.size()) return result;
+		result.push_back(searchIn.substr(pos, searchIn.find(after, pos) - pos));
+		start_from = pos + result.back().size() + after.size();
+	}
+	return result;
+}
+
 
 /** This function is just a wrapper for defining globals and calling your plugin */
 extern "C" plugin_status plugin_exec_wrapper(download_container* dlc, download* pdl, int id, plugin_input& pinp, plugin_output& poutp,

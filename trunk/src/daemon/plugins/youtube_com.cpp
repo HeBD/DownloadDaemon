@@ -9,7 +9,6 @@
  * GNU General Public License for more details.
  */
 
-#define PLGFILE youtube_com
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>

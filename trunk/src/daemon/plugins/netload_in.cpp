@@ -11,7 +11,6 @@
 
 #define PLUGIN_WANTS_POST_PROCESSING
 #define PLUGIN_CAN_PRECHECK
-#define PLGFILE netload_in
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>

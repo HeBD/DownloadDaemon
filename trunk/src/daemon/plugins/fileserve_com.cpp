@@ -10,7 +10,6 @@
  */
 
 #define PLUGIN_CAN_PRECHECK
-#define PLGFILE fileserve_com
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
