@@ -52,16 +52,19 @@ namespace std {
 
 #ifndef HAVE_INITGROUPS
 	#warning "Your compiler doesn't offer the initgroups() function. This is a problem if you make downloaddaemon should download to a folder that"\
-			 "is only writeable for a supplementary group of the downloadd user, but not to the downloadd user itsself."
+		 "is only writeable for a supplementary group of the downloadd user, but not to the downloadd user itsself."
 #endif
 
-#define DAEMON_USER "downloadd"
+#define DAEMON_USER downloadd
 
 using namespace std;
 
 #ifndef DD_CONF_DIR
-	#define DD_CONF_DIR "/etc/downloaddaemon/"
+	#define DD_CONF_DIR /etc/downloaddaemon/
 #endif
+
+#define STRINGIZE2(s) #s
+#define STRINGIZE(s) STRINGIZE2(s)
 
 // GLOBAL VARIABLE DECLARATION:
 // The downloadcontainer is just needed everywhere in the program, so let's make it global
@@ -84,9 +87,9 @@ int main(int argc, char* argv[], char* env[]) {
 	signal(SIGPIPE, SIG_IGN);
 	#endif
 
-	string conf_dir = DD_CONF_DIR;
-	string daemon_user = DAEMON_USER;
-	string daemon_group = DAEMON_USER;
+	string conf_dir = STRINGIZE(DD_CONF_DIR);
+	string daemon_user = STRINGIZE(DAEMON_USER);
+	string daemon_group = STRINGIZE(DAEMON_USER);
 	string pid_path = "/tmp/downloadd.pid";
 	map<string, string> args;
 	typedef map<string, string>::iterator argIter;
@@ -98,6 +101,7 @@ int main(int argc, char* argv[], char* env[]) {
 			cout << "Options:" << endl;
 			cout << "   -d, --daemon   Start DownloadDaemon in Background" << endl;
 			cout << "   --confdir      Use the configuration files in the specified directory" << endl;
+			cout << "   --version      Print the version number of DownloadDaemon and exit" << endl;
 			#ifndef __CYGWIN__
 			cout << "   -u             Start DownloadDaemon as the specified user" << endl;
 			cout << "   -g             Start DownloadDaemon with the permissions of a group" << endl;
@@ -107,6 +111,9 @@ int main(int argc, char* argv[], char* env[]) {
 		} else if(val == "-d" || val == "--daemon") {
 			args.insert(pair<string, string>("--daemon", ""));
 			continue;
+		} else if(val == "--version" || val == "-v") {
+			cout << "DownloadDaemon version " STRINGIZE(DOWNLOADDAEMON_VERSION) << endl;
+			return 0;
 		}
 		if(i >= 2) {
 			args.insert(pair<string, string>(arg, argv[i]));
@@ -127,7 +134,7 @@ int main(int argc, char* argv[], char* env[]) {
 		#ifdef HAVE_INITGROUPS
 		if(pw && initgroups(daemon_user.c_str(), pw->pw_gid)) {
 			std::cerr << "Setting the groups of the DownloadDaemon user failed. This is a problem if you make downloaddaemon should download to a folder that "
-					  << " is only writeable for a supplementary group of DownloadDaemon, but not to the " DAEMON_USER " user itsself." << endl;
+					  << " is only writeable for a supplementary group of DownloadDaemon, but not to the " STRINGIZE(DAEMON_USER) " user itsself." << endl;
 		}
 		#endif
 		if((getuid() == 0 || geteuid() == 0) && !pw) {
