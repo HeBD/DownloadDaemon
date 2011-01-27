@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
 
 				struct timeval tv;
 				tv.tv_sec = 0;
-				tv.tv_usec = 50;
+				tv.tv_usec = 5000;
 				FD_ZERO(&fds);
 				FD_SET(0, &fds); // select() on stdin
 				if(select(1, &fds, 0, 0, &tv)) break;
