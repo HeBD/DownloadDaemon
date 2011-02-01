@@ -988,6 +988,7 @@ void download::preset_file_status() {
 	is_running = false;
 	post_subscribers();
 	mx.unlock();
+	global_mgmt::presetter_running = false;
 	global_download_list.preset_file_status();
 }
 

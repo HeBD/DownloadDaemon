@@ -632,23 +632,22 @@ void download_container::do_download(int id) {
 	}
 }
 
-void download_container::preset_file_status() {
+bool download_container::preset_file_status() {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	try {
 		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 			if(!(*it)->get_prechecked() && (*it)->get_size() < 2 && global_config.get_bool_value("precheck_links") && !(*it)->get_running()
 				&& (*it)->get_status() != DOWNLOAD_FINISHED) {
-				global_mgmt::presetter_running = true;
 				thread t(bind(&download::preset_file_status, *it));
 				t.detach();
-				return;
+				return true;
 			}
 		}
-		global_mgmt::presetter_running = false;
 	} catch(...) {
 		// boost might throw a thread_resource_error if too many threads are created at the same time. We just ignore it
 		// and retry in a second, when this function is called again. Maybe some threads have closed then.
 	}
+	return false;
 }
 
 void download_container::extract_package() {

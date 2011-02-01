@@ -224,7 +224,7 @@ public:
 	void do_download(int id);
 
 	/** Presets the file-status for all downloads in the list that don't have it yet. */
-	void preset_file_status();
+	bool preset_file_status();
 
 	/** extracts this package */
 	void extract_package();
