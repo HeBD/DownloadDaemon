@@ -32,7 +32,7 @@
 
 using namespace std;
 
-package_container::package_container() : is_reconnecting(false) {
+package_container::package_container() : is_reconnecting(false){
 	//int pkg_id = add_package("");
 	// set the global package to ID -1. It will not be shown. It's just a global container
 	// where containers with an unsecure status are stored (eg. if they get a DELETE command, but the object
@@ -838,8 +838,7 @@ void package_container::start_next_downloadable() {
 			}
 		}
 	}
-	if(!global_mgmt::presetter_running)
-		preset_file_status();
+	preset_file_status();
 }
 
 bool package_container::in_dl_time_and_dl_active() {
@@ -901,8 +900,12 @@ bool package_container::in_dl_time_and_dl_active() {
 
 void package_container::preset_file_status() {
 	lock_guard<recursive_mutex> lock(mx);
+	if(global_mgmt::presetter_running) return;
 	for(package_container::iterator it = packages.begin(); it != packages.end(); ++it) {
-		(*it)->preset_file_status();
+		if((*it)->preset_file_status()) {
+			global_mgmt::presetter_running = true;
+			return;
+		}
 	}
 }
 

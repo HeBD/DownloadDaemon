@@ -1,3 +1,8 @@
+2011-02-01
+   [adrian]
+	- Improved memory usage while prechecking links
+	- Updated depositfiles.com plugin
+
 2011-01-07
    [susanne]
 	- added advanced configuration in ddclient-gui which can modify all changeable variables (similar to firefox's about:config)
