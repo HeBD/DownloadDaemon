@@ -43,7 +43,7 @@
 using namespace std;
 
 
-ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(config_dir), full_list_update(true), reload_list(false) {
+ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), mx(QMutex::Recursive), config_dir(config_dir), full_list_update(true), reload_list(false) {
 	setWindowTitle("DownloadDaemon Client GUI");
 	this->resize(750, 500);
 	setWindowIcon(QIcon("img/logoDD.png"));
@@ -114,13 +114,14 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 
 
 ddclient_gui::~ddclient_gui(){
-	mx.lock();
+	QMutexLocker lock(&mx);
 	dclient->set_term(true);
 	delete dclient;
 	((update_thread *)thread)->terminate_yourself();
+	lock.unlock();
 	thread->wait();
+	lock.relock();
 	delete thread;
-	mx.unlock();
 }
 
 
@@ -130,12 +131,11 @@ void ddclient_gui::update_status(QString server){
 	}
 
 	string answer;
-	mx.lock();
+	QMutexLocker lock(&mx);
 	try{
 		answer = dclient->get_var("downloading_active");
 
 	}catch(client_exception &e){}
-	mx.unlock();
 
 	// removing both icons/deactivating both menuentrys, even when maybe only one is shown
 	activate_action->setEnabled(false);
@@ -193,15 +193,14 @@ QMutex *ddclient_gui::get_mutex(){
 
 
 void ddclient_gui::set_language(std::string lang_to_set){
+	QMutexLocker lock(&mx);
 	lang.set_language(lang_to_set);
 
 	update_bars();
 	update_list_components();
 
-	mx.lock();
 	content.clear();
 	full_list_update = true;
-	mx.unlock();
 
 	// send event to reload list
 	get_content();
@@ -219,39 +218,36 @@ downloadc *ddclient_gui::get_connection(){
 
 
 void ddclient_gui::get_content(bool update){
+	QMutexLocker lock(&mx);
 	vector<package> tmp_content;
 	vector<update_content> tmp_updates;
 
 	try{
 		if(update && !reload_list){ // receive updates
+			lock.unlock();
 			tmp_updates = dclient->get_updates();
+			lock.relock();
 
-			mx.lock();
 			new_updates.clear();
 			new_updates = tmp_updates;
-			mx.unlock();
-
 		}else{ // receive whole list
 			full_list_update = true;
 			reload_list = false;
 			tmp_content = dclient->get_list();
 
-			mx.lock();
 			new_content.clear();
 			new_content = tmp_content;
-			mx.unlock();
 		}
 
 	}catch(client_exception &e){}
 
 	// send event to reload list
-	mx.unlock();
 	emit do_reload();
 }
 
 
 bool ddclient_gui::check_connection(bool tell_user, string individual_message){
-	mx.lock();
+	QMutexLocker lock(&mx);
 
 	try{
 		dclient->check_connection();
@@ -270,25 +266,21 @@ bool ddclient_gui::check_connection(bool tell_user, string individual_message){
 				}
 				emit do_reload();
 			}
-			mx.unlock();
 			return false;
 		}
 	}
-	mx.unlock();
 	return true;
 }
 
 
 bool ddclient_gui::check_subscritpion(){
-	mx.lock();
+	QMutexLocker lock(&mx);
 
 	try{
 		dclient->add_subscription(SUBS_DOWNLOADS);
 		dclient->add_subscription(SUBS_CONFIG);
-		mx.unlock();
 		return true;
 	}catch(client_exception &e){
-		mx.unlock();
 		return false;
 	}
 }
@@ -792,6 +784,7 @@ void ddclient_gui::deselect_lines(){
 
 
 void ddclient_gui::get_selected_lines(){
+	QMutexLocker lock(&mx);
 	selected_lines.clear();
 
 	// find the selected indizes and save them into vector selected_lines
@@ -841,6 +834,7 @@ bool ddclient_gui::sort_selected_info(selected_info i1, selected_info i2){
 
 
 vector<view_info> ddclient_gui::get_current_view(){
+	QMutexLocker lock(&mx);
 	get_selected_lines();
 	vector<view_info> info;
 
@@ -916,6 +910,7 @@ vector<view_info> ddclient_gui::get_current_view(){
 
 
 void ddclient_gui::update_packages(){
+	QMutexLocker lock(&mx);
 	vector<package>::iterator pkg_it;
 	vector<download>::iterator dl_it;
 	vector<update_content>::iterator up_it = new_updates.begin();
@@ -1223,6 +1218,7 @@ void ddclient_gui::update_packages(){
 
 
 void ddclient_gui::compare_packages(){
+	QMutexLocker lock(&mx);
 	vector<package>::iterator old_it = content.begin();
 	vector<package>::iterator new_it = new_content.begin();
 	vector<download>::iterator dit;
@@ -1354,6 +1350,7 @@ void ddclient_gui::compare_packages(){
 
 
 void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::iterator &new_it, std::vector<package>::iterator &old_it, vector<view_info> &info){
+	QMutexLocker lock(&mx);
 	int dl_line = 0;
 	vector<download>::iterator old_dit = old_it->dls.begin();
 	vector<download>::iterator new_dit = new_it->dls.begin();
@@ -1513,9 +1510,8 @@ void ddclient_gui::on_connect(){
 	update_thread *new_thread = new update_thread(this, interval);
 	new_thread->start();
 	thread = new_thread;
-	mx.lock();
+	QMutexLocker lock(&mx);
 	content.clear();
-	mx.unlock();
 
 	get_content();
 }
@@ -1534,14 +1530,13 @@ void ddclient_gui::on_add(){
 
 
 void ddclient_gui::on_delete(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before deleting Downloads."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -1555,7 +1550,6 @@ void ddclient_gui::on_delete(){
 	int del = box.exec();
 
 	if(del != QMessageBox::Yes){ // user clicked no to delete
-		mx.unlock();
 		return;
 	}
 
@@ -1659,12 +1653,12 @@ void ddclient_gui::on_delete(){
 		}
 	}
 
-	mx.unlock();
 	get_content();
 }
 
 
 void ddclient_gui::on_delete_finished(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before deleting Downloads."))
 		return;
 
@@ -1675,8 +1669,6 @@ void ddclient_gui::on_delete_finished(){
 	int id;
 	int package_count = 0;
 
-
-	mx.lock();
 	vector<int> package_deletes; // prepare structure to save how many downloads of which package will be deleted
 	for(unsigned int i = 0; i < content.size(); ++i)
 		package_deletes.push_back(0);
@@ -1710,7 +1702,6 @@ void ddclient_gui::on_delete_finished(){
 		int del = box.exec();
 
 		if(del != QMessageBox::Yes){ // user clicked no to delete
-			mx.unlock();
 			return;
 		}
 
@@ -1776,20 +1767,18 @@ void ddclient_gui::on_delete_finished(){
 		++i;
 	}
 
-	mx.unlock();
 	get_content();
 }
 
 
 void ddclient_gui::on_delete_file(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before deleting Files."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -1804,7 +1793,6 @@ void ddclient_gui::on_delete_file(){
 	int del = box.exec();
 
 	if(del != QMessageBox::Yes){ // user clicked no to delete
-		mx.unlock();
 		return;
 	}
 
@@ -1849,21 +1837,19 @@ void ddclient_gui::on_delete_file(){
 		}
 	}
 
-	mx.unlock();
 	deselect_lines();
 	get_content();
 }
 
 
 void ddclient_gui::on_activate(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before activating Downloads."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -1899,20 +1885,18 @@ void ddclient_gui::on_activate(){
 		}
 	}
 
-	mx.unlock();
 	get_content();
 }
 
 
 void ddclient_gui::on_deactivate(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before deactivating Downloads."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -1948,20 +1932,18 @@ void ddclient_gui::on_deactivate(){
 		}
 	}
 
-	mx.unlock();
 	get_content();
 }
 
 
 void ddclient_gui::on_priority_up(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before increasing Priority."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -1983,20 +1965,18 @@ void ddclient_gui::on_priority_up(){
 		}catch(client_exception &e){}
 	}
 
-	mx.unlock();
 	get_content();
 }
 
 
 void ddclient_gui::on_priority_down(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before decreasing Priority."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -2019,20 +1999,18 @@ void ddclient_gui::on_priority_down(){
 		}catch(client_exception &e){}
 	}
 
-	mx.unlock();
 	get_content();
 }
 
 
 void ddclient_gui::on_enter_captcha(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before entering a Captcha."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -2069,7 +2047,6 @@ void ddclient_gui::on_enter_captcha(){
 		}catch(client_exception &e){}
 	}
 
-	mx.unlock();
 	get_content();
 }
 
@@ -2089,14 +2066,13 @@ void ddclient_gui::on_configure(){
 
 
 void ddclient_gui::on_downloading_activate(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before you activate Downloading."))
 		return;
 
-	mx.lock();
 	try{
 		dclient->set_var("downloading_active", "1");
 	}catch(client_exception &e){}
-	mx.unlock();
 
 	// update toolbar
 	activate_action->setEnabled(false);
@@ -2113,14 +2089,13 @@ void ddclient_gui::on_downloading_activate(){
 
 
 void ddclient_gui::on_downloading_deactivate(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before you deactivate Downloading."))
 		return;
 
-	mx.lock();
 	try{
 		dclient->set_var("downloading_active", "0");
 	}catch(client_exception &e){}
-	mx.unlock();
 
 	// update toolbar
 	activate_action->setEnabled(true);
@@ -2137,14 +2112,13 @@ void ddclient_gui::on_downloading_deactivate(){
 
 
 void ddclient_gui::on_copy(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before copying URLs."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -2173,16 +2147,15 @@ void ddclient_gui::on_copy(){
 	}
 
 	QApplication::clipboard()->setText(clipboard_data);
-	mx.unlock();
 }
 
 
 void ddclient_gui::on_paste(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before adding Downloads."))
 		return;
 
 	string text = QApplication::clipboard()->text().toStdString();
-	mx.lock();
 
 	bool error_occured = false;
 	size_t lineend = 1, urlend;
@@ -2233,7 +2206,6 @@ void ddclient_gui::on_paste(){
 		}
 	}
 
-	mx.unlock();
 
 	if(error_occured){
 		if(error == 6)
@@ -2250,14 +2222,13 @@ void ddclient_gui::on_paste(){
 
 
 void ddclient_gui::on_set_password(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before changing Packages."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -2275,7 +2246,6 @@ void ddclient_gui::on_set_password(){
 
 		QString pass = QInputDialog::getText(this, tsl("Enter Package Password"), tsl("Enter Package Password"), QLineEdit::Normal, old_pass.c_str(), &ok);
 			if(!ok){
-				mx.unlock();
 				return;
 			}
 
@@ -2286,19 +2256,17 @@ void ddclient_gui::on_set_password(){
 		}else{} // we have a real download, but we don't need it
 	}
 
-	mx.unlock();
 }
 
 
 void ddclient_gui::on_set_name(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before changing the Download List."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -2316,7 +2284,6 @@ void ddclient_gui::on_set_name(){
 			s << id;
 			QString name = QInputDialog::getText(this, tsl("Enter Title"), tsl("Enter Title of Package %p1", s.str().c_str()), QLineEdit::Normal, "", &ok);
 			if(!ok){
-				mx.unlock();
 				return;
 			}
 
@@ -2332,7 +2299,6 @@ void ddclient_gui::on_set_name(){
 			s << id;
 			QString name = QInputDialog::getText(this, tsl("Enter Title"), tsl("Enter Title of Download %p1", s.str().c_str()), QLineEdit::Normal, "", &ok);
 			if(!ok){
-				mx.unlock();
 				return;
 			}
 
@@ -2344,20 +2310,17 @@ void ddclient_gui::on_set_name(){
 			}
 		}
 	}
-
-	mx.unlock();
 }
 
 
 void ddclient_gui::on_set_url(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before changing the Download List."))
 		return;
 
-	mx.lock();
 	get_selected_lines();
 
 	if(!check_selected()){
-		mx.unlock();
 		return;
 	}
 
@@ -2376,7 +2339,6 @@ void ddclient_gui::on_set_url(){
 			s << id;
 			QString url = QInputDialog::getText(this, tsl("Enter URL"), tsl("Enter URL of Download %p1", s.str().c_str()), QLineEdit::Normal, "", &ok);
 			if(!ok){
-				mx.unlock();
 				return;
 			}
 
@@ -2388,12 +2350,11 @@ void ddclient_gui::on_set_url(){
 			}
 		}
 	}
-
-	mx.unlock();
 }
 
 
 void ddclient_gui::on_load_container(){
+	QMutexLocker lock(&mx);
 	if(!check_connection(true, "Please connect before adding Containers."))
 		return;
 
@@ -2405,7 +2366,6 @@ void ddclient_gui::on_load_container(){
 	if(dialog.exec() == QDialog::Accepted )
 		file_names = dialog.selectedFiles();
 
-	mx.lock();
 	for (int i = 0; i < file_names.size(); ++i){ // loop every file name
 
 	fstream f;
@@ -2421,8 +2381,6 @@ void ddclient_gui::on_load_container(){
 				dclient->pkg_container("DLC", content);
 		}catch(client_exception &e){}
 	}
-
-	mx.unlock();
 }
 
 
@@ -2445,17 +2403,15 @@ void ddclient_gui::on_activate_tray_icon(QSystemTrayIcon::ActivationReason reaso
 
 
 void ddclient_gui::on_reload(){
+	QMutexLocker lock(&mx);
 	if(!check_connection()){
 		status_connection->setText(tsl("Not connected"));
 		list_model->setRowCount(0);
-		mx.lock();
 		new_content.clear();
 		content.clear();
-		mx.unlock();
 		return;
 	}
 
-	mx.lock();
 
 	download_speed = 0;
 	not_downloaded_yet = 0;
@@ -2507,7 +2463,6 @@ void ddclient_gui::on_reload(){
 							  "\n" + tsl("Pending Queue Size") + ": " + QString("%1 MB").arg(not_downloaded_yet) + "\n" + tsl("Time left") + ": " + time_left.c_str());
 	}
 
-	mx.unlock();
 	if(reload_list)
 		get_content();
 }

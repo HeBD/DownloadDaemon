@@ -17,7 +17,7 @@ update_thread::update_thread(ddclient_gui *parent, int interval) : parent(parent
 
 
 void update_thread::run(){
-
+	QMutexLocker lock(parent->get_mutex());
     // first update
     if(!(parent->check_connection(false)) && (told == false)){ // connection failed for the first time => we're calling get_content to update the gui
         parent->get_content();
@@ -47,7 +47,9 @@ void update_thread::run(){
                 sleep(1); // otherwise we get 100% cpu if there is no connection
 
             }else if(parent->check_connection(false)){ // connection is valid
+				lock.unlock();
                 parent->get_content(true); // get updates // lock hier
+				lock.relock();
                 told = false;
             }
 
@@ -60,8 +62,9 @@ void update_thread::run(){
     for(int i = 0; i < interval; i++){ // wait a little bit, we don't want two updates in a row
         if(term)
             return;
-
+		lock.unlock();
         sleep(1); // wait till update intervall is finished
+		lock.relock();
     }
 
     while(true){
@@ -72,11 +75,15 @@ void update_thread::run(){
         if(update){
 
             if(!(parent->check_connection(false)) && (told == false)){ // connection failed for the first time => we're calling get_content to update the gui
-                parent->get_content(); // called to clear list
+				lock.unlock();
+				parent->get_content(); // called to clear list
+				lock.relock();
                 told = true;
 
             }else if(parent->check_connection(false)){ // connection is valid
+				lock.unlock();
                 parent->get_content();
+				lock.relock();
                 told = false;
             }
 
@@ -86,8 +93,9 @@ void update_thread::run(){
         for(int i = 0; i < interval; i++){
             if(term)
                 return;
-
+			lock.unlock();
             sleep(1); // wait till update intervall is finished
+			lock.relock();
         }
     }
 }
