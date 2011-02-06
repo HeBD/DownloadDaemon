@@ -25,19 +25,21 @@ downloadc::downloadc() : skip_update(false), term(false){
 
 
 downloadc::~downloadc(){
+    std::lock_guard<std::recursive_mutex> lock(mx);
 	skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
-    delete mysock;
-    mysock = NULL;
+    if(mysock) delete mysock;
+    //mysock = NULL;
 }
 
 
 void downloadc::set_term(bool value){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     term = value;
 }
 
 
 void downloadc::connect(std::string host, int port, std::string pass, bool encrypt){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     tkSock *mysock = new tkSock();
     bool connection = false;
 
@@ -124,11 +126,10 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 
     // connection ok => save data
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     if(this->mysock != NULL){ //if there is already a connection, delete the old one
         delete this->mysock;
-        this->mysock = NULL;
+        //this->mysock = NULL;
     }
 
     this->mysock = mysock;
@@ -137,6 +138,7 @@ void downloadc::connect(std::string host, int port, std::string pass, bool encry
 
 
 std::vector<update_content> downloadc::get_updates(){
+	std::unique_lock<std::recursive_mutex> lock(mx);
     check_connection();
 
     std::string answer;
@@ -153,7 +155,6 @@ std::vector<update_content> downloadc::get_updates(){
             return updates;
 
         if(!skip_update){
-            mx.lock();
 
             for(size_t i = 0; i < old_updates.size(); i++){ // copy all old updates into the working vector all_answers
                 all_answers.push_back(old_updates[i]);
@@ -168,13 +169,13 @@ std::vector<update_content> downloadc::get_updates(){
                 all_answers.push_back(answer);
             }
 
-            mx.unlock();
 
             if(all_answers.size() > 0)
                 break;
         }
-
+        lock.unlock();
         sleep(1);
+        lock.lock();
     }
 
     // delete messages from the queue
@@ -341,18 +342,17 @@ std::vector<update_content> downloadc::get_updates(){
 
 // target DL
 std::vector<package> downloadc::get_list(){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     std::string answer;
 
     skip_update = true;
-	mx.lock();
     mysock->send("DDP DL LIST");
     mysock->recv(answer);
     while(!check_correct_answer(answer))
         mysock->recv(answer);
 
-    mx.unlock();
     skip_update = false;
 
     std::vector<std::vector<std::string> > new_content;
@@ -442,10 +442,10 @@ std::vector<package> downloadc::get_list(){
 
 
 void downloadc::add_download(int package, std::string url, std::string title){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     // make sure everything with the package is ok
     std::string answer;
@@ -486,10 +486,10 @@ void downloadc::add_download(int package, std::string url, std::string title){
 
 
 void downloadc::delete_download(int id, file_delete fdelete){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
-    skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
+    skip_update = true;;
 
     std::string answer;
     std::stringstream id_str;
@@ -539,10 +539,10 @@ void downloadc::delete_download(int id, file_delete fdelete){
 
 
 void downloadc::stop_download(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -559,10 +559,10 @@ void downloadc::stop_download(int id){
 
 
 void downloadc::priority_up(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -579,10 +579,10 @@ void downloadc::priority_up(int id){
 
 
 void downloadc::priority_down(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -599,10 +599,10 @@ void downloadc::priority_down(int id){
 
 
 void downloadc::activate_download(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -619,10 +619,10 @@ void downloadc::activate_download(int id){
 
 
 void downloadc::deactivate_download(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -639,10 +639,10 @@ void downloadc::deactivate_download(int id){
 
 
 void downloadc::set_download_var(int id, std::string var, std::string value){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
     std::string answer;
     std::stringstream s;
     s << id;
@@ -658,10 +658,10 @@ void downloadc::set_download_var(int id, std::string var, std::string value){
 
 
 std::string downloadc::get_download_var(int id, std::string var){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
     std::string answer;
     std::stringstream s;
     s << id;
@@ -678,17 +678,16 @@ std::string downloadc::get_download_var(int id, std::string var){
 
 // target PKG
 std::vector<package> downloadc::get_packages(){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     std::string answer;
 
     skip_update = true;
-    mx.lock();
     mysock->send("DDP DL LIST");
     mysock->recv(answer);
     while(!check_correct_answer(answer))
         mysock->recv(answer);
-    mx.unlock();
     skip_update = false;
 
     std::vector<std::vector<std::string> > new_content;
@@ -739,10 +738,10 @@ std::vector<package> downloadc::get_packages(){
 
 
 int downloadc::add_package(std::string name){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
     std::string answer;
 
     mysock->send("DDP PKG ADD " + name);
@@ -761,10 +760,10 @@ int downloadc::add_package(std::string name){
 
 
 void downloadc::delete_package(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -780,10 +779,10 @@ void downloadc::delete_package(int id){
 
 
 void downloadc::package_priority_up(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -799,10 +798,10 @@ void downloadc::package_priority_up(int id){
 
 
 void downloadc::package_priority_down(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -818,10 +817,10 @@ void downloadc::package_priority_down(int id){
 
 
 bool downloadc::package_exists(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -842,10 +841,10 @@ bool downloadc::package_exists(int id){
 
 
 void downloadc::set_package_var(int id, std::string var, std::string value){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
     std::string answer;
     std::stringstream s;
     s << id;
@@ -861,10 +860,10 @@ void downloadc::set_package_var(int id, std::string var, std::string value){
 
 
 std::string downloadc::get_package_var(int id, std::string var){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
     std::string answer;
     std::stringstream s;
     s << id;
@@ -880,10 +879,10 @@ std::string downloadc::get_package_var(int id, std::string var){
 
 
 void downloadc::pkg_container(std::string type, std::string content){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
     std::string answer;
 
     mysock->send("DDP PKG CONTAINER " + type + ":" + content);
@@ -898,10 +897,10 @@ void downloadc::pkg_container(std::string type, std::string content){
 
 // target VAR
 std::map<std::string, std::pair<std::string, bool> > downloadc::get_var_list(){
+    std::lock_guard<std::recursive_mutex> lock(mx);
 	check_connection();
 
 	skip_update = true;
-	std::lock_guard<std::mutex> lock(mx);
 	std::string answer;
 
 	mysock->send("DDP VAR LIST");
@@ -946,10 +945,10 @@ std::map<std::string, std::pair<std::string, bool> > downloadc::get_var_list(){
 }
 
 void downloadc::set_var(std::string var, std::string value, std::string old_value ){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
     std::string answer;
 
     if(var == "mgmt_password")
@@ -966,10 +965,10 @@ void downloadc::set_var(std::string var, std::string value, std::string old_valu
 
 
 std::string downloadc::get_var(std::string var){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
     std::string answer;
 
     mysock->send("DDP VAR GET " + var);
@@ -984,10 +983,10 @@ std::string downloadc::get_var(std::string var){
 
 // target FILE
 void downloadc::delete_file(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -1017,10 +1016,10 @@ void downloadc::delete_file(int id){
 
 
 std::string downloadc::get_file_path(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -1037,10 +1036,10 @@ std::string downloadc::get_file_path(int id){
 
 
 uint64_t downloadc::get_file_size(int id){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
     std::stringstream id_str;
@@ -1059,17 +1058,16 @@ uint64_t downloadc::get_file_size(int id){
 
 // target ROUTER
 std::vector<std::string> downloadc::get_router_list(){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     std::string model_list;
 
     skip_update = true;
-    mx.lock();
     mysock->send("DDP ROUTER LIST");
     mysock->recv(model_list);
     while(!check_correct_answer(model_list))
         mysock->recv(model_list);
-    mx.unlock();
     skip_update = false;
 
     return split_string(model_list, "\n");
@@ -1077,11 +1075,10 @@ std::vector<std::string> downloadc::get_router_list(){
 
 
 void downloadc::set_router_model(std::string model){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
-
     std::string answer;
 
     mysock->send("DDP ROUTER SETMODEL " + model);
@@ -1095,10 +1092,10 @@ void downloadc::set_router_model(std::string model){
 
 
 void downloadc::set_router_var(std::string var, std::string value){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
 
@@ -1113,10 +1110,10 @@ void downloadc::set_router_var(std::string var, std::string value){
 
 
 std::string downloadc::get_router_var(std::string var){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
 
@@ -1132,17 +1129,16 @@ std::string downloadc::get_router_var(std::string var){
 
 // target PREMIUM
 std::vector<std::string> downloadc::get_premium_list(){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     std::string host_list;
 
     skip_update = true;
-    mx.lock();
     mysock->send("DDP PREMIUM LIST");
     mysock->recv(host_list);
     while(!check_correct_answer(host_list))
         mysock->recv(host_list);
-    mx.unlock();
     skip_update = false;
 
     return this->split_string(host_list, "\n");
@@ -1150,10 +1146,10 @@ std::vector<std::string> downloadc::get_premium_list(){
 
 
 void downloadc::set_premium_var(std::string host, std::string user, std::string password){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
 
@@ -1168,10 +1164,10 @@ void downloadc::set_premium_var(std::string host, std::string user, std::string 
 
 
 std::string downloadc::get_premium_var(std::string host){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer;
 
@@ -1186,17 +1182,16 @@ std::string downloadc::get_premium_var(std::string host){
 
 
 std::vector<std::string> downloadc::get_subscription_list(){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     std::string sub_list;
 
     skip_update = true;
-    mx.lock();
     mysock->send("DDP SUBSCRIPTION LIST");
     mysock->recv(sub_list);
     while(!check_correct_answer(sub_list))
         mysock->recv(sub_list);
-    mx.unlock();
     skip_update = false;
 
     return split_string(sub_list, "\n");
@@ -1204,10 +1199,10 @@ std::vector<std::string> downloadc::get_subscription_list(){
 
 
 void downloadc::add_subscription(subs_type type){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer, t_subs;
     subs_to_string(type, t_subs);
@@ -1223,10 +1218,10 @@ void downloadc::add_subscription(subs_type type){
 
 
 void downloadc::remove_subscription(subs_type type){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     std::string answer, t_subs;
     subs_to_string(type, t_subs);
@@ -1241,10 +1236,10 @@ void downloadc::remove_subscription(subs_type type){
 }
 
 std::string downloadc::get_captcha(int id, std::string &type, std::string &question){
+    std::lock_guard<std::recursive_mutex> lock(mx);
 	check_connection();
 
 	skip_update = true;
-	std::lock_guard<std::mutex> lock(mx);
 
 	std::string answer;
 	std::stringstream id_str;
@@ -1270,10 +1265,10 @@ std::string downloadc::get_captcha(int id, std::string &type, std::string &quest
 }
 
 void downloadc::captcha_resolve(int id, std::string answer){
+    std::lock_guard<std::recursive_mutex> lock(mx);
 	check_connection();
 
 	skip_update = true;
-	std::lock_guard<std::mutex> lock(mx);
 
 	std::string daemon_answer;
 	std::stringstream id_str;
@@ -1291,8 +1286,8 @@ void downloadc::captcha_resolve(int id, std::string answer){
 
 // helper functions
 void downloadc::check_connection(){
+    std::lock_guard<std::recursive_mutex> lock(mx);
     skip_update = true;
-    std::lock_guard<std::mutex> lock(mx);
 
     if(mysock == NULL){ // deleted mysock
         skip_update = false;

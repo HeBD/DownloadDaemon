@@ -379,7 +379,7 @@ class downloadc{
     private:
 
         tkSock *mysock;
-        std::mutex mx;
+        std::recursive_mutex mx;
         bool skip_update;
         bool term;
         std::vector<std::string> old_updates;
