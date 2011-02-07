@@ -298,7 +298,7 @@ int ddclient_gui::calc_package_progress(int package_row){
 		downloads = content.at(package_row).dls.size();
 		for(int i = 0; i < downloads; ++i){
 			if(content.at(package_row).dls.at(i).status == "DOWNLOAD_FINISHED")
-				finished++;
+				++finished;
 		}
 
 		if(downloads != 0) // we don't want x/0
@@ -818,7 +818,6 @@ bool ddclient_gui::sort_selected_info(selected_info i1, selected_info i2){
 			return true; // package is smaller
 
 		return (i1.row < i2.parent_row);
-
 	}
 
 	if(i2.package){ // i1 is a download, i2 is a package
@@ -946,7 +945,6 @@ void ddclient_gui::update_packages(){
 			continue;
 		}
 
-
 		if(up_it->sub != SUBS_DOWNLOADS) // we just need SUBS_DOWNLOADS information
 			continue;
 
@@ -1024,7 +1022,6 @@ void ddclient_gui::update_packages(){
 				}
 
 				++line_nr;
-
 			}
 
 		}else{ // dealing with a download
@@ -1040,7 +1037,6 @@ void ddclient_gui::update_packages(){
 				reload_list = true;
 				continue;
 			}
-
 
 			// find right package
 			line_nr = 0;
@@ -1117,7 +1113,6 @@ void ddclient_gui::update_packages(){
 				list->expand(index);
 
 				continue;
-
 
 			}else if(up_it->reason == R_UPDATE){
 				if(!exists) // couldn't find right download
@@ -1198,12 +1193,10 @@ void ddclient_gui::update_packages(){
 				}
 			}
 
-
 			if(dl_it->status == "DOWNLOAD_RUNNING" && dl_it->speed != 0 && dl_it->speed != -1)
 				download_speed += (double)dl_it->speed / 1024;
 
 			if(dl_it->size != 0 && dl_it->size != 1){
-
 				if(dl_it->status == "DOWNLOAD_RUNNING" || dl_it->status == "DOWNLOAD_PENDING" || dl_it->status == "DOWNLOAD_WAITING"){
 
 					if(dl_it->downloaded == 0 || dl_it->downloaded == 1)
@@ -1276,7 +1269,7 @@ void ddclient_gui::compare_packages(){
 
 		++old_it;
 		++new_it;
-		line_nr++;
+		++line_nr;
 	}
 
 	if(old_it != content.end()){ // there are more old lines than new ones
@@ -1398,7 +1391,7 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
 		for(vit = info.begin(); vit != info.end(); ++vit){
 			if((vit->id == new_dit->id) && !(vit->package)){
 				if(vit->selected){ // download is selected
-					for(int i=0; i<5; i++)
+					for(int i=0; i<5; ++i)
 						selection_model->select(index.child(dl_line, i), QItemSelectionModel::Select);
 
 					selected_downloads_size += (double)new_dit->size / 1048576;
@@ -1417,20 +1410,19 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
 		while(old_dit != old_it->dls.end()){
 
 			// delete packages out of model
-			for(int i=0; i<5; i++){
+			for(int i=0; i<5; ++i){
 				dl = pkg->takeChild(dl_line, i);
 				delete dl;
 			}
 
 			pkg->takeRow(dl_line);
-
 			++old_dit;
 		}
 
 	}else if(new_dit != new_it->dls.end()){ // there are more new lines than old ones
 		while(new_dit != new_it->dls.end()){
 			// insert new lines
-		color = build_status(status_text, time_left, *new_dit);
+      color = build_status(status_text, time_left, *new_dit);
 
 			dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(new_dit->id));
 			dl->setEditable(false);
@@ -1453,7 +1445,7 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
 			dl->setEditable(false);
 			pkg->setChild(dl_line, 4, dl);
 
-			dl_line++;
+			++dl_line;
 			++new_dit;
 		}
 		list->collapse(index);
@@ -1545,7 +1537,7 @@ void ddclient_gui::on_delete(){
 
 	// make sure user wants to delete downloads
 	QMessageBox box(QMessageBox::Question, tsl("Delete Downloads"), tsl("Do you really want to delete\nthe selected Download(s)?"),
-					QMessageBox::Yes|QMessageBox::No, this);
+                  QMessageBox::Yes|QMessageBox::No, this);
 	box.setModal(true);
 	int del = box.exec();
 
@@ -1684,7 +1676,7 @@ void ddclient_gui::on_delete_finished(){
 
 	// find all finished downloads
 	for(content_it = content.begin(); content_it < content.end(); ++content_it){
-		for(download_it = content_it->dls.begin(); download_it < content_it->dls.end(); download_it++){
+		for(download_it = content_it->dls.begin(); download_it < content_it->dls.end(); ++download_it){
 			if(download_it->status == "DOWNLOAD_FINISHED"){
 				finished_ids.push_back(download_it->id);
 				package_deletes[package_count]++;
@@ -1692,7 +1684,6 @@ void ddclient_gui::on_delete_finished(){
 		}
 		++package_count;
 	}
-
 
 	if(!finished_ids.empty()){
 		// make sure user wants to delete downloads
@@ -1705,10 +1696,8 @@ void ddclient_gui::on_delete_finished(){
 			return;
 		}
 
-
 		int dialog_answer = QMessageBox::No; // possible answers are YesToAll, Yes, No, NoToAll
-
-		for(it = finished_ids.begin(); it < finished_ids.end(); it++){
+		for(it = finished_ids.begin(); it < finished_ids.end(); ++it){
 				id = *it;
 
 			try{
@@ -1721,7 +1710,7 @@ void ddclient_gui::on_delete_finished(){
 					stringstream s;
 					s << id;
 					QMessageBox file_box(QMessageBox::Question, tsl("Delete File"), tsl("Do you want to delete the downloaded File for Download %p1?", s.str().c_str()),
-										 QMessageBox::YesToAll|QMessageBox::Yes|QMessageBox::No|QMessageBox::NoToAll, this);
+                               QMessageBox::YesToAll|QMessageBox::Yes|QMessageBox::No|QMessageBox::NoToAll, this);
 					file_box.setModal(true);
 					dialog_answer = file_box.exec();
 				}
@@ -1756,7 +1745,7 @@ void ddclient_gui::on_delete_finished(){
 
 	// delete all empty packages
 	int i = 0;
-	for(it = package_deletes.begin(); it < package_deletes.end(); it++){
+	for(it = package_deletes.begin(); it < package_deletes.end(); ++it){
 		unsigned int package_size = *it;
 
 		if(content.at(i).dls.size() <= package_size){ // if we deleted every download inside a package
@@ -1798,7 +1787,7 @@ void ddclient_gui::on_delete_file(){
 
 	vector<download>::iterator dit;
 	int parent_row = -1;
-	for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
 
 		if(it->package){ // we have a package
 			parent_row = it->row;
@@ -1859,7 +1848,7 @@ void ddclient_gui::on_activate(){
 
 	vector<download>::iterator dit;
 	int parent_row = -1;
-	for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
 
 	if(it->package){ // we have a package
 		parent_row = it->row;
@@ -1906,7 +1895,7 @@ void ddclient_gui::on_deactivate(){
 
 	vector<download>::iterator dit;
 	int parent_row = -1;
-	for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
 
 	if(it->package){ // we have a package
 		parent_row = it->row;
@@ -1950,7 +1939,7 @@ void ddclient_gui::on_priority_up(){
 	vector<selected_info>::iterator it;
 	int id;
 
-	for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+	for(it = selected_lines.begin(); it<selected_lines.end(); ++it){
 
 		if(!(it->package)) // we have a real download
 			id = content.at(it->parent_row).dls.at(it->row).id;
@@ -1984,7 +1973,7 @@ void ddclient_gui::on_priority_down(){
 	int id;
 	string error_string;
 
-	for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); rit++){
+	for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); ++rit){
 
 		if(!(rit->package)) // we have a real download
 			id = content.at(rit->parent_row).dls.at(rit->row).id;
@@ -2017,7 +2006,7 @@ void ddclient_gui::on_enter_captcha(){
 	vector<selected_info>::iterator it;
 	int id;
 
-	for(it = selected_lines.begin(); it<selected_lines.end(); it++){
+	for(it = selected_lines.begin(); it<selected_lines.end(); ++it){
 
 		if(!(it->package)) // we have a real download
 			id = content.at(it->parent_row).dls.at(it->row).id;
@@ -2126,7 +2115,7 @@ void ddclient_gui::on_copy(){
 	QString clipboard_data;
 	vector<download>::iterator dit;
 	int parent_row = -1;
-	for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
 
 		if(it->package){ // we have a package
 			parent_row = it->row;
@@ -2236,7 +2225,7 @@ void ddclient_gui::on_set_password(){
 	string answer;
 	int id;
 
-	for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
 
 		if(it->package){ // we have a package
 			id = content.at(it->row).id;
@@ -2274,7 +2263,7 @@ void ddclient_gui::on_set_name(){
 	string answer;
 	int id;
 
-	for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
 
 		if(it->package){ // we have a package
 			id = content.at(it->row).id;
@@ -2328,7 +2317,7 @@ void ddclient_gui::on_set_url(){
 	string answer;
 	int id;
 
-	for(it = selected_lines.begin(); it < selected_lines.end(); it++){
+	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
 
 		if(it->package){ // we have a package, but don't need it
 		}else{ // we have a real download
@@ -2411,7 +2400,6 @@ void ddclient_gui::on_reload(){
 		content.clear();
 		return;
 	}
-
 
 	download_speed = 0;
 	not_downloaded_yet = 0;
