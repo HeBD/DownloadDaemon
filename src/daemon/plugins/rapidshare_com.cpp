@@ -26,6 +26,7 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 bool use_premium = true; // if the premium limit is exceeded, this is set to false and we restart the download from the beginning without premium
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
+	get_handle()->setopt(CURLOPT_SSL_VERIFYPEER, 0);
 	if(!inp.premium_user.empty() && !inp.premium_password.empty() && use_premium) {
 		ddcurl* handle = get_handle();
 		outp.allows_multiple = true;
