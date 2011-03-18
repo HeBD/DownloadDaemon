@@ -1,7 +1,0 @@
-- make it possible to download files through the mgmt interface
-- write a few plugins
-- Make a multiuser-system out of downloaddaemon with partly individual configuration (download-folder) and administration...
-- remotely solve captchas if they can't be solved automatically
-- auto-updater for plugins and reconnect scripts
-- plugin-properties: makes it possible to set plugin-specific options if the plugin can handle them (e.g. one-time passwords for containers, etc)
-- use Angelscript or similar for plugins and implement auto-update functionality for plugins
