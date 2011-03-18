@@ -64,12 +64,8 @@ about_dialog::about_dialog(QWidget *parent, QString build) : QDialog(parent){
 
     QLabel *support_label = new QLabel("<a href=\"http://sourceforge.net/donate/index.php?group_id=278029\"><img src=\"img/project-support.png\""
                                        "width=\"88\" height=\"32\" border=\"0\" alt=\"Support This Project\" /></a>");
-    QLabel *flattr_label = new QLabel("<a href=\"http://flattr.com/thing/65487/DownloadDaemon\" target=\"_blank\">"
-                                      "<img src=\"img/flattr.png\" alt=\"Flattr this\" title=\"Flattr this\" border=\"0\" /></a>");
     support_label->setOpenExternalLinks(true);
-    flattr_label->setOpenExternalLinks(true);
     donate_layout->addWidget(support_label);
-    donate_layout->addWidget(flattr_label);
 
     text_layout->addWidget(new QLabel(name));
     text_layout->addWidget(new QLabel(version));

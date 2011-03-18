@@ -429,9 +429,7 @@ void ddclient_gui::add_bars(){
 	configure_menu->addAction(configure_action);
 	configure_menu->addAction(activate_action);
 
-	QToolBar *donate_bar = addToolBar(tsl("Flattr"));
-	QAction *flattr_action = new QAction(QIcon("img/flattr.png"), "Flattr", this);
-	donate_bar->addAction(flattr_action);
+	QToolBar *donate_bar = addToolBar(tsl("Support"));
 	QAction *donate_action = new QAction(QIcon("img/coins.png"), "Project-Support", this);
 	donate_bar->addAction(donate_action);
 
@@ -455,7 +453,6 @@ void ddclient_gui::add_bars(){
 	connect(down_action, SIGNAL(triggered()), this, SLOT(on_priority_down()));
 	connect(captcha_action, SIGNAL(triggered()), this, SLOT(on_enter_captcha()));
 
-	connect(flattr_action, SIGNAL(triggered()), this, SLOT(donate_flattr()));
 	connect(donate_action, SIGNAL(triggered()), this, SLOT(donate_sf()));
 }
 
