@@ -54,9 +54,12 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	ADD_LIBRARY(fileserve.com MODULE fileserve_com.cpp)
 	ADD_LIBRARY(linksave.in MODULE linksave_in.cpp)
 	ADD_LIBRARY(relink.us MODULE relink_us.cpp)
-	
+	ADD_LIBRARY(files.mail.ru MODULE files_mail_ru.cpp)
+	ADD_LIBRARY(load.to MODULE load_to.cpp)
+	ADD_LIBRARY(zshare.net MODULE zshare_net.cpp)
+
 	SET(plugins rapidshare.com uploaded.to youtube.com netload.in megaupload.com netfolder.in filefactory.com depositfiles.com hotfile.com fileserve.com
-	            linksave.in relink.us)
+	            linksave.in relink.us files.mail.ru load.to zshare.net)
 
         set_target_properties(${plugins} PROPERTIES PREFIX lib SUFFIX .so)
 
@@ -94,6 +97,9 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	TARGET_LINK_LIBRARIES(fileserve.com ${link_libs})
 	TARGET_LINK_LIBRARIES(linksave.in ${link_libs})
 	TARGET_LINK_LIBRARIES(relink.us ${link_libs})
+	TARGET_LINK_LIBRARIES(files.mail.ru ${link_libs})
+	TARGET_LINK_LIBRARIES(load.to ${link_libs})
+	TARGET_LINK_LIBRARIES(zshare.net ${link_libs})
 
 	install(TARGETS ${plugins} DESTINATION share/downloaddaemon/plugins)
 
