@@ -1,3 +1,8 @@
+2011-03-24
+   [adrian]
+	- Added plugin for shragle.com (thanks, Boy1979)
+	- Some improvements when starting downloads (sometimes DD forgets to start the next DL)
+
 2011-03-21
    [adrian]
 	- Added plugins for files.mail.ru, zshare.net, load.to. Thanks a lot to Boy1979!	

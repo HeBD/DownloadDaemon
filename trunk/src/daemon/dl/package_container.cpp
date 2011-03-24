@@ -85,7 +85,7 @@ int package_container::from_file(const char* filename) {
 		dl->from_serialized(line);
 		add_dl_to_pkg(dl, curr_pkg_id);
 	}
-
+	start_next_downloadable();
 	if(!dlist.good()) {
 		dlist.close();
 		return LIST_PERMISSION;
@@ -118,7 +118,9 @@ int package_container::add_dl_to_pkg(download* dl, int pkg_id) {
 		dl = NULL;
 		return LIST_ID;
 	}
-	return (*it)->add_download(dl, get_next_download_id());
+	int ret = (*it)->add_download(dl, get_next_download_id());
+	start_next_downloadable();
+	return ret;
 }
 
 void package_container::del_package(int pkg_id) {
@@ -178,6 +180,7 @@ void package_container::set_url(dlindex dl, std::string url) {
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_url(dl.second, url);
+	start_next_downloadable();
 }
 
 void package_container::set_title(dlindex dl, std::string title) {
@@ -233,6 +236,7 @@ void package_container::set_running(dlindex dl, bool running) {
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_running(dl.second, running);
+	start_next_downloadable();
 }
 
 void package_container::set_need_stop(dlindex dl, bool need_stop) {
@@ -247,6 +251,7 @@ void package_container::set_status(dlindex dl, download_status status) {
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	(*it)->set_status(dl.second, status);
+	start_next_downloadable();
 }
 
 void package_container::set_speed(dlindex dl, int speed) {
@@ -510,6 +515,7 @@ void  package_container::move_dl(dlindex dl, package_container::direction d) {
 	if(it == packages.end()) return;
 	if(d == DIRECTION_UP) (*it)->move_up(dl.second);
 	else (*it)->move_down(dl.second);
+	start_next_downloadable();
 }
 
 void  package_container::move_pkg(int dl, package_container::direction d) {
@@ -533,6 +539,7 @@ void  package_container::move_pkg(int dl, package_container::direction d) {
 		*it = *it2;
 		*it2 = tmp;
 	}
+	start_next_downloadable();
 }
 
 bool package_container::reconnect_needed() {
@@ -844,7 +851,7 @@ void package_container::start_next_downloadable() {
 bool package_container::in_dl_time_and_dl_active() {
 	unique_lock<recursive_mutex> global_mgmt_lock(global_mgmt::ns_mutex);
 
-	if(!global_mgmt::downloading_active) {
+	if(!global_config.get_bool_value("downloading_active")) {
 		return false;
 	}
 
