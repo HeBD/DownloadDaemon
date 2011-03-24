@@ -182,6 +182,7 @@ void connection_handler(client *connection) {
 			}
 			trim_string(data);
 			target_dl(data, sock);
+			global_download_list.start_next_downloadable();
 		} else if(data.find("PKG") == 0) {
 			data = data.substr(3);
 			if(data.length() == 0 || !isspace(data[0])) {
@@ -198,6 +199,7 @@ void connection_handler(client *connection) {
 			}
 			trim_string(data);
 			target_var(data, sock);
+			global_download_list.start_next_downloadable();
 		} else if(data.find("FILE") == 0) {
 			data = data.substr(4);
 			if(data.length() == 0 || !isspace(data[0])) {
@@ -222,6 +224,7 @@ void connection_handler(client *connection) {
 			}
 			trim_string(data);
 			target_premium(data, sock);
+			global_download_list.start_next_downloadable();
 		} else if(data.find("SUBSCRIPTION") == 0) {
 			data = data.substr(12);
 			if(data.length() == 0 || !isspace(data[0])) {

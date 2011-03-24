@@ -224,6 +224,10 @@ bool proceed_variable(const std::string &variable, std::string value) {
 	} else if(variable == "max_dl_speed") {
 		filesize_t dl_speed = atol(value.c_str()) * 1024;
 		curl_speeder::instance()->set_glob_speed(dl_speed);
+	} else if(variable == "downloading_active") {
+		if(value == "1") {
+			global_download_list.start_next_downloadable();
+		}
 	}
 
 	return true;
