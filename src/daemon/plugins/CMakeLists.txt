@@ -58,10 +58,11 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	ADD_LIBRARY(load.to MODULE load_to.cpp)
 	ADD_LIBRARY(zshare.net MODULE zshare_net.cpp)
 	ADD_LIBRARY(shragle.com MODULE shragle_com.cpp)
+	ADD_LIBRARY(bitload.com MODULE bitload_com.cpp)
 
 
 	SET(plugins rapidshare.com uploaded.to youtube.com netload.in megaupload.com netfolder.in filefactory.com depositfiles.com hotfile.com fileserve.com
-	            linksave.in relink.us files.mail.ru load.to zshare.net shragle.com)
+	            linksave.in relink.us files.mail.ru load.to zshare.net shragle.com bitload.com)
 
         set_target_properties(${plugins} PROPERTIES PREFIX lib SUFFIX .so)
 
@@ -103,6 +104,7 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	TARGET_LINK_LIBRARIES(load.to ${link_libs})
 	TARGET_LINK_LIBRARIES(zshare.net ${link_libs})
 	TARGET_LINK_LIBRARIES(shragle.com ${link_libs})
+	TARGET_LINK_LIBRARIES(bitload.com ${link_libs})
 
 	install(TARGETS ${plugins} DESTINATION share/downloaddaemon/plugins)
 
