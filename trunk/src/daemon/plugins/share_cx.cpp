@@ -26,12 +26,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         ddcurl* handle = get_handle();
         std::string resultstr;
         string url = get_url();
-        struct curl_slist *headers=NULL;
-        headers = curl_slist_append(headers, "Host: share.cx");
 
         // Form 1 load and save to resultstr
-        handle->setopt(CURLOPT_URL, url);
-        handle->setopt(CURLOPT_HTTPHEADER, headers);
+        handle->setopt(CURLOPT_URL, url.c_str());
         handle->setopt(CURLOPT_COOKIEFILE, "");
         handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
         handle->setopt(CURLOPT_WRITEDATA, &resultstr);
@@ -49,10 +46,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         string referer     = search_between(resultstr, "name=\"referer\" value=\"","\"");
         string method_free = search_between(resultstr, "name=\"method_free\" value=\"","\"");
         replace_all(method_free, " ", "+");
+        replace_all(referer, "/", "%2F");
+        replace_all(referer, ":", "%3A");
         string postdata    = "op=" + op + "&usr_login=" + usr_login + "&id=" + id + "&fname=" + fname +
                              "&referer=" + referer + "&method_free=" + method_free;
 
         // post data to Form1, to get Form2
+        resultstr.clear();
         handle->setopt(CURLOPT_HTTPPOST,1);
         handle->setopt(CURLOPT_FOLLOWLOCATION, 0);
         handle->setopt(CURLOPT_URL, url.c_str());
@@ -86,7 +86,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
         // prepare handle for DD
         handle->setopt(CURLOPT_HTTPPOST,1);
-        handle->setopt(CURLOPT_FOLLOWLOCATION, 0);
+        handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
         handle->setopt(CURLOPT_URL, url.c_str());
         handle->setopt(CURLOPT_COPYPOSTFIELDS, postdata);
 
