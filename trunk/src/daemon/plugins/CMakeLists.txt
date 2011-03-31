@@ -60,10 +60,11 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	ADD_LIBRARY(shragle.com MODULE shragle_com.cpp)
 	ADD_LIBRARY(bitload.com MODULE bitload_com.cpp)
 	ADD_LIBRARY(share.cx MODULE share_cx.cpp)
+	ADD_LIBRARY(filesonic.com MODULE filesonic_com.cpp)
 
 
 	SET(plugins rapidshare.com uploaded.to youtube.com netload.in megaupload.com netfolder.in filefactory.com depositfiles.com hotfile.com fileserve.com
-	            linksave.in relink.us files.mail.ru load.to zshare.net shragle.com bitload.com share.cx)
+	            linksave.in relink.us files.mail.ru load.to zshare.net shragle.com bitload.com share.cx filesonic.com)
 
         set_target_properties(${plugins} PROPERTIES PREFIX lib SUFFIX .so)
 
@@ -107,6 +108,7 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	TARGET_LINK_LIBRARIES(shragle.com ${link_libs})
 	TARGET_LINK_LIBRARIES(bitload.com ${link_libs})
 	TARGET_LINK_LIBRARIES(share.cx ${link_libs})
+	TARGET_LINK_LIBRARIES(filesonic.com ${link_libs})
 
 	install(TARGETS ${plugins} DESTINATION share/downloaddaemon/plugins)
 
