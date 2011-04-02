@@ -38,6 +38,10 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
         int success = handle->perform();
 
+        if(success != 0) {
+                return PLUGIN_CONNECTION_ERROR;
+        }
+
         //is file deleted?
         if (resultstr.find("The requested file is not available!") != std::string::npos)
             return PLUGIN_FILE_NOT_FOUND;
