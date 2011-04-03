@@ -64,7 +64,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         //this can be true very often, somethimes you need to wait very long time to get a Downloadticket
         //if downloadlink can't get at 30 retrys set waittime to 10 min to prevent IP block from server
         if (resultstr.find("No free slots for free users!") != std::string::npos){
-            if (overload_counter < 30){
+            if (overload_counter < 20){
             overload_counter++;
             set_wait_time(3);
             return PLUGIN_SERVER_OVERLOADED;
@@ -75,8 +75,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
             }
 
         }
-        //set back counter to 0
+            //set back counter to 0
         overload_counter = 0;
+
+        if (resultstr.find("This file is too big for you remaining download volume!") != std::string::npos){
+            set_wait_time(1800);
+            return PLUGIN_SERVER_OVERLOADED;
+        }
                 //get real link
         string code = search_between(resultstr, "dl=\"","\"");
         string data = base64_decode(code);
