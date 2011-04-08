@@ -38,6 +38,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
         int success = handle->perform();
 
+        // if IP block from Server wait 10min
+        if (resultstr.find("Share-Online - Access to content denied") != std::string::npos){
+            overload_counter = 0;
+            set_wait_time(600);
+            return PLUGIN_SERVER_OVERLOADED;
+        }
+
         if(success != 0) {
                 return PLUGIN_CONNECTION_ERROR;
         }
@@ -56,6 +63,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
         handle->setopt(CURLOPT_WRITEDATA, &resultstr);
         success = handle->perform();
+
+        if (resultstr.find("No other download thread possible!") != std::string::npos)
 
         if(success != 0) {
                 return PLUGIN_CONNECTION_ERROR;
