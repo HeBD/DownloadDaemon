@@ -64,8 +64,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         handle->setopt(CURLOPT_WRITEDATA, &resultstr);
         success = handle->perform();
 
-        if (resultstr.find("No other download thread possible!") != std::string::npos)
-
         if(success != 0) {
                 return PLUGIN_CONNECTION_ERROR;
         }
