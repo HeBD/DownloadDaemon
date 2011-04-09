@@ -41,6 +41,15 @@
 #include "../global.h"
 #include "global_management.h"
 #include "connection_manager.h"
+#ifndef USE_STD_THREAD
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
 using namespace std;
 
 
@@ -77,7 +86,7 @@ void mgmt_thread_main() {
 			client* connection = new client;
 			main_sock.accept(*(connection->sock));
 			connection_manager::instance()->add_client(connection);
-			thread t(bind(connection_handler, connection));
+			thread t(std::bind(connection_handler, connection));
 			t.detach();
 		} catch(...) {
 			log_string("Failed to create socket or connection-thread", LOG_ERR);
@@ -852,7 +861,7 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 		*sock << "100 SUCCESS";
 		return;
 	} else if(type == "DLC") {
-		thread d(decode_dlc, data, (download_container*)0);
+		thread d(std::bind(decode_dlc, data, (download_container*)0));
 		d.detach();
 		*sock << "100 SUCCESS";
 		return;

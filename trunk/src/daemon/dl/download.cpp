@@ -969,7 +969,7 @@ void download::preset_file_status() {
 
 	if(!is_host) {
 		try {
-			thread t(&download::download_me, this);
+			thread t(std::bind(&download::download_me, this));
 			t.detach();
 		} catch(...) {
 			log_string("Failed to start decrypter-thread. There are probably too many running threads.", LOG_ERR);
