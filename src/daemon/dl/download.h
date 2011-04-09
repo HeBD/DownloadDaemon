@@ -22,6 +22,7 @@
 
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
+#include <boost/bind.hpp>
 namespace std {
 	using namespace boost;
 }
