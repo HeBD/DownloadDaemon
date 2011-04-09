@@ -5,6 +5,12 @@
 #include <curl/curl.h>
 #include <string>
 
+// this is to manually support PROXYUSERNAME and PROXYPASSWORD
+#if LIBCURL_VERSION_NUM < 0x071301 // 7.19.1
+	#define CURLOPT_PROXYUSERNAME -1
+	#define CURLOPT_PROXYPASSWORD -2
+#endif
+
 /*! This class is a simple libcurl-wrapper that adds the possibility to use the ddproxy.php script in a simple way */
 class ddcurl {
 public:
@@ -89,8 +95,7 @@ public:
 		if(!m_sProxy.empty()) {
 			url = m_sProxy + "?ddproxy_pass=" + escape(m_sProxyPass) + "&ddproxy_url=" + escape(m_sUrl);
 		} else {
-			curl_easy_setopt(handle, CURLOPT_PROXYUSERNAME, m_sProxyUser.c_str());
-			curl_easy_setopt(handle, CURLOPT_PROXYPASSWORD, m_sProxyPass.c_str());
+			curl_easy_setopt(handle, CURLOPT_PROXYUSERPWD, (m_sProxyUser + ":" + m_sProxyPass).c_str());
 
 		}
 		curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
