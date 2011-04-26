@@ -66,7 +66,7 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
                 outp.allows_multiple = true;
         } else {
 				outp.allows_resumption = false;
-				outp.allows_multiple = false;
+				outp.allows_multiple = true;
         }
 		outp.offers_premium = false;
 }
