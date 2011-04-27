@@ -30,18 +30,19 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	handle->setopt(CURLOPT_WRITEDATA, &result);
 	handle->setopt(CURLOPT_COOKIEFILE, "");
 	int res = handle->perform();
+
 	if(res != 0) {
 		return PLUGIN_ERROR;
 	}
 
-	string title = search_between(result, "document.title = '", "';");
-	title.erase(0, 9); // remote the "YouTube -" in the beginning
+        string title = search_between(result, "document.title = '", "\";");
+        title.erase(0, 15); // remove the "YouTube - ' + "" in the beginning
 	trim_string(title);
 	make_valid_filename(title);
 	outp.download_filename = title + ".flv";
 
 	string url = get_url();
-	size_t pos = result.find("var swfHTML");
+        size_t pos = result.find("var swfConfig");
 	if(pos == string::npos) {
 		return PLUGIN_FILE_NOT_FOUND;
 	}
