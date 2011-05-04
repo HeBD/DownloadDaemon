@@ -312,7 +312,6 @@ int main(int argc, char* argv[], char* env[]) {
 		umask_ss >> umask_i;
 		umask(umask_i);
 		connection_manager::create_instance();
-		global_download_list.from_file(dlist_fn.c_str());
 
 		// Create the needed folders
 
@@ -344,6 +343,7 @@ int main(int argc, char* argv[], char* env[]) {
 		for(plugin_container::handleIter it = plugin_cache.handles.begin(); it != plugin_cache.handles.end(); ++it) {
 			plglog << it->first << " ";
 		}
+		global_download_list.from_file(dlist_fn.c_str());
 		log_string("DownloadDaemon started successfully with these plugins: " + plglog.str(), LOG_DEBUG);
 
 		thread mgmt_thread(mgmt_thread_main);
