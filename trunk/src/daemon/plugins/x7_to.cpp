@@ -82,7 +82,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         if (resultstr.find("File not found!") != std::string::npos)
             return PLUGIN_FILE_NOT_FOUND;
 
-        string new_url = "http://x7.to/james/ticket/dl/" + url.substr(url.find_last_of("/")+1,url.length());
+        vector<string> splitted_url = split_string(url, "/");
+
+        string new_url = "http://x7.to/james/ticket/dl/" + splitted_url[3];
 
         resultstr.clear();
         handle->setopt(CURLOPT_URL, new_url);
