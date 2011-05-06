@@ -241,9 +241,11 @@ const char* download::get_error_str() {
 			return "Download limit reached";
 	case PLUGIN_CONNECTION_ERROR:
 			return "Connection failed";
-	case PLUGIN_SERVER_OVERLOADED:
-			return "Server overloaded";
-	case PLUGIN_AUTH_FAIL:
+        case PLUGIN_SERVER_OVERLOADED:
+                        return "Server overloaded";
+        case PLUGIN_NO_PARALLEL:
+                        return "No parallel";
+        case PLUGIN_AUTH_FAIL:
 			return "Authentication failed";
 	case PLUGIN_CAPTCHA:
 			return "Captcha";
@@ -472,11 +474,15 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 			}
 			log_string(std::string("Premium authentication failed for download ") + dlid_log, LOG_WARNING);
 			return;
-		case PLUGIN_SERVER_OVERLOADED:
-			log_string(std::string("Server overloaded for download ID: ") + dlid_log, LOG_WARNING);
+                case PLUGIN_NO_PARALLEL:
+                        log_string(std::string("No parallel for Download ID: ") + dlid_log, LOG_WARNING);
 			status = DOWNLOAD_WAITING;
 			return;
-		case PLUGIN_LIMIT_REACHED:
+                case PLUGIN_SERVER_OVERLOADED:
+                        log_string(std::string("Server overloaded for download ID: ") + dlid_log, LOG_WARNING);
+                        status = DOWNLOAD_WAITING;
+                        return;
+                case PLUGIN_LIMIT_REACHED:
 			log_string(std::string("Download limit reached for download ID: ") + dlid_log + " (" + get_host(false) + ")", LOG_WARNING);
 			status = DOWNLOAD_WAITING;
 			return;

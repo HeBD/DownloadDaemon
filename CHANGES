@@ -1,3 +1,8 @@
+2011-05-06
+   [stefan]
+   - added new plugin state (PLUGIN_NO_PARALLEL)
+   - added free and free-Account plugin for x7.to
+   
 2011-04-02
    [stefan]
    - added error handling for plugin share.cx if file was removed

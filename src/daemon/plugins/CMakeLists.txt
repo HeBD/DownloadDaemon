@@ -20,6 +20,7 @@ SET(plugins rapidshare_com.cpp   rapidshare.com
             share_cx.cpp         share.cx
             filesonic_com.cpp    filesonic.com
             share-online_biz.cpp share-online.biz
+            x7_to.cpp            x7.to
 
 )
 
