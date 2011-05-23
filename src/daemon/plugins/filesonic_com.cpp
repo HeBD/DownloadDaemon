@@ -25,22 +25,39 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         ddcurl* handle = get_handle();
         ddcurl* fileexists = get_handle();
+        ddcurl* get_domain = get_handle();
         string url = get_url();
         string result;
         result.clear();
         if(inp.premium_user.empty() || inp.premium_password.empty()) {
                 return PLUGIN_AUTH_FAIL; // free download not supported yet
         }
+
         //encode login data
         string premium_user = handle->escape(inp.premium_user);
         string premium_pwd = handle->escape(inp.premium_password);
+
+        //get domain for filesonic
+        get_domain->setopt(CURLOPT_URL, "http://api.filesonic.com/utility?method=getFilesonicDomainForCurrentIp");
+        get_domain->setopt(CURLOPT_HTTPPOST, 0);
+        get_domain->setopt(CURLOPT_WRITEFUNCTION, write_data);
+        get_domain->setopt(CURLOPT_WRITEDATA, &result);
+        int ret = get_domain->perform();
+        string domain = search_between(result, "\"response\":\"","\"");
+
+        vector<string> splitted_url = split_string(url, "/");
+        splitted_url[2]= "www" + domain;
+        url.clear();
+        for(size_t i = 0; i < splitted_url.size(); ++i) {
+           url += splitted_url[i]+"/";}
+        result.clear();
 
         //is file deleted?
         fileexists->setopt(CURLOPT_URL, url.c_str());
         fileexists->setopt(CURLOPT_HTTPPOST, 0);
         fileexists->setopt(CURLOPT_WRITEFUNCTION, write_data);
         fileexists->setopt(CURLOPT_WRITEDATA, &result);
-        int ret = fileexists->perform();
+        ret = fileexists->perform();
         if (result.find("This file was deleted") != std::string::npos)
             return PLUGIN_FILE_NOT_FOUND;
 
@@ -48,7 +65,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         result.clear();
         string data = "redirect=&email="+premium_user+"&password="+premium_pwd+"&rememberMe=0&controls%5Bsubmit%5D=";
 
-        handle->setopt(CURLOPT_URL, "http://www.filesonic.com/premium?login=1");
+        handle->setopt(CURLOPT_URL, "http://www"+domain+"/premium?login=1");
         handle->setopt(CURLOPT_HTTPPOST, 1);
         handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
         handle->setopt(CURLOPT_WRITEDATA, &result);
@@ -63,7 +80,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                 }
 
                 handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
-                outp.download_url = get_url();
+                outp.download_url = url.c_str();
                 return PLUGIN_SUCCESS;
             }
         return PLUGIN_ERROR;
