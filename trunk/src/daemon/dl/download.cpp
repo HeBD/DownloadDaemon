@@ -155,6 +155,14 @@ std::string download::serialize() {
 	while(dl_size.size() > 1 && dl_size[0] == '0') dl_size.erase(0, 1);
 
 	stringstream ss;
+	//Filesonic requires this because of domain forwarding
+	vector<string> splitted_url = split_string(url, "/");
+	if (splitted_url[2].find("filesonic") != std::string::npos){
+		splitted_url[2]= "www.filesonic.com";
+		url.clear();
+		for(size_t i = 0; i < splitted_url.size(); ++i) {
+			url += splitted_url[i]+"/";}
+		}
 	ss << id << '|' << add_date << '|' << escape_string(comment) << '|' << escape_string(url) << '|' << status << '|'
 	<< dl_bytes << '|' << dl_size << '|' << escape_string(output_file) << "|\n";
 	return ss.str();
