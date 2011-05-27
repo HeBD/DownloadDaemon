@@ -157,8 +157,10 @@ std::string download::serialize() {
 	stringstream ss;
 	//Filesonic requires this because of domain forwarding
 	vector<string> splitted_url = split_string(url, "/");
-	if (splitted_url[2].find("filesonic") != std::string::npos){
+	if (splitted_url[2].find("filesonic") != std::string::npos &&
+		splitted_url[2].find("filesonic.com") == std::string::npos){
 		splitted_url[2]= "www.filesonic.com";
+
 		url.clear();
 		for(size_t i = 0; i < splitted_url.size(); ++i) {
 			url += splitted_url[i]+"/";}
