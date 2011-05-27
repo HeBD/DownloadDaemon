@@ -99,7 +99,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                 return PLUGIN_CONNECTION_ERROR;
 
         if (resultstr.find("limit-parallel") != std::string::npos){
-            set_wait_time(300);
+            set_wait_time(10);
             return PLUGIN_NO_PARALLEL;
         }
 
