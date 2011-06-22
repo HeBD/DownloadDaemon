@@ -1,3 +1,8 @@
+2011-06-22
+   [stefan]
+   - added free plugin gaiafile.com
+   - fix for rapidshare.com (changed site layout for free users)
+
 2011-05-06
    [stefan]
    - added new plugin state (PLUGIN_NO_PARALLEL)

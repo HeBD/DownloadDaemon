@@ -22,6 +22,7 @@ SET(plugins rapidshare_com.cpp   rapidshare.com
             share-online_biz.cpp share-online.biz
             x7_to.cpp            x7.to
             duckload_com.cpp     duckload.com
+            gaiafile_com.cpp     gaiafile.com
 )
 
 project(DownloadDaemon-Plugins)
