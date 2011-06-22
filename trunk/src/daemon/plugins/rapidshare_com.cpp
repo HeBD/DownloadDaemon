@@ -66,7 +66,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	vector<string> splitted_url = split_string(url, "/");
 	string filename = splitted_url.back();
 	string fileid = *(splitted_url.end() - 2);
-	string dispatch_url = "http://api.rapidshare.com/cgi-bin/rsapi.cgi?sub=download_v1&fileid=" + fileid + "&filename=" + filename + "&try=1&cbf=RSAPIDispatcher&cbid=1";
+	string dispatch_url = "https://api.rapidshare.com/cgi-bin/rsapi.cgi?sub=download&fileid=" + fileid + "&filename=" + filename + "&try=1&cbf=RSAPIDispatcher&cbid=1";
 	handle->setopt(CURLOPT_URL, dispatch_url);
 	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
 	handle->setopt(CURLOPT_WRITEDATA, &resultstr);
