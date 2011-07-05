@@ -6,8 +6,11 @@ if(isset($_POST['submit']) || SKIP_LOGIN_PAGE) {
 	$host = $_POST['host'];
 	$port = $_POST['port'];
 	$pwd = $_POST['passwd'];
-	if (SKIP_LOGIN_PAGE)
-	  $pwd = SKIP_LOGIN_PASSWORD;
+	if (SKIP_LOGIN_PAGE) {
+		$pwd = SKIP_LOGIN_PASSWORD;
+		$host = DEFAULT_HOST;
+		$port = DEFAULT_PORT;
+	}
 	if($pwd == "") {
 		$pwd = " ";
 	}
