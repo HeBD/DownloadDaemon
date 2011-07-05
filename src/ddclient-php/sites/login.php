@@ -1,11 +1,13 @@
 <?php
 $err_message = '';
-if(isset($_POST['submit'])) {
+if(isset($_POST['submit']) || SKIP_LOGIN_PAGE) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, 0);
 
 	$host = $_POST['host'];
 	$port = $_POST['port'];
 	$pwd = $_POST['passwd'];
+	if (SKIP_LOGIN_PAGE)
+	  $pwd = SKIP_LOGIN_PASSWORD;
 	if($pwd == "") {
 		$pwd = " ";
 	}
