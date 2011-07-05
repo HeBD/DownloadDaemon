@@ -46,12 +46,12 @@ define('CHECK_FILE_STATUS', false);
 /*
  set this to true to skip the login page
 */
-define('SKIP_LOGIN_PAGE', false);
+define('SKIP_LOGIN_PAGE', true);
 
 /*
  the default password to use for logging in the SKIP_LOGIN_PAGE is set to true
 */
-define('SKIP_LOGIN_PASSWORD', '');
+define('SKIP_LOGIN_PASSWORD', 'Arschloch');
 
 
 ?>
