@@ -100,7 +100,7 @@ public:
 		}
 		curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
 		return curl_easy_perform(handle);
-	}
+}
 
 	template <typename T>
 		CURLcode getinfo(CURLINFO info, T val) const {
@@ -171,6 +171,7 @@ private:
 		// set default write and progress functions, so curl will not write to stdout or something like thatc
 		setopt(CURLOPT_WRITEFUNCTION, ddcurl::dummy_writefkt);
 		setopt(CURLOPT_PROGRESSFUNCTION, ddcurl::dummy_progress);
+		setopt(CURLOPT_USERAGENT, "Mozilla/5.0 (X11; Linux x86_64; rv:5.0) Gecko/20100101 Firefox/5.0");
 	}
 };
 
