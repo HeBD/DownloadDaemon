@@ -14,6 +14,7 @@
 #include <curl/curl.h>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
@@ -24,21 +25,26 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	if(inp.premium_user.empty() || inp.premium_password.empty()) {
-		return PLUGIN_AUTH_FAIL; // free download not supported yet
+			return PLUGIN_AUTH_FAIL; // free download not supported yet
 	}
 	string result;
 	ddcurl* handle = get_handle();
-	string data = "loginUserName=" + handle->escape(inp.premium_user) + "&loginUserPassword=" + handle->escape(inp.premium_password);
-	data += "+&autoLogin=on&recaptcha_response_field=&recaptcha_challenge_field=&recaptcha_shortencode_field=&loginFormSubmit=Login";
-	handle->setopt(CURLOPT_URL, "http://www.fileserve.com/login.php");
+	string data = "loginUserName=" + handle->escape(inp.premium_user) + "&loginUserPassword=" + handle->escape(inp.premium_password) +
+				  "&autoLogin=on&recaptcha_response_field=&recaptcha_challenge_field=&recaptcha_shortencode_field=&loginFormSubmit=Login";
+	handle->setopt(CURLOPT_URL, "http://fileserve.com/login.php");
 	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
 	handle->setopt(CURLOPT_WRITEDATA, &result);
 	handle->setopt(CURLOPT_COPYPOSTFIELDS, data.c_str());
-	handle->setopt(CURLOPT_COOKIEFILE, "");
+
 	int ret = handle->perform();
 	if(ret != CURLE_OK)
 		return PLUGIN_CONNECTION_ERROR;
-	handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+	if(ret == CURLE_OK) {
+		if(result.find("Invalid login.") != string::npos) {
+			return PLUGIN_AUTH_FAIL;
+		}
+	}
+
 	outp.download_url = get_url();
 	return PLUGIN_SUCCESS;
 }
@@ -74,9 +80,6 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 		outp.file_online = PLUGIN_FILE_NOT_FOUND;
 		return true;
 	}
-
-
-
 	return true;
 }
 
@@ -90,4 +93,3 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 	}
 	outp.offers_premium = true;
 }
-
