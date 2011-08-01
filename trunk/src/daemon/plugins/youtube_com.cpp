@@ -35,30 +35,24 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_ERROR;
 	}
 
-        string title = search_between(result, "document.title = '", "\";");
-        title.erase(0, 15); // remove the "YouTube - ' + "" in the beginning
-	trim_string(title);
-	make_valid_filename(title);
-	outp.download_filename = title + ".flv";
 
-	string url = get_url();
-        size_t pos = result.find("var swfConfig");
-	if(pos == string::npos) {
-		return PLUGIN_FILE_NOT_FOUND;
-	}
-	string fmt_url_map = search_between(result, "fmt_url_map=", "&");
-	fmt_url_map = ddcurl::unescape(fmt_url_map);
-	vector<string> fumv = split_string(fmt_url_map, ",");
-	map<int, string> fum;
-	int best_fmt = 0;
-	for(vector<string>::iterator it = fumv.begin(); it != fumv.end(); ++it) {
-		vector<string> tmp = split_string(*it, "|");
-		if(tmp.size() != 2) continue;
-		int fmt = atoi(tmp[0].c_str());
-		fum.insert(make_pair(fmt, tmp[1]));
-		if(fmt > best_fmt) best_fmt = fmt;
-	}
-	outp.download_url = fum[best_fmt];
+        if (result.find("This video has been removed by the user.") != std::string::npos)
+           return PLUGIN_FILE_NOT_FOUND;
+
+        string url = search_between(result, "url_encoded_fmt_stream_map=", "\"");
+        url = handle->unescape(url);
+        url = handle->unescape(url);
+        url = handle->unescape(url);
+
+        url = url.substr(0, url.find("x-flv")+4);
+        url = url.substr(url.rfind("url=")+4,url.length());
+
+        outp.download_url = url;
+
+        string title = search_between(result, "name=\"title\" content=\"", "\">");
+        make_valid_filename(title);
+
+        outp.download_filename = title + ".flv";
 
 	return PLUGIN_SUCCESS;
 }
