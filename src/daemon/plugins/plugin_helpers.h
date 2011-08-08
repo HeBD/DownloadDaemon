@@ -72,10 +72,17 @@ const char* get_url();
  */
 void set_url(const char* url);
 
+/** allows you to automatically remove the www. from the link.  This is the way all plugins work*/
+std::string set_correct_url(std::string url);
+
 /** gives you a pointer to the main download-list. With this, you can do almost anything with any download
  *	@returns pointer to the main download list
  */
 download_container* get_dl_container();
+
+/** return download pointer
+*/
+download* get_dl_ptr();
 
 /** this returns the curl-handle which will be used for downloading later. You may need it for setting special options like cookies, etc.
  *	@returns the curl handle
@@ -145,8 +152,25 @@ void set_url(const char* url) {
 	dl_ptr->set_url(url);
 }
 
+std::string set_correct_url(std::string url)
+{
+	std::string newurl;
+	try {
+		size_t pos = url.find("www.");
+		if(pos == std::string::npos) return NULL;
+		pos += 4;
+		newurl = "http://" + url.substr(pos);
+	} catch(...) {}
+	return newurl;
+}
+		
+
 download_container* get_dl_container() {
 	return dl_list;
+}
+
+download* get_dl_ptr(){
+	return dl_ptr;
 }
 
 	ddcurl* get_handle() {
