@@ -157,7 +157,7 @@ std::string set_correct_url(std::string url)
 	std::string newurl;
 	try {
 		size_t pos = url.find("www.");
-		if(pos == std::string::npos) return NULL;
+		if(pos == std::string::npos) return url;
 		pos += 4;
 		newurl = "http://" + url.substr(pos);
 	} catch(...) {}
