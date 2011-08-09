@@ -236,7 +236,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                         return PLUGIN_ERROR;
                     }
                     urlpos += 10;
-                    string newurl = result.substr(urlpos, result.find("\n", urlpos) - urlpos);
+                    string newurl = result.substr(urlpos, result.find_first_of("\r\n", urlpos) - urlpos);
                     urls.add_download(set_correct_url(newurl),"");
                 }
         } catch(...) {}
