@@ -66,17 +66,21 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                 }
                 if(url.find("/d/")== std::string::npos)
                 {
-                    string rslt="";
+                    string rslt="http://ghost-zero.webs.com/password.png";
                     handle->setopt(CURLOPT_HEADER, 0);
                     handle->setopt(CURLOPT_FOLLOWLOCATION,0);
                     //because sometimes the first time it doesnt work
                     for (int i = 0; i <= 5; i++)
                     {
                         string post = "post-protect=1";
+                        handle->setopt(CURLOPT_POST, 0);
                         if(result.find("type=\"password\" name=\"link-password\"")!= std::string::npos)
                         {
                             //password protected => ask user for password
-                            std::string captcha_text = Captcha.process_image(rslt, "", "", -1, false, false, captcha::SOLVE_MANUAL);
+                            handle->setopt(CURLOPT_URL, rslt);
+                            result.clear();
+                            handle->perform();
+                            std::string captcha_text = Captcha.process_image(result, "png", "", -1, false, false, captcha::SOLVE_MANUAL);
                             post += "&link-password=" + captcha_text;
 
                         }
