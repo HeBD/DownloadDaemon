@@ -138,7 +138,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                                 post += "&recaptcha_response_field=" + captcha_text;
                             }
                         }
-                        else if(size_t urlpos=result.find("http://safelinking\\.net/includes/captcha_factory/securimage/securimage_show\\.php\\?sid=")!= std::string::npos)
+                        else if(size_t urlpos=result.find("http://safelinking.net/includes/captcha_factory/securimage/securimage_show.php?sid=")!= std::string::npos)
                         {
                             string captchaAddress = result.substr(urlpos, result.find("\"", urlpos) - urlpos);
                             handle->setopt(CURLOPT_URL, captchaAddress);
@@ -147,7 +147,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                             std::string captcha_text = Captcha.process_image(result, "jpg", "", -1, false, false, captcha::SOLVE_MANUAL);
                             post+= "&securimage_response_field=" + captcha_text;
                         }
-                        else if(size_t urlpos=result.find("http://safelinking\\.net/includes/captcha_factory/3dcaptcha/3DCaptcha\\.php")!= std::string::npos)
+                        else if(size_t urlpos=result.find("http://safelinking.net/includes/captcha_factory/3dcaptcha/3DCaptcha.php")!= std::string::npos)
                         {
                             string captchaAddress = result.substr(urlpos, result.find("\"", urlpos) - urlpos);
                             handle->setopt(CURLOPT_URL, captchaAddress);
@@ -156,7 +156,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                             std::string captcha_text = Captcha.process_image(result, "jpg", "", -1, false, false, captcha::SOLVE_MANUAL);
                             post+= "&3dcaptcha_response_field=" + captcha_text;
                         }
-                        else if(result.find("fancycaptcha\\.css\"")!= std::string::npos)
+                        else if(result.find("fancycaptcha.css\"")!= std::string::npos)
                         {
                             handle->setopt(CURLOPT_URL, "http://safelinking.net/includes/captcha_factory/fancycaptcha.php");
                             result.clear();
@@ -169,14 +169,14 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                         result.clear();
                         handle->perform();
                         if (result.find("api.recaptcha.net")!= std::string::npos ||
-                            result.find("http://safelinking\\.net/includes/captcha_factory/securimage/securimage_show\\.php\\?sid=")!= std::string::npos ||
-                            result.find("http://safelinking\\.net/includes/captcha_factory/3dcaptcha/3DCaptcha\\.php")!= std::string::npos ||
+                            result.find("http://safelinking.net/includes/captcha_factory/securimage/securimage_show.php?sid=")!= std::string::npos ||
+                            result.find("http://safelinking.net/includes/captcha_factory/3dcaptcha/3DCaptcha.php")!= std::string::npos ||
                             result.find("type=\"password\" name=\"link-password\"")!= std::string::npos)
                         {
                             post.clear();
                             continue;
                         }
-                        if(result.find("fancycaptcha\\.css\"")!= std::string::npos)
+                        if(result.find("fancycaptcha.css\"")!= std::string::npos)
                         {
                             log_string("Safelinking.net: failed with fancycaptcha = " + url, LOG_DEBUG);
                             return PLUGIN_ERROR;
@@ -184,14 +184,14 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                         break;
                     }
                     if (result.find("api.recaptcha.net")!= std::string::npos ||
-                        result.find("http://safelinking\\.net/includes/captcha_factory/securimage/securimage_show\\.php\\?sid=")!= std::string::npos ||
-                        result.find("http://safelinking\\.net/includes/captcha_factory/3dcaptcha/3DCaptcha\\.php")!= std::string::npos ||
+                        result.find("http://safelinking.net/includes/captcha_factory/securimage/securimage_show.php?sid=")!= std::string::npos ||
+                        result.find("http://safelinking.net/includes/captcha_factory/3dcaptcha/3DCaptcha.php")!= std::string::npos ||
                         result.find("type=\"password\" name=\"link-password\"")!= std::string::npos)
                     {
                         log_string("Safelinking.net: failed after 6 times = " + url, LOG_DEBUG);
                         return PLUGIN_ERROR;
                     }
-                    if(result.find(">All links are dead\\.<")!= std::string::npos)
+                    if(result.find(">All links are dead.<")!= std::string::npos)
                     {
                         log_string("Safelinking.net: Perhaps wrong URL or the download is not available anymore.",LOG_DEBUG);
                         return PLUGIN_FILE_NOT_FOUND;
