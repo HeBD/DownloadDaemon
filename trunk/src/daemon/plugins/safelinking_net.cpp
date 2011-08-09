@@ -34,11 +34,14 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	handle->setopt(CURLOPT_WRITEDATA, &result);
         handle->setopt(CURLOPT_COOKIEFILE, "");
         int res = handle->perform();
+        string url = get_url();
+        log_string("Safelinking.net: trying to decrypt " + url,LOG_DEBUG);
         if(res != 0)
         {
-                return PLUGIN_CONNECTION_ERROR;
+            log_string("Safelinking.net: handle failed! Please check internet connection or contact safelinking.net",LOG_DEBUG);
+            return PLUGIN_CONNECTION_ERROR;
         }
-	string newurl;
+        //string newurl;
 	download_container urls;
 	//download_container* dlc = get_dl_container();
 	//download *download = get_dl_ptr();
@@ -46,23 +49,30 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         try {
                 //file deleted?
                 if(result.find("(\"This link does not exist.\"|ERROR - this link does not exist)")!= std::string::npos)
+                {
+                    log_string("Safelinking.net: Perhaps wrong URL or the download is not available anymore.",LOG_DEBUG);
                     return PLUGIN_FILE_NOT_FOUND;
+                }
                 if(result.find(">Not yet checked</span>")!= std::string::npos)
+                {
+                    log_string("Safelinking.net: Not yet checked",LOG_DEBUG);
                     return PLUGIN_ERROR;
+                }
                 if(result.find("To use reCAPTCHA you must get an API key from")!= std::string::npos)
                 {
+                    log_string("Safelinking.net: Server error, please contact the safelinking.net support!", LOG_DEBUG);
                     set_wait_time(600);
                     return PLUGIN_SERVER_OVERLOADED;
                 }
-                string url = get_url();
                 if(url.find("/d/")== std::string::npos)
                 {
                     string rslt="";
-                    string post = "post-protect=1";
                     handle->setopt(CURLOPT_HEADER, 0);
+                    handle->setopt(CURLOPT_FOLLOWLOCATION,0);
                     //because sometimes the first time it doesnt work
                     for (int i = 0; i <= 5; i++)
                     {
+                        string post = "post-protect=1";
                         if(result.find("type=\"password\" name=\"link-password\"")!= std::string::npos)
                         {
                             //password protected => ask user for password
@@ -74,12 +84,18 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                         {
                             //recaptcha!!!
                             size_t urlpos = result.find("<iframe src=\"http://api.recaptcha.net/noscript?k=");
-                            if(urlpos == string::npos) return PLUGIN_ERROR;
+                            if(urlpos == string::npos)
+                            {
+                                log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+                                return PLUGIN_ERROR;
+                            }
                             urlpos += 49;
-                            string id = result.substr(urlpos, result.find("\"", urlpos) - urlpos - 12); //&amp;error=1"
-                            log_string("Safelinking plugin: id = : " + id, LOG_DEBUG);
+                            string id = result.substr(urlpos, result.find("\"", urlpos) - urlpos);
+                            replace_all(id,"&amp;error=1","");
+                            log_string("Safelinking.net: id = : " + id, LOG_DEBUG);
                             if(id == "")
                             {
+                                log_string("Safelinking.net: reCaptcha ID or div couldn't be found...",LOG_DEBUG);
                                 return PLUGIN_ERROR;
                             }
                             else
@@ -87,20 +103,37 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                                 handle->setopt(CURLOPT_URL, "http://api.recaptcha.net/challenge?k=" + id);
                                 /* follow redirect needed as google redirects to another domain */
                                 handle->setopt(CURLOPT_FOLLOWLOCATION,1);
+                                handle->setopt(CURLOPT_POST, 0);
                                 result.clear();
                                 handle->perform();
-                                urlpos = result.find("challenge : '");
-                                if(urlpos == string::npos) return PLUGIN_ERROR;
+                                //log_string("Safelinking.net = "+result,LOG_DEBUG);
+                                size_t urlpos = result.find("challenge : '");
+                                if(urlpos == string::npos)
+                                {
+                                    log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+                                    return PLUGIN_ERROR;
+                                }
                                 urlpos += 13;
                                 string challenge = result.substr(urlpos, result.find("',", urlpos) - urlpos);
                                 urlpos = result.find("server : '");
-                                if(urlpos == string::npos) return PLUGIN_ERROR;
-                                urlpos += 9;
+                                if(urlpos == string::npos)
+                                {
+                                    log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+                                    return PLUGIN_ERROR;
+                                }
+                                urlpos += 10;
                                 string server = result.substr(urlpos, result.find("',", urlpos) - urlpos);
                                 if(challenge == "" || server == "")
+                                {
+                                    log_string("Safelinking.net: Recaptcha Module fails: " + url,LOG_DEBUG);
                                     return PLUGIN_ERROR;
+                                }
                                 string captchaAddress = server + "image?c=" + challenge;
-                                std::string captcha_text = Captcha.process_image(captchaAddress, "jpg", "", -1, false, false, captcha::SOLVE_MANUAL);
+                                log_string("Safelinking.net: captchastring=" + captchaAddress,LOG_DEBUG);
+                                handle->setopt(CURLOPT_URL, captchaAddress);
+                                result.clear();
+                                handle->perform();
+                                std::string captcha_text = Captcha.process_image(result, "jpg", "", -1, false, false, captcha::SOLVE_MANUAL);
                                 post += "&recaptcha_challenge_field=" + challenge;
                                 post += "&recaptcha_response_field=" + captcha_text;
                             }
@@ -108,22 +141,27 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                         else if(size_t urlpos=result.find("http://safelinking\\.net/includes/captcha_factory/securimage/securimage_show\\.php\\?sid=")!= std::string::npos)
                         {
                             string captchaAddress = result.substr(urlpos, result.find("\"", urlpos) - urlpos);
-                            std::string captcha_text = Captcha.process_image(captchaAddress, "jpg", "", -1, false, false, captcha::SOLVE_MANUAL);
+                            handle->setopt(CURLOPT_URL, captchaAddress);
+                            result.clear();
+                            handle->perform();
+                            std::string captcha_text = Captcha.process_image(result, "jpg", "", -1, false, false, captcha::SOLVE_MANUAL);
                             post+= "&securimage_response_field=" + captcha_text;
                         }
                         else if(size_t urlpos=result.find("http://safelinking\\.net/includes/captcha_factory/3dcaptcha/3DCaptcha\\.php")!= std::string::npos)
                         {
                             string captchaAddress = result.substr(urlpos, result.find("\"", urlpos) - urlpos);
-                            std::string captcha_text = Captcha.process_image(captchaAddress, "jpg", "", -1, false, false, captcha::SOLVE_MANUAL);
+                            handle->setopt(CURLOPT_URL, captchaAddress);
+                            result.clear();
+                            handle->perform();
+                            std::string captcha_text = Captcha.process_image(result, "jpg", "", -1, false, false, captcha::SOLVE_MANUAL);
                             post+= "&3dcaptcha_response_field=" + captcha_text;
                         }
-                        else if(size_t urlpos=result.find("fancycaptcha\\.css\"")!= std::string::npos)
+                        else if(result.find("fancycaptcha\\.css\"")!= std::string::npos)
                         {
                             handle->setopt(CURLOPT_URL, "http://safelinking.net/includes/captcha_factory/fancycaptcha.php");
                             result.clear();
                             handle->perform();
-                            std::remove(result.begin(), result.end(), ' ');
-                            post+= "&fancy-captcha=" + result;
+                            post+= "&fancy-captcha=" + trim_string(result);
                         }
                         handle->setopt(CURLOPT_COPYPOSTFIELDS, post);
                         handle->setopt(CURLOPT_URL, get_url());
@@ -135,11 +173,12 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                             result.find("http://safelinking\\.net/includes/captcha_factory/3dcaptcha/3DCaptcha\\.php")!= std::string::npos ||
                             result.find("type=\"password\" name=\"link-password\"")!= std::string::npos)
                         {
+                            post.clear();
                             continue;
                         }
                         if(result.find("fancycaptcha\\.css\"")!= std::string::npos)
                         {
-                            log_string("Safelinking plugin failed with fancycaptcha = " + url, LOG_DEBUG);
+                            log_string("Safelinking.net: failed with fancycaptcha = " + url, LOG_DEBUG);
                             return PLUGIN_ERROR;
                         }
                         break;
@@ -149,22 +188,55 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                         result.find("http://safelinking\\.net/includes/captcha_factory/3dcaptcha/3DCaptcha\\.php")!= std::string::npos ||
                         result.find("type=\"password\" name=\"link-password\"")!= std::string::npos)
                     {
-                        log_string("Safelinking plugin failed after 6 times = " + url, LOG_DEBUG);
+                        log_string("Safelinking.net: failed after 6 times = " + url, LOG_DEBUG);
                         return PLUGIN_ERROR;
                     }
                     if(result.find(">All links are dead\\.<")!= std::string::npos)
                     {
+                        log_string("Safelinking.net: Perhaps wrong URL or the download is not available anymore.",LOG_DEBUG);
                         return PLUGIN_FILE_NOT_FOUND;
                     }
-                    /*to do=>add links to download + testing plugin!*/
+                    log_string("so far, so good!\ngetting direct links",LOG_DEBUG);
+                    size_t urlpos = result.find("class=\"link-box\" id=\"direct-links\"");
+                    if(urlpos == string::npos)
+                    {
+                        log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+                        return PLUGIN_ERROR;
+                    }
+                    urlpos += 39;
+                    string list = result.substr(urlpos, result.find("</div>", urlpos) - urlpos);
+                    list = trim_string(list);
+                    //log_string("Safelinking.net: list = " + list,LOG_DEBUG);
+                    vector<string> links = split_string(list, "</a><br />");
+                    for(size_t i = 0; i < links.size()-1; i++)
+                    {
+                        links[i] = trim_string(links[i]);
+                        //log_string("Safelinking.net: splitted-link =" + links[i],LOG_DEBUG);
+                        size_t urlpos = links[i].find("<a href=\"");
+                        if(urlpos == string::npos)
+                        {
+                            log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+                            return PLUGIN_ERROR;
+                        }
+                        urlpos += 9;
+                        //log_string("Safelinking.net: urlpos=" + int_to_string(urlpos),LOG_DEBUG);
+                        string temp = links[i].substr(urlpos, links[i].find("\"", urlpos) - urlpos);
+                        //log_string("Safelinking.net: link=" + temp,LOG_DEBUG);
+                        urls.add_download(temp, "");
+                    }
                 }
                 else
                 {
                     //just a simple redirect
+                    log_string("simple redirect!",LOG_DEBUG);
                     size_t urlpos = result.find("Location:");
-                    if(urlpos == string::npos) return PLUGIN_ERROR;
+                    if(urlpos == string::npos)
+                    {
+                        log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+                        return PLUGIN_ERROR;
+                    }
                     urlpos += 10;
-                    newurl = result.substr(urlpos, result.find("\n", urlpos) - urlpos);
+                    string newurl = result.substr(urlpos, result.find("\n", urlpos) - urlpos);
                     urls.add_download(set_correct_url(newurl),"");
                 }
         } catch(...) {}
