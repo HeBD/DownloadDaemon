@@ -460,7 +460,7 @@ bool loadcontainer(const std::string extension, const std::string& content, down
         lock_guard<mutex> lock(container_mutex);
         std::string filename = "/tmp/dd_container_file" + extension;
         log_string("Extension:" + extension,LOG_DEBUG);
-        ofstream ofs(filename);
+        ofstream ofs(filename.c_str());
         if(!ofs.good()) {
                 log_string("Could not decode " + extension + " container: Unable to write temporary file", LOG_ERR);
                 return false;
