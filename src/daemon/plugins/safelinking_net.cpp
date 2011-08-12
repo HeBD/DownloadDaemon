@@ -78,15 +78,19 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                         {
                             //password protected => ask user for password
                             handle->setopt(CURLOPT_URL, rslt);
+                            string newresult = result;
                             result.clear();
                             handle->perform();
                             std::string captcha_text = Captcha.process_image(result, "png", "", -1, false, false, captcha::SOLVE_MANUAL);
                             post += "&link-password=" + captcha_text;
+                            result = newresult;
+                            log_string("Safelinking.net: password = " + captcha_text,LOG_DEBUG);
 
                         }
                         if(result.find("api.recaptcha.net")!= std::string::npos)
                         {
                             //recaptcha!!!
+                            log_string("Safelinking.net: Using recaptcha",LOG_DEBUG);
                             size_t urlpos = result.find("<iframe src=\"http://api.recaptcha.net/noscript?k=");
                             if(urlpos == string::npos)
                             {
