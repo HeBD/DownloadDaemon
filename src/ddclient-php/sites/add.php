@@ -71,10 +71,24 @@ if($connect != 'SUCCESS') {
 		}
 	}
 } elseif(isset($_FILES['dlcfile'])) {
+	$path_info = pathinfo($_FILES['dlcfile']['name']);
+    	$extension = $path_info['extension'];
 	$tmpfn = $_FILES['dlcfile']['tmp_name'];
+	//echo "extension = " . $extension;
 	$fh = fopen($tmpfn, "r");
 	$data = fread($fh, filesize($tmpfn));
-	send_all($socket, "DDP PKG CONTAINER DLC:" . $data);
+	if($extension == "RSDF" || $extension == "rsdf")
+	{
+		send_all($socket, "DDP PKG CONTAINER RSDF:" . $data);
+	}
+	elseif($extension == "ccf" || $extension == "CCF")
+	{
+		send_all($socket, "DDP PKG CONTAINER CCF:" . $data);
+	}
+	else
+	{
+		send_all($socket, "DDP PKG CONTAINER DLC:" . $data);
+	}
 	$recv = "";
 	recv_all($socket, $recv); // we can ignore this.. DD doesn't really check for success, because it would take too long
 }
