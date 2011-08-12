@@ -805,66 +805,78 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 	}
 	data = data.substr(data.find(":") + 1);
 	if(type == "RSDF") {
-		replace_all(data, "\r\n", "");
-		replace_all(data, "\n", "");
-		replace_all(data, "\r", "");
-
-		std::string key = ascii_hex_to_bin("8C35192D964DC3182C6F84F3252239EB4A320D2500000000");
-		string iv = ascii_hex_to_bin("a3d5a33cb95ac1f5cbdb1ad25cb0a7aa");
-
-		std::basic_stringstream<unsigned char> container;
-		data = ascii_hex_to_bin(data);
-		replace_all(data, "\r\n", "");
-		replace_all(data, "\n", "");
-		replace_all(data, "\r", "");
-
-		vector<string> linkvec = split_string(data, "==", false);
-		data.clear();
-		for(size_t i = 0; i < linkvec.size(); ++i) {
-			data += base64_decode(linkvec[i]);
-		}
-
-		AES_KEY aes_key;
-		AES_set_encrypt_key((const unsigned char*)key.c_str(), 192, &aes_key);
-		char iv_c[16];
-		memcpy(iv_c, iv.c_str(), 16);
-		char* plaintext = new char[data.size() + 17];
-		memset(plaintext, 0, data.size() + 17);
-		AES_cfb8_encrypt((const unsigned char*)data.c_str(), (unsigned char*)plaintext, data.size() + 17, &aes_key, (unsigned char*)iv_c, 0, AES_DECRYPT);
-                string result(plaintext, data.size());
-		delete [] plaintext;
-
-		bool first = true;
-		int pkg_id = global_download_list.add_package("");
-		replace_all(result, "CCF: ", "\r\n");
-		trim_string(result);
-                vector<string> final = split_string(result, "\r\n");
-                if(final.size() == 1) { // sometimes the CCF: is missing
-                    final = split_string(result, "http://");
-                    final.erase(final.begin());
-                    for(vector<string>::iterator it = final.begin(); it != final.end(); ++it) *it = "http://" + *it;
-                }
-		for(vector<string>::iterator it = final.begin(); it != final.end(); ++it) {
-			trim_string(*it);
-                        if(it->empty()) continue;
-			download* dl = new download(*it);
-			global_download_list.add_dl_to_pkg(dl, pkg_id);
-			if(first) {
-				string pkg_name = filename_from_url(*it);
-				size_t last_dot = pkg_name.find_last_of(".");
-				if(last_dot != 0)
-					pkg_name = pkg_name.substr(0, last_dot);
-				global_download_list.set_pkg_name(pkg_id, pkg_name);
-				first = false;
-			}
-		}
-		*sock << "100 SUCCESS";
-		return;
+//		replace_all(data, "\r\n", "");
+//		replace_all(data, "\n", "");
+//		replace_all(data, "\r", "");
+//
+//		std::string key = ascii_hex_to_bin("8C35192D964DC3182C6F84F3252239EB4A320D2500000000");
+//		string iv = ascii_hex_to_bin("a3d5a33cb95ac1f5cbdb1ad25cb0a7aa");
+//
+//		std::basic_stringstream<unsigned char> container;
+//		data = ascii_hex_to_bin(data);
+//		replace_all(data, "\r\n", "");
+//		replace_all(data, "\n", "");
+//		replace_all(data, "\r", "");
+//
+//		vector<string> linkvec = split_string(data, "==", false);
+//		data.clear();
+//		for(size_t i = 0; i < linkvec.size(); ++i) {
+//			data += base64_decode(linkvec[i]);
+//		}
+//
+//		AES_KEY aes_key;
+//		AES_set_encrypt_key((const unsigned char*)key.c_str(), 192, &aes_key);
+//		char iv_c[16];
+//		memcpy(iv_c, iv.c_str(), 16);
+//		char* plaintext = new char[data.size() + 17];
+//		memset(plaintext, 0, data.size() + 17);
+//		AES_cfb8_encrypt((const unsigned char*)data.c_str(), (unsigned char*)plaintext, data.size() + 17, &aes_key, (unsigned char*)iv_c, 0, AES_DECRYPT);
+//                string result(plaintext, data.size());
+//		delete [] plaintext;
+//
+//		bool first = true;
+//		int pkg_id = global_download_list.add_package("");
+//		replace_all(result, "CCF: ", "\r\n");
+//		trim_string(result);
+//                vector<string> final = split_string(result, "\r\n");
+//                if(final.size() == 1) { // sometimes the CCF: is missing
+//                    final = split_string(result, "http://");
+//                    final.erase(final.begin());
+//                    for(vector<string>::iterator it = final.begin(); it != final.end(); ++it) *it = "http://" + *it;
+//                }
+//		for(vector<string>::iterator it = final.begin(); it != final.end(); ++it) {
+//			trim_string(*it);
+//                        if(it->empty()) continue;
+//			download* dl = new download(*it);
+//			global_download_list.add_dl_to_pkg(dl, pkg_id);
+//			if(first) {
+//				string pkg_name = filename_from_url(*it);
+//				size_t last_dot = pkg_name.find_last_of(".");
+//				if(last_dot != 0)
+//					pkg_name = pkg_name.substr(0, last_dot);
+//				global_download_list.set_pkg_name(pkg_id, pkg_name);
+//				first = false;
+//			}
+//		}
+//		*sock << "100 SUCCESS";
+                log_string("Received RSDF container",LOG_DEBUG);
+                thread d(std::bind(loadcontainer, ".rsdf",data, (download_container*)0));
+                d.detach();
+                *sock << "100 SUCCESS";
+                return;
 	} else if(type == "DLC") {
+            log_string("Received DLC Container",LOG_DEBUG);
 		thread d(std::bind(decode_dlc, data, (download_container*)0));
 		d.detach();
 		*sock << "100 SUCCESS";
 		return;
+        } else if(type == "CCF")
+        {
+            log_string("Received CCF Container",LOG_DEBUG);
+            thread d(std::bind(loadcontainer, ".ccf",data, (download_container*)0));
+            d.detach();
+            *sock << "100 SUCCESS";
+            return;
 	} else {
 		*sock << "112 UNSUPPORTED";
 		return;
