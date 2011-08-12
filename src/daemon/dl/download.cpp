@@ -961,7 +961,7 @@ void download::preset_file_status() {
 
 	plugin_input pinp;
 
-        bool (*file_status_func)(download_container& pkg_container, download*, int id, plugin_input& pinp, plugin_output &outp);
+        bool (*file_status_func)(download_container& dlc, download*, int id, plugin_input& pinp, plugin_output &outp);
 	bool ret = plugin_cache.load_function(get_host(), "get_file_status_init", file_status_func, false);
 
 	if (!ret)  {
