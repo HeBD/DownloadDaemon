@@ -2346,7 +2346,7 @@ void ddclient_gui::on_load_container(){
 	if(!check_connection(true, "Please connect before adding Containers."))
 		return;
 
-	QFileDialog dialog(this,tsl("Add Download Container"), "", "*.rsdf ; *.dlc");
+        QFileDialog dialog(this,tsl("Add Download Container"), "", "*.rsdf ; *.dlc ; *.ccf");
 	dialog.setModal(true);
 	dialog.setFileMode(QFileDialog::ExistingFiles);
 
@@ -2365,7 +2365,9 @@ void ddclient_gui::on_load_container(){
 		try{
 			if (fn.rfind("rsdf") == fn.size() - 4 || fn.rfind("RSDF") == fn.size() - 4)
 				dclient->pkg_container("RSDF", content);
-			else
+                        else if (fn.rfind("ccf") == fn.size() - 3 || fn.rfind("CCF") == fn.size() - 3)
+                                dclient->pkg_container("CCF", content);
+                        else
 				dclient->pkg_container("DLC", content);
 		}catch(client_exception &e){}
 	}

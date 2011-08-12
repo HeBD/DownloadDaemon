@@ -169,6 +169,14 @@ class download_container;
  */
 bool decode_dlc(const std::string& content, download_container *container = NULL);
 
+/** add a container (dlc,rsdf,ccf) to the download list
+  * @param extension (.dlc,.rsdf,.ccf)
+  * @param content the contents of the container file
+  * @returns true on success
+  */
+
+bool loadcontainer(const std::string extension, const std::string& content, download_container* container=NULL);
+
 #ifdef BACKTRACE_ON_CRASH
 void print_backtrace(int sig);
 #endif
