@@ -126,6 +126,7 @@ class ddclient_gui : public QMainWindow{
 
     signals:
         void do_reload();
+        void captcha_error();
 
     private:
         void add_bars();

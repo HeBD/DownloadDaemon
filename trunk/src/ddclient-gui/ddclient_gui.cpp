@@ -101,6 +101,7 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), mx(QMutex::R
 	}
 
 	connect(this, SIGNAL(do_reload()), this, SLOT(on_reload()));
+        connect(this, SIGNAL(captcha_error()), this, SLOT(on_enter_captcha()));
 
 	int interval = file.get_int_value("update_interval");
 
@@ -620,6 +621,7 @@ string ddclient_gui::build_status(string &status_text, string &time_left, downlo
 
 			status_text = lang["Enter Captcha"] + ".";
 			time_left = "";
+                        emit captcha_error();
 
 		}else if(dl.wait > 0 && dl.error == "PLUGIN_SUCCESS"){ // waiting time > 0
 			status_text = lang["Download running. Waiting."];
