@@ -410,6 +410,12 @@ void ddclient_gui::add_bars(){
 	down_action = new QAction(QIcon("img/7_down.png"), "&" + tsl("Decrease Priority"), this);
 	down_action->setStatusTip(tsl("Decrease Priority of the selected Download"));
 
+        top_action = new QAction(QIcon("img/go_top.png"), "&" + tsl("Move to Top"), this);
+        top_action->setStatusTip(tsl("Move the selected Download to the top"));
+
+        bottom_action = new QAction(QIcon("img/go_bottom.png"), "&" + tsl("Move to Bottom"), this);
+        bottom_action->setStatusTip(tsl("Move the selected Download to the bottom"));
+
 	QToolBar *connect_menu = addToolBar(tsl("Connect"));
 	connect_menu->addAction(connect_action);
 
@@ -421,8 +427,10 @@ void ddclient_gui::add_bars(){
 	download_menu->addAction(activate_download_action);
 	download_menu->addAction(deactivate_download_action);
 	download_menu->addSeparator();
+        download_menu->addAction(top_action);
 	download_menu->addAction(up_action);
 	download_menu->addAction(down_action);
+        download_menu->addAction(bottom_action);
 	download_menu->addSeparator();
 	download_menu->addAction(captcha_action);
 
@@ -452,6 +460,8 @@ void ddclient_gui::add_bars(){
 	connect(about_action, SIGNAL(triggered()), this, SLOT(on_about()));
 	connect(up_action, SIGNAL(triggered()), this, SLOT(on_priority_up()));
 	connect(down_action, SIGNAL(triggered()), this, SLOT(on_priority_down()));
+        connect(up_action, SIGNAL(triggered()), this, SLOT(on_priority_top()));
+        connect(down_action, SIGNAL(triggered()), this, SLOT(on_priority_bottom()));
 	connect(captcha_action, SIGNAL(triggered()), this, SLOT(on_enter_captcha()));
 
 	connect(donate_action, SIGNAL(triggered()), this, SLOT(donate_sf()));
@@ -513,6 +523,12 @@ void ddclient_gui::update_bars(){
 
 	down_action->setText("&" + tsl("Decrease Priority"));
 	down_action->setStatusTip(tsl("Decrease Priority of the selected Download"));
+
+        top_action->setText("&" + tsl("Move to Top"));
+        top_action->setStatusTip(tsl("Move the selected Download to the top"));
+
+        bottom_action->setText("&" + tsl("Move to Bottom"));
+        bottom_action->setStatusTip(tsl("Move the selected Download to the bottom"));
 }
 
 
@@ -1990,6 +2006,72 @@ void ddclient_gui::on_priority_down(){
 	get_content();
 }
 
+
+void ddclient_gui::on_priority_top(){
+        QMutexLocker lock(&mx);
+        if(!check_connection(true, "Please connect before decreasing Priority."))
+                return;
+
+        get_selected_lines();
+
+        if(!check_selected()){
+                return;
+        }
+
+        vector<selected_info>::reverse_iterator rit;
+        int id;
+        string error_string;
+
+        for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); ++rit){
+
+                if(!(rit->package)) // we have a real download
+                        id = content.at(rit->parent_row).dls.at(rit->row).id;
+                else // we have a package selected
+                        id = content.at(rit->row).id;
+
+                try{
+                        if(rit->package)
+                                dclient->package_priority_top(id);
+                        else
+                                dclient->priority_top(id);
+                }catch(client_exception &e){}
+        }
+
+        get_content();
+}
+
+void ddclient_gui::on_priority_bottom(){
+        QMutexLocker lock(&mx);
+        if(!check_connection(true, "Please connect before decreasing Priority."))
+                return;
+
+        get_selected_lines();
+
+        if(!check_selected()){
+                return;
+        }
+
+        vector<selected_info>::reverse_iterator rit;
+        int id;
+        string error_string;
+
+        for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); ++rit){
+
+                if(!(rit->package)) // we have a real download
+                        id = content.at(rit->parent_row).dls.at(rit->row).id;
+                else // we have a package selected
+                        id = content.at(rit->row).id;
+
+                try{
+                        if(rit->package)
+                                dclient->package_priority_bottom(id);
+                        else
+                                dclient->priority_bottom(id);
+                }catch(client_exception &e){}
+        }
+
+        get_content();
+}
 
 void ddclient_gui::on_enter_captcha(){
 	QMutexLocker lock(&mx);

@@ -158,6 +158,16 @@ class downloadc{
         */
         void priority_down(int id);
 
+        /** Set priority of a download to the top of the list, successful or not shown by exception
+          * @param id ID of the download
+        */
+        void priority_top(int id);
+
+        /** Set priority of a download to the bottom of the list, successful or not shown by exception
+          * @param id ID of the download
+        */
+        void priority_bottom(int id);
+
         /** Activates a download, successful or not shown by exception
         *   @param id ID of the download
         */
@@ -205,10 +215,20 @@ class downloadc{
         */
         void package_priority_up(int id);
 
-        /** Sets priority of a package up
+        /** Sets priority of a package down
         *   @param id ID of the package
         */
         void package_priority_down(int id);
+
+        /** Sets priority of a package top
+        *   @param id ID of the package
+        */
+        void package_priority_top(int id);
+
+        /** Sets priority of a package bottom
+        *   @param id ID of the package
+        */
+        void package_priority_bottom(int id);
 
         /** Checks the existance of a package
         *   @param id ID of the package

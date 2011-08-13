@@ -577,6 +577,46 @@ void downloadc::priority_up(int id){
     check_error_code(answer);
 }
 
+void downloadc::priority_top(int id)
+{
+    std::lock_guard<std::recursive_mutex> lock(mx);
+    check_connection();
+
+    skip_update = true;
+
+    std::string answer;
+    std::stringstream id_str;
+    id_str << id;
+
+    mysock->send("DDP DL TOP " + id_str.str());
+    mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
+    skip_update = false;
+    check_error_code(answer);
+}
+
+void downloadc::priority_bottom(int id)
+{
+    std::lock_guard<std::recursive_mutex> lock(mx);
+    check_connection();
+
+    skip_update = true;
+
+    std::string answer;
+    std::stringstream id_str;
+    id_str << id;
+
+    mysock->send("DDP DL BOTTOM " + id_str.str());
+    mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
+    skip_update = false;
+    check_error_code(answer);
+}
+
 
 void downloadc::priority_down(int id){
     std::lock_guard<std::recursive_mutex> lock(mx);
@@ -796,6 +836,43 @@ void downloadc::package_priority_up(int id){
     skip_update = false;
 }
 
+void downloadc::package_priority_top(int id)
+{
+    std::lock_guard<std::recursive_mutex> lock(mx);
+    check_connection();
+
+    skip_update = true;
+
+    std::string answer;
+    std::stringstream id_str;
+    id_str << id;
+
+    mysock->send("DDP PKG TOP " + id_str.str());
+    mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
+    skip_update = false;
+}
+
+void downloadc::package_priority_bottom(int id)
+{
+    std::lock_guard<std::recursive_mutex> lock(mx);
+    check_connection();
+
+    skip_update = true;
+
+    std::string answer;
+    std::stringstream id_str;
+    id_str << id;
+
+    mysock->send("DDP PKG BOTTOM " + id_str.str());
+    mysock->recv(answer);
+    while(!check_correct_answer(answer))
+        mysock->recv(answer);
+
+    skip_update = false;
+}
 
 void downloadc::package_priority_down(int id){
     std::lock_guard<std::recursive_mutex> lock(mx);
