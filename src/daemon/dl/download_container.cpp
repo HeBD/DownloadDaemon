@@ -122,6 +122,19 @@ int download_container::move_up(int id) {
 	return LIST_SUCCESS;
 }
 
+int download_container::move_top(int id)
+{
+    log_string("move to the top",LOG_DEBUG);
+    while(move_up(id)!=LIST_ID);
+    return LIST_SUCCESS;
+}
+
+int download_container::move_bottom(int id)
+{
+    while(move_down(id)!=LIST_ID);
+    return LIST_SUCCESS;
+}
+
 int download_container::move_down(int id) {
 	lock_guard<recursive_mutex> lock(download_mutex);
 	download_container::iterator it;

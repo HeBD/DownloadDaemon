@@ -79,6 +79,12 @@ void connection_manager::reason_to_string(reason_type t, std::string &ret) {
 	 case MOVEDOWN:
 		  ret = "MOVEDOWN";
 		  return;
+         case MOVEBOTTOM:
+                  ret = "MOVEBOTTOM";
+                  return;
+         case MOVETOP:
+                  ret = "MOVETOP";
+                  return;
 	 }
 }
 

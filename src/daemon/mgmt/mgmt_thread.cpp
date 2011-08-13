@@ -315,6 +315,7 @@ void target_dl(std::string &data, tkSock *sock) {
 			return;
 		}
 		trim_string(data);
+                log_string("up",LOG_DEBUG);
 		target_dl_up(data, sock);
 
 	} else if(data.find("DOWN") == 0) {
@@ -324,9 +325,30 @@ void target_dl(std::string &data, tkSock *sock) {
 			return;
 		}
 		trim_string(data);
+                log_string("down",LOG_DEBUG);
 		target_dl_down(data, sock);
 
-	} else if(data.find("ACTIVATE") == 0) {
+        } else if(data.find("TOP") == 0) {
+            data = data.substr(3);
+            if(data.length() == 0 || !isspace(data[0])) {
+                    *sock << "101 PROTOCOL";
+                    return;
+            }
+            trim_string(data);
+            log_string("top",LOG_DEBUG);
+            target_dl_top(data, sock);
+
+        } else if(data.find("BOTTOM") == 0) {
+            data = data.substr(6);
+            if(data.length() == 0 || !isspace(data[0])) {
+                    *sock << "101 PROTOCOL";
+                    return;
+            }
+            trim_string(data);
+            log_string("bottom",LOG_DEBUG);
+            target_dl_bottom(data, sock);
+
+        } else if(data.find("ACTIVATE") == 0) {
 		data = data.substr(8);
 		if(data.length() == 0 || !isspace(data[0])) {
 			*sock << "101 PROTOCOL";
@@ -486,7 +508,10 @@ void target_dl_up(std::string &data, tkSock *sock) {
 		if(id.first == LIST_ID)
 			fail = true;
 		else
+                {
 			global_download_list.move_dl(id, package_container::DIRECTION_UP);
+                        log_string("download_up",LOG_DEBUG);
+                }
 	}
 	if(!fail)
 		*sock << "100 SUCCESS";
@@ -508,12 +533,66 @@ void target_dl_down(std::string &data, tkSock *sock) {
 		if(id.first == LIST_ID)
 			fail = true;
 		else
+                {
 			global_download_list.move_dl(id, package_container::DIRECTION_DOWN);
+                        log_string("download_down",LOG_DEBUG);
+                }
+
 	}
 	if(!fail)
 		*sock << "100 SUCCESS";
 	else
 		*sock << "104 ID";
+}
+
+void target_dl_top(std::string &data, tkSock *sock) {
+        if(data.empty()) {
+                *sock << "104 ID";
+                return;
+        }
+        dlindex id;
+        bool fail = false;
+        vector<string> ids = split_string(data, ",");
+        for(vector<string>::iterator it = ids.begin(); it != ids.end(); ++it) {
+                id.second = atoi(it->c_str());
+                id.first = global_download_list.pkg_that_contains_download(id.second);
+                if(id.first == LIST_ID)
+                        fail = true;
+                else
+                {
+                        global_download_list.move_dl(id, package_container::DIRECTION_TOP);
+                        log_string("download_top",LOG_DEBUG);
+                }
+        }
+        if(!fail)
+                *sock << "100 SUCCESS";
+        else
+                *sock << "104 ID";
+}
+
+void target_dl_bottom(std::string &data, tkSock *sock) {
+        if(data.empty()) {
+                *sock << "104 ID";
+                return;
+        }
+        dlindex id;
+        bool fail = false;
+        vector<string> ids = split_string(data, ",");
+        for(vector<string>::iterator it = ids.begin(); it != ids.end(); ++it) {
+                id.second = atoi(it->c_str());
+                id.first = global_download_list.pkg_that_contains_download(id.second);
+                if(id.first == LIST_ID)
+                        fail = true;
+                else
+                {
+                        global_download_list.move_dl(id, package_container::DIRECTION_BOTTOM);
+                        log_string("package_bottom",LOG_DEBUG);
+                }
+        }
+        if(!fail)
+                *sock << "100 SUCCESS";
+        else
+                *sock << "104 ID";
 }
 
 void target_dl_activate(std::string &data, tkSock *sock) {
@@ -658,7 +737,23 @@ void target_pkg(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_pkg_down(data, sock);
-	} else if(data.find("EXISTS") == 0) {
+        } else if(data.find("TOP") == 0) {
+            data = data.substr(3);
+            if(data.length() == 0 || !isspace(data[0])) {
+                    *sock << "101 PROTOCOL";
+                    return;
+            }
+            trim_string(data);
+            target_pkg_top(data, sock);
+        } else if(data.find("BOTTOM") == 0) {
+            data = data.substr(6);
+            if(data.length() == 0 || !isspace(data[0])) {
+                    *sock << "101 PROTOCOL";
+                    return;
+            }
+            trim_string(data);
+            target_pkg_bottom(data, sock);
+        } else if(data.find("EXISTS") == 0) {
 		data = data.substr(6);
 		if(data.length() == 0 || !isspace(data[0])) {
 			*sock << "101 PROTOCOL";
@@ -727,6 +822,18 @@ void target_pkg_del(std::string &data, tkSock *sock) {
 void target_pkg_up(std::string &data, tkSock *sock) {
 	global_download_list.move_pkg(atoi(data.c_str()), package_container::DIRECTION_UP);
 	*sock << "100 SUCCESS";
+}
+
+void target_pkg_top(std::string &data, tkSock *sock) {
+        log_string("package_top",LOG_DEBUG);
+        global_download_list.move_pkg(atoi(data.c_str()), package_container::DIRECTION_TOP);
+        *sock << "100 SUCCESS";
+}
+
+void target_pkg_bottom(std::string &data, tkSock *sock) {
+        log_string("package_bottom",LOG_DEBUG);
+        global_download_list.move_pkg(atoi(data.c_str()), package_container::DIRECTION_BOTTOM);
+        *sock << "100 SUCCESS";
 }
 
 void target_pkg_down(std::string &data, tkSock *sock) {

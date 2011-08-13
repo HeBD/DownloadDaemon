@@ -514,7 +514,9 @@ void  package_container::move_dl(dlindex dl, package_container::direction d) {
 	package_container::iterator it = package_by_id(dl.first);
 	if(it == packages.end()) return;
 	if(d == DIRECTION_UP) (*it)->move_up(dl.second);
-	else (*it)->move_down(dl.second);
+        else if(d == DIRECTION_DOWN) (*it)->move_down(dl.second);
+        else if(d == DIRECTION_TOP) (*it)->move_top(dl.second);
+        else (*it)->move_bottom(dl.second);
 	start_next_downloadable();
 }
 
@@ -531,6 +533,23 @@ void  package_container::move_pkg(int dl, package_container::direction d) {
 		*it = *it2;
 		*it2 = tmp;
 	}
+        if(d == DIRECTION_TOP && it != packages.begin())
+        {
+            (*it)->post_subscribers(connection_manager::MOVETOP);
+            it2 = packages.begin();
+            download_container* tmp = *it;
+            *it = *it2;
+            *it2 = tmp;
+        }
+        if(d == DIRECTION_BOTTOM)
+        {
+            (*it)->post_subscribers(connection_manager::MOVEBOTTOM);
+            it2 = packages.end();
+            --it2;
+            download_container* tmp = *it;
+            *it = *it2;
+            *it2 = tmp;
+        }
 	if(d == DIRECTION_DOWN) {
 		(*it)->post_subscribers(connection_manager::MOVEDOWN);
 		++it;
