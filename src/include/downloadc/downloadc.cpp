@@ -876,7 +876,7 @@ void downloadc::package_priority_top(int id)
 
     mysock->send("DDP PKG TOP " + id_str.str());
     mysock->recv(answer);
-    log_string("priority top\nid:" + id_str.str() + "\nanswer:"+answer);
+    //log_string("priority top\nid:" + id_str.str() + "\nanswer:"+answer);
     while(!check_correct_answer(answer))
         mysock->recv(answer);
 
@@ -896,7 +896,7 @@ void downloadc::package_priority_bottom(int id)
 
     mysock->send("DDP PKG BOTTOM " + id_str.str());
     mysock->recv(answer);
-    log_string("priority bottom\nid:" + id_str.str() + "\nanswer:"+answer);
+    //log_string("priority bottom\nid:" + id_str.str() + "\nanswer:"+answer);
     while(!check_correct_answer(answer))
         mysock->recv(answer);
 
