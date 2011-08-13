@@ -15,6 +15,7 @@
 #include <config.h>
 #ifndef USE_STD_THREAD
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 namespace std {
     using namespace boost;
 }
