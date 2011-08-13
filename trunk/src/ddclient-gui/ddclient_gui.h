@@ -167,6 +167,8 @@ class ddclient_gui : public QMainWindow{
         QItemSelectionModel *selection_model;
         QLabel *status_connection;
 
+        QLabel *debug;
+
         QMenu *file_menu;
         QMenu *help_menu;
         QMenu *download_menu;

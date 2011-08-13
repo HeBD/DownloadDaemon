@@ -23,6 +23,12 @@ namespace std {
 #include <thread>
 #endif
 
+#ifdef HAVE_SYSLOG_H
+        #include <syslog.h>
+#else
+        enum { LOG_ERR, LOG_WARNING, LOG_DEBUG };
+#endif
+
 #include <vector>
 #include <map>
 #include <utility>
@@ -39,7 +45,7 @@ enum file_delete{ del_file = 0, dont_delete, dont_know };
 enum subs_type{ SUBS_NONE = 0, SUBS_DOWNLOADS, SUBS_CONFIG };
 
 /** Reason Type, describes the reason for an update. */
-enum reason_type{ R_UPDATE = 0, R_NEW, R_DELETE, R_MOVEUP, R_MOVEDOWN };
+enum reason_type{ R_UPDATE = 0, R_NEW, R_DELETE, R_MOVEUP, R_MOVEDOWN, R_MOVEBOTTOM, R_MOVETOP };
 
 
 /** Download Struct, defines one single Download */
@@ -396,6 +402,7 @@ class downloadc{
         *   @returns the same string
         */
         static const std::string& trim_string(std::string &str);
+        void log_string(const std::string logstr, int level=LOG_DEBUG);
 
     private:
 

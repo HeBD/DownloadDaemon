@@ -55,6 +55,9 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), mx(QMutex::R
 	status_connection = new QLabel(tsl("Not connected"));
 	statusBar()->insertPermanentWidget(0, status_connection);
 
+        debug = new QLabel(tsl("debug"));
+        //statusBar()->insertPermanentWidget(1,debug);
+
 	add_bars();
 	add_list_components();
 
@@ -460,8 +463,8 @@ void ddclient_gui::add_bars(){
 	connect(about_action, SIGNAL(triggered()), this, SLOT(on_about()));
 	connect(up_action, SIGNAL(triggered()), this, SLOT(on_priority_up()));
 	connect(down_action, SIGNAL(triggered()), this, SLOT(on_priority_down()));
-        connect(up_action, SIGNAL(triggered()), this, SLOT(on_priority_top()));
-        connect(down_action, SIGNAL(triggered()), this, SLOT(on_priority_bottom()));
+        connect(top_action, SIGNAL(triggered()), this, SLOT(on_priority_top()));
+        connect(bottom_action, SIGNAL(triggered()), this, SLOT(on_priority_bottom()));
 	connect(captcha_action, SIGNAL(triggered()), this, SLOT(on_enter_captcha()));
 
 	connect(donate_action, SIGNAL(triggered()), this, SLOT(donate_sf()));
@@ -1009,8 +1012,16 @@ void ddclient_gui::update_packages(){
 			}else if(up_it->reason == R_MOVEDOWN){
 				// same as MOVEUP
 				reload_list = true;
-				continue;
-			}
+                                continue;
+                        }else if(up_it->reason == R_MOVETOP){
+                               // same as MOVEUP
+                               reload_list = true;
+                               continue;
+                        }else if(up_it->reason == R_MOVEBOTTOM){
+                               // same as MOVEUP
+                               reload_list = true;
+                                continue;
+                        }
 
 			line_nr = 0;
 			for(pkg_it = content.begin(); pkg_it != content.end(); ++pkg_it){
@@ -1051,7 +1062,15 @@ void ddclient_gui::update_packages(){
 				// same as MOVEUP
 				reload_list = true;
 				continue;
-			}
+                        }else if(up_it->reason == R_MOVETOP){
+                            // same as MOVEUP
+                            reload_list = true;
+                            continue;
+                        }else if(up_it->reason == R_MOVEBOTTOM){
+                            // same as MOVEUP
+                            reload_list = true;
+                            continue;
+                        }
 
 			// find right package
 			line_nr = 0;
@@ -1953,7 +1972,7 @@ void ddclient_gui::on_priority_up(){
 
 	vector<selected_info>::iterator it;
 	int id;
-
+        debug->setText(tsl("Up clicked"));
 	for(it = selected_lines.begin(); it<selected_lines.end(); ++it){
 
 		if(!(it->package)) // we have a real download
@@ -1963,9 +1982,15 @@ void ddclient_gui::on_priority_up(){
 
 		try{
 			if(it->package)
+                        {
+                                dclient->log_string("package up",LOG_DEBUG);
 				dclient->package_priority_up(id);
+                        }
 			else
+                        {
+                                dclient->log_string("download up",LOG_DEBUG);
 				dclient->priority_up(id);
+                        }
 		}catch(client_exception &e){}
 	}
 
@@ -1997,9 +2022,15 @@ void ddclient_gui::on_priority_down(){
 
 		try{
 			if(rit->package)
+                        {
+                                dclient->log_string("package down");
 				dclient->package_priority_down(id);
+                        }
 			else
+                        {
+                                dclient->log_string("download down");
 				dclient->priority_down(id);
+                        }
 		}catch(client_exception &e){}
 	}
 
@@ -2031,9 +2062,17 @@ void ddclient_gui::on_priority_top(){
 
                 try{
                         if(rit->package)
+                        {
+                                dclient->log_string("pkg top",LOG_DEBUG);
                                 dclient->package_priority_top(id);
+
+                        }
                         else
+                        {
+                                dclient->log_string("download top");
                                 dclient->priority_top(id);
+
+                        }
                 }catch(client_exception &e){}
         }
 
@@ -2055,6 +2094,7 @@ void ddclient_gui::on_priority_bottom(){
         int id;
         string error_string;
 
+
         for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); ++rit){
 
                 if(!(rit->package)) // we have a real download
@@ -2064,9 +2104,15 @@ void ddclient_gui::on_priority_bottom(){
 
                 try{
                         if(rit->package)
+                        {
+                                dclient->log_string("pkg bottom");
                                 dclient->package_priority_bottom(id);
+                        }
                         else
+                        {
+                                dclient->log_string("download_bottom");
                                 dclient->priority_bottom(id);
+                        }
                 }catch(client_exception &e){}
         }
 

@@ -73,6 +73,18 @@ public:
 	*/
 	int move_down(int id);
 
+        /** Moves a download to the top
+        *	@param id download ID
+        *	@returns LIST_ID if it's already the top download, LIST_PERMISSION if the function fails because the dlist can't be written, LIST_SUCCESS on success
+        */
+        int move_top(int id);
+
+        /** Moves a download to the bottom
+        *	@param id download ID to move down
+        *	@returns LIST_ID if it's already the top download, LIST_PERMISSION if the function fails because the dlist can't be written, LIST_SUCCESS on success
+        */
+        int move_bottom(int id);
+
 	/** Activates an inactive download
 	*	@param id download ID to activate
 	*	@returns LIST_ID if an invalid ID is given, LIST_PROPERTY if the download is already active, LIST_PERMISSION if the dlist file can't be written, LIST_SUCCESS
