@@ -1972,7 +1972,6 @@ void ddclient_gui::on_priority_up(){
 
 	vector<selected_info>::iterator it;
 	int id;
-        debug->setText(tsl("Up clicked"));
 	for(it = selected_lines.begin(); it<selected_lines.end(); ++it){
 
 		if(!(it->package)) // we have a real download
