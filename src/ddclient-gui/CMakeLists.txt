@@ -131,6 +131,8 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/key.png D
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/project-support.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/coins.png DESTINATION share/ddclient-gui/img/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/bullet_captcha.png DESTINATION share/ddclient-gui/img/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/go_top.png DESTINATION share/ddclient-gui/img/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/ddclient-gui/img/go_bottom.png DESTINATION share/ddclient-gui/img/)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-gui.png DESTINATION share/pixmaps)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../share/pixmaps/ddclient-gui.xpm DESTINATION share/pixmaps)
