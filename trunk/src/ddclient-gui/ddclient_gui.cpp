@@ -2289,8 +2289,11 @@ void ddclient_gui::on_paste(){
 		// parse url and title
 		urlend = line.find("|");
 
-		if(urlend != string::npos){ // we have a title
-			url = line.substr(0, urlend);
+                if(urlend != string::npos)
+                { // we have a title or rapishare.com
+                    if(line.find("/#!linklist")==std::string::npos)
+                    {
+                        url = line.substr(0, urlend);
 			line = line.substr(urlend+1);
 
 			urlend = line.find("|");
@@ -2299,6 +2302,12 @@ void ddclient_gui::on_paste(){
 				urlend = line.find("|");
 			}
 			title = line;
+                    }
+                    else
+                    {
+                        url = line;
+                        title = "";
+                    }
 
 		}else{ // no title
 			url = line;
