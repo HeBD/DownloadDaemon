@@ -176,9 +176,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
             size_t n = url.find("/?f=");
             n += 4;
             string id = url.substr(n);
-            log_string("Megaupload.com: id=" + id,LOG_DEBUG);
+            //log_string("Megaupload.com: id=" + id,LOG_DEBUG);
             string newurl = "http://www.megaupload.com/xml/folderfiles.php?folderid=" + id;
-            log_string("Megaupload.com: url=" + newurl,LOG_DEBUG);
+            //log_string("Megaupload.com: url=" + newurl,LOG_DEBUG);
             handle->setopt(CURLOPT_URL, newurl.c_str());
             handle->setopt(CURLOPT_POST, 0);
             handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
@@ -190,7 +190,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
             {
                     return PLUGIN_CONNECTION_ERROR;
             }
-            log_string("Megaupload.com: result=" + result,LOG_DEBUG);
+            //log_string("Megaupload.com: result=" + result,LOG_DEBUG);
             vector<string> links = split_string(result, "</ROW>");
             for(size_t i = 0; i < links.size()-1; i++)
             {
@@ -202,12 +202,10 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
                 }
                 urlpos += 5;
                 string temp = links[i].substr(urlpos, links[i].find("\"", urlpos) - urlpos);
-                log_string("Megaupload.com: link=" + temp,LOG_DEBUG);
+                //log_string("Megaupload.com: link=" + temp,LOG_DEBUG);
                 urls.add_download(temp, "");
             }
             replace_this_download(urls);
-
-
         }
 	return PLUGIN_SUCCESS;
 }

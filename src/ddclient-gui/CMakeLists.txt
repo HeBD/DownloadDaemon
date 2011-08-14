@@ -18,6 +18,7 @@ SET(ddclient_gui_SRCS   ddclient_gui.cpp
                         ../include/downloadc/client_exception.cpp
                         ../include/cfgfile/cfgfile.cpp)
 
+
 SET(moc_headers			ddclient_gui.h
                         ddclient_gui_connect_dialog.h
                         ddclient_gui_add_dialog.h

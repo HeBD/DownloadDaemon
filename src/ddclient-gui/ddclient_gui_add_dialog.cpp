@@ -420,20 +420,29 @@ void add_dialog::ok(){
         // parse url and title
         urlend = line.find("|");
 
-        if(urlend != string::npos){ // we have a title
-            url = line.substr(0, urlend);
-            line = line.substr(urlend+1);
+        if(urlend != string::npos)
+        { // we have a title or rapishare.com
+            if(line.find("/#!linklist")==std::string::npos)
+            {
+                url = line.substr(0, urlend);
+                line = line.substr(urlend+1);
 
-            urlend = line.find("|");
-            while(urlend != string::npos){ // exchange every | with a blank (there can be some | inside the title too)
-                line.at(urlend) = ' ';
                 urlend = line.find("|");
+                while(urlend != string::npos){ // exchange every | with a blank (there can be some | inside the title too)
+                        line.at(urlend) = ' ';
+                        urlend = line.find("|");
+                }
+                title = line;
             }
-            title = line;
+            else
+            {
+                url = line;
+                title = "";
+            }
 
         }else{ // no title
-            url = line;
-            title = "";
+                url = line;
+                title = "";
         }
 
         if(separate){ // don't send it now, find fitting packages first
