@@ -1982,12 +1982,10 @@ void ddclient_gui::on_priority_up(){
 		try{
 			if(it->package)
                         {
-                                dclient->log_string("package up",LOG_DEBUG);
-				dclient->package_priority_up(id);
+                                dclient->package_priority_up(id);
                         }
 			else
                         {
-                                dclient->log_string("download up",LOG_DEBUG);
 				dclient->priority_up(id);
                         }
 		}catch(client_exception &e){}
@@ -2022,12 +2020,10 @@ void ddclient_gui::on_priority_down(){
 		try{
 			if(rit->package)
                         {
-                                dclient->log_string("package down");
 				dclient->package_priority_down(id);
                         }
 			else
                         {
-                                dclient->log_string("download down");
 				dclient->priority_down(id);
                         }
 		}catch(client_exception &e){}
@@ -2062,13 +2058,11 @@ void ddclient_gui::on_priority_top(){
                 try{
                         if(rit->package)
                         {
-                                dclient->log_string("pkg top",LOG_DEBUG);
                                 dclient->package_priority_top(id);
 
                         }
                         else
                         {
-                                dclient->log_string("download top");
                                 dclient->priority_top(id);
 
                         }
@@ -2104,12 +2098,10 @@ void ddclient_gui::on_priority_bottom(){
                 try{
                         if(rit->package)
                         {
-                                dclient->log_string("pkg bottom");
                                 dclient->package_priority_bottom(id);
                         }
                         else
                         {
-                                dclient->log_string("download_bottom");
                                 dclient->priority_bottom(id);
                         }
                 }catch(client_exception &e){}
@@ -2540,7 +2532,7 @@ void ddclient_gui::on_reload(){
 		if(content.size() == 0) // the content gets deleted whenever the language changes
 			list_model->setRowCount(0);
 
-		compare_packages();
+                compare_packages();
 
 		content.clear();
 		content = new_content;
