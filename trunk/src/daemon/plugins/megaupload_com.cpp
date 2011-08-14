@@ -28,7 +28,10 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
         ddcurl* handle = get_handle();
 	string result;
-	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+        string url = get_url();
+        if(url.find("/?f=")== std::string::npos)
+        {
+            if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
 		handle->setopt(CURLOPT_COOKIEFILE, "");
 		handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
 		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
@@ -50,12 +53,12 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		outp.download_url = get_url();
 
 		return PLUGIN_SUCCESS;
-	}
+            }
 
-	bool done = false;
-	// so we can never get in an infinite loop..
-	int while_tries = 0;
-	while(!done && while_tries < 100) {
+            bool done = false;
+            // so we can never get in an infinite loop..
+            int while_tries = 0;
+            while(!done && while_tries < 100) {
 		++while_tries;
 		handle->setopt(CURLOPT_URL, get_url());
 		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
@@ -164,8 +167,48 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			return PLUGIN_ERROR;
 		}
 
-	}
+            }
+        }
+        else
+        {
+            //megaupload folder
+            download_container urls;
+            size_t n = url.find("/?f=");
+            n += 4;
+            string id = url.substr(n);
+            log_string("Megaupload.com: id=" + id,LOG_DEBUG);
+            string newurl = "http://www.megaupload.com/xml/folderfiles.php?folderid=" + id;
+            log_string("Megaupload.com: url=" + newurl,LOG_DEBUG);
+            handle->setopt(CURLOPT_URL, newurl.c_str());
+            handle->setopt(CURLOPT_POST, 0);
+            handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+            handle->setopt(CURLOPT_WRITEDATA, &result);
+            handle->setopt(CURLOPT_COOKIEFILE, "");
+            result.clear();
+            int res = handle->perform();
+            if(res != 0)
+            {
+                    return PLUGIN_CONNECTION_ERROR;
+            }
+            log_string("Megaupload.com: result=" + result,LOG_DEBUG);
+            vector<string> links = split_string(result, "</ROW>");
+            for(size_t i = 0; i < links.size()-1; i++)
+            {
+                size_t urlpos = links[i].find("url=\"");
+                if(urlpos == string::npos)
+                {
+                    log_string("Megaupload.com: urlpos is at end of file",LOG_DEBUG);
+                    return PLUGIN_ERROR;
+                }
+                urlpos += 5;
+                string temp = links[i].substr(urlpos, links[i].find("\"", urlpos) - urlpos);
+                log_string("Megaupload.com: link=" + temp,LOG_DEBUG);
+                urls.add_download(temp, "");
+            }
+            replace_this_download(urls);
 
+
+        }
 	return PLUGIN_SUCCESS;
 }
 

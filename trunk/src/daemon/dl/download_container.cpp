@@ -599,7 +599,7 @@ void download_container::post_subscribers(connection_manager::reason_type reason
 	connection_manager::reason_to_string(reason, reason_str);
 
 	line = reason_str + ":" + line;
-	if((line != last_posted_message) || (reason == connection_manager::MOVEDOWN) || (reason == connection_manager::MOVEUP)) {
+        if((line != last_posted_message) || (reason == connection_manager::MOVEDOWN) || (reason == connection_manager::MOVEUP) || (reason == connection_manager::MOVETOP) || (reason == connection_manager::MOVEBOTTOM)) {
 		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
 		last_posted_message = line;
 	}
