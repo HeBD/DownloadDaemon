@@ -26,6 +26,7 @@ SET(moc_headers			ddclient_gui.h
 
 SET(libs                "")
 
+
 IF(WIN32)
         SET(GUI_TYPE WIN32)
         IF(MINGW)
