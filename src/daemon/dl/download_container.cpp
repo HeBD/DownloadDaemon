@@ -124,14 +124,69 @@ int download_container::move_up(int id) {
 
 int download_container::move_top(int id)
 {
-    log_string("move to the top",LOG_DEBUG);
-    while(move_up(id)!=LIST_ID);
+    download_container::iterator first,second;
+    first = download_list.begin();
+    second = download_list.begin();
+    download_container::iterator it;
+    int location1 = 0;
+    for(it = download_list.begin(); it != download_list.end(); ++it)
+    {
+        if((*it)->get_id() == id)
+        {
+            break;
+        }
+        ++location1;
+    }
+    if(it == download_list.end() || it == download_list.begin() || location1 == 0)
+    {
+        return LIST_ID;
+    }
+    (*it)->post_subscribers(connection_manager::MOVETOP);
+    for(int i = 0; i < location1; ++i)
+            ++first;
+    second = first;
+    --second;
+    while(download_list.begin()!=first) //move to the top
+    {
+        //log_string("Bottom! id1:" + int_to_string((*first)->get_id()) + " id2: " + int_to_string((*second)->get_id()),LOG_DEBUG);
+        iter_swap(first, second);
+        --first;
+        --second;
+    }
     return LIST_SUCCESS;
 }
 
 int download_container::move_bottom(int id)
 {
-    while(move_down(id)!=LIST_ID);
+    download_container::iterator first,second,last;
+    first = download_list.begin();
+    last = download_list.end();
+    --last;
+    download_container::iterator it;
+    int location1 = 0;
+    for(it = download_list.begin(); it != download_list.end(); ++it)
+    {
+        if((*it)->get_id() == id)
+        {
+            break;
+        }
+        ++location1;
+    }
+    if(it == download_list.end() || it == --download_list.end())
+    {
+        return LIST_ID;
+    }
+    (*it)->post_subscribers(connection_manager::MOVEBOTTOM);
+    for(int i = 0; i < location1; ++i)
+            ++first;
+    second = first;
+    ++second;
+    while(last!=first) //move to the end
+    {
+        iter_swap(first,second);
+        ++first;
+        ++second;
+    }
     return LIST_SUCCESS;
 }
 

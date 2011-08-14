@@ -81,7 +81,7 @@ public:
 
         /** Moves a download to the bottom
         *	@param id download ID to move down
-        *	@returns LIST_ID if it's already the top download, LIST_PERMISSION if the function fails because the dlist can't be written, LIST_SUCCESS on success
+        *	@returns LIST_ID if it's already the bottom download, LIST_PERMISSION if the function fails because the dlist can't be written, LIST_SUCCESS on success
         */
         int move_bottom(int id);
 
