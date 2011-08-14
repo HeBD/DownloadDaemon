@@ -1007,19 +1007,21 @@ void ddclient_gui::update_packages(){
 				// instead of messing with the list we just get the whole new list
 				// user interactions cause a new list reload anyway (and if another connected user used move it really gets confusing)
 				// => reload is the easiest way to keep the list up to date
-				reload_list = true;
+                                // using autoreload instead => concurrency = better!
+                                reload_list = false;
 				continue;
 			}else if(up_it->reason == R_MOVEDOWN){
 				// same as MOVEUP
-				reload_list = true;
+                                reload_list = false;
                                 continue;
                         }else if(up_it->reason == R_MOVETOP){
                                // same as MOVEUP
-                               reload_list = true;
+                                //false
+                               reload_list = false;
                                continue;
                         }else if(up_it->reason == R_MOVEBOTTOM){
                                // same as MOVEUP
-                               reload_list = true;
+                               reload_list = false;
                                 continue;
                         }
 
@@ -1056,19 +1058,21 @@ void ddclient_gui::update_packages(){
 				// instead of messing with the list we just get the whole new list
 				// user interactions cause a new list reload anyway (and if another connected user used move it really gets confusing)
 				// => reload is the easiest way to keep the list up to date
-				reload_list = true;
+                                // use autoreload instead => concurrency is better!
+                                reload_list = false;
 				continue;
 			}else if(up_it->reason == R_MOVEDOWN){
 				// same as MOVEUP
-				reload_list = true;
+                                reload_list = false;
 				continue;
                         }else if(up_it->reason == R_MOVETOP){
                             // same as MOVEUP
-                            reload_list = true;
+                            //take a while for getting al the switches => not reloading -> concurrency
+                            reload_list = false;
                             continue;
                         }else if(up_it->reason == R_MOVEBOTTOM){
                             // same as MOVEUP
-                            reload_list = true;
+                            reload_list = false;
                             continue;
                         }
 
@@ -1397,7 +1401,7 @@ void ddclient_gui::compare_downloads(QModelIndex &index, std::vector<package>::i
 			dl->setText(QString("%1").arg(new_dit->id));
 		}
 
-		if(old_dit->title != new_dit->title){
+                if(old_dit->title != new_dit->title){
 			dl = pkg->child(dl_line, 1);
 			dl->setText(QString(new_dit->title.c_str()));
 		}
