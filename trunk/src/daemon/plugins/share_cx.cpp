@@ -39,7 +39,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	}
 	//is file deleted?
 	if (resultstr.find("File not found") != std::string::npos)
-	    return PLUGIN_FILE_NOT_FOUND;
+		return PLUGIN_FILE_NOT_FOUND;
 
 	// Setup post data Form1
 	string op          = search_between(resultstr, "name=\"op\" value=\"", "\"");

@@ -73,17 +73,17 @@ public:
 	*/
 	int move_down(int id);
 
-        /** Moves a download to the top
-        *	@param id download ID
-        *	@returns LIST_ID if it's already the top download, LIST_PERMISSION if the function fails because the dlist can't be written, LIST_SUCCESS on success
-        */
-        int move_top(int id);
+	/** Moves a download to the top
+	*	@param id download ID
+	*	@returns LIST_ID if it's already the top download, LIST_PERMISSION if the function fails because the dlist can't be written, LIST_SUCCESS on success
+	*/
+	int move_top(int id);
 
-        /** Moves a download to the bottom
-        *	@param id download ID to move down
-        *	@returns LIST_ID if it's already the bottom download, LIST_PERMISSION if the function fails because the dlist can't be written, LIST_SUCCESS on success
-        */
-        int move_bottom(int id);
+	/** Moves a download to the bottom
+	*	@param id download ID to move down
+	*	@returns LIST_ID if it's already the bottom download, LIST_PERMISSION if the function fails because the dlist can't be written, LIST_SUCCESS on success
+	*/
+	int move_bottom(int id);
 
 	/** Activates an inactive download
 	*	@param id download ID to activate
@@ -199,7 +199,7 @@ public:
 	/** Gets the lowest unused ID that should be used for the next download
 	*	@returns ID
 	*/
-        int get_next_id();
+	int get_next_id();
 
 	/** Stops a download and sets its status
 	*	@param id Download to stop

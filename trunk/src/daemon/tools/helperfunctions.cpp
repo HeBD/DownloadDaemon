@@ -50,10 +50,10 @@ namespace {
 }
 
 std::string possible_vars = ",enable_resume,enable_reconnect,downloading_active,download_timing_start,download_timing_end,download_folder,"
-					   "simultaneous_downloads,log_level,log_procedure,mgmt_max_connections,mgmt_port,mgmt_password,mgmt_accept_enc,max_dl_speed,"
-					   "bind_addr,dlist_file,auth_fail_wait,write_error_wait,plugin_fail_wait,connection_lost_wait,refuse_existing_links,overwrite_files,"
-					   "recursive_ftp_download,assume_proxys_online,proxy_list,enable_pkg_extractor,pkg_extractor_passwords,download_to_subdirs,"
-					   "precheck_links,captcha_retrys,delete_extracted_archives,captcha_manual,captcha_max_wait,";
+                            "simultaneous_downloads,log_level,log_procedure,mgmt_max_connections,mgmt_port,mgmt_password,mgmt_accept_enc,max_dl_speed,"
+                            "bind_addr,dlist_file,auth_fail_wait,write_error_wait,plugin_fail_wait,connection_lost_wait,refuse_existing_links,overwrite_files,"
+                            "recursive_ftp_download,assume_proxys_online,proxy_list,enable_pkg_extractor,pkg_extractor_passwords,download_to_subdirs,"
+                            "precheck_links,captcha_retrys,delete_extracted_archives,captcha_manual,captcha_max_wait,";
 std::string insecure_vars = ",daemon_umask,gocr_binary,tar_path,unrar_path,unzip_path,post_download_script,";
 
 
@@ -369,9 +369,9 @@ void make_valid_filename(std::string &fn) {
 	replace_all(fn, "'", "");
 	replace_all(fn, "\"", "");
 	replace_all(fn, ";", "");
-        replace_all(fn, "[", "");
-        replace_all(fn, "]", "");
-        replace_all(fn, " ", "_");
+	replace_all(fn, "[", "");
+	replace_all(fn, "]", "");
+	replace_all(fn, " ", "_");
 }
 
 std::string ascii_hex_to_bin(std::string ascii_hex) {
@@ -451,72 +451,72 @@ string unescape_string(string s, string escape_chars, const string &escape_seque
 
 bool decode_dlc(const std::string& content, download_container* container)
 {
-    return loadcontainer(".dlc", content, container);
+	return loadcontainer(".dlc", content, container);
 }
 
 std::mutex container_mutex;
 bool loadcontainer(const std::string extension, const std::string& content, download_container* container) //(".rsdf", *.ccf, *.dlc);
 {
-        lock_guard<mutex> lock(container_mutex);
-        std::string filename = "/tmp/dd_container_file" + extension;
-        log_string("Extension:" + extension,LOG_DEBUG);
-        ofstream ofs(filename.c_str());
-        if(!ofs.good()) {
-                log_string("Could not decode " + extension + " container: Unable to write temporary file", LOG_ERR);
-                return false;
-        }
-        ofs.write(content.c_str(), content.size());
-        ofs.close();
-        ddcurl handle;
-        handle.setopt(CURLOPT_URL, "http://dcrypt.it/decrypt/upload");
-        struct curl_httppost* post = NULL;
-        struct curl_httppost* last = NULL;
-        curl_formadd(&post, &last, CURLFORM_COPYNAME, "dlcfile", CURLFORM_FILE, filename.c_str(), CURLFORM_END);
-        handle.setopt(CURLOPT_HTTPPOST, post);
-        handle.setopt(CURLOPT_WRITEFUNCTION, write_to_string);
-        std::string result;
-        handle.setopt(CURLOPT_WRITEDATA, &result);
-        if(handle.perform() != CURLE_OK) {
-                log_string("Failed to decrypt " + extension + " container: Couldn't contact decryption-server", LOG_ERR);
-                curl_formfree(post);
-                return false;
-        }
-        //log_string("Loadcontainer: result" + result, LOG_DEBUG);
-        handle.cleanup();
-        curl_formfree(post);
-        try {
-                //log_string("Loadcontainer: result" + result, LOG_DEBUG);
-                result = result.substr(result.find("[") + 2);
-                result = result.substr(0, result.find("]") - 1);
-                vector<string> links = split_string(result, "\", \"");
-                //debug
-                for(size_t i = 0; i < links.size()-1; i++)
-                {
-                    log_string("Loadcontainer: splitted-link =" + links[i],LOG_DEBUG);
-                }
-                if(extension == ".dlc" || extension == ".ccf")
-                {
-                    links.erase(links.begin()); // the first link has nothing to do with the download
-                }
-                int pkg_id = -1;
-                if(container == 0) {
-                        pkg_id = global_download_list.add_package("");
-                }
-                for(vector<string>::iterator it = links.begin(); it != links.end(); ++it) {
-                        if(pkg_id != -1) {
-                                download *dl = new download(*it);
-                                global_download_list.add_dl_to_pkg(dl, pkg_id);
-                        } else if(container) {
-                                container->add_download(*it, "");
-                        }
-                }
-                if(pkg_id != -1)
-                        global_download_list.start_next_downloadable();
-        } catch(std::exception &e) {
-            log_string("Failed to decrypt " + extension + " container: " + string(e.what()), LOG_ERR);
-                return false;
-        }
-        return true;
+	lock_guard<mutex> lock(container_mutex);
+	std::string filename = "/tmp/dd_container_file" + extension;
+	log_string("Extension:" + extension,LOG_DEBUG);
+	ofstream ofs(filename.c_str());
+	if(!ofs.good()) {
+		log_string("Could not decode " + extension + " container: Unable to write temporary file", LOG_ERR);
+		return false;
+	}
+	ofs.write(content.c_str(), content.size());
+	ofs.close();
+	ddcurl handle;
+	handle.setopt(CURLOPT_URL, "http://dcrypt.it/decrypt/upload");
+	struct curl_httppost* post = NULL;
+	struct curl_httppost* last = NULL;
+	curl_formadd(&post, &last, CURLFORM_COPYNAME, "dlcfile", CURLFORM_FILE, filename.c_str(), CURLFORM_END);
+	handle.setopt(CURLOPT_HTTPPOST, post);
+	handle.setopt(CURLOPT_WRITEFUNCTION, write_to_string);
+	std::string result;
+	handle.setopt(CURLOPT_WRITEDATA, &result);
+	if(handle.perform() != CURLE_OK) {
+		log_string("Failed to decrypt " + extension + " container: Couldn't contact decryption-server", LOG_ERR);
+		curl_formfree(post);
+		return false;
+	}
+	//log_string("Loadcontainer: result" + result, LOG_DEBUG);
+	handle.cleanup();
+	curl_formfree(post);
+	try {
+		//log_string("Loadcontainer: result" + result, LOG_DEBUG);
+		result = result.substr(result.find("[") + 2);
+		result = result.substr(0, result.find("]") - 1);
+		vector<string> links = split_string(result, "\", \"");
+		//debug
+		for(size_t i = 0; i < links.size()-1; i++)
+		{
+			log_string("Loadcontainer: splitted-link =" + links[i],LOG_DEBUG);
+		}
+		if(extension == ".dlc" || extension == ".ccf")
+		{
+			links.erase(links.begin()); // the first link has nothing to do with the download
+		}
+		int pkg_id = -1;
+		if(container == 0) {
+			pkg_id = global_download_list.add_package("");
+		}
+		for(vector<string>::iterator it = links.begin(); it != links.end(); ++it) {
+			if(pkg_id != -1) {
+				download *dl = new download(*it);
+				global_download_list.add_dl_to_pkg(dl, pkg_id);
+			} else if(container) {
+				container->add_download(*it, "");
+			}
+		}
+		if(pkg_id != -1)
+			global_download_list.start_next_downloadable();
+	} catch(std::exception &e) {
+		log_string("Failed to decrypt " + extension + " container: " + string(e.what()), LOG_ERR);
+		return false;
+	}
+	return true;
 }
 
 

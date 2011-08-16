@@ -96,8 +96,8 @@ bool reconnect::do_reconnect() {
 			}
 			if(j == 0) {
 				// child process
-				 execlp("/bin/sh", "/bin/sh", "-c", buf, (char *)NULL);
-				 exit(0);
+				execlp("/bin/sh", "/bin/sh", "-c", buf, (char *)NULL);
+				exit(0);
 			}
 		}
 

@@ -59,7 +59,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	fileexists->setopt(CURLOPT_WRITEDATA, &result);
 	ret = fileexists->perform();
 	if (result.find("This file was deleted") != std::string::npos)
-	    return PLUGIN_FILE_NOT_FOUND;
+		return PLUGIN_FILE_NOT_FOUND;
 
 	//Setup post data for Premium Account
 	result.clear();
