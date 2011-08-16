@@ -28,10 +28,10 @@ bool use_premium = true; // if the premium limit is exceeded, this is set to fal
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	get_handle()->setopt(CURLOPT_SSL_VERIFYPEER, 0);
 
-		string url = get_url();
-		string result;
-		result.clear();
-		if(url.find("/users/")==std::string::npos && url.find("#!linklist|")==std::string::npos)
+	string url = get_url();
+	string result;
+	result.clear();
+	if(url.find("/users/")==std::string::npos && url.find("#!linklist|")==std::string::npos)
 	{
 		log_string("Rapidshare.com: no folder",LOG_DEBUG);
 		if(!inp.premium_user.empty() && !inp.premium_password.empty() && use_premium) {
