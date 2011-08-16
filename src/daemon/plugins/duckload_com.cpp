@@ -39,7 +39,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	}
 
 	if (resultstr.find("File not found.") != std::string::npos)
-	    return PLUGIN_FILE_NOT_FOUND;
+		return PLUGIN_FILE_NOT_FOUND;
 
 	string post_form = search_between(resultstr, "method=\"post\">","</button>");
 	string name = search_between(post_form, "input type=\"hidden\" name=\"","\"");

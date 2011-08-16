@@ -67,7 +67,7 @@ void mgmt_thread_main() {
 
 	if(!main_sock.bind(mgmt_port, bind_addr)) {
 		log_string("bind failed for remote-management-socket. Maybe you specified a port wich is "
-				   "already in use or you don't have read-permissions to the config-file.", LOG_ERR);
+		           "already in use or you don't have read-permissions to the config-file.", LOG_ERR);
 		exit(-1);
 	}
 
@@ -315,7 +315,7 @@ void target_dl(std::string &data, tkSock *sock) {
 			return;
 		}
 		trim_string(data);
-                log_string("up",LOG_DEBUG);
+		log_string("up",LOG_DEBUG);
 		target_dl_up(data, sock);
 
 	} else if(data.find("DOWN") == 0) {
@@ -325,30 +325,30 @@ void target_dl(std::string &data, tkSock *sock) {
 			return;
 		}
 		trim_string(data);
-                log_string("down",LOG_DEBUG);
+		log_string("down",LOG_DEBUG);
 		target_dl_down(data, sock);
 
-        } else if(data.find("TOP") == 0) {
-            data = data.substr(3);
-            if(data.length() == 0 || !isspace(data[0])) {
-                    *sock << "101 PROTOCOL";
-                    return;
-            }
-            trim_string(data);
-            log_string("top",LOG_DEBUG);
-            target_dl_top(data, sock);
+	} else if(data.find("TOP") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		log_string("top",LOG_DEBUG);
+		target_dl_top(data, sock);
 
-        } else if(data.find("BOTTOM") == 0) {
-            data = data.substr(6);
-            if(data.length() == 0 || !isspace(data[0])) {
-                    *sock << "101 PROTOCOL";
-                    return;
-            }
-            trim_string(data);
-            log_string("bottom",LOG_DEBUG);
-            target_dl_bottom(data, sock);
+	} else if(data.find("BOTTOM") == 0) {
+		data = data.substr(6);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		log_string("bottom",LOG_DEBUG);
+		target_dl_bottom(data, sock);
 
-        } else if(data.find("ACTIVATE") == 0) {
+	} else if(data.find("ACTIVATE") == 0) {
 		data = data.substr(8);
 		if(data.length() == 0 || !isspace(data[0])) {
 			*sock << "101 PROTOCOL";
@@ -508,10 +508,10 @@ void target_dl_up(std::string &data, tkSock *sock) {
 		if(id.first == LIST_ID)
 			fail = true;
 		else
-                {
+		{
 			global_download_list.move_dl(id, package_container::DIRECTION_UP);
-                        log_string("download_up",LOG_DEBUG);
-                }
+			log_string("download_up",LOG_DEBUG);
+		}
 	}
 	if(!fail)
 		*sock << "100 SUCCESS";
@@ -533,10 +533,10 @@ void target_dl_down(std::string &data, tkSock *sock) {
 		if(id.first == LIST_ID)
 			fail = true;
 		else
-                {
+		{
 			global_download_list.move_dl(id, package_container::DIRECTION_DOWN);
-                        log_string("download_down",LOG_DEBUG);
-                }
+			log_string("download_down",LOG_DEBUG);
+		}
 
 	}
 	if(!fail)
@@ -546,53 +546,53 @@ void target_dl_down(std::string &data, tkSock *sock) {
 }
 
 void target_dl_top(std::string &data, tkSock *sock) {
-        if(data.empty()) {
-                *sock << "104 ID";
-                return;
-        }
-        dlindex id;
-        bool fail = false;
-        vector<string> ids = split_string(data, ",");
-        for(vector<string>::iterator it = ids.begin(); it != ids.end(); ++it) {
-                id.second = atoi(it->c_str());
-                id.first = global_download_list.pkg_that_contains_download(id.second);
-                if(id.first == LIST_ID)
-                        fail = true;
-                else
-                {
-                        global_download_list.move_dl(id, package_container::DIRECTION_TOP);
-                        log_string("download_top",LOG_DEBUG);
-                }
-        }
-        if(!fail)
-                *sock << "100 SUCCESS";
-        else
-                *sock << "104 ID";
+	if(data.empty()) {
+		*sock << "104 ID";
+		return;
+	}
+	dlindex id;
+	bool fail = false;
+	vector<string> ids = split_string(data, ",");
+	for(vector<string>::iterator it = ids.begin(); it != ids.end(); ++it) {
+		id.second = atoi(it->c_str());
+		id.first = global_download_list.pkg_that_contains_download(id.second);
+		if(id.first == LIST_ID)
+			fail = true;
+		else
+		{
+			global_download_list.move_dl(id, package_container::DIRECTION_TOP);
+			log_string("download_top",LOG_DEBUG);
+		}
+	}
+	if(!fail)
+		*sock << "100 SUCCESS";
+	else
+		*sock << "104 ID";
 }
 
 void target_dl_bottom(std::string &data, tkSock *sock) {
-        if(data.empty()) {
-                *sock << "104 ID";
-                return;
-        }
-        dlindex id;
-        bool fail = false;
-        vector<string> ids = split_string(data, ",");
-        for(vector<string>::iterator it = ids.begin(); it != ids.end(); ++it) {
-                id.second = atoi(it->c_str());
-                id.first = global_download_list.pkg_that_contains_download(id.second);
-                if(id.first == LIST_ID)
-                        fail = true;
-                else
-                {
-                        global_download_list.move_dl(id, package_container::DIRECTION_BOTTOM);
-                        log_string("package_bottom",LOG_DEBUG);
-                }
-        }
-        if(!fail)
-                *sock << "100 SUCCESS";
-        else
-                *sock << "104 ID";
+	if(data.empty()) {
+		*sock << "104 ID";
+		return;
+	}
+	dlindex id;
+	bool fail = false;
+	vector<string> ids = split_string(data, ",");
+	for(vector<string>::iterator it = ids.begin(); it != ids.end(); ++it) {
+		id.second = atoi(it->c_str());
+		id.first = global_download_list.pkg_that_contains_download(id.second);
+		if(id.first == LIST_ID)
+			fail = true;
+		else
+		{
+			global_download_list.move_dl(id, package_container::DIRECTION_BOTTOM);
+			log_string("package_bottom",LOG_DEBUG);
+		}
+	}
+	if(!fail)
+		*sock << "100 SUCCESS";
+	else
+		*sock << "104 ID";
 }
 
 void target_dl_activate(std::string &data, tkSock *sock) {
@@ -737,23 +737,23 @@ void target_pkg(std::string &data, tkSock *sock) {
 		}
 		trim_string(data);
 		target_pkg_down(data, sock);
-        } else if(data.find("TOP") == 0) {
-            data = data.substr(3);
-            if(data.length() == 0 || !isspace(data[0])) {
-                    *sock << "101 PROTOCOL";
-                    return;
-            }
-            trim_string(data);
-            target_pkg_top(data, sock);
-        } else if(data.find("BOTTOM") == 0) {
-            data = data.substr(6);
-            if(data.length() == 0 || !isspace(data[0])) {
-                    *sock << "101 PROTOCOL";
-                    return;
-            }
-            trim_string(data);
-            target_pkg_bottom(data, sock);
-        } else if(data.find("EXISTS") == 0) {
+	} else if(data.find("TOP") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_top(data, sock);
+	} else if(data.find("BOTTOM") == 0) {
+		data = data.substr(6);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_pkg_bottom(data, sock);
+	} else if(data.find("EXISTS") == 0) {
 		data = data.substr(6);
 		if(data.length() == 0 || !isspace(data[0])) {
 			*sock << "101 PROTOCOL";
@@ -825,15 +825,15 @@ void target_pkg_up(std::string &data, tkSock *sock) {
 }
 
 void target_pkg_top(std::string &data, tkSock *sock) {
-        log_string("package_top",LOG_DEBUG);
-        global_download_list.move_pkg(atoi(data.c_str()), package_container::DIRECTION_TOP);
-        *sock << "100 SUCCESS";
+	log_string("package_top",LOG_DEBUG);
+	global_download_list.move_pkg(atoi(data.c_str()), package_container::DIRECTION_TOP);
+	*sock << "100 SUCCESS";
 }
 
 void target_pkg_bottom(std::string &data, tkSock *sock) {
-        log_string("package_bottom",LOG_DEBUG);
-        global_download_list.move_pkg(atoi(data.c_str()), package_container::DIRECTION_BOTTOM);
-        *sock << "100 SUCCESS";
+	log_string("package_bottom",LOG_DEBUG);
+	global_download_list.move_pkg(atoi(data.c_str()), package_container::DIRECTION_BOTTOM);
+	*sock << "100 SUCCESS";
 }
 
 void target_pkg_down(std::string &data, tkSock *sock) {
@@ -966,24 +966,24 @@ void target_pkg_container(std::string &data, tkSock *sock) {
 //			}
 //		}
 //		*sock << "100 SUCCESS";
-                log_string("Received RSDF container",LOG_DEBUG);
-                thread d(std::bind(loadcontainer, ".rsdf",data, (download_container*)0));
-                d.detach();
-                *sock << "100 SUCCESS";
-                return;
+		log_string("Received RSDF container",LOG_DEBUG);
+		thread d(std::bind(loadcontainer, ".rsdf",data, (download_container*)0));
+		d.detach();
+		*sock << "100 SUCCESS";
+		return;
 	} else if(type == "DLC") {
-            log_string("Received DLC Container",LOG_DEBUG);
+		log_string("Received DLC Container",LOG_DEBUG);
 		thread d(std::bind(decode_dlc, data, (download_container*)0));
 		d.detach();
 		*sock << "100 SUCCESS";
 		return;
-        } else if(type == "CCF")
-        {
-            log_string("Received CCF Container",LOG_DEBUG);
-            thread d(std::bind(loadcontainer, ".ccf",data, (download_container*)0));
-            d.detach();
-            *sock << "100 SUCCESS";
-            return;
+	} else if(type == "CCF")
+	{
+		log_string("Received CCF Container",LOG_DEBUG);
+		thread d(std::bind(loadcontainer, ".ccf",data, (download_container*)0));
+		d.detach();
+		*sock << "100 SUCCESS";
+		return;
 	} else {
 		*sock << "112 UNSUPPORTED";
 		return;
@@ -1571,68 +1571,68 @@ void target_captcha_solve(std::string &data, tkSock *sock) {
 ///////////////////////////////////////////////////////
 
 void target_subscription(std::string &data, client *cl) {
-	 tkSock *sock = cl->sock;
-	 if(data.find("ADD") == 0) {
-		 data = data.substr(3);
-		 if(data.length() == 0 || !isspace(data[0])) {
-			 *sock << "101 PROTOCOL";
-			 return;
-		 }
-		 trim_string(data);
-		 target_subscription_add(data, cl);
-	 } else if(data.find("DEL") == 0) {
-		 data = data.substr(3);
-		 if(data.length() == 0 || !isspace(data[0])) {
-			 *sock << "101 PROTOCOL";
-			 return;
-		 }
-		 trim_string(data);
-		 target_subscription_del(data, cl);
-	 } else if(data.find("LIST") == 0) {
-		 data = data.substr(4);
-		 trim_string(data);
-		 target_subscription_list(data, cl);
-	 } else {
-		 *sock << "101 PROTOCOL";
-	 }
+	tkSock *sock = cl->sock;
+	if(data.find("ADD") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_subscription_add(data, cl);
+	} else if(data.find("DEL") == 0) {
+		data = data.substr(3);
+		if(data.length() == 0 || !isspace(data[0])) {
+			*sock << "101 PROTOCOL";
+			return;
+		}
+		trim_string(data);
+		target_subscription_del(data, cl);
+	} else if(data.find("LIST") == 0) {
+		data = data.substr(4);
+		trim_string(data);
+		target_subscription_list(data, cl);
+	} else {
+		*sock << "101 PROTOCOL";
+	}
 
 }
 
 void target_subscription_add(std::string &data, client *cl) {
-	 tkSock *sock = cl->sock;
-	 trim_string(data);
-	 connection_manager::subs_type type = connection_manager::string_to_subs(data);
-	 if(type == connection_manager::SUBS_NONE) {
-		  *sock << "108 VARIABLE";
-		  return;
-	 }
-	 cl->subscribe(type);
-	 *sock << "100 SUCCESS";
+	tkSock *sock = cl->sock;
+	trim_string(data);
+	connection_manager::subs_type type = connection_manager::string_to_subs(data);
+	if(type == connection_manager::SUBS_NONE) {
+		*sock << "108 VARIABLE";
+		return;
+	}
+	cl->subscribe(type);
+	*sock << "100 SUCCESS";
 }
 
 void target_subscription_del(std::string &data, client *cl) {
-	 tkSock *sock = cl->sock;
-	 trim_string(data);
-	 connection_manager::subs_type type = connection_manager::string_to_subs(data);
-	 if(type == connection_manager::SUBS_NONE) {
-		  *sock << "108 VARIABLE";
-		  return;
-	 }
-	 cl->unsubscribe(type);
-	 *sock << "100 SUCCESS";
+	tkSock *sock = cl->sock;
+	trim_string(data);
+	connection_manager::subs_type type = connection_manager::string_to_subs(data);
+	if(type == connection_manager::SUBS_NONE) {
+		*sock << "108 VARIABLE";
+		return;
+	}
+	cl->unsubscribe(type);
+	*sock << "100 SUCCESS";
 }
 
 void target_subscription_list(std::string &data, client *cl) {
-	 tkSock *sock = cl->sock;
-	 std::vector<connection_manager::subs_type> list = cl->list();
-	 std::stringstream ss;
-	 for(size_t i = 0; i < list.size(); ++i) {
-		  std::string tmp;
-		  connection_manager::subs_to_string(list[i], tmp);
-		  ss << tmp;
-		  if(i != list.size() - 1) ss << "\n";
-	 }
-	 *sock << ss.str();
+	tkSock *sock = cl->sock;
+	std::vector<connection_manager::subs_type> list = cl->list();
+	std::stringstream ss;
+	for(size_t i = 0; i < list.size(); ++i) {
+		std::string tmp;
+		connection_manager::subs_to_string(list[i], tmp);
+		ss << tmp;
+		if(i != list.size() - 1) ss << "\n";
+	}
+	*sock << ss.str();
 }
 
 

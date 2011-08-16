@@ -64,7 +64,7 @@ download::download(const std::string& dl_url)
 void download::from_serialized(std::string& serializedDL) {
 	lock_guard<recursive_mutex> lock(mx);
 	vector<string> splitted = split_string(serializedDL, "|", true);
-        if(splitted.size() < 8) {
+	if(splitted.size() < 8) {
 		log_string("Unable to restore the Download-list from the saved dlist-file: Not enough columns", LOG_ERR);
 		return;
 	}
@@ -206,7 +206,8 @@ void download::post_subscribers(connection_manager::reason_type reason) {
 
 	line = reason_str + ":" + int_to_string(get_parent()) + ":" + line; // contains the parent id after "reason:"
 
-        if((line != last_posted_message) || (reason == connection_manager::MOVEDOWN) || (reason == connection_manager::MOVEUP) || (reason == connection_manager::MOVETOP) || (reason == connection_manager::MOVEBOTTOM)) {
+	if((line != last_posted_message) || (reason == connection_manager::MOVEDOWN) || (reason == connection_manager::MOVEUP) ||
+	   (reason == connection_manager::MOVETOP) || (reason == connection_manager::MOVEBOTTOM)) {
 		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
 		last_posted_message = line;
 	}
@@ -236,29 +237,29 @@ const char* download::get_error_str() {
 	lock_guard<recursive_mutex> lock(mx);
 	switch(error) {
 	case PLUGIN_SUCCESS:
-			return "PLUGIN_SUCCESS";
+		return "PLUGIN_SUCCESS";
 	case PLUGIN_INVALID_HOST:
-			return "Invalid hostname";
+		return "Invalid hostname";
 	case PLUGIN_CONNECTION_LOST:
-			return "Connection lost";
+		return "Connection lost";
 	case PLUGIN_FILE_NOT_FOUND:
-			return "File not found on server";
+		return "File not found on server";
 	case PLUGIN_WRITE_FILE_ERROR:
-			return "Unable to write file";
+		return "Unable to write file";
 	case PLUGIN_ERROR:
-			return "Plugin error";
+		return "Plugin error";
 	case PLUGIN_LIMIT_REACHED:
-			return "Download limit reached";
+		return "Download limit reached";
 	case PLUGIN_CONNECTION_ERROR:
-			return "Connection failed";
-        case PLUGIN_SERVER_OVERLOADED:
-                        return "Server overloaded";
-        case PLUGIN_NO_PARALLEL:
-                        return "No parallel";
-        case PLUGIN_AUTH_FAIL:
-			return "Authentication failed";
+		return "Connection failed";
+	case PLUGIN_SERVER_OVERLOADED:
+		return "Server overloaded";
+	case PLUGIN_NO_PARALLEL:
+		return "No parallel";
+	case PLUGIN_AUTH_FAIL:
+		return "Authentication failed";
 	case PLUGIN_CAPTCHA:
-			return "Captcha";
+		return "Captcha";
 
 	}
 	return "Unknown plugin error - please report";
@@ -317,7 +318,7 @@ void download::download_me() {
 
 	if(status == DOWNLOAD_RUNNING) {
 		status = DOWNLOAD_PENDING;
-                wait_seconds = 0;
+		wait_seconds = 0;
 	}
 
 	if(status == DOWNLOAD_WAITING && error == PLUGIN_LIMIT_REACHED) {
@@ -484,15 +485,15 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 			}
 			log_string(std::string("Premium authentication failed for download ") + dlid_log, LOG_WARNING);
 			return;
-                case PLUGIN_NO_PARALLEL:
-                        log_string(std::string("No parallel for Download ID: ") + dlid_log, LOG_WARNING);
+		case PLUGIN_NO_PARALLEL:
+			log_string(std::string("No parallel for Download ID: ") + dlid_log, LOG_WARNING);
 			status = DOWNLOAD_WAITING;
 			return;
-                case PLUGIN_SERVER_OVERLOADED:
-                        log_string(std::string("Server overloaded for download ID: ") + dlid_log, LOG_WARNING);
-                        status = DOWNLOAD_WAITING;
-                        return;
-                case PLUGIN_LIMIT_REACHED:
+		case PLUGIN_SERVER_OVERLOADED:
+			log_string(std::string("Server overloaded for download ID: ") + dlid_log, LOG_WARNING);
+			status = DOWNLOAD_WAITING;
+			return;
+		case PLUGIN_LIMIT_REACHED:
 			log_string(std::string("Download limit reached for download ID: ") + dlid_log + " (" + get_host(false) + ")", LOG_WARNING);
 			status = DOWNLOAD_WAITING;
 			return;
@@ -577,7 +578,7 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		   && !fequal((double)downloaded_bytes, (double)size)) {
 
 			cb_info.resume_from = downloaded_bytes;
-                        handle.setopt(CURLOPT_RESUME_FROM, (long)downloaded_bytes);
+			handle.setopt(CURLOPT_RESUME_FROM, (long)downloaded_bytes);
 
 			//output_file_s.open(output_filename.c_str(), ios::out | ios::binary | ios::app);
 			log_string(std::string("Download already started. Will try to continue to download ID: ") + dlid_log, LOG_DEBUG);
@@ -797,21 +798,21 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 	// enable a proxy if neccessary
 	string proxy_str = proxy;
 	if(!proxy_str.empty()) {
-            size_t n;
-            std::string proxy_ipport;
-            if((n = proxy_str.find("@")) != string::npos && proxy_str.size() > n + 1) {
-                string user = proxy_str.substr(0, n);
-                if(user.find("http://") == 0 || user.find("https://") == 0) {
-                    user = ":" + user.substr(user.find("//") + 2);
-                    proxy_str = proxy_str.substr(0, proxy_str.find("//") + 2) + proxy_str.substr(proxy_str.find("@") + 1);
-                }
-                handle.setopt(CURLOPT_PROXYUSERPWD, user);
-                handle.setopt(CURLOPT_PROXY, proxy_str),
-                log_string("Setting proxy: " + proxy_str + " for " + url, LOG_INFO);
-            } else {
-                handle.setopt(CURLOPT_PROXY, proxy_str.c_str());
-                log_string("Setting proxy: " + proxy_str + " for " + url, LOG_INFO);
-            }
+		size_t n;
+		std::string proxy_ipport;
+		if((n = proxy_str.find("@")) != string::npos && proxy_str.size() > n + 1) {
+			string user = proxy_str.substr(0, n);
+			if(user.find("http://") == 0 || user.find("https://") == 0) {
+				user = ":" + user.substr(user.find("//") + 2);
+				proxy_str = proxy_str.substr(0, proxy_str.find("//") + 2) + proxy_str.substr(proxy_str.find("@") + 1);
+			}
+		handle.setopt(CURLOPT_PROXYUSERPWD, user);
+		handle.setopt(CURLOPT_PROXY, proxy_str),
+		log_string("Setting proxy: " + proxy_str + " for " + url, LOG_INFO);
+		} else {
+			handle.setopt(CURLOPT_PROXY, proxy_str.c_str());
+			log_string("Setting proxy: " + proxy_str + " for " + url, LOG_INFO);
+		}
 	}
 
 	//int old_wait_seconds = wait_seconds; // we save the wait-seconds for the download, so if there are proxys, we don't have to wait for too long
@@ -868,9 +869,9 @@ void download::post_process_download() {
 	lock.unlock();
 
 	try {
-                post_process_func(*global_download_list.get_listptr(parent), this, id, pinp);
+		post_process_func(*global_download_list.get_listptr(parent), this, id, pinp);
 	} catch(...) {}
-        global_download_list.dump_to_file();
+	global_download_list.dump_to_file();
 	lock.lock();
 	is_running = false;
 	post_subscribers();
@@ -961,7 +962,7 @@ void download::preset_file_status() {
 
 	plugin_input pinp;
 
-        bool (*file_status_func)(download_container& dlc, download*, int id, plugin_input& pinp, plugin_output &outp);
+	bool (*file_status_func)(download_container& dlc, download*, int id, plugin_input& pinp, plugin_output &outp);
 	bool ret = plugin_cache.load_function(get_host(), "get_file_status_init", file_status_func, false);
 
 	if (!ret)  {

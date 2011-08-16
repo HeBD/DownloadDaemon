@@ -147,7 +147,7 @@ void plugin_container::load_plugins() {
 			continue;
 
 		// Load the plugin needed
-                void* l_handle = dlopen(current.c_str(), RTLD_NOW | RTLD_LOCAL);
+		void* l_handle = dlopen(current.c_str(), RTLD_NOW | RTLD_LOCAL);
 		if (!l_handle) {
 			log_string(std::string("Unable to open plugin file: ") + dlerror() + '/' + current, LOG_ERR);
 			continue;

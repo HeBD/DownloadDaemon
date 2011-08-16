@@ -247,7 +247,7 @@ bool get_file_status(plugin_input &inp, plugin_output &outp);
 extern "C" bool get_file_status_init(download_container &dlc, download* pdl, int id, plugin_input &inp, plugin_output &outp) {
 	std::lock_guard<std::mutex> lock(p_mutex);
 	dl_list = &dlc;
-        dl_ptr = pdl;
+	dl_ptr = pdl;
 	dlid = id;
 	return get_file_status(inp, outp);
 }
@@ -258,7 +258,7 @@ void post_process_download(plugin_input&);
 extern "C" void post_process_dl_init(download_container& dlc, download *pdl, int id, plugin_input& pinp) {
 	std::lock_guard<std::mutex> lock(p_mutex);
 	dl_list = &dlc;
-        dl_ptr = pdl;
+	dl_ptr = pdl;
 	dlid = id;
 	host = dlc.get_host(id);
 	post_process_download(pinp);

@@ -8,7 +8,7 @@
 #ifndef USE_STD_THREAD
 #include <boost/thread.hpp>
 namespace std {
-        using namespace boost;
+	using namespace boost;
 }
 #else
 #include <thread>

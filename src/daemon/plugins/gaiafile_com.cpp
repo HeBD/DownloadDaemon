@@ -47,11 +47,11 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 	if (resultstr.find("You have to wait") != std::string::npos)
 	{
-	    wait_time = search_between(resultstr, "You have to wait ", "</b>");
-	    minutes = search_between(wait_time, "<b>", "minute");
-	    seconds = search_between(wait_time, ",", "second");
-	    set_wait_time(atoi(minutes.c_str())*60+atoi(seconds.c_str()));
-	    return PLUGIN_LIMIT_REACHED;
+		wait_time = search_between(resultstr, "You have to wait ", "</b>");
+		minutes = search_between(wait_time, "<b>", "minute");
+		seconds = search_between(wait_time, ",", "second");
+		set_wait_time(atoi(minutes.c_str())*60+atoi(seconds.c_str()));
+		return PLUGIN_LIMIT_REACHED;
 	}
 	wait_time = search_between(resultstr,">Please wait <","/");
 	wait_time = search_between(wait_time, ">","<");
@@ -67,7 +67,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	replace_all(referer, "/", "%2F");
 	replace_all(referer, ":", "%3A");
 
-	string postdata       = "op=" + op + "&id=" + id + "&rand=" + rand + "&referer=" + referer + "&method_free=" + method_free + "&method_premium=&down_script=1";
+	string postdata = "op=" + op + "&id=" + id + "&rand=" + rand + "&referer=" + referer + "&method_free=" + method_free + "&method_premium=&down_script=1";
 
 	// prepare handle for DD
 	handle->setopt(CURLOPT_HTTPPOST,1);

@@ -60,7 +60,7 @@ public:
 	void* operator[](std::string plg);
 
 	template <typename func>
-        bool load_function(const std::string &host, const std::string& sym, func& ret, bool log_error = true) {
+	bool load_function(const std::string &host, const std::string& sym, func& ret, bool log_error = true) {
 		void* h = operator[](host);
 		if(!h) return false;
 		ret = (func)dlsym(h, sym.c_str());

@@ -182,16 +182,16 @@ class package_container {
 	*/
 	bool url_is_in_list(std::string url);
 
-        enum direction {DIRECTION_UP = 0, DIRECTION_DOWN, DIRECTION_TOP, DIRECTION_BOTTOM};
+	enum direction {DIRECTION_UP = 0, DIRECTION_DOWN, DIRECTION_TOP, DIRECTION_BOTTOM};
 	/** moves a download up or down
 	*	@param dl Download to move
-        *	@param d Direction (package_container::DIRECTION_UP package_container::DIRECTION_DOWN package_container::DIRECTION_TOP package_container::DIRECTION_BOTTOM)
+	*	@param d Direction (package_container::DIRECTION_UP package_container::DIRECTION_DOWN package_container::DIRECTION_TOP package_container::DIRECTION_BOTTOM)
 	*/
 	void move_dl(dlindex dl, package_container::direction d);
 
 	/** moves a package up or down
 	*	@param id package to move
-        *	@param d Direction (package_container::DIRECTION_UP package_container::DIRECTION_DOWN package_container::DIRECTION_TOP package_container::DIRECTION_BOTTOM)
+	*	@param d Direction (package_container::DIRECTION_UP package_container::DIRECTION_DOWN package_container::DIRECTION_TOP package_container::DIRECTION_BOTTOM)
 	*/
 	void move_pkg(int dl, package_container::direction d);
 

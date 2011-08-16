@@ -98,7 +98,7 @@ int download_container::move_up(int id) {
 	}
 	location2 = location1;
 
-        (*it)->post_subscribers(connection_manager::MOVEUP);
+	(*it)->post_subscribers(connection_manager::MOVEUP);
 
 	download_container::iterator it2 = it;
 	--it2;
@@ -124,70 +124,70 @@ int download_container::move_up(int id) {
 
 int download_container::move_top(int id)
 {
-    download_container::iterator first,second;
-    first = download_list.begin();
-    second = download_list.begin();
-    download_container::iterator it;
-    int location1 = 0;
-    for(it = download_list.begin(); it != download_list.end(); ++it)
-    {
-        if((*it)->get_id() == id)
-        {
-            break;
-        }
-        ++location1;
-    }
-    if(it == download_list.end() || it == download_list.begin() || location1 == 0)
-    {
-        return LIST_ID;
-    }
-    (*it)->post_subscribers(connection_manager::MOVETOP);
-    for(int i = 0; i < location1; ++i)
-            ++first;
-    second = first;
-    --second;
-    while(download_list.begin()!=first) //move to the top
-    {
-        //log_string("Bottom! id1:" + int_to_string((*first)->get_id()) + " id2: " + int_to_string((*second)->get_id()),LOG_DEBUG);
-        iter_swap(first, second);
-        --first;
-        --second;
-    }
-    return LIST_SUCCESS;
+	download_container::iterator first,second;
+	first = download_list.begin();
+	second = download_list.begin();
+	download_container::iterator it;
+	int location1 = 0;
+	for(it = download_list.begin(); it != download_list.end(); ++it)
+	{
+		if((*it)->get_id() == id)
+		{
+			break;
+		}
+		++location1;
+	}
+	if(it == download_list.end() || it == download_list.begin() || location1 == 0)
+	{
+		return LIST_ID;
+	}
+	(*it)->post_subscribers(connection_manager::MOVETOP);
+	for(int i = 0; i < location1; ++i)
+	++first;
+	second = first;
+	--second;
+	while(download_list.begin()!=first) //move to the top
+	{
+		//log_string("Bottom! id1:" + int_to_string((*first)->get_id()) + " id2: " + int_to_string((*second)->get_id()),LOG_DEBUG);
+		iter_swap(first, second);
+		--first;
+		--second;
+	}
+	return LIST_SUCCESS;
 }
 
 int download_container::move_bottom(int id)
 {
-    download_container::iterator first,second,last;
-    first = download_list.begin();
-    last = download_list.end();
-    --last;
-    download_container::iterator it;
-    int location1 = 0;
-    for(it = download_list.begin(); it != download_list.end(); ++it)
-    {
-        if((*it)->get_id() == id)
-        {
-            break;
-        }
-        ++location1;
-    }
-    if(it == download_list.end() || it == --download_list.end())
-    {
-        return LIST_ID;
-    }
-    (*it)->post_subscribers(connection_manager::MOVEBOTTOM);
-    for(int i = 0; i < location1; ++i)
-            ++first;
-    second = first;
-    ++second;
-    while(last!=first) //move to the end
-    {
-        iter_swap(first,second);
-        ++first;
-        ++second;
-    }
-    return LIST_SUCCESS;
+	download_container::iterator first,second,last;
+	first = download_list.begin();
+	last = download_list.end();
+	--last;
+	download_container::iterator it;
+	int location1 = 0;
+	for(it = download_list.begin(); it != download_list.end(); ++it)
+	{
+		if((*it)->get_id() == id)
+		{
+			break;
+		}
+		++location1;
+	}
+	if(it == download_list.end() || it == --download_list.end())
+	{
+		return LIST_ID;
+	}
+	(*it)->post_subscribers(connection_manager::MOVEBOTTOM);
+	for(int i = 0; i < location1; ++i)
+		++first;
+	second = first;
+	++second;
+	while(last!=first) //move to the end
+	{
+		iter_swap(first,second);
+		++first;
+		++second;
+	}
+	return LIST_SUCCESS;
 }
 
 int download_container::move_down(int id) {
@@ -205,7 +205,7 @@ int download_container::move_down(int id) {
 	}
 	location2 = location1;
 
-        (*it)->post_subscribers(connection_manager::MOVEDOWN);
+	(*it)->post_subscribers(connection_manager::MOVEDOWN);
 
 	download_container::iterator it2 = it;
 	++it2;
@@ -573,8 +573,7 @@ std::string download_container::create_client_list(bool header) {
 	std::stringstream ss;
 
 	if(header) {
-                ss << "PACKAGE|" << container_id << "|" << name << "|" << password;
-
+		ss << "PACKAGE|" << container_id << "|" << name << "|" << password;
 	} else {
 		for(download_container::iterator it = download_list.begin(); it != download_list.end(); ++it) {
 			if((*it)->get_status() == DOWNLOAD_DELETED || (*it)->get_id() < 0) {
@@ -599,7 +598,8 @@ void download_container::post_subscribers(connection_manager::reason_type reason
 	connection_manager::reason_to_string(reason, reason_str);
 
 	line = reason_str + ":" + line;
-        if((line != last_posted_message) || (reason == connection_manager::MOVEDOWN) || (reason == connection_manager::MOVEUP) || (reason == connection_manager::MOVETOP) || (reason == connection_manager::MOVEBOTTOM)) {
+	if((line != last_posted_message) || (reason == connection_manager::MOVEDOWN) || (reason == connection_manager::MOVEUP) ||
+	   (reason == connection_manager::MOVETOP) || (reason == connection_manager::MOVEBOTTOM)) {
 		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
 		last_posted_message = line;
 	}
