@@ -36,23 +36,23 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	}
 
 
-        if (result.find("This video has been removed by the user.") != std::string::npos)
-           return PLUGIN_FILE_NOT_FOUND;
+	if (result.find("This video has been removed by the user.") != std::string::npos)
+		return PLUGIN_FILE_NOT_FOUND;
 
-        string url = search_between(result, "url_encoded_fmt_stream_map=", "\"");
-        url = handle->unescape(url);
-        url = handle->unescape(url);
-        url = handle->unescape(url);
+	string url = search_between(result, "url_encoded_fmt_stream_map=", "\"");
+	url = handle->unescape(url);
+	url = handle->unescape(url);
+	url = handle->unescape(url);
 
-        url = url.substr(0, url.find("x-flv")+4);
-        url = url.substr(url.rfind("url=")+4,url.length());
+	url = url.substr(0, url.find("x-flv")+4);
+	url = url.substr(url.rfind("url=")+4,url.length());
 
-        outp.download_url = url;
+	outp.download_url = url;
 
-        string title = search_between(result, "name=\"title\" content=\"", "\">");
-        make_valid_filename(title);
+	string title = search_between(result, "name=\"title\" content=\"", "\">");
+	make_valid_filename(title);
 
-        outp.download_filename = title + ".flv";
+	outp.download_filename = title + ".flv";
 
 	return PLUGIN_SUCCESS;
 }
