@@ -16,48 +16,48 @@
 using namespace std;
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
-        std::string *blubb = (std::string*)userp;
-        blubb->append((char*)buffer, nmemb);
-        return nmemb;
+	std::string *blubb = (std::string*)userp;
+	blubb->append((char*)buffer, nmemb);
+	return nmemb;
 }
 
 //Only Free-User support
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-        ddcurl* handle = get_handle();
-        std::string resultstr;
-        string url = get_url();
-        string new_url = url + "?c=Free";
-        handle->setopt(CURLOPT_COOKIEFILE, "");
-        handle->setopt(CURLOPT_FOLLOWLOCATION, 0);
-        handle->setopt(CURLOPT_URL, new_url);//url.c_str());
-        handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-        handle->setopt(CURLOPT_WRITEDATA, &resultstr);
-        handle->setopt(CURLOPT_HTTPGET,true);
-        handle->setopt(CURLOPT_NOBODY,false);
-		//need 2 run times
-        int success = handle->perform();
-        success = handle->perform();
-        if(success != 0) {
-                return PLUGIN_CONNECTION_ERROR;
-        }
+	ddcurl* handle = get_handle();
+	std::string resultstr;
+	string url = get_url();
+	string new_url = url + "?c=Free";
+	handle->setopt(CURLOPT_COOKIEFILE, "");
+	handle->setopt(CURLOPT_FOLLOWLOCATION, 0);
+	handle->setopt(CURLOPT_URL, new_url);//url.c_str());
+	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+	handle->setopt(CURLOPT_WRITEDATA, &resultstr);
+	handle->setopt(CURLOPT_HTTPGET,true);
+	handle->setopt(CURLOPT_NOBODY,false);
+	//need 2 run times
+	int success = handle->perform();
+	success = handle->perform();
+	if(success != 0) {
+		return PLUGIN_CONNECTION_ERROR;
+	}
 		//get real link
-        url= search_between(resultstr, "</div>\n\t<a href=\"","\"");
-        if (url.size() == 0)
-                return PLUGIN_FILE_NOT_FOUND;
+	url= search_between(resultstr, "</div>\n\t<a href=\"","\"");
+	if (url.size() == 0)
+		return PLUGIN_FILE_NOT_FOUND;
 
-        outp.download_url = url;
+	outp.download_url = url;
 
-        return PLUGIN_SUCCESS;
+	return PLUGIN_SUCCESS;
 
 }
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
-        if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
-                outp.allows_resumption = true;
-                outp.allows_multiple = true;
-        } else {
-                                outp.allows_resumption = false;
-                                outp.allows_multiple = true;
-        }
-		outp.offers_premium = false;
+	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+		outp.allows_resumption = true;
+		outp.allows_multiple = true;
+	} else {
+		outp.allows_resumption = false;
+		outp.allows_multiple = true;
+	}
+	outp.offers_premium = false;
 }

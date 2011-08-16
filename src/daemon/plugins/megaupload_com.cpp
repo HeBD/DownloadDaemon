@@ -26,187 +26,186 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-        ddcurl* handle = get_handle();
+	ddcurl* handle = get_handle();
 	string result;
-        string url = get_url();
-        if(url.find("/?f=")== std::string::npos)
-        {
-            if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
-		handle->setopt(CURLOPT_COOKIEFILE, "");
-		handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
-		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-		handle->setopt(CURLOPT_WRITEDATA, &result);
-		handle->setopt(CURLOPT_URL, "http://www.megaupload.com/?c=login&setlang=en");
-		handle->setopt(CURLOPT_POST, 1);
-		string to_post = "login=1&redir=1&username=" + inp.premium_user + "&password=" + inp.premium_password;
-		handle->setopt(CURLOPT_COPYPOSTFIELDS, to_post.c_str());
-		int res = handle->perform();
-		if(res != 0) {
-			return PLUGIN_CONNECTION_ERROR;
-		}
-
-                handle->setopt(CURLOPT_POST, 0);
-		if(result.find("Username and password do not match") != string::npos) {
-			return PLUGIN_AUTH_FAIL;
-		}
-
-		outp.download_url = get_url();
-
-		return PLUGIN_SUCCESS;
-            }
-
-            bool done = false;
-            // so we can never get in an infinite loop..
-            int while_tries = 0;
-            while(!done && while_tries < 100) {
-		++while_tries;
-		handle->setopt(CURLOPT_URL, get_url());
-		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-		handle->setopt(CURLOPT_WRITEDATA, &result);
-		handle->setopt(CURLOPT_COOKIEFILE, "");
-		handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
-		result.clear();
-                int res = handle->perform();
-		if(res != 0) {
-			return PLUGIN_CONNECTION_ERROR;
-		}
-
-		if(result.find("Unfortunately, the link you have clicked is not available") != string::npos) {
-			return PLUGIN_FILE_NOT_FOUND;
-		}
-
-		if(result.find("The file that you're trying to download is larger than 1 GB") != string::npos
-			|| result.find("The file you're trying to download is password protected") != string::npos) {
-			return PLUGIN_AUTH_FAIL;
-		}
-
-		if(result.find("We have detected an elevated number of requests from your IP address. You have to wait 2 minutes") != string::npos) {
-			set_wait_time(120);
-			return PLUGIN_SERVER_OVERLOADED;
-		}
-
-				if(result.find("gencap.php") == string::npos) {
-					// as of dec 2010, they don't want a captcha any more.
-					// I don't know if that's an exception, but I'll just leave the captcha-code here and ignore it if not needed
-					outp.download_url = search_between(result, "id=\"downloadlink\"><a href=\"", "\"");
-					set_wait_time(atoi(search_between(result, "count=", ";").c_str()));
-					if(outp.download_url.empty())
-						return PLUGIN_FILE_NOT_FOUND;
-					return PLUGIN_SUCCESS;
-		}
-
-		string captcha_url;
-		try {
-			size_t n = result.find("<TD width=\"100\" align=\"center\" height=\"40\"><img src=\"");
-			n = result.find("http://", n);
-			captcha_url = result.substr(n, result.find("\"", n) - n);
-
-			n = result.find("name=\"captchacode\" value=\"") + 26;
-			std::string captchacode = result.substr(n, result.find("\"", n) - n);
-
-			n = result.find("name=\"megavar\"");
-			n = result.find("value=\"", n) + 7;
-			std::string megavar = result.substr(n, result.find("\"", n) - n);
-
-
-			handle->setopt(CURLOPT_URL, captcha_url.c_str());
-			result.clear();
-                        res = handle->perform();
-			if(res != 0) {
-				return PLUGIN_ERROR;
-			}
-			// megaupload uses .gif captchas that don't work with gocr. We use giftopnm to convert it (which is installed with netpbm, which
-			// is a gocr dependency anyway.
-			ofstream captcha_fs("/tmp/tmp_captcha_megaupload.gif");
-			captcha_fs << result;
-			captcha_fs.close();
-			FILE* captcha_as_pnm = popen("giftopnm /tmp/tmp_captcha_megaupload.gif", "r");
-
-			if(captcha_as_pnm == NULL) {
-				captcha_exception e;
-				throw e;
-			}
-			// if the captcha is larger than 10kb.. it's not.
-			result.clear();
-
-			int c;
-			do{
-				c = fgetc(captcha_as_pnm);
-				if(c != EOF) result.push_back(c);
-			} while(c != EOF);
-
-
-			pclose(captcha_as_pnm);
-			remove("/tmp/tmp_captcha_megaupload.gif");;
-			std::string captcha_text = Captcha.process_image(result, "pnm", "-C 1-9A-NP-Z", 4, true);
-			if(captcha_text.empty()) continue;
-
-			std::string post_data = "captchacode=" + captchacode + "&megavar=" + megavar + "&captcha=" + captcha_text;
-
-			handle->setopt(CURLOPT_URL, get_url());
+	string url = get_url();
+	if(url.find("/?f=")== std::string::npos)
+	{
+		if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+			handle->setopt(CURLOPT_COOKIEFILE, "");
+			handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+			handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+			handle->setopt(CURLOPT_WRITEDATA, &result);
+			handle->setopt(CURLOPT_URL, "http://www.megaupload.com/?c=login&setlang=en");
 			handle->setopt(CURLOPT_POST, 1);
-			handle->setopt(CURLOPT_COPYPOSTFIELDS, post_data.c_str());
-			result.clear();
-			res = handle->perform();
-			handle->setopt(CURLOPT_POST, 0);
+			string to_post = "login=1&redir=1&username=" + inp.premium_user + "&password=" + inp.premium_password;
+			handle->setopt(CURLOPT_COPYPOSTFIELDS, to_post.c_str());
+			int res = handle->perform();
 			if(res != 0) {
+				return PLUGIN_CONNECTION_ERROR;
+			}
+
+			handle->setopt(CURLOPT_POST, 0);
+			if(result.find("Username and password do not match") != string::npos) {
+				return PLUGIN_AUTH_FAIL;
+			}
+
+			outp.download_url = get_url();
+
+			return PLUGIN_SUCCESS;
+	    	}
+
+		bool done = false;
+		// so we can never get in an infinite loop..
+		int while_tries = 0;
+		while(!done && while_tries < 100) {
+			++while_tries;
+			handle->setopt(CURLOPT_URL, get_url());
+			handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+			handle->setopt(CURLOPT_WRITEDATA, &result);
+			handle->setopt(CURLOPT_COOKIEFILE, "");
+			handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+			result.clear();
+			int res = handle->perform();
+			if(res != 0) {
+				return PLUGIN_CONNECTION_ERROR;
+			}
+
+			if(result.find("Unfortunately, the link you have clicked is not available") != string::npos) {
+				return PLUGIN_FILE_NOT_FOUND;
+			}
+
+			if(result.find("The file that you're trying to download is larger than 1 GB") != string::npos
+			   || result.find("The file you're trying to download is password protected") != string::npos) {
+				return PLUGIN_AUTH_FAIL;
+			}
+
+			if(result.find("We have detected an elevated number of requests from your IP address. You have to wait 2 minutes") != string::npos) {
+				set_wait_time(120);
+				return PLUGIN_SERVER_OVERLOADED;
+			}
+
+			if(result.find("gencap.php") == string::npos) {
+				// as of dec 2010, they don't want a captcha any more.
+				// I don't know if that's an exception, but I'll just leave the captcha-code here and ignore it if not needed
+				outp.download_url = search_between(result, "id=\"downloadlink\"><a href=\"", "\"");
+				set_wait_time(atoi(search_between(result, "count=", ";").c_str()));
+				if(outp.download_url.empty())
+					return PLUGIN_FILE_NOT_FOUND;
+				return PLUGIN_SUCCESS;
+			}
+
+			string captcha_url;
+			try {
+				size_t n = result.find("<TD width=\"100\" align=\"center\" height=\"40\"><img src=\"");
+				n = result.find("http://", n);
+				captcha_url = result.substr(n, result.find("\"", n) - n);
+
+				n = result.find("name=\"captchacode\" value=\"") + 26;
+				std::string captchacode = result.substr(n, result.find("\"", n) - n);
+
+				n = result.find("name=\"megavar\"");
+				n = result.find("value=\"", n) + 7;
+				std::string megavar = result.substr(n, result.find("\"", n) - n);
+
+
+				handle->setopt(CURLOPT_URL, captcha_url.c_str());
+				result.clear();
+				res = handle->perform();
+				if(res != 0) {
+					return PLUGIN_ERROR;
+				}
+				// megaupload uses .gif captchas that don't work with gocr. We use giftopnm to convert it (which is installed with netpbm, which
+				// is a gocr dependency anyway.
+				ofstream captcha_fs("/tmp/tmp_captcha_megaupload.gif");
+				captcha_fs << result;
+				captcha_fs.close();
+				FILE* captcha_as_pnm = popen("giftopnm /tmp/tmp_captcha_megaupload.gif", "r");
+
+				if(captcha_as_pnm == NULL) {
+					captcha_exception e;
+					throw e;
+				}
+				// if the captcha is larger than 10kb.. it's not.
+				result.clear();
+
+				int c;
+				do{
+					c = fgetc(captcha_as_pnm);
+					if(c != EOF) result.push_back(c);
+				} while(c != EOF);
+
+
+				pclose(captcha_as_pnm);
+				remove("/tmp/tmp_captcha_megaupload.gif");;
+				std::string captcha_text = Captcha.process_image(result, "pnm", "-C 1-9A-NP-Z", 4, true);
+				if(captcha_text.empty()) continue;
+
+				std::string post_data = "captchacode=" + captchacode + "&megavar=" + megavar + "&captcha=" + captcha_text;
+
+				handle->setopt(CURLOPT_URL, get_url());
+				handle->setopt(CURLOPT_POST, 1);
+				handle->setopt(CURLOPT_COPYPOSTFIELDS, post_data.c_str());
+				result.clear();
+				res = handle->perform();
+				handle->setopt(CURLOPT_POST, 0);
+				if(res != 0) {
+					return PLUGIN_ERROR;
+				}
+				if(result.find("<input type=\"text\" name=\"captcha\" id=\"captchafield\"") != string::npos) {
+					// captcha wrong.. try again
+					continue;
+				} else {
+					set_wait_time(45);
+					n = result.find("id=\"downloadlink\"><a href=\"") + 27;
+					outp.download_url = result.substr(n, result.find("\"", n) - n);
+					return PLUGIN_SUCCESS;
+
+				}
+
+			} catch(std::exception &e) {
 				return PLUGIN_ERROR;
 			}
-			if(result.find("<input type=\"text\" name=\"captcha\" id=\"captchafield\"") != string::npos) {
-				// captcha wrong.. try again
-				continue;
-			} else {
-				set_wait_time(45);
-				n = result.find("id=\"downloadlink\"><a href=\"") + 27;
-				outp.download_url = result.substr(n, result.find("\"", n) - n);
-				return PLUGIN_SUCCESS;
-
-			}
-
-		} catch(std::exception &e) {
-			return PLUGIN_ERROR;
 		}
-
-            }
-        }
-        else
-        {
-            //megaupload folder
-            download_container urls;
-            size_t n = url.find("/?f=");
-            n += 4;
-            string id = url.substr(n);
-            //log_string("Megaupload.com: id=" + id,LOG_DEBUG);
-            string newurl = "http://www.megaupload.com/xml/folderfiles.php?folderid=" + id;
-            //log_string("Megaupload.com: url=" + newurl,LOG_DEBUG);
-            handle->setopt(CURLOPT_URL, newurl.c_str());
-            handle->setopt(CURLOPT_POST, 0);
-            handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-            handle->setopt(CURLOPT_WRITEDATA, &result);
-            handle->setopt(CURLOPT_COOKIEFILE, "");
-            result.clear();
-            int res = handle->perform();
-            if(res != 0)
-            {
-                    return PLUGIN_CONNECTION_ERROR;
-            }
-            //log_string("Megaupload.com: result=" + result,LOG_DEBUG);
-            vector<string> links = split_string(result, "</ROW>");
-            for(size_t i = 0; i < links.size()-1; i++)
-            {
-                size_t urlpos = links[i].find("url=\"");
-                if(urlpos == string::npos)
-                {
-                    log_string("Megaupload.com: urlpos is at end of file",LOG_DEBUG);
-                    return PLUGIN_ERROR;
-                }
-                urlpos += 5;
-                string temp = links[i].substr(urlpos, links[i].find("\"", urlpos) - urlpos);
-                //log_string("Megaupload.com: link=" + temp,LOG_DEBUG);
-                urls.add_download(temp, "");
-            }
-            replace_this_download(urls);
-        }
+	}
+	else
+	{
+		//megaupload folder
+		download_container urls;
+		size_t n = url.find("/?f=");
+		n += 4;
+		string id = url.substr(n);
+		//log_string("Megaupload.com: id=" + id,LOG_DEBUG);
+		string newurl = "http://www.megaupload.com/xml/folderfiles.php?folderid=" + id;
+		//log_string("Megaupload.com: url=" + newurl,LOG_DEBUG);
+		handle->setopt(CURLOPT_URL, newurl.c_str());
+		handle->setopt(CURLOPT_POST, 0);
+		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+		handle->setopt(CURLOPT_WRITEDATA, &result);
+		handle->setopt(CURLOPT_COOKIEFILE, "");
+		result.clear();
+		int res = handle->perform();
+		if(res != 0)
+		{
+			return PLUGIN_CONNECTION_ERROR;
+		}
+		//log_string("Megaupload.com: result=" + result,LOG_DEBUG);
+		vector<string> links = split_string(result, "</ROW>");
+		for(size_t i = 0; i < links.size()-1; i++)
+		{
+			size_t urlpos = links[i].find("url=\"");
+			if(urlpos == string::npos)
+			{
+				log_string("Megaupload.com: urlpos is at end of file",LOG_DEBUG);
+				return PLUGIN_ERROR;
+			}
+			urlpos += 5;
+			string temp = links[i].substr(urlpos, links[i].find("\"", urlpos) - urlpos);
+			//log_string("Megaupload.com: link=" + temp,LOG_DEBUG);
+			urls.add_download(temp, "");
+		}
+	replace_this_download(urls);
+	}
 	return PLUGIN_SUCCESS;
 }
 

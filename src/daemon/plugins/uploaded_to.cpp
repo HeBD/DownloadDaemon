@@ -24,16 +24,16 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
 		std::string result;
-                ddcurl* handle = get_handle();
-                handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-                handle->setopt(CURLOPT_WRITEDATA, &result);
+		ddcurl* handle = get_handle();
+		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+		handle->setopt(CURLOPT_WRITEDATA, &result);
 		string url = get_url();
 		url = url.substr(0, url.find("?"));
 		url += "?setlang=en";
-                handle->setopt(CURLOPT_URL, url.c_str());
-                handle->setopt(CURLOPT_COOKIEFILE, "");
-                handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
-                if(handle->perform()) {
+		handle->setopt(CURLOPT_URL, url.c_str());
+		handle->setopt(CURLOPT_COOKIEFILE, "");
+		handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+		if(handle->perform()) {
 			return PLUGIN_CONNECTION_ERROR;
 		}
 
@@ -51,12 +51,12 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		outp.download_filename = filename;
 
 		std::string post_data = "email=" + inp.premium_user + "&password=" + inp.premium_password;
-                handle->setopt(CURLOPT_URL, "http://uploaded.to/login?setlang=en");
-                handle->setopt(CURLOPT_POST, 1);
-                handle->setopt(CURLOPT_COPYPOSTFIELDS, post_data.c_str());
-                handle->perform();
-                handle->setopt(CURLOPT_POST, 0);
-                handle->setopt(CURLOPT_COPYPOSTFIELDS, "");
+		handle->setopt(CURLOPT_URL, "http://uploaded.to/login?setlang=en");
+		handle->setopt(CURLOPT_POST, 1);
+		handle->setopt(CURLOPT_COPYPOSTFIELDS, post_data.c_str());
+		handle->perform();
+		handle->setopt(CURLOPT_POST, 0);
+		handle->setopt(CURLOPT_COPYPOSTFIELDS, "");
 		if(result.find("Login failed") == string::npos) {
 			return PLUGIN_AUTH_FAIL;
 		}
@@ -129,18 +129,18 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	std::string url = get_url();
 	std::string result;
-        ddcurl handle;
-        handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
-        handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
-        handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
-        handle.setopt(CURLOPT_NOSIGNAL, 1);
-        handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
-        handle.setopt(CURLOPT_WRITEDATA, &result);
-        handle.setopt(CURLOPT_COOKIEFILE, "");
-        handle.setopt(CURLOPT_FOLLOWLOCATION, true);
-        handle.setopt(CURLOPT_URL, url.c_str());
-        int res = handle.perform();
-        handle.cleanup();
+	ddcurl handle;
+	handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+	handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+	handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+	handle.setopt(CURLOPT_NOSIGNAL, 1);
+	handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
+	handle.setopt(CURLOPT_WRITEDATA, &result);
+	handle.setopt(CURLOPT_COOKIEFILE, "");
+	handle.setopt(CURLOPT_FOLLOWLOCATION, true);
+	handle.setopt(CURLOPT_URL, url.c_str());
+	int res = handle.perform();
+	handle.cleanup();
 	if(res != 0) {
 		outp.file_online = PLUGIN_CONNECTION_LOST;
 		return true;

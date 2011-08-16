@@ -23,15 +23,15 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-        ddcurl* handle = get_handle();
-        handle->setopt(CURLOPT_COOKIEFILE, "");
+	ddcurl* handle = get_handle();
+	handle->setopt(CURLOPT_COOKIEFILE, "");
 	std::string url = get_url();
 	std::string result;
-        handle->setopt(CURLOPT_URL, url.c_str());
-        handle->setopt(CURLOPT_WRITEDATA, &result);
-        handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+	handle->setopt(CURLOPT_URL, url.c_str());
+	handle->setopt(CURLOPT_WRITEDATA, &result);
+	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
 
-        int res = handle->perform();
+	int res = handle->perform();
 	if(res != 0) {
 		return PLUGIN_ERROR;
 	}
@@ -47,8 +47,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	n = result.find("<a href=\"", n) + 9;
 	url = "http://www.filefactory.com" + result.substr(n, result.find("\"", n) - n);
 	result.clear();
-        handle->setopt(CURLOPT_URL, url.c_str());
-        res = handle->perform();
+	handle->setopt(CURLOPT_URL, url.c_str());
+	res = handle->perform();
 	if(res != 0) {
 		return PLUGIN_ERROR;
 	}
@@ -75,18 +75,18 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	std::string url = get_url();
 	std::string result;
-        ddcurl handle;
-        handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
-        handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
-        handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
-        handle.setopt(CURLOPT_NOSIGNAL, 1);
-        handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
-        handle.setopt(CURLOPT_WRITEDATA, &result);
-        handle.setopt(CURLOPT_COOKIEFILE, "");
-        handle.setopt(CURLOPT_FOLLOWLOCATION, true);
-        handle.setopt(CURLOPT_URL, url.c_str());
-        int res = handle.perform();
-        handle.cleanup();
+	ddcurl handle;
+	handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+	handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+	handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+	handle.setopt(CURLOPT_NOSIGNAL, 1);
+	handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
+	handle.setopt(CURLOPT_WRITEDATA, &result);
+	handle.setopt(CURLOPT_COOKIEFILE, "");
+	handle.setopt(CURLOPT_FOLLOWLOCATION, true);
+	handle.setopt(CURLOPT_URL, url.c_str());
+	int res = handle.perform();
+	handle.cleanup();
 	if(res != 0) {
 		outp.file_online = PLUGIN_CONNECTION_LOST;
 		return true;
