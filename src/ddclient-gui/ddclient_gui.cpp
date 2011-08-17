@@ -1008,20 +1008,20 @@ void ddclient_gui::update_packages(){
 				// user interactions cause a new list reload anyway (and if another connected user used move it really gets confusing)
 				// => reload is the easiest way to keep the list up to date
                                 // using autoreload instead => concurrency = better! // wrong, this only prevents you from getting updates if another client changes something (like moving up)
-                                reload_list = true;
+                                reload_list = false;
 				continue;
 			}else if(up_it->reason == R_MOVEDOWN){
 				// same as MOVEUP
-                                reload_list = true;
+                                reload_list = false;
                                 continue;
                         }else if(up_it->reason == R_MOVETOP){
                                // same as MOVEUP
                                 //true
-                               reload_list = true;
+                               reload_list = false;
                                continue;
                         }else if(up_it->reason == R_MOVEBOTTOM){
                                // same as MOVEUP
-                               reload_list = true;
+                               reload_list = false;
                                 continue;
                         }
 
@@ -1059,20 +1059,20 @@ void ddclient_gui::update_packages(){
 				// user interactions cause a new list reload anyway (and if another connected user used move it really gets confusing)
 				// => reload is the easiest way to keep the list up to date
                                 // use autoreload instead => concurrency is better! // wrong, this only prevents you from getting updates if a second client does moveup or anything like that
-                                reload_list = true;
+                                reload_list = false;
 				continue;
 			}else if(up_it->reason == R_MOVEDOWN){
 				// same as MOVEUP
-                                reload_list = true;
+                                reload_list = false;
 				continue;
                         }else if(up_it->reason == R_MOVETOP){
                             // same as MOVEUP
                             //take a while for getting all the switches => not reloading -> concurrency
-                            reload_list = true;
+                            reload_list = false;
                             continue;
                         }else if(up_it->reason == R_MOVEBOTTOM){
                             // same as MOVEUP
-                            reload_list = true;
+                            reload_list = false;
                             continue;
                         }
 
