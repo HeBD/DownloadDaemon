@@ -1,3 +1,7 @@
+2011-08-17
+   [stefan]
+   - add support for serienjunkies.org link decrypter (captchas can be solved by user only)
+
 2011-08-01
    [stefan]
    - fix youtube.com plugin
