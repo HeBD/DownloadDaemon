@@ -100,7 +100,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 		if(dispatch_data[1].find("DL:") == string::npos) return PLUGIN_FILE_NOT_FOUND;
 
-		url = "http://" + dispatch_data[1].substr(dispatch_data[1].find(":") + 1) + "/cgi-bin/rsapi.cgi?sub=download_v1&editparentlocation=0&bin=1&fileid=" + fileid;
+		url = "http://" + dispatch_data[1].substr(dispatch_data[1].find(":") + 1) + "/cgi-bin/rsapi.cgi?sub=download&fileid=" + fileid;
 		url += "&filename=" + filename + "&dlauth=" + dispatch_data[2];
 		handle->setopt(CURLOPT_URL, url.c_str());
 		set_wait_time(atoi(dispatch_data[3].c_str()) + 1);
