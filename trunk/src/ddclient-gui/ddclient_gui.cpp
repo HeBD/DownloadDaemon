@@ -1007,21 +1007,21 @@ void ddclient_gui::update_packages(){
 				// instead of messing with the list we just get the whole new list
 				// user interactions cause a new list reload anyway (and if another connected user used move it really gets confusing)
 				// => reload is the easiest way to keep the list up to date
-                                // using autoreload instead => concurrency = better!
-                                reload_list = false;
+                                // using autoreload instead => concurrency = better! // wrong, this only prevents you from getting updates if another client changes something (like moving up)
+                                reload_list = true;
 				continue;
 			}else if(up_it->reason == R_MOVEDOWN){
 				// same as MOVEUP
-                                reload_list = false;
+                                reload_list = true;
                                 continue;
                         }else if(up_it->reason == R_MOVETOP){
                                // same as MOVEUP
-                                //false
-                               reload_list = false;
+                                //true
+                               reload_list = true;
                                continue;
                         }else if(up_it->reason == R_MOVEBOTTOM){
                                // same as MOVEUP
-                               reload_list = false;
+                               reload_list = true;
                                 continue;
                         }
 
@@ -1058,21 +1058,21 @@ void ddclient_gui::update_packages(){
 				// instead of messing with the list we just get the whole new list
 				// user interactions cause a new list reload anyway (and if another connected user used move it really gets confusing)
 				// => reload is the easiest way to keep the list up to date
-                                // use autoreload instead => concurrency is better!
-                                reload_list = false;
+                                // use autoreload instead => concurrency is better! // wrong, this only prevents you from getting updates if a second client does moveup or anything like that
+                                reload_list = true;
 				continue;
 			}else if(up_it->reason == R_MOVEDOWN){
 				// same as MOVEUP
-                                reload_list = false;
+                                reload_list = true;
 				continue;
                         }else if(up_it->reason == R_MOVETOP){
                             // same as MOVEUP
-                            //take a while for getting al the switches => not reloading -> concurrency
-                            reload_list = false;
+                            //take a while for getting all the switches => not reloading -> concurrency
+                            reload_list = true;
                             continue;
                         }else if(up_it->reason == R_MOVEBOTTOM){
                             // same as MOVEUP
-                            reload_list = false;
+                            reload_list = true;
                             continue;
                         }
 
