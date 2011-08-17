@@ -40,26 +40,22 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		res = handle->perform();
 		string url = get_url();
 		log_string("Serienjunkies.org: trying to decrypt " + url,LOG_DEBUG);
-		if(res != 0)
-		{
+		if(res != 0) {
 			return PLUGIN_CONNECTION_ERROR;
 		}
 
-		if (result.find("Du hast zu oft das Captcha falsch eingegeben!")  != std::string::npos)
-		{
+		if (result.find("Du hast zu oft das Captcha falsch eingegeben!")  != std::string::npos) {
 			log_string("Serienjunkies.org: You have entered wrong Captcha too many times",LOG_DEBUG);
 			set_wait_time(1800);
 			return PLUGIN_SERVER_OVERLOADED;
 		}
-		if (result.find("Du hast das Download-Limit")  != std::string::npos)
-		{
+		if (result.find("Du hast das Download-Limit")  != std::string::npos) {
 			log_string("Serienjunkies.org: download limit reached",LOG_DEBUG);
 			set_wait_time(1800);
 			return PLUGIN_SERVER_OVERLOADED;
 		}
 
-		while((pos = result.find("<INPUT TYPE=\"HIDDEN\" NAME=\"s\" VALUE=\"")) != string::npos) 
-		{
+		while((pos = result.find("<INPUT TYPE=\"HIDDEN\" NAME=\"s\" VALUE=\"")) != string::npos) {
 			handle->setopt(CURLOPT_URL, get_url());
 			handle->setopt(CURLOPT_HEADER, 1);
 			handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
@@ -68,18 +64,15 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			res = handle->perform();
 			string url = get_url();
 			log_string("Serienjunkies.org: trying to decrypt " + url,LOG_DEBUG);
-			if(res != 0)
-			{
+			if(res != 0) {
 				return PLUGIN_CONNECTION_ERROR;
 			}
-			if (result.find("Du hast zu oft das Captcha falsch eingegeben!")  != std::string::npos)
-			{
+			if (result.find("Du hast zu oft das Captcha falsch eingegeben!")  != std::string::npos) {
 				log_string("Serienjunkies.org: You have entered wrong Captcha too many times",LOG_DEBUG);
 				set_wait_time(1800);
 				return PLUGIN_SERVER_OVERLOADED;
 			}
-			if (result.find("Du hast das Download-Limit")  != std::string::npos)
-			{
+			if (result.find("Du hast das Download-Limit")  != std::string::npos) {
 				log_string("Serienjunkies.org: download limit reached",LOG_DEBUG);
 				set_wait_time(1800);
 				return PLUGIN_SERVER_OVERLOADED;
@@ -106,17 +99,14 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			handle->setopt(CURLOPT_WRITEDATA, &result);
 			res = handle->perform();
 
-			if(res != 0)
-			{
+			if(res != 0) {
 				return PLUGIN_CONNECTION_ERROR;
 			}
 		}
 
 		vector<string> links = search_all_between(result, "<FORM ACTION=\"","\" STYLE=\"display:",0,true);
-		for(size_t i = 0; i < links.size(); i++)
-		{
-			if (links[i].find("mirror") == std::string::npos)
-			{
+		for(size_t i = 0; i < links.size(); i++) {
+			if (links[i].find("mirror") == std::string::npos) {
 				result.clear();
 				handle->setopt(CURLOPT_URL, links[i]);
 				handle->setopt(CURLOPT_POST, 0);
