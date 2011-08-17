@@ -25,6 +25,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
 		std::string result;
 		ddcurl* handle = get_handle();
+
 		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
 		handle->setopt(CURLOPT_WRITEDATA, &result);
 		string url = get_url();
@@ -37,27 +38,21 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			return PLUGIN_CONNECTION_ERROR;
 		}
 
-		std::string filename;
-		size_t pos = result.find("Filename:");
-		pos = result.find("<b>", pos) + 3;
-		filename = result.substr(pos, result.find("</b>", pos) - pos);
-		trim_string(filename);
-		std::string filetype;
-		pos = result.find("Filetype:");
-		pos = result.find("<td>", pos) + 4;
-		filetype = result.substr(pos, result.find("</td>", pos) - pos);
-		trim_string(filetype);
-		filename += filetype;
-		outp.download_filename = filename;
-
-		std::string post_data = "email=" + inp.premium_user + "&password=" + inp.premium_password;
-		handle->setopt(CURLOPT_URL, "http://uploaded.to/login?setlang=en");
+		result.clear();
+		std::string post_data = "id=" + inp.premium_user + "&pw=" + inp.premium_password;
+		handle->setopt(CURLOPT_URL, "http://uploaded.to/io/login");
+		handle->setopt(CURLOPT_REFERER, "http://uploaded.to/login?setlang=en");
 		handle->setopt(CURLOPT_POST, 1);
 		handle->setopt(CURLOPT_COPYPOSTFIELDS, post_data.c_str());
+		handle->setopt(CURLOPT_HEADER, 1);
+		handle->setopt(CURLOPT_FOLLOWLOCATION, 0);
+		handle->setopt(CURLOPT_COOKIEFILE, "");
+		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+		handle->setopt(CURLOPT_WRITEDATA, &result);
 		handle->perform();
 		handle->setopt(CURLOPT_POST, 0);
 		handle->setopt(CURLOPT_COPYPOSTFIELDS, "");
-		if(result.find("Login failed") == string::npos) {
+		if(result.find("User and password do not match!") != string::npos) {
 			return PLUGIN_AUTH_FAIL;
 		}
 		outp.download_url = url;
