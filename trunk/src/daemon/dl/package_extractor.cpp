@@ -371,8 +371,9 @@ pkg_extractor::extract_status pkg_extractor::merge_hjsplit(const std::string& fi
             close(ctop[0]);
             dup2(ctop[1], STDOUT_FILENO);
             dup2(ctop[1], STDERR_FILENO);
-
-            log_string("excuting hjsplit path:" + hjsplit_path_s + "\nfn_path:" + filename, LOG_DEBUG);
+            // NO LOGGIN HERE! any complex operation in a forked child in a multithreaded application is VERY
+            // dangerous. This inclues simple stuff, like using STL containers or C standard functions
+            // log_string("excuting hjsplit path:" + hjsplit_path_s + "\nfn_path:" + filename, LOG_DEBUG);
             chdir(target_dir);
             execlp(hjsplit_path, hjsplit_path, "-j", fn_path, NULL);
 
