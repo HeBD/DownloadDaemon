@@ -52,14 +52,14 @@ pkg_extractor::extract_status pkg_extractor::extract_package(const std::string& 
 	//deep extract
 	string targetDir = getTargetDir(filename,to_use);
 	log_string("Deep unrar: target dir=" + targetDir,LOG_DEBUG);
-	std::vector<std::string> files=getDir(targetDir);
+	std::vector<std::string> files = getDir(targetDir);
 	if(!files.empty())
 	{
 		for(size_t i = 0; i < files.size(); i++)
 		{
 			log_string("Trying to deep extract "+ files[i],LOG_DEBUG);
-			pkg_extractor::extract_status temp=extract_package(files[i],password);
-			if(temp!=PKG_INVALID)
+			pkg_extractor::extract_status temp = extract_package(files[i], password);
+			if(temp != PKG_INVALID)
 				extract_status = temp;
 		}
 	}
@@ -396,10 +396,6 @@ pkg_extractor::extract_status pkg_extractor::merge_hjsplit(const std::string& fi
 		// parent
 		close(ctop[1]);
 
-	} else {
-		// parent
-		close(ctop[1]);
-
 		std::string result;
 		size_t num;
 		// we don't need the output. we just ignore it.
@@ -441,7 +437,7 @@ std::vector<std::string> pkg_extractor::getDir(std::string dir)
 	std::vector<std::string> files = std::vector<std::string>();
 	struct dirent *dirp;
 	if((dp  = opendir(dir.c_str())) == NULL) {
-		log_string("cannot open dir" + dir,LOG_DEBUG);
+		log_string("cannot open dir" + dir, LOG_WARNING);
 		return files;
 	}
 
