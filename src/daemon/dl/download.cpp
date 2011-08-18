@@ -165,17 +165,17 @@ std::string download::serialize() {
 		for(size_t i = 0; i < splitted_url.size(); ++i) {
 			url += splitted_url[i]+"/";}
 		url = url.substr(0,url.size()-1);
-		}
-		//Uploaded needs this because there are a forwarding from ul.to
-		if (splitted_url[2].find("ul.to") != std::string::npos &&
-			splitted_url[2].find("uploaded.to") == std::string::npos){
-			splitted_url[2]= "uploaded.to/file";
+        }
+        //Uploaded needs this because there are a forwarding from ul.to
+        if (splitted_url[2].find("ul.to") != std::string::npos &&
+                splitted_url[2].find("uploaded.to") == std::string::npos){
+                splitted_url[2]= "uploaded.to/file";
 
-			url.clear();
+                        url.clear();
 			for(size_t j = 0; j < splitted_url.size(); ++j) {
 				url += splitted_url[j]+"/";}
 				url = url.substr(0,url.size()-1);
-			}
+        }
 
 	ss << id << '|' << add_date << '|' << escape_string(comment) << '|' << escape_string(url) << '|' << status << '|'
 	<< dl_bytes << '|' << dl_size << '|' << escape_string(output_file) << "|\n";
