@@ -1,30 +1,35 @@
 2011-08-17
+   [boudcallens]
+	- added support for hjsplit
+	- a few new plugins
+
+2011-08-17
    [stefan]
-   - add support for serienjunkies.org link decrypter (captchas can be solved by user only)
+	- add support for serienjunkies.org link decrypter (captchas can be solved by user only)
 
 2011-08-01
    [stefan]
-   - fix youtube.com plugin
+	- fix youtube.com plugin
    
 2011-06-22
    [stefan]
-   - added free plugin gaiafile.com
-   - fix for rapidshare.com (changed site layout for free users)
+	- added free plugin gaiafile.com
+	- fix for rapidshare.com (changed site layout for free users)
 
 2011-05-06
    [stefan]
-   - added new plugin state (PLUGIN_NO_PARALLEL)
-   - added free and free-Account plugin x7.to
-   - added free plugin duckload.com
+	- added new plugin state (PLUGIN_NO_PARALLEL)
+	- added free and free-Account plugin x7.to
+	- added free plugin duckload.com
    
 2011-04-02
    [stefan]
-   - added error handling for plugin share.cx if file was removed
-   - Added free plugin for share-online.biz
+	- added error handling for plugin share.cx if file was removed
+	- Added free plugin for share-online.biz
 
 2011-03-31
    [stefan]
-   - Added premium plugin for filesonic.com
+	- Added premium plugin for filesonic.com
    
 2011-03-24
    [adrian]
