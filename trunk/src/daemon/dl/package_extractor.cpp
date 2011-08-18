@@ -36,6 +36,8 @@ pkg_extractor::extract_status pkg_extractor::extract_package(const std::string& 
 			return extract_tar(filename, to_use);
 		case ZIP:
 			return extract_zip(filename, password, to_use);
+                case HJSPLIT:
+                        return merge_hjsplit(filename, to_use);
 
 		default:
 			return PKG_INVALID;
@@ -70,6 +72,11 @@ pkg_extractor::tool pkg_extractor::required_tool(std::string filename) {
 	if((n = filename.find(".zip")) == filename.size() - 4 && n != string::npos) {
 		return ZIP;
 	}
+
+        if((n = filename.find(".001")) == filename.size() - 4 && n != string::npos) {
+                return HJSPLIT;
+        }
+
 	return NONE;
 }
 
@@ -333,5 +340,57 @@ pkg_extractor::extract_status pkg_extractor::extract_zip(const std::string& file
 
 	}
 	return PKG_ERROR;
+}
+pkg_extractor::extract_status pkg_extractor::merge_hjsplit(const std::string& filename, tool t)
+{
+    std::string hjsplit_path_s = global_config.get_cfg_value("hjsplit_path");
+    if(hjsplit_path_s.empty()) return PKG_ERROR;
+    pid_t child_id;
+    char buf[256];
+
+    char hjsplit_path[FILENAME_MAX];
+    strncpy(hjsplit_path, hjsplit_path_s.c_str(), FILENAME_MAX);
+    char fn_path[FILENAME_MAX];
+    strncpy(fn_path, filename.c_str(), FILENAME_MAX);
+    char target_dir[FILENAME_MAX];
+    size_t ext_len = 4;
+
+    strncpy(target_dir, filename.substr(0, filename.size() - ext_len).c_str(), FILENAME_MAX);
+
+    hjsplit_path[FILENAME_MAX - 1] = '\0';
+    fn_path[FILENAME_MAX - 1] = '\0';
+    target_dir[FILENAME_MAX - 1] = '\0';
+
+    int ctop[2];
+    if(pipe(ctop) != 0) {
+            log_string("Failed to open pipe while trying to merge a hjsplit-package", LOG_ERR);
+            return PKG_ERROR;
+    }
+    mkdir_recursive(target_dir);
+    if((child_id = fork()) == 0) {
+            close(ctop[0]);
+            dup2(ctop[1], STDOUT_FILENO);
+            dup2(ctop[1], STDERR_FILENO);
+
+            execlp(hjsplit_path, hjsplit_path, "-j", fn_path, NULL);
+
+            exit(-1);
+
+    } else {
+            // parent
+            close(ctop[1]);
+
+            std::string result;
+            size_t num;
+            // we don't need the output. we just ignore it.
+            while((num = read(ctop[0], buf, 256)) > 0);
+
+            int retval;
+            waitpid(child_id, &retval, 0);
+            if(retval == 0) {
+                    return PKG_SUCCESS;
+            }
+    }
+    return PKG_ERROR;
 }
 
