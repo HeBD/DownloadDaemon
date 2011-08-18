@@ -372,6 +372,8 @@ pkg_extractor::extract_status pkg_extractor::merge_hjsplit(const std::string& fi
             dup2(ctop[1], STDOUT_FILENO);
             dup2(ctop[1], STDERR_FILENO);
 
+            log_string("excuting hjsplit path:" + hjsplit_path_s + "\nfn_path:" + filename, LOG_DEBUG);
+            chdir(target_dir);
             execlp(hjsplit_path, hjsplit_path, "-j", fn_path, NULL);
 
             exit(-1);
@@ -383,11 +385,15 @@ pkg_extractor::extract_status pkg_extractor::merge_hjsplit(const std::string& fi
             std::string result;
             size_t num;
             // we don't need the output. we just ignore it.
-            while((num = read(ctop[0], buf, 256)) > 0);
-
+            while((num = read(ctop[0], buf, 256)) > 0)
+            {
+                 result.append(buf, num);
+            }
+            log_string("result = "+result,LOG_DEBUG);
             int retval;
             waitpid(child_id, &retval, 0);
             if(retval == 0) {
+                log_string("HJSPLIT: package merged succesfully",LOG_DEBUG);
                     return PKG_SUCCESS;
             }
     }
