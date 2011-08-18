@@ -12,6 +12,7 @@
 #ifndef PACKAGE_EXTRACTOR_H_INCLUDED
 #define PACKAGE_EXTRACTOR_H_INCLUDED
 #include <string>
+#include <vector>
 
 class pkg_extractor {
 public:
@@ -27,6 +28,9 @@ public:
 	static extract_status extract_tar(const std::string& filename, tool t);
 	static extract_status extract_zip(const std::string& filename, const std::string& password, tool t);
         static extract_status merge_hjsplit(const std::string& filename, tool t);
+        static std::string getTargetDir(const std::string& filename, tool t);
+        static std::vector<std::string> getDir(std::string dir);
+
 
 };
 
