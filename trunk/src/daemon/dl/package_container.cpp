@@ -536,19 +536,28 @@ void  package_container::move_pkg(int dl, package_container::direction d) {
 	if(d == DIRECTION_TOP && it != packages.begin())
 	{
 		(*it)->post_subscribers(connection_manager::MOVETOP);
-		it2 = packages.begin();
-		download_container* tmp = *it;
-		*it = *it2;
-		*it2 = tmp;
+		while(it != packages.begin())
+		{
+		    it = it2;
+		    --it2;
+		    if(it2 == packages.begin()-1) return;
+		    download_container* tmp = *it;
+		    *it = *it2;
+		    *it2 = tmp;
+		}
 	}
 	if(d == DIRECTION_BOTTOM)
 	{
 		(*it)->post_subscribers(connection_manager::MOVEBOTTOM);
-		it2 = packages.end();
-		--it2;
-		download_container* tmp = *it;
-		*it = *it2;
-		*it2 = tmp;
+		while(it != packages.end()-1)
+		{
+		    it2 = it;
+		    ++it;
+		    if(it == packages.end()) return;
+		    download_container* tmp = *it;
+		    *it = *it2;
+		    *it2 = tmp;
+		}
 	}
 	if(d == DIRECTION_DOWN) {
 		(*it)->post_subscribers(connection_manager::MOVEDOWN);
