@@ -240,9 +240,8 @@ void list_handling::update_full_list_packages(){
 
 	int line_nr = 0;
 	bool expanded;
-	string color, status_text, time_left;
+
 	QStandardItem *pkg;
-	QStandardItem *dl;
 
 	vector<view_info> info = get_current_view();
 	deselect_list();
@@ -284,53 +283,18 @@ void list_handling::update_full_list_packages(){
 
 	}else if(new_it != new_content.end()){ // there are more new lines then old ones
 		while(new_it != new_content.end()){
-			// insert new lines
 
-			pkg = new QStandardItem(QIcon("img/package.png"), QString("%1").arg(new_it->id));
-			pkg->setEditable(false);
-			list_model->setItem(line_nr, 0, pkg);
+			// insert new package lines
+			pkg = create_new_package(*new_it, line_nr);
 
 			QModelIndex index = list_model->index(line_nr, 0, QModelIndex()); // downloads need the parent index
 
 			//insert downloads
 			int dl_line = 0;
 			for(dit = new_it->dls.begin(); dit != new_it->dls.end(); ++dit){ // loop all downloads of that package
-				color = build_status(status_text, time_left, *dit);
 
-				dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(dit->id));
-				dl->setEditable(false);
-				pkg->setChild(dl_line, 0, dl);
-
-				dl = new QStandardItem(QString(dit->title.c_str()));
-				dl->setEditable(false);
-				pkg->setChild(dl_line, 1, dl);
-
-				dl = new QStandardItem(QString(dit->url.c_str()));
-				dl->setEditable(false);
-				pkg->setChild(dl_line, 2, dl);
-
-				dl = new QStandardItem(QString(time_left.c_str()));
-				dl->setEditable(false);
-				pkg->setChild(dl_line, 3, dl);
-
-				string colorstring = "img/bullet_" + color + ".png";
-				dl = new QStandardItem(QIcon(colorstring.c_str()), my_main_window->CreateQString(status_text.c_str()));
-				dl->setEditable(false);
-				pkg->setChild(dl_line, 4, dl);
-
+				create_new_download(*dit, pkg, dl_line);
 				++dl_line;
-			}
-
-			pkg = new QStandardItem(QString(new_it->name.c_str()));
-			pkg->setEditable(false);
-			if(new_it->password != "")
-				pkg->setIcon(QIcon("img/key.png"));
-			list_model->setItem(line_nr, 1, pkg);
-
-			for(int i=2; i<5; i++){
-				pkg = new QStandardItem(QString(""));
-				pkg->setEditable(false);
-				list_model->setItem(line_nr, i, pkg);
 			}
 
 			list->expand(index);
@@ -375,14 +339,12 @@ QModelIndex list_handling::compare_one_package(int line_nr, QStandardItem *&pkg,
 
 
 void list_handling::compare_downloads(QModelIndex &index, std::vector<package>::iterator &new_it, std::vector<package>::iterator &old_it, vector<view_info> &info){
-
 	int dl_line = 0;
 	vector<download>::iterator old_dit = old_it->dls.begin();
 	vector<download>::iterator new_dit = new_it->dls.begin();
 	vector<view_info>::iterator vit;
 	QStandardItem *pkg;
 	QStandardItem *dl;
-	string color, status_text, time_left;
 
 	pkg = list_model->itemFromIndex(index);
 	if(pkg == NULL)
@@ -390,36 +352,7 @@ void list_handling::compare_downloads(QModelIndex &index, std::vector<package>::
 
 	// compare every single download of the package
 	while((old_dit != old_it->dls.end()) && (new_dit != new_it->dls.end())){
-		color = build_status(status_text, time_left, *new_dit);
-
-		if(old_dit->id != new_dit->id){
-			dl = pkg->child(dl_line, 0);
-			dl->setText(QString("%1").arg(new_dit->id));
-		}
-
-				if(old_dit->title != new_dit->title){
-			dl = pkg->child(dl_line, 1);
-			dl->setText(QString(new_dit->title.c_str()));
-		}
-
-		if(old_dit->url != new_dit->url){
-			dl = pkg->child(dl_line, 2);
-			dl->setText(QString(new_dit->url.c_str()));
-		}
-
-		if((new_dit->status != old_dit->status) || (new_dit->downloaded != old_dit->downloaded) || (new_dit->size != old_dit->size) ||
-		   (new_dit->wait != old_dit->wait) || (new_dit->error != old_dit->error) || (new_dit->speed != old_dit->speed)){
-
-			dl = pkg->child(dl_line, 3);
-			dl->setText(QString(time_left.c_str()));
-
-			string colorstring = "img/bullet_" + color + ".png";
-
-			dl = pkg->child(dl_line, 4);
-			dl->setText(QString(my_main_window->CreateQString(status_text.c_str())));
-			dl->setIcon(QIcon(colorstring.c_str()));
-
-		}
+		compare_one_download(*new_dit, *old_dit, pkg, dl_line);
 
 		// recreate selection if existed
 		for(vit = info.begin(); vit != info.end(); ++vit){
@@ -455,35 +388,50 @@ void list_handling::compare_downloads(QModelIndex &index, std::vector<package>::
 
 	}else if(new_dit != new_it->dls.end()){ // there are more new lines than old ones
 		while(new_dit != new_it->dls.end()){
-			// insert new lines
-	  color = build_status(status_text, time_left, *new_dit);
-
-			dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(new_dit->id));
-			dl->setEditable(false);
-			pkg->setChild(dl_line, 0, dl);
-
-			dl = new QStandardItem(QString(new_dit->title.c_str()));
-			dl->setEditable(false);
-			pkg->setChild(dl_line, 1, dl);
-
-			dl = new QStandardItem(QString(new_dit->url.c_str()));
-			dl->setEditable(false);
-			pkg->setChild(dl_line, 2, dl);
-
-			dl = new QStandardItem(QString(time_left.c_str()));
-			dl->setEditable(false);
-			pkg->setChild(dl_line, 3, dl);
-
-			string colorstring = "img/bullet_" + color + ".png";
-			dl = new QStandardItem(QIcon(colorstring.c_str()), my_main_window->CreateQString(status_text.c_str()));
-			dl->setEditable(false);
-			pkg->setChild(dl_line, 4, dl);
+			// insert new download linkes
+			create_new_download(*new_dit, pkg, dl_line);
 
 			++dl_line;
 			++new_dit;
 		}
 		list->collapse(index);
 		list->expand(index);
+	}
+}
+
+
+void list_handling::compare_one_download(const download &new_download, const download &old_download, QStandardItem *pkg, int dl_line){
+	QStandardItem *dl;
+
+	if(old_download.id != new_download.id){
+		dl = pkg->child(dl_line, 0);
+		dl->setText(QString("%1").arg(new_download.id));
+	}
+
+	if(old_download.title != new_download.title){
+		dl = pkg->child(dl_line, 1);
+		dl->setText(QString(new_download.title.c_str()));
+	}
+
+	if(old_download.url != new_download.url){
+		dl = pkg->child(dl_line, 2);
+		dl->setText(QString(new_download.url.c_str()));
+	}
+
+	if((new_download.status != old_download.status) || (new_download.downloaded != old_download.downloaded) || (new_download.size != old_download.size) ||
+	   (new_download.wait != old_download.wait) || (new_download.error != old_download.error) || (new_download.speed != old_download.speed)){
+
+		string color, status_text, time_left;
+		color = build_status(status_text, time_left, new_download);
+
+		dl = pkg->child(dl_line, 3);
+		dl->setText(QString(time_left.c_str()));
+
+		string colorstring = "img/bullet_" + color + ".png";
+
+		dl = pkg->child(dl_line, 4);
+		dl->setText(QString(my_main_window->CreateQString(status_text.c_str())));
+		dl->setIcon(QIcon(colorstring.c_str()));
 	}
 }
 /*************************************************************
@@ -519,13 +467,9 @@ void list_handling::update_packages(){
 	vector<package>::iterator pkg_it;
 	vector<download>::iterator dl_it;
 	vector<update_content>::iterator up_it = new_updates.begin();
-	package pkg;
-	download dl;
 	QStandardItem *pkg_gui;
-	QStandardItem *dl_gui;
 	int line_nr, dl_line;
 	bool exists;
-	string color, status_text, time_left;
 
 	for(; up_it != new_updates.end(); ++up_it){
 		exists = false;
@@ -540,7 +484,7 @@ void list_handling::update_packages(){
 
 			continue;
 		}
-	calculate_status_bar_information();
+
 		if(up_it->sub != SUBS_DOWNLOADS) // we just need SUBS_DOWNLOADS information
 			continue;
 
@@ -556,29 +500,9 @@ void list_handling::update_packages(){
 				if(exists) // got a new update even though we already have the package in the list
 					continue;
 
-				pkg.id = up_it->id;
-				pkg.password = up_it->password;
-				pkg.name = up_it->name;
-
-				content.push_back(pkg);
+				content.push_back(*up_it);
 				line_nr = list_model->rowCount();
-
-				pkg_gui = new QStandardItem(QIcon("img/package.png"), QString("%1").arg(pkg.id));
-				pkg_gui->setEditable(false);
-				list_model->setItem(line_nr, 0, pkg_gui);
-
-				pkg_gui = new QStandardItem(QString(pkg.name.c_str()));
-				pkg_gui->setEditable(false);
-
-				if(pkg.password != "")
-					pkg_gui->setIcon(QIcon("img/key.png"));
-				list_model->setItem(line_nr, 1, pkg_gui);
-
-				for(int i=2; i<5; i++){
-					pkg_gui = new QStandardItem(QString(""));
-					pkg_gui->setEditable(false);
-					list_model->setItem(line_nr, i, pkg_gui);
-				}
+				create_new_package(*up_it, line_nr);
 
 				continue;
 			}
@@ -647,44 +571,10 @@ void list_handling::update_packages(){
 				if(exists) // download already exists
 					continue;
 
-				dl.id = up_it->id;
-				dl.date = up_it->date;
-				dl.title = up_it->title;
-				dl.url = up_it->url;
-				dl.status = up_it->status;
-				dl.downloaded = up_it->downloaded;
-				dl.size = up_it->size;
-				dl.wait = up_it->wait;
-				dl.error = up_it->error;
-				dl.speed = up_it->speed;
-
-				pkg_it->dls.push_back(dl);
+				pkg_it->dls.push_back(*up_it); // automatic cast from update_content to download via cast operator
 
 				dl_line = pkg_it->dls.size() - 1;
-
-				color = build_status(status_text, time_left, dl);
-
-				dl_gui = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(up_it->id));
-				dl_gui->setEditable(false);
-				pkg_gui->setChild(dl_line, 0, dl_gui);
-
-				dl_gui = new QStandardItem(QString(up_it->title.c_str()));
-				dl_gui->setEditable(false);
-				pkg_gui->setChild(dl_line, 1, dl_gui);
-
-				dl_gui = new QStandardItem(QString(up_it->url.c_str()));
-				dl_gui->setEditable(false);
-				pkg_gui->setChild(dl_line, 2, dl_gui);
-
-				dl_gui = new QStandardItem(QString(time_left.c_str()));
-				dl_gui->setEditable(false);
-				pkg_gui->setChild(dl_line, 3, dl_gui);
-
-				string colorstring = "img/bullet_" + color + ".png";
-				dl_gui = new QStandardItem(QIcon(colorstring.c_str()), my_main_window->CreateQString(status_text.c_str()));
-				dl_gui->setEditable(false);
-				pkg_gui->setChild(dl_line, 4, dl_gui);
-
+				create_new_download(*up_it, pkg_gui, dl_line);
 				list->expand(index);
 
 				continue;
@@ -693,48 +583,8 @@ void list_handling::update_packages(){
 				if(!exists) // couldn't find right download
 					continue;
 
-				if(dl_it->title != up_it->title){
-					dl_it->title = up_it->title;
+				compare_and_update_one_download(*dl_it, *up_it, dl_line, pkg_gui);
 
-					dl_gui = pkg_gui->child(dl_line, 1);
-					if(dl_gui != NULL)
-						dl_gui->setText(QString(up_it->title.c_str()));
-				}
-
-				if(dl_it->url != up_it->url){
-					dl_it->url = up_it->url;
-
-					dl_gui = pkg_gui->child(dl_line, 2);
-					if(dl_gui != NULL)
-						dl_gui->setText(QString(up_it->url.c_str()));
-				}
-
-				if((dl_it->status != up_it->status) || (dl_it->downloaded != up_it->downloaded) || (dl_it->size != up_it->size) ||
-				   (dl_it->wait != up_it->wait) || (dl_it->error != up_it->error) || (dl_it->speed != up_it->speed)){
-
-					dl_it->status = up_it->status;
-					dl_it->downloaded = up_it->downloaded;
-					dl_it->size = up_it->size;
-					dl_it->wait = up_it->wait;
-					dl_it->error = up_it->error;
-					dl_it->speed = up_it->speed;
-					dl_it->title = up_it->title;
-
-					color = build_status(status_text, time_left, *dl_it);
-
-					dl_gui = pkg_gui->child(dl_line, 3);
-					if(dl_gui != NULL)
-						dl_gui->setText(QString(time_left.c_str()));
-
-					string colorstring = "img/bullet_" + color + ".png";
-
-					dl_gui = pkg_gui->child(dl_line, 4);
-					if(dl_gui != NULL){
-						dl_gui->setText(QString(my_main_window->CreateQString(status_text.c_str())));
-						dl_gui->setIcon(QIcon(colorstring.c_str()));
-					}
-
-				}
 			}else if(up_it->reason == R_DELETE){
 				if(!exists) // couldn't find right download
 					continue;
@@ -745,6 +595,56 @@ void list_handling::update_packages(){
 		}
 	}
 }
+
+
+void list_handling::compare_and_update_one_download(download &old_download, const download &new_download, int dl_line, QStandardItem *pkg_gui){
+	QStandardItem *dl_gui;
+	string color, status_text, time_left;
+
+	if(old_download.title != new_download.title){
+		old_download.title = new_download.title;
+
+		dl_gui = pkg_gui->child(dl_line, 1);
+		if(dl_gui != NULL)
+			dl_gui->setText(QString(new_download.title.c_str()));
+	}
+
+	if(old_download.url != new_download.url){
+		old_download.url = new_download.url;
+
+		dl_gui = pkg_gui->child(dl_line, 2);
+		if(dl_gui != NULL)
+			dl_gui->setText(QString(new_download.url.c_str()));
+	}
+
+	if((old_download.status != new_download.status) || (old_download.downloaded !=new_download.downloaded) || (old_download.size != new_download.size) ||
+	   (old_download.wait != new_download.wait) || (old_download.error != new_download.error) || (old_download.speed != new_download.speed)){
+
+		old_download.status = new_download.status;
+		old_download.downloaded = new_download.downloaded;
+		old_download.size = new_download.size;
+		old_download.wait = new_download.wait;
+		old_download.error = new_download.error;
+		old_download.speed = new_download.speed;
+		old_download.title = new_download.title;
+
+		color = build_status(status_text, time_left, old_download);
+
+		dl_gui = pkg_gui->child(dl_line, 3);
+		if(dl_gui != NULL)
+			dl_gui->setText(QString(time_left.c_str()));
+
+		string colorstring = "img/bullet_" + color + ".png";
+
+		dl_gui = pkg_gui->child(dl_line, 4);
+		if(dl_gui != NULL){
+			dl_gui->setText(QString(my_main_window->CreateQString(status_text.c_str())));
+			dl_gui->setIcon(QIcon(colorstring.c_str()));
+		}
+
+	}
+}
+
 
 void list_handling::calculate_status_bar_information()
 {
@@ -795,7 +695,7 @@ void list_handling::calculate_status_bar_information()
 /*************************************************************
 * General update helper methods
 *************************************************************/
-string list_handling::build_status(string &status_text, string &time_left, download &dl){
+string list_handling::build_status(string &status_text, string &time_left, const download &dl){
 	string color;
 	color = "white";
 	status_text = time_left = "";
@@ -988,6 +888,56 @@ void list_handling::cut_time(string &time_left){
 	time_left = stream_buffer.str();
 	return;
 }
+
+
+QStandardItem *list_handling::create_new_package(const package &pkg, int line_nr){
+
+	QStandardItem *pkg_remember = new QStandardItem(QIcon("img/package.png"), QString("%1").arg(pkg.id));
+	pkg_remember->setEditable(false);
+	list_model->setItem(line_nr, 0, pkg_remember);
+
+	QStandardItem *pkg_gui = new QStandardItem(QString(pkg.name.c_str()));
+	pkg_gui->setEditable(false);
+
+	if(pkg.password != "")
+		pkg_gui->setIcon(QIcon("img/key.png"));
+	list_model->setItem(line_nr, 1, pkg_gui);
+
+	for(int i=2; i<5; i++){
+		pkg_gui = new QStandardItem(QString(""));
+		pkg_gui->setEditable(false);
+		list_model->setItem(line_nr, i, pkg_gui);
+	}
+
+	return pkg_remember;
+}
+
+
+void list_handling::create_new_download(const download &new_download, QStandardItem *pkg, int dl_line){
+	string color, status_text, time_left;
+	color = build_status(status_text, time_left, new_download);
+
+	QStandardItem *dl = new QStandardItem(QIcon("img/bullet_black.png"), QString("%1").arg(new_download.id));
+	dl->setEditable(false);
+	pkg->setChild(dl_line, 0, dl);
+
+	dl = new QStandardItem(QString(new_download.title.c_str()));
+	dl->setEditable(false);
+	pkg->setChild(dl_line, 1, dl);
+
+	dl = new QStandardItem(QString(new_download.url.c_str()));
+	dl->setEditable(false);
+	pkg->setChild(dl_line, 2, dl);
+
+	dl = new QStandardItem(QString(time_left.c_str()));
+	dl->setEditable(false);
+	pkg->setChild(dl_line, 3, dl);
+
+	string colorstring = "img/bullet_" + color + ".png";
+	dl = new QStandardItem(QIcon(colorstring.c_str()), my_main_window->CreateQString(status_text.c_str()));
+	dl->setEditable(false);
+	pkg->setChild(dl_line, 4, dl);
+}
 /*************************************************************
 * End: General update helper methods
 *************************************************************/
@@ -1050,7 +1000,7 @@ vector<view_info> list_handling::get_current_view(){
 			curr_d_info.selected = false;
 			info.push_back(curr_d_info);
 		}
-		line++;
+		++line;
 	}
 
 	// loop all selected lines to save that too

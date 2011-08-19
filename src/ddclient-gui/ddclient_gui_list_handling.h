@@ -94,15 +94,19 @@ class list_handling{
 		QModelIndex compare_one_package(int line_nr, QStandardItem *&pkg, const std::vector<package>::iterator &old_it,
 										const std::vector<package>::iterator &new_it, const std::vector<view_info> &info, bool &expanded);
 		void compare_downloads(QModelIndex &index, std::vector<package>::iterator &new_it, std::vector<package>::iterator &old_it, std::vector<view_info> &info);
+		void compare_one_download(const download &new_download, const download &old_download, QStandardItem *pkg, int dl_line);
 
 		// Subscription update helper methods
 		bool check_full_list_update_required();
 		void update_packages();
+		void compare_and_update_one_download(download &old_download, const download &new_download, int dl_line, QStandardItem *pkg_gui);
 		void calculate_status_bar_information();
 
 		// General update helper methods
-		std::string build_status(std::string &status_text, std::string &time_left, download &dl);
+		std::string build_status(std::string &status_text, std::string &time_left, const download &dl);
 		void cut_time(std::string &time_left);
+		QStandardItem *create_new_package(const package &pkg, int line_nr);
+		void create_new_download(const download &download, QStandardItem *pkg, int dl_line);
 
 		//Private selection helper methods
 		static bool sort_selected_info(selected_info i1, selected_info i2);
