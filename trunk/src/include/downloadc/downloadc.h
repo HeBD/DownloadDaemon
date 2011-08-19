@@ -226,12 +226,12 @@ class downloadc{
         */
         void package_priority_down(int id);
 
-        /** Sets priority of a package top
+		/** Sets priority of a package to the top of the list
         *   @param id ID of the package
         */
         void package_priority_top(int id);
 
-        /** Sets priority of a package bottom
+		/** Sets priority of a package to the bottom of the list
         *   @param id ID of the package
         */
         void package_priority_bottom(int id);
@@ -402,7 +402,6 @@ class downloadc{
         *   @returns the same string
         */
         static const std::string& trim_string(std::string &str);
-        void log_string(const std::string logstr, int level=LOG_DEBUG);
 
     private:
 

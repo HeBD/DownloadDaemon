@@ -27,7 +27,6 @@ class main_window{
 		virtual void set_downloading_active() = 0;
 		virtual void set_downloading_deactive() = 0;
 		virtual QString tsl(std::string text, ...) = 0;
-		virtual void emit_captcha_error() = 0;
 
 		error_message last_error_message;
 };

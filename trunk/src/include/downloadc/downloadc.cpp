@@ -274,19 +274,15 @@ std::vector<update_content> downloadc::get_updates(){
             }else if(answer.find("MOVEUP") == 0){
                 update.reason = R_MOVEUP;
                 answer = answer.substr(7);
-                log_string("answer up:" + answer);
             }else if(answer.find("MOVEDOWN") == 0){
                 update.reason = R_MOVEDOWN;
                 answer = answer.substr(9);
-                log_string("answer down:" + answer);
             }else if(answer.find("MOVETOP") == 0){
                 update.reason = R_MOVETOP;
-                answer = answer.substr(8);
-                log_string("answer top:" + answer);
+				answer = answer.substr(8);
             }else if(answer.find("MOVEBOTTOM") == 0){
                 update.reason = R_MOVEBOTTOM;
                 answer = answer.substr(11);
-                log_string("answer bottom:" + answer);
             }else // corrupt line or don't know reason_type
                 continue;
 
@@ -598,8 +594,28 @@ void downloadc::priority_up(int id){
     check_error_code(answer);
 }
 
-void downloadc::priority_top(int id)
-{
+
+void downloadc::priority_down(int id){
+	std::lock_guard<std::recursive_mutex> lock(mx);
+	check_connection();
+
+	skip_update = true;
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP DL DOWN " + id_str.str());
+	mysock->recv(answer);
+	while(!check_correct_answer(answer))
+		mysock->recv(answer);
+
+	skip_update = false;
+	check_error_code(answer);
+}
+
+
+void downloadc::priority_top(int id){
     std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
@@ -610,9 +626,7 @@ void downloadc::priority_top(int id)
     id_str << id;
 
     mysock->send("DDP DL TOP " + id_str.str());
-    log_string("id:"+id_str.str());
     mysock->recv(answer);
-    log_string("correct anwer:" + answer);
     while(!check_correct_answer(answer))
         mysock->recv(answer);
 
@@ -620,8 +634,8 @@ void downloadc::priority_top(int id)
     check_error_code(answer);
 }
 
-void downloadc::priority_bottom(int id)
-{
+
+void downloadc::priority_bottom(int id){
     std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
@@ -632,28 +646,6 @@ void downloadc::priority_bottom(int id)
     id_str << id;
 
     mysock->send("DDP DL BOTTOM " + id_str.str());
-    log_string("id:"+id_str.str());
-    mysock->recv(answer);
-    log_string("correct anwer:" + answer);
-    while(!check_correct_answer(answer))
-        mysock->recv(answer);
-
-    skip_update = false;
-    check_error_code(answer);
-}
-
-
-void downloadc::priority_down(int id){
-    std::lock_guard<std::recursive_mutex> lock(mx);
-    check_connection();
-
-    skip_update = true;
-
-    std::string answer;
-    std::stringstream id_str;
-    id_str << id;
-
-    mysock->send("DDP DL DOWN " + id_str.str());
     mysock->recv(answer);
     while(!check_correct_answer(answer))
         mysock->recv(answer);
@@ -861,8 +853,27 @@ void downloadc::package_priority_up(int id){
     skip_update = false;
 }
 
-void downloadc::package_priority_top(int id)
-{
+
+void downloadc::package_priority_down(int id){
+	std::lock_guard<std::recursive_mutex> lock(mx);
+	check_connection();
+
+	skip_update = true;
+
+	std::string answer;
+	std::stringstream id_str;
+	id_str << id;
+
+	mysock->send("DDP PKG DOWN " + id_str.str());
+	mysock->recv(answer);
+	while(!check_correct_answer(answer))
+		mysock->recv(answer);
+
+	skip_update = false;
+}
+
+
+void downloadc::package_priority_top(int id){
     std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
@@ -874,15 +885,14 @@ void downloadc::package_priority_top(int id)
 
     mysock->send("DDP PKG TOP " + id_str.str());
     mysock->recv(answer);
-    //log_string("priority top\nid:" + id_str.str() + "\nanswer:"+answer);
     while(!check_correct_answer(answer))
         mysock->recv(answer);
 
     skip_update = false;
 }
 
-void downloadc::package_priority_bottom(int id)
-{
+
+void downloadc::package_priority_bottom(int id){
     std::lock_guard<std::recursive_mutex> lock(mx);
     check_connection();
 
@@ -893,25 +903,6 @@ void downloadc::package_priority_bottom(int id)
     id_str << id;
 
     mysock->send("DDP PKG BOTTOM " + id_str.str());
-    mysock->recv(answer);
-    //log_string("priority bottom\nid:" + id_str.str() + "\nanswer:"+answer);
-    while(!check_correct_answer(answer))
-        mysock->recv(answer);
-
-    skip_update = false;
-}
-
-void downloadc::package_priority_down(int id){
-    std::lock_guard<std::recursive_mutex> lock(mx);
-    check_connection();
-
-    skip_update = true;
-
-    std::string answer;
-    std::stringstream id_str;
-    id_str << id;
-
-    mysock->send("DDP PKG DOWN " + id_str.str());
     mysock->recv(answer);
     while(!check_correct_answer(answer))
         mysock->recv(answer);
@@ -1590,35 +1581,4 @@ void downloadc::subs_to_string(subs_type t, std::string &ret){
             ret = "";
             return;
     }
-}
-
-void downloadc::log_string(const std::string logstr, int level) {
-        int desiredLogLevelInt = LOG_DEBUG;
-
-        time_t rawtime;
-        time(&rawtime);
-        std::string log_date = ctime(&rawtime);
-        log_date.erase(log_date.length() - 1);
-
-        std::stringstream to_log;
-        std::stringstream to_syslog;
-        to_log << '[' << log_date << "] ";
-        if(level == LOG_ERR) {
-                to_log << "SEVERE: ";
-                to_syslog << "SEVERE: ";
-        } else if(level == LOG_WARNING) {
-                to_log << "WARNING: ";
-                to_syslog << "WARNING: ";
-        } else if(level == LOG_DEBUG) {
-                to_log << "DEBUG: ";
-                to_syslog << "DEBUG: ";
-        }
-
-        to_log << logstr << '\n';
-        to_syslog << logstr;
-
-        lock_guard<mutex> lock(logfile_mutex);
-        ofstream ofs("test.log", ios::app);
-        if(ofs) ofs.write(to_log.str().c_str(), to_log.str().size());
-        ofs.close();
 }

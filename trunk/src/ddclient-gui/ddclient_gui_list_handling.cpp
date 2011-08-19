@@ -808,7 +808,6 @@ string list_handling::build_status(string &status_text, string &time_left, downl
 
 			status_text = (*lang)["Enter Captcha"] + ".";
 			time_left = "";
-			my_main_window->emit_captcha_error();
 
 		}else if(dl.wait > 0 && dl.error == "PLUGIN_SUCCESS"){ // waiting time > 0
 			status_text = (*lang)["Download running. Waiting."];
