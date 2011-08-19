@@ -103,7 +103,6 @@ ddclient_gui::ddclient_gui(QString config_dir) : QMainWindow(NULL), config_dir(c
 	connect(this, SIGNAL(do_full_reload()), this, SLOT(on_full_reload()), Qt::QueuedConnection);
 	connect(this, SIGNAL(do_subscription_reload()), this, SLOT(on_subscription_reload()), Qt::QueuedConnection);
 	connect(this, SIGNAL(do_clear_list()), this, SLOT(on_clear_list()), Qt::QueuedConnection);
-	connect(this, SIGNAL(captcha_error()), this, SLOT(on_enter_captcha()), Qt::QueuedConnection);
 
 	int interval = file.get_int_value("update_interval");
 
