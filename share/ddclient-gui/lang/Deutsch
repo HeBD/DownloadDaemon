@@ -168,6 +168,10 @@ Increase Priority->Priorität erhöhen
 Increase Priority of the selected Download->Priorität erhöhen
 Decrease Priority->Priorität verringern
 Decrease Priority of the selected Download->Priorität verringern
+Move to Top->An den Anfang verschieben
+Move the selected Download to the top->Den selektierten Download an den Anfang verschieben
+Move to Bottom->Ans Ende verschieben
+Move the selected Download to the bottom->Den selektierten Downlaod ans Ende verschieben
 Configure DownloadDaemon Server->DownloadDaemon Server konfigurieren
 
 Time left->Dauer

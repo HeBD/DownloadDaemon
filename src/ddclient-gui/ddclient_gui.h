@@ -130,9 +130,6 @@ class ddclient_gui : public QMainWindow, main_window{
 		*/
 		QString tsl(std::string text, ...);
 
-		/** Emits the captcha error signal */
-		void emit_captcha_error();
-
 		/** Indicates the last error message that got thrown */
 		error_message last_error_message;
 		// End: Main Window methods
@@ -141,8 +138,6 @@ class ddclient_gui : public QMainWindow, main_window{
 		void do_full_reload();
 		void do_subscription_reload();
 		void do_clear_list();
-        void captcha_error();
-
 
     private:
 		// GUI helper methods

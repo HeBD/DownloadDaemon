@@ -304,10 +304,6 @@ QString ddclient_gui::tsl(string text, ...){
 
 	return trUtf8(translated.c_str());
 }
-
-void ddclient_gui::emit_captcha_error(){
-	emit captcha_error();
-}
 /*************************************************************
 * End: Main Window methods
 *************************************************************/
