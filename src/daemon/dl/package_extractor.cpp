@@ -45,7 +45,9 @@ pkg_extractor::extract_status pkg_extractor::extract_package(const std::string& 
 		case HJSPLIT:
 			extract_status = merge_hjsplit(filename, to_use);
 			break;
-
+		case SEVENZ:
+			extract_status = extract_7z(filename,password,to_use);
+			break;
 		default:
 			return PKG_INVALID;
 	}
@@ -95,6 +97,10 @@ pkg_extractor::tool pkg_extractor::required_tool(std::string filename) {
 
 	if((n = filename.find(".001")) == filename.size() - 4 && n != string::npos) {
 		return HJSPLIT;
+	}
+
+	if((n = filename.find(".7z")) == filename.size() - 3 && n != string::npos) {
+		return SEVENZ;
 	}
 
 	return NONE;
@@ -423,6 +429,7 @@ string pkg_extractor::getTargetDir(const std::string &filename, tool t)
 		case RARLAB_UNRAR:
 		case ZIP:
 		case HJSPLIT:
+		case SEVENZ: ext_len=3; break;
 		case TAR: ext_len = 4; break;
 		case TAR_GZ: ext_len = 7; break;
 		case TAR_BZ2: ext_len = 8; break;
@@ -446,5 +453,74 @@ std::vector<std::string> pkg_extractor::getDir(std::string dir)
 	}
 	closedir(dp);
 	return files;
+}
+pkg_extractor::extract_status pkg_extractor::extract_7z(const std::string& filename, const std::string& password, tool t) {
+	std::string zip7_path_s = global_config.get_cfg_value("7z_path");
+	if(zip7_path_s.empty()) return PKG_ERROR;
+	pid_t child_id;
+	char buf[256];
+
+	char zip7_path[FILENAME_MAX];
+	strncpy(zip7_path, zip7_path_s.c_str(), FILENAME_MAX);
+	char fn_path[FILENAME_MAX];
+	strncpy(fn_path, filename.c_str(), FILENAME_MAX);
+	char target_dir_app[FILENAME_MAX] = "-o";
+	char target_dir[FILENAME_MAX];
+	char pass[512] = "-p";
+	strncpy(pass + 2, password.c_str(), 510);
+
+	strncpy(target_dir_app + 2, getTargetDir(filename,t).c_str(), FILENAME_MAX-2);
+	strncpy(target_dir, getTargetDir(filename,t).c_str(), FILENAME_MAX);
+	log_string("target_dir = " + string(target_dir),LOG_DEBUG);
+
+	zip7_path[FILENAME_MAX - 1] = '\0';
+	fn_path[FILENAME_MAX - 1] = '\0';
+	target_dir[FILENAME_MAX - 1] = '\0';
+	pass[511] = '\0';
+
+	bool have_pw = !password.empty();
+	mkdir_recursive(target_dir);
+
+	int ctop[2];
+	if(pipe(ctop) != 0) {
+		log_string("Failed to open pipe while trying to extract a 7z-package", LOG_ERR);
+		return PKG_ERROR;
+	}
+	if((child_id = fork()) == 0) {
+		close(ctop[0]);
+		dup2(ctop[1], STDOUT_FILENO);
+		dup2(ctop[1], STDERR_FILENO);
+
+		if(have_pw) {
+			execlp(zip7_path, zip7_path, "x", target_dir_app, pass, fn_path, NULL);
+		} else {
+			execlp(zip7_path, zip7_path, "x", target_dir_app, fn_path, NULL);
+		}
+		exit(-1);
+
+	} else {
+		// parent
+		close(ctop[1]);
+
+		std::string result;
+		size_t num;
+		while((num = read(ctop[0], buf, 256)) > 0) {
+			result.append(buf, num);
+			if(result.find("password:") != string::npos || result.find("incorrect password") != string::npos) {
+				kill(child_id, 9);
+				return PKG_PASSWORD;
+			}
+		}
+		log_string("result = " + result,LOG_DEBUG);
+		int retval;
+		waitpid(child_id, &retval, 0);
+		//log_string("retval=" + int_to_string(retval),LOG_DEBUG);
+		if(retval == 0) {
+			log_string("7zip: package extracted succesfully",LOG_DEBUG);
+			return PKG_SUCCESS;
+		}
+
+	}
+	return PKG_ERROR;
 }
 
