@@ -44,6 +44,7 @@ namespace std {
 #include <pwd.h>
 #include <grp.h>
 #include <signal.h>
+#include <curl/curl.h>
 
 #ifndef HAVE_UINT64_T
 	#warning You do not have the type uint64_t. this is pretty bad and you might get problems when you download big files.
@@ -345,7 +346,7 @@ int main(int argc, char* argv[], char* env[]) {
 		}
 		global_download_list.from_file(dlist_fn.c_str());
 		log_string("DownloadDaemon started successfully with these plugins: " + plglog.str(), LOG_DEBUG);
-
+                curl_global_init(CURL_GLOBAL_SSL);
 		thread mgmt_thread(mgmt_thread_main);
 		mgmt_thread.detach();
 
