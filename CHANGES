@@ -3,6 +3,7 @@
 	- added support for hjsplit
 	- a few new plugins: safelinking.net, rapidshare folders, megaupload folders
 	- added implementation of deep unrar
+	- added buttons TOP and DOWN to ddclient-GUI
 
 2011-08-17
    [stefan]
