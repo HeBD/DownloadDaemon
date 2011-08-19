@@ -490,13 +490,25 @@ bool loadcontainer(const std::string extension, const std::string& content, down
 		result = result.substr(0, result.find("]") - 1);
 		vector<string> links = split_string(result, "\", \"");
 		//debug
-		for(size_t i = 0; i < links.size()-1; i++)
-		{
-			log_string("Loadcontainer: splitted-link =" + links[i],LOG_DEBUG);
-		}
 		if(extension == ".dlc" || extension == ".ccf")
 		{
 			links.erase(links.begin()); // the first link has nothing to do with the download
+		}
+		for(size_t i = 0; i < links.size()-1; i++)
+		{
+			log_string("Loadcontainer: splitted-link =" + links[i],LOG_DEBUG);
+			//Uploaded needs this because there are a forwarding from ul.to
+			vector<string> splitted_url = split_string(links[i], "/");
+			if (splitted_url[2].find("ul.to") != std::string::npos &&
+				splitted_url[2].find("uploaded.to") == std::string::npos){
+				splitted_url[2]= "uploaded.to/file";
+				string temp = links[i];
+				links[i].clear();
+				for(size_t j = 0; j < splitted_url.size(); ++j) {
+					links[i] += splitted_url[j]+"/";}
+					links[i] = links[i].substr(0,links[i].size()-1);
+				log_string("ul.to forward to: " + links[i],LOG_DEBUG);
+				}
 		}
 		int pkg_id = -1;
 		if(container == 0) {
