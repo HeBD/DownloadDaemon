@@ -34,15 +34,16 @@ class update_thread : public QThread{
         void set_update_interval(int interval);
 
         /** Getter for Update Interval
-        *   @preturn Update Interval
+		*   @returns Update Interval
         */
         int get_update_interval();
 
         /** Sets terminate variable true */
         void terminate_yourself();
 
-        /** Toggles updating */
-        void toggle_updating();
+		/** Sets updating to value
+		*	@param updating Value to set  */
+		void set_updating(bool updating);
 
 
     private:

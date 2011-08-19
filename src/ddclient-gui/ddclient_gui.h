@@ -29,20 +29,9 @@
 #include <QClipboard>
 #include <QSystemTrayIcon>
 
+#include "ddclient_gui_main_window.h"
+#include "ddclient_gui_list_handling.h"
 
-struct selected_info{
-    bool package;
-    int row;
-    int parent_row;
-};
-
-struct view_info{
-    bool package;
-    int id;
-    int package_id;
-    bool expanded;
-    bool selected;
-};
 
 struct login_data{
     std::vector<std::string> host;
@@ -52,10 +41,8 @@ struct login_data{
     std::string lang;
 };
 
-enum error_message{error_none, error_selected, error_connected};
 
-
-class ddclient_gui : public QMainWindow{
+class ddclient_gui : public QMainWindow, main_window{
     Q_OBJECT
 
     public:
@@ -71,17 +58,6 @@ class ddclient_gui : public QMainWindow{
         *    @param server Location of the Server, which the client is connected to
         */
         void update_status(QString server);
-
-        /** Translates a string and changes it into a wxString
-        *    @param text string to translate
-        *    @returns translated wxString
-        */
-        QString tsl(std::string text, ...);
-
-        /** Getter for Mutex, that makes sure only one Thread uses Downloadc (connection to Daemon) and Content List at a time
-        *    @returns Mutex
-        */
-        QMutex *get_mutex();
 
         /** Setter for Language
         *    @param lang_to_set Language
@@ -99,9 +75,9 @@ class ddclient_gui : public QMainWindow{
         downloadc *get_connection();
 
         /** Gets the download list from Daemon and emits do_reload() signal
-        *   @param update only get updates, not the whole list (subscriptions)
+		*   @param update the whole list (if false -> use subscriptions)
         */
-        void get_content(bool update = false);
+		void get_content(bool update_full_list = false);
 
         /** Checks connection
         *    @param tell_user show to user via message box if connection is lost
@@ -124,50 +100,71 @@ class ddclient_gui : public QMainWindow{
         */
         int calc_package_progress(int package_row);
 
+		/** Pauses updating */
+		void pause_updating();
+
+		/** Starts updating (again) */
+		void start_updating();
+
+		// Main Window methods
+		/** Creates a QString out of a normal string
+		*	@param text String to create the return string from
+		*	@returns string as QString
+		*/
+		QString CreateQString(const std::string &text);
+
+		/** Returns the used language object
+		*	@returns language object
+		*/
+		language *GetLanguage();
+
+		/** Sets downloading active in the GUI */
+		void set_downloading_active();
+
+		/** Sets downloading deactive in the GUI */
+		void set_downloading_deactive();
+
+		/** Translates a string and changes it into a wxString
+		*    @param text string to translate
+		*    @returns translated wxString
+		*/
+		QString tsl(std::string text, ...);
+
+		/** Emits the captcha error signal */
+		void emit_captcha_error();
+
+		/** Indicates the last error message that got thrown */
+		error_message last_error_message;
+		// End: Main Window methods
+
     signals:
-        void do_reload();
+		void do_full_reload();
+		void do_subscription_reload();
+		void do_clear_list();
         void captcha_error();
 
+
     private:
-        void add_bars();
+		// GUI helper methods
+		void add_bars();
         void update_bars();
         void add_list_components();
         void update_list_components();
         void add_tray_icon();
-        void cut_time(std::string &time_left);
-        std::string build_status(std::string &status_text, std::string &time_left, download &dl);
-        bool check_selected();
-        void deselect_lines();
-        void get_selected_lines();
-        static bool sort_selected_info(selected_info i1, selected_info i2);
-        std::vector<view_info> get_current_view();
-        void update_packages();
-        void compare_packages();
-        void compare_downloads(QModelIndex &index, std::vector<package>::iterator &new_it, std::vector<package>::iterator &old_it, std::vector<view_info> &info);
+		void update_status_bar();
 
-        QMutex mx;
         downloadc *dclient;
         language lang;
-        QString server;
-        uint64_t not_downloaded_yet;
-        uint64_t selected_downloads_size;
-        int selected_downloads_count;
-        double download_speed;
-        error_message last_error_message;
-        std::vector<selected_info> selected_lines;
-        std::vector<package> content;
-        std::vector<package> new_content;
-        std::vector<update_content> new_updates;
+		QString server;
+
         QString config_dir;
         QThread *thread;
-        bool full_list_update, reload_list;
+		QLabel *status_connection;
 
-        QTreeView *list;
-        QStandardItemModel *list_model;
-        QItemSelectionModel *selection_model;
-        QLabel *status_connection;
-
-        QLabel *debug;
+		list_handling *list_handler;
+		QTreeView *list;
+		QStandardItemModel *list_model; // this is copied to and used only in list handling
+		QItemSelectionModel *selection_model; // this is copied to and used only in list handling
 
         QMenu *file_menu;
         QMenu *help_menu;
@@ -221,8 +218,9 @@ class ddclient_gui : public QMainWindow{
         void on_set_url();
         void on_load_container();
         void on_activate_tray_icon(QSystemTrayIcon::ActivationReason reason);
-        void on_reload();
-        void donate_flattr();
+		void on_full_reload();
+		void on_subscription_reload();
+		void on_clear_list();
         void donate_sf();
 
     protected:

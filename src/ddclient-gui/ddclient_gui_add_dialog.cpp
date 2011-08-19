@@ -46,16 +46,13 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
 	pages->addWidget(create_single_downloads_page());
 
 	// fill packages combobox
-	QMutex *mx = p->get_mutex();
 	downloadc *dclient = p->get_connection();
 	vector<package> pkgs;
 	vector<package>::iterator it;
 
-	mx->lock();
 	try{
 		pkgs = dclient->get_packages();
 	}catch(client_exception &e){}
-	mx->unlock();
 
 	for(it = pkgs.begin(); it != pkgs.end(); it++){
 		if(it->name != string("")){
@@ -68,7 +65,6 @@ add_dialog::add_dialog(QWidget *parent) : QDialog(parent){
 		package_info info = {it->id, it->name};
 		packages.push_back(info);
 	}
-
 
 	QHBoxLayout *horizontalLayout = new QHBoxLayout;
 	horizontalLayout->addWidget(tabs);
@@ -318,7 +314,6 @@ void add_dialog::change_page(QListWidgetItem *current, QListWidgetItem *previous
 void add_dialog::ok(){
     ddclient_gui *p = (ddclient_gui *) parent();
     downloadc *dclient = p->get_connection();
-    QMutex *mx = p->get_mutex();
 
     string title = title_single->text().toStdString();
     string url = url_single->text().toStdString();
@@ -387,7 +382,6 @@ void add_dialog::ok(){
     size_t lineend = 1, urlend;
 
     // add single download
-    mx->lock();
     if(!url.empty()){
         try{
             if(package_single_id == -1) // create a new package
@@ -476,7 +470,6 @@ void add_dialog::ok(){
         else if(error == 13)
             QMessageBox::warning(this,  p->tsl("Invalid URL"), p->tsl("At least one inserted URL was invalid."));
     }
-    mx->unlock();
 
     emit done(0);
 }

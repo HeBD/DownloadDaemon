@@ -126,14 +126,9 @@ QWidget *configure_dialog::create_general_panel(){
 	vector<string> host_list;
 	string line = "";
 
-	QMutex *mx = p->get_mutex();
-	mx->lock();
-
 	try{
 		host_list = dclient->get_premium_list();
 	}catch(client_exception &e){}
-
-	mx->unlock();
 
 	// parse lines
 	vector<string>::iterator it = host_list.begin();
@@ -406,14 +401,9 @@ QWidget *configure_dialog::create_reconnect_panel(){
 	model_input << "";
 	router_model_list.push_back("");
 
-	QMutex *mx = p->get_mutex();
-	mx->lock();
-
 	try{
 		model_list = dclient->get_router_list();
 	}catch(client_exception &e){}
-
-	mx->unlock();
 
 	// parse lines
 	vector<string>::iterator it = model_list.begin();
@@ -643,14 +633,9 @@ void configure_dialog::get_all_vars(){
 	if(!p->check_connection(false))
 		return;
 
-	QMutex *mx = p->get_mutex();
-	mx->lock();
-
 	try{
 		this->all_variables = dclient->get_var_list();
 	}catch(client_exception &e){}
-
-	mx->unlock();
 
 	return;
 }
@@ -673,16 +658,12 @@ QString configure_dialog::get_var(const string &var, var_type typ){
 	if(!p->check_connection(false))
 		return QString("");
 
-	QMutex *mx = p->get_mutex();
-	mx->lock();
-
 	try{
 		if(typ == ROUTER_T)  // get router var
 			answer = dclient->get_router_var(var);
 		else // get premium var
 			answer = dclient->get_premium_var(var);
 	}catch(client_exception &e){}
-	mx->unlock();
 
 	return QString(answer.c_str());
 }
@@ -883,9 +864,6 @@ void configure_dialog::ok(){
 	if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))
 		return;
 
-	QMutex *mx = p->get_mutex();
-	mx->lock();
-
 	// overwrite files
 	if(overwrite != get_var("overwrite_files").toStdString())
 		set_var("overwrite_files", overwrite);
@@ -983,9 +961,8 @@ void configure_dialog::ok(){
 		++gui_it;
 	}
 
-	mx->unlock();
-
-	p->set_language(language);	p->set_update_interval(update_interval);
+	p->set_language(language);
+	p->set_update_interval(update_interval);
 
 	// save data to config file
 	string file_name = string(config_dir.toStdString()) + "ddclient-gui.conf";
@@ -1015,16 +992,12 @@ void configure_dialog::save_premium(){
 		if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))
 			return;
 
-		QMutex *mx = p->get_mutex();
-		mx->lock();
-
 		string answer;
 
 		// host, user and password together
 		try{
 			dclient->set_premium_var(host, user, pass);
 		}catch(client_exception &e){}
-		mx->unlock();
 	}
 }
 
@@ -1041,9 +1014,6 @@ void configure_dialog::save_password(){
 	if(!p->check_connection(true, "Please connect before configurating DownloadDaemon."))
 		return;
 
-	QMutex *mx = p->get_mutex();
-	mx->lock();
-
 	string answer;
 
 	// save password
@@ -1054,6 +1024,5 @@ void configure_dialog::save_password(){
 			QMessageBox::information(this, p->tsl("Password Error"), p->tsl("Failed to change the Password."));
 		}
 	}
-	mx->unlock();
 	emit done(0);
 }

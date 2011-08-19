@@ -174,7 +174,6 @@ std::vector<update_content> downloadc::get_updates(){
             }
             old_updates.clear();
 
-
             while(mysock->select(0)){
                 mysock->recv(answer);
                 if(answer == "") // if there is no connection anymore select might return true even though there is nothing
@@ -182,12 +181,11 @@ std::vector<update_content> downloadc::get_updates(){
                 all_answers.push_back(answer);
             }
 
-
             if(all_answers.size() > 0)
                 break;
         }
         lock.unlock();
-        sleep(1);
+		sleep(1);
         lock.lock();
     }
 

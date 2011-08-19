@@ -17,13 +17,13 @@ update_thread::update_thread(ddclient_gui *parent, int interval) : parent(parent
 
 
 void update_thread::run(){
-	QMutexLocker lock(parent->get_mutex());
+	//QMutexLocker lock(parent->get_mutex()); todo removed this because I just forgot why I did it
     // first update
     if(!(parent->check_connection(false)) && (told == false)){ // connection failed for the first time => we're calling get_content to update the gui
-        parent->get_content();
+		parent->get_content(true);
         told = true;
     }else if(parent->check_connection(false)){ // connection is valid
-        parent->get_content();
+		parent->get_content(true);
         told = false;
     }
 
@@ -41,61 +41,23 @@ void update_thread::run(){
                 return;
 
             if(!(parent->check_connection(false)) && (told == false)){ // connection failed for the first time => we're calling get_content to update the gui
-                parent->get_content(); // called to clear list
+				parent->get_content(true); // called to clear list
                 told = true;
 
                 sleep(1); // otherwise we get 100% cpu if there is no connection
 
             }else if(parent->check_connection(false)){ // connection is valid
-				lock.unlock();
-                parent->get_content(true); // get updates // lock hier
-				lock.relock();
+				// possibility to pause updates for a while
+				while(!update && !term)
+					sleep(1);
+
+				// todo same here, don't know why lock.unlock();
+				parent->get_content(); // get updates
+				// todo same here, don't know why lock.relock();
                 told = false;
             }
 
             parent->clear_last_error_message();
-        }
-
-    }
-
-    // normal behaviour, if subscription is not enabled
-    for(int i = 0; i < interval; i++){ // wait a little bit, we don't want two updates in a row
-        if(term)
-            return;
-		lock.unlock();
-        sleep(1); // wait till update intervall is finished
-		lock.relock();
-    }
-
-    while(true){
-
-        if(term)
-            return;
-
-        if(update){
-
-            if(!(parent->check_connection(false)) && (told == false)){ // connection failed for the first time => we're calling get_content to update the gui
-				lock.unlock();
-				parent->get_content(); // called to clear list
-				lock.relock();
-                told = true;
-
-            }else if(parent->check_connection(false)){ // connection is valid
-				lock.unlock();
-                parent->get_content();
-				lock.relock();
-                told = false;
-            }
-
-            parent->clear_last_error_message();
-        }
-
-        for(int i = 0; i < interval; i++){
-            if(term)
-                return;
-			lock.unlock();
-            sleep(1); // wait till update intervall is finished
-			lock.relock();
         }
     }
 }
@@ -111,8 +73,8 @@ int update_thread::get_update_interval(){
 }
 
 
-void update_thread::toggle_updating(){
-    update = !update;
+void update_thread::set_updating(bool updating){
+	update = updating;
 }
 
 
