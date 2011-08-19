@@ -26,17 +26,27 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		std::string result;
 		ddcurl* handle = get_handle();
 
-		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-		handle->setopt(CURLOPT_WRITEDATA, &result);
 		string url = get_url();
+		vector<string> splitted_url = split_string(url, "/");
 		url = url.substr(0, url.find("?"));
 		url += "?setlang=en";
-		handle->setopt(CURLOPT_URL, url.c_str());
-		handle->setopt(CURLOPT_COOKIEFILE, "");
-		handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+
+		std::string api_data = "apikey=hP5Y37ulYfr8gSsS97LCT7kG5Gqp8Uug&id_0=" + splitted_url[4];
+
+		handle->setopt(CURLOPT_URL, "http://uploaded.to/api/filemultiple");
+		handle->setopt(CURLOPT_POST, 1);
+		handle->setopt(CURLOPT_COPYPOSTFIELDS, api_data.c_str());
+		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+		handle->setopt(CURLOPT_WRITEDATA, &result);
 		if(handle->perform()) {
 			return PLUGIN_CONNECTION_ERROR;
 		}
+		if (result.find("offline") != std::string::npos)
+			return PLUGIN_FILE_NOT_FOUND;
+
+		string filename = result.substr(result.find_last_of(",")+1,result.size());
+		filename = filename.substr(0,filename.size()-1);
+		outp.download_filename = filename;
 
 		result.clear();
 		std::string post_data = "id=" + inp.premium_user + "&pw=" + inp.premium_password;
@@ -55,6 +65,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		if(result.find("User and password do not match!") != string::npos) {
 			return PLUGIN_AUTH_FAIL;
 		}
+                handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+
 		outp.download_url = url;
 		return PLUGIN_SUCCESS;
 	}

@@ -494,7 +494,7 @@ bool loadcontainer(const std::string extension, const std::string& content, down
 		{
 			links.erase(links.begin()); // the first link has nothing to do with the download
 		}
-		for(size_t i = 0; i < links.size()-1; i++)
+		for(size_t i = 0; i < links.size(); i++)
 		{
 			log_string("Loadcontainer: splitted-link =" + links[i],LOG_DEBUG);
 			//Uploaded needs this because there are a forwarding from ul.to
