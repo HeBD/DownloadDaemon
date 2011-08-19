@@ -47,6 +47,36 @@ enum subs_type{ SUBS_NONE = 0, SUBS_DOWNLOADS, SUBS_CONFIG };
 /** Reason Type, describes the reason for an update. */
 enum reason_type{ R_UPDATE = 0, R_NEW, R_DELETE, R_MOVEUP, R_MOVEDOWN, R_MOVEBOTTOM, R_MOVETOP };
 
+/** Update Content Struct, includes all the content of one update message */
+struct update_content{
+
+	subs_type sub;
+	reason_type reason;
+
+	// if sub == SUBS_CONFIG this is filled
+	std::string var_name;
+	std::string value;
+
+	// if sub == SUBS_DOWNLOADS some of these are filled
+	bool package; // package attributes are filled or not (contrary to download attributes)
+	int id;
+
+	// dl attributes
+	int pkg_id;
+	std::string date;
+	std::string title;
+	std::string url;
+	std::string status;
+	uint64_t downloaded;
+	uint64_t size;
+	int wait;
+	std::string error;
+	int speed;
+
+	// package attributes
+	std::string name;
+	std::string password;
+};
 
 /** Download Struct, defines one single Download */
 struct download{
@@ -60,6 +90,21 @@ struct download{
     int wait;
     std::string error;
     int speed;
+
+	download(){}
+
+	download(const update_content &other){ // cast operator from update_content to download
+		id = other.id;
+		date = other.date;
+		title = other.title;
+		url = other.url;
+		status = other.status;
+		downloaded = other.downloaded;
+		size = other.size;
+		wait = other.wait;
+		error = other.error;
+		speed = other.speed;
+	}
 };
 
 /** Package Struct, defines a Package containing an ID and Downloads */
@@ -68,37 +113,14 @@ struct package{
     std::string name;
     std::vector<download> dls;
     std::string password;
-};
 
-/** Update Content Struct, includes all the content of one update message */
-struct update_content{
+	package(){}
 
-    subs_type sub;
-    reason_type reason;
-
-    // if sub == SUBS_CONFIG this is filled
-    std::string var_name;
-    std::string value;
-
-    // if sub == SUBS_DOWNLOADS some of these are filled
-    bool package; // package attributes are filled or not (contrary to download attributes)
-    int id;
-
-    // dl attributes
-    int pkg_id;
-    std::string date;
-    std::string title;
-    std::string url;
-    std::string status;
-    uint64_t downloaded;
-    uint64_t size;
-    int wait;
-    std::string error;
-    int speed;
-
-    // package attributes
-    std::string name;
-    std::string password;
+	package(const update_content &other){ // cast operator from update_content to package
+		id = other.id;
+		name = other.name;
+		password = other.password;
+	}
 };
 
 /** DownloadClient Class, makes communication with DownloadDaemon easier */
