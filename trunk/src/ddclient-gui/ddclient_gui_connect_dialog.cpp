@@ -150,10 +150,8 @@ void connect_dialog::ok(){
     bool error_occured = false;
     ddclient_gui *p = (ddclient_gui *) parent();
     p->set_language(language);
-    QMutex *mx = p->get_mutex();
     downloadc *dclient = p->get_connection();
 
-    mx->lock();
     try{
         dclient->set_term(true);
         dclient->connect(host, port, password, true);
@@ -213,13 +211,12 @@ void connect_dialog::ok(){
             error_occured = true;
         }
     }
-    mx->unlock();
 
     // save data if no error occured => connection established
     if(!error_occured){
 
         // updated statusbar of parent
-	p->update_status(host.c_str());
+		p->update_status(host.c_str());
 
         // write login_data to a file
         if(save_data->isChecked()){ // user clicked checkbox to save data

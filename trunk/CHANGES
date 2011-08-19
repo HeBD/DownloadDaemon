@@ -1,3 +1,7 @@
+2011-08-19
+    [susanne]
+	- rewrote ddclient-guis update management, should be a lot more stable now
+
 2011-08-17
    [boudcallens]
 	- added support for hjsplit

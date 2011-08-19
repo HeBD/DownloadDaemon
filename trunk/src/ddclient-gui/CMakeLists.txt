@@ -3,7 +3,7 @@ project(ddclient-gui)
 
 
 SET(ddclient_gui_SRCS   ddclient_gui.cpp
-                        main.cpp
+						main.cpp
                         ddclient_gui_connect_dialog.cpp
                         ddclient_gui_add_dialog.cpp
                         ddclient_gui_update_thread.cpp
@@ -11,12 +11,15 @@ SET(ddclient_gui_SRCS   ddclient_gui.cpp
                         ddclient_gui_configure_dialog.cpp
                         ddclient_gui_status_bar.cpp
                         ddclient_gui_captcha_dialog.cpp
+						ddclient_gui_list_handling.cpp
                         ../include/netpptk/netpptk.cpp
                         ../include/crypt/md5.cpp
                         ../include/language/language.cpp
                         ../include/downloadc/downloadc.cpp
                         ../include/downloadc/client_exception.cpp
-                        ../include/cfgfile/cfgfile.cpp)
+						../include/cfgfile/cfgfile.cpp
+						# headers without cpp files to include them into the project
+						ddclient_gui_main_window.h)
 
 
 SET(moc_headers			ddclient_gui.h

@@ -60,14 +60,11 @@ captcha_dialog::captcha_dialog(QWidget *parent, std::string image, std::string q
 void captcha_dialog::ok(){
 	ddclient_gui *p = (ddclient_gui *) parent();
 
-	QMutex *mx = p->get_mutex();
 	downloadc *dclient = p->get_connection();
 
-	mx->lock();
 	try{
 		dclient->captcha_resolve(id, answer_label->text().toStdString());
 	}catch(client_exception &e){}
-	mx->unlock();
 
 	emit done(0);
 }
