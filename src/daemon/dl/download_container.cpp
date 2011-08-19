@@ -143,7 +143,7 @@ int download_container::move_top(int id)
 	}
 	(*it)->post_subscribers(connection_manager::MOVETOP);
 	for(int i = 0; i < location1; ++i)
-	++first;
+	    ++first;
 	second = first;
 	--second;
 	while(download_list.begin()!=first) //move to the top
