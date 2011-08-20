@@ -148,6 +148,11 @@ class ddclient_gui : public QMainWindow, main_window{
         void add_tray_icon();
 		void update_status_bar();
 
+		// Slot helper methods
+		void delete_download_helper(int id, int &dialog_answer);
+		void delete_finished_error_handling_helper(int id, int &dialog_answer);
+		void delete_file_helper(int id);
+
         downloadc *dclient;
         language lang;
 		QString server;

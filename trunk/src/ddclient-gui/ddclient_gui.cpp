@@ -615,6 +615,97 @@ void ddclient_gui::update_status_bar(){
 * End: GUI Helper Methods
 *************************************************************/
 
+
+/*************************************************************
+* Slot helper methods
+*************************************************************/
+void ddclient_gui::delete_download_helper(int id, int &dialog_answer){
+	try{
+		dclient->delete_download(id, dont_know);
+
+	}catch(client_exception &e){
+		if(e.get_id() == 7){
+
+			if((dialog_answer != QMessageBox::YesToAll) && (dialog_answer != QMessageBox::NoToAll)){ // file exists and user didn't choose YesToAll or NoToAll before
+				stringstream s;
+				s << id;
+				QMessageBox file_box(QMessageBox::Question, tsl("Delete File"), tsl("Do you want to delete the downloaded File for Download %p1?", s.str().c_str()),
+									 QMessageBox::YesToAll|QMessageBox::Yes|QMessageBox::No|QMessageBox::NoToAll, this);
+				file_box.setModal(true);
+				dialog_answer = file_box.exec();
+			}
+
+			if((dialog_answer == QMessageBox::YesToAll) || (dialog_answer == QMessageBox::Yes)){
+				try{
+					dclient->delete_download(id, del_file);
+
+				}catch(client_exception &e){
+					stringstream s;
+					s << id;
+					QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
+				}
+
+			}else{ // don't delete file
+				try{
+					dclient->delete_download(id, dont_delete);
+
+				}catch(client_exception &e){
+						QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
+				}
+			}
+		}else{ // some error occured
+			QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
+		}
+	}
+}
+
+
+void ddclient_gui::delete_finished_error_handling_helper(int id, int &dialog_answer){
+	if((dialog_answer != QMessageBox::YesToAll) && (dialog_answer != QMessageBox::NoToAll)){ // file exists and user didn't choose YesToAll or NoToAll before
+		stringstream s;
+		s << id;
+		QMessageBox file_box(QMessageBox::Question, tsl("Delete File"), tsl("Do you want to delete the downloaded File for Download %p1?", s.str().c_str()),
+							 QMessageBox::YesToAll|QMessageBox::Yes|QMessageBox::No|QMessageBox::NoToAll, this);
+		file_box.setModal(true);
+		dialog_answer = file_box.exec();
+	}
+
+	if((dialog_answer == QMessageBox::YesToAll) || (dialog_answer == QMessageBox::Yes)){
+		try{
+			dclient->delete_download(id, del_file);
+
+		}catch(client_exception &e){
+			stringstream s;
+			s << id;
+			QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
+		}
+
+	}else{ // don't delete file
+		try{
+			dclient->delete_download(id, dont_delete);
+		}catch(client_exception &e){
+			QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
+		}
+	}
+}
+
+
+void ddclient_gui::delete_file_helper(int id){
+	try{
+		dclient->delete_file(id);
+	}catch(client_exception &e){
+		if(e.get_id() == 19){ // file error
+			stringstream s;
+			s << id;
+			QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
+		}
+	}
+}
+/*************************************************************
+* End: Slot helper methods
+*************************************************************/
+
+
 /*************************************************************
 * Slots
 *************************************************************/
@@ -697,9 +788,8 @@ void ddclient_gui::on_delete(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	// make sure user wants to delete downloads
 	QMessageBox box(QMessageBox::Question, tsl("Delete Downloads"), tsl("Do you really want to delete\nthe selected Download(s)?"),
@@ -707,9 +797,8 @@ void ddclient_gui::on_delete(){
 	box.setModal(true);
 	int del = box.exec();
 
-	if(del != QMessageBox::Yes){ // user clicked no to abort deleteing
+	if(del != QMessageBox::Yes) // user clicked no to abort deleteing
 		return;
-	}
 
 	vector<selected_info>::const_iterator it;
 	const vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -721,52 +810,14 @@ void ddclient_gui::on_delete(){
 	int dialog_answer = QMessageBox::No; // possible answers are YesToAll, Yes, No, NoToAll
 
 	for(it = selected_lines.begin(); it < selected_lines.end(); it++){
-
 		if(it->package){ // we have a package
 			parent_row = it->row;
 			id = content.at(parent_row).id;
 
 			// delete every download of that package, then the package
-			for(dit = content.at(parent_row).dls.begin(); dit != content.at(parent_row).dls.end(); ++dit){
+			for(dit = content.at(parent_row).dls.begin(); dit != content.at(parent_row).dls.end(); ++dit)
+				delete_download_helper(dit->id, dialog_answer);
 
-				try{
-					dclient->delete_download(dit->id, dont_know);
-
-				}catch(client_exception &e){
-					if(e.get_id() == 7){
-
-						if((dialog_answer != QMessageBox::YesToAll) && (dialog_answer != QMessageBox::NoToAll)){ // file exists and user didn't choose YesToAll or NoToAll before
-							stringstream s;
-							s << dit->id;
-							QMessageBox file_box(QMessageBox::Question, tsl("Delete File"), tsl("Do you want to delete the downloaded File for Download %p1?", s.str().c_str()),
-												 QMessageBox::YesToAll|QMessageBox::Yes|QMessageBox::No|QMessageBox::NoToAll, this);
-							file_box.setModal(true);
-							dialog_answer = file_box.exec();
-						}
-
-						if((dialog_answer == QMessageBox::YesToAll) || (dialog_answer == QMessageBox::Yes)){
-							try{
-								dclient->delete_download(dit->id, del_file);
-
-							}catch(client_exception &e){
-								stringstream s;
-								s << dit->id;
-								QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
-							}
-
-						}else{ // don't delete file
-							try{
-								dclient->delete_download(dit->id, dont_delete);
-
-							}catch(client_exception &e){
-									QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
-							}
-						}
-					}else{ // some error occured
-						QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
-					}
-				}
-			}
 			try{
 				dclient->delete_package(id);
 			}catch(client_exception &e){}
@@ -774,45 +825,9 @@ void ddclient_gui::on_delete(){
 		}else{ // we have a real download
 			if(it->parent_row == parent_row) // we already deleted the download because we deleted the whole package
 				continue;
+
 			id = content.at(it->parent_row).dls.at(it->row).id;
-
-			try{
-				dclient->delete_download(id, dont_know);
-
-			}catch(client_exception &e){
-				if(e.get_id() == 7){
-
-					if((dialog_answer != QMessageBox::YesToAll) && (dialog_answer != QMessageBox::NoToAll)){ // file exists and user didn't choose YesToAll or NoToAll before
-						stringstream s;
-						s << id;
-						QMessageBox file_box(QMessageBox::Question, tsl("Delete File"), tsl("Do you want to delete the downloaded File for Download %p1?", s.str().c_str()),
-											 QMessageBox::YesToAll|QMessageBox::Yes|QMessageBox::No|QMessageBox::NoToAll, this);
-						file_box.setModal(true);
-						dialog_answer = file_box.exec();
-					}
-
-					if((dialog_answer == QMessageBox::YesToAll) || (dialog_answer == QMessageBox::Yes)){
-						try{
-							dclient->delete_download(id, del_file);
-
-						}catch(client_exception &e){
-							stringstream s;
-							s << id;
-							QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
-						}
-
-					}else{ // don't delete file
-						try{
-							dclient->delete_download(id, dont_delete);
-
-						}catch(client_exception &e){
-								QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
-						}
-					}
-				}else{ // some error occured
-					QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
-				}
-			}
+			delete_download_helper(id, dialog_answer);
 		}
 	}
 
@@ -866,51 +881,21 @@ void ddclient_gui::on_delete_finished(){
 		box.setModal(true);
 		int del = box.exec();
 
-		if(del != QMessageBox::Yes){ // user clicked no to delete
+		if(del != QMessageBox::Yes){ // user clicked no to cancel deleting
 			return;
 		}
 
 		int dialog_answer = QMessageBox::No; // possible answers are YesToAll, Yes, No, NoToAll
 		for(it = finished_ids.begin(); it < finished_ids.end(); ++it){
-				id = *it;
+			id = *it;
 
 			try{
 				dclient->delete_download(id, dont_know);
-
 			}catch(client_exception &e){
-				if(e.get_id() == 7){
-
-					if((dialog_answer != QMessageBox::YesToAll) && (dialog_answer != QMessageBox::NoToAll)){ // file exists and user didn't choose YesToAll or NoToAll before
-					stringstream s;
-					s << id;
-					QMessageBox file_box(QMessageBox::Question, tsl("Delete File"), tsl("Do you want to delete the downloaded File for Download %p1?", s.str().c_str()),
-                               QMessageBox::YesToAll|QMessageBox::Yes|QMessageBox::No|QMessageBox::NoToAll, this);
-					file_box.setModal(true);
-					dialog_answer = file_box.exec();
-				}
-
-					if((dialog_answer == QMessageBox::YesToAll) || (dialog_answer == QMessageBox::Yes)){
-						try{
-							dclient->delete_download(id, del_file);
-
-						}catch(client_exception &e){
-							stringstream s;
-							s << id;
-							QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
-						}
-
-					}else{ // don't delete file
-						try{
-							dclient->delete_download(id, dont_delete);
-
-						}catch(client_exception &e){
-								QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
-						}
-
-					}
-				}else{ // some error occured
+				if(e.get_id() == 7)
+					delete_finished_error_handling_helper(id, dialog_answer);
+				else // some error occured
 					QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting Download(s)."));
-				}
 			}
 		}
 
@@ -942,9 +927,8 @@ void ddclient_gui::on_delete_file(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	// make sure user wants to delete files
 	QMessageBox box(QMessageBox::Question, tsl("Delete Files"), tsl("Do you really want to delete\nthe selected File(s)?"),
@@ -952,54 +936,31 @@ void ddclient_gui::on_delete_file(){
 	box.setModal(true);
 	int del = box.exec();
 
-	if(del != QMessageBox::Yes){ // user clicked no to delete
+	if(del != QMessageBox::Yes) // user clicked no to delete
 		return;
-	}
 
 	vector<selected_info>::const_iterator it;
 	const vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
 	int id;
-	string answer;
 	const vector<package> &content = list_handler->get_list_content();
 
 	vector<download>::const_iterator dit;
 	int parent_row = -1;
 	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
-
 		if(it->package){ // we have a package
 			parent_row = it->row;
 			id = content.at(parent_row).id;
 
 			// delete every file of that package
-			for(dit = content.at(parent_row).dls.begin(); dit != content.at(parent_row).dls.end(); ++dit){
-
-				try{
-					dclient->delete_file(dit->id);
-
-				}catch(client_exception &e){
-					if(e.get_id() == 19){ // file error
-						stringstream s;
-						s << dit->id;
-						QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
-
-					}
-				}
-			}
+			for(dit = content.at(parent_row).dls.begin(); dit != content.at(parent_row).dls.end(); ++dit)
+				delete_file_helper(dit->id);
 
 		}else{ // we have a real download
 			 if(it->parent_row == parent_row) // we already deleted the file because we selected the package
 				continue;
-			id = content.at(it->parent_row).dls.at(it->row).id;
 
-			try{
-				dclient->delete_file(id);
-			}catch(client_exception &e){
-				if(e.get_id() == 19){ // file error
-					stringstream s;
-					s << id;
-					QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
-				}
-			}
+			id = content.at(it->parent_row).dls.at(it->row).id;
+			delete_file_helper(id);
 		}
 	}
 
@@ -1016,9 +977,8 @@ void ddclient_gui::on_activate(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	vector<selected_info>::const_iterator it;
 	const std::vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -1028,28 +988,25 @@ void ddclient_gui::on_activate(){
 	vector<download>::const_iterator dit;
 	int parent_row = -1;
 	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
+		if(it->package){ // we have a package
+			parent_row = it->row;
+			id = content.at(parent_row).id;
 
-	if(it->package){ // we have a package
-		parent_row = it->row;
-		id = content.at(parent_row).id;
+			// activate every download of that package
+			for(dit = content.at(parent_row).dls.begin(); dit != content.at(parent_row).dls.end(); ++dit){
+				try{
+					dclient->activate_download(dit->id);
+				}catch(client_exception &e){}
+			}
 
-		// activate every download of that package
-		for(dit = content.at(parent_row).dls.begin(); dit != content.at(parent_row).dls.end(); ++dit){
+		}else{ // we have a real download
+			 if(it->parent_row == parent_row) // we already activated the donwload because we selected the package
+				continue;
 
+			id = content.at(it->parent_row).dls.at(it->row).id;
 			try{
-				dclient->activate_download(dit->id);
-
+				dclient->activate_download(id);
 			}catch(client_exception &e){}
-		}
-
-	}else{ // we have a real download
-		 if(it->parent_row == parent_row) // we already activated the donwload because we selected the package
-			continue;
-		id = content.at(it->parent_row).dls.at(it->row).id;
-
-		try{
-			dclient->activate_download(id);
-		}catch(client_exception &e){}
 		}
 	}
 
@@ -1065,9 +1022,8 @@ void ddclient_gui::on_deactivate(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	vector<selected_info>::const_iterator it;
 	const std::vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -1077,28 +1033,25 @@ void ddclient_gui::on_deactivate(){
 	vector<download>::const_iterator dit;
 	int parent_row = -1;
 	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
+		if(it->package){ // we have a package
+			parent_row = it->row;
+			id = content.at(parent_row).id;
 
-	if(it->package){ // we have a package
-		parent_row = it->row;
-		id = content.at(parent_row).id;
+			// activate every download of that package
+			for(dit = content.at(parent_row).dls.begin(); dit != content.at(parent_row).dls.end(); ++dit){
+				try{
+					dclient->deactivate_download(dit->id);
+				}catch(client_exception &e){}
+			}
 
-		// activate every download of that package
-		for(dit = content.at(parent_row).dls.begin(); dit != content.at(parent_row).dls.end(); ++dit){
+		}else{ // we have a real download
+			if(it->parent_row == parent_row) // we already activated the donwload because we selected the package
+				continue;
 
+			id = content.at(it->parent_row).dls.at(it->row).id;
 			try{
-				dclient->deactivate_download(dit->id);
-
+				dclient->deactivate_download(id);
 			}catch(client_exception &e){}
-		}
-
-	}else{ // we have a real download
-		 if(it->parent_row == parent_row) // we already activated the donwload because we selected the package
-			continue;
-		id = content.at(it->parent_row).dls.at(it->row).id;
-
-		try{
-			dclient->deactivate_download(id);
-		}catch(client_exception &e){}
 		}
 	}
 
@@ -1114,9 +1067,8 @@ void ddclient_gui::on_priority_up(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	vector<selected_info>::const_iterator it;
 	const std::vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -1149,9 +1101,8 @@ void ddclient_gui::on_priority_down(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	vector<selected_info>::const_reverse_iterator rit;
 	const std::vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -1159,7 +1110,6 @@ void ddclient_gui::on_priority_down(){
 	const vector<package> &content = list_handler->get_list_content();
 
 	for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); ++rit){
-
 		if(!(rit->package)) // we have a real download
 			id = content.at(rit->parent_row).dls.at(rit->row).id;
 		else // we have a package selected
@@ -1186,9 +1136,8 @@ void ddclient_gui::on_priority_top(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	vector<selected_info>::const_reverse_iterator rit;
 	const std::vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -1196,7 +1145,6 @@ void ddclient_gui::on_priority_top(){
 	const vector<package> &content = list_handler->get_list_content();
 
 	for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); ++rit){
-
 		if(!(rit->package)) // we have a real download
 			id = content.at(rit->parent_row).dls.at(rit->row).id;
 		else // we have a package selected
@@ -1221,9 +1169,8 @@ void ddclient_gui::on_priority_bottom(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	vector<selected_info>::const_reverse_iterator rit;
 	const std::vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -1231,7 +1178,6 @@ void ddclient_gui::on_priority_bottom(){
 	const vector<package> &content = list_handler->get_list_content();
 
 	for(rit = selected_lines.rbegin(); rit<selected_lines.rend(); ++rit){
-
 		if(!(rit->package)) // we have a real download
 			id = content.at(rit->parent_row).dls.at(rit->row).id;
 		else // we have a package selected
@@ -1256,9 +1202,8 @@ void ddclient_gui::on_enter_captcha(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	vector<selected_info>::const_iterator it;
 	const std::vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -1266,7 +1211,6 @@ void ddclient_gui::on_enter_captcha(){
 	const vector<package> &content = list_handler->get_list_content();
 
 	for(it = selected_lines.begin(); it<selected_lines.end(); ++it){
-
 		if(!(it->package)) // we have a real download
 			id = content.at(it->parent_row).dls.at(it->row).id;
 		else // we have a package selected
@@ -1373,7 +1317,6 @@ void ddclient_gui::on_copy(){
 	const vector<package> &content = list_handler->get_list_content();
 
 	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
-
 		if(it->package){ // we have a package
 			parent_row = it->row;
 
@@ -1477,9 +1420,8 @@ void ddclient_gui::on_set_password(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	vector<selected_info>::const_iterator it;
 	const std::vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -1487,7 +1429,6 @@ void ddclient_gui::on_set_password(){
 	const vector<package> &content = list_handler->get_list_content();
 
 	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
-
 		if(it->package){ // we have a package
 			id = content.at(it->row).id;
 
@@ -1517,9 +1458,8 @@ void ddclient_gui::on_set_name(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	vector<selected_info>::const_iterator it;
 	const std::vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -1527,7 +1467,6 @@ void ddclient_gui::on_set_name(){
 	const vector<package> &content = list_handler->get_list_content();
 
 	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
-
 		if(it->package){ // we have a package
 			id = content.at(it->row).id;
 
@@ -1573,9 +1512,8 @@ void ddclient_gui::on_set_url(){
 
 	list_handler->get_selected_lines();
 
-	if(!list_handler->check_selected()){
+	if(!list_handler->check_selected())
 		return;
-	}
 
 	vector<selected_info>::const_iterator it;
 	const std::vector<selected_info> &selected_lines = list_handler->get_selected_lines_data();
@@ -1583,8 +1521,8 @@ void ddclient_gui::on_set_url(){
 	const vector<package> &content = list_handler->get_list_content();
 
 	for(it = selected_lines.begin(); it < selected_lines.end(); ++it){
-
 		if(it->package){ // we have a package, but don't need it
+
 		}else{ // we have a real download
 			id = content.at(it->parent_row).dls.at(it->row).id;
 
@@ -1627,8 +1565,8 @@ void ddclient_gui::on_load_container(){
 	string fn = file_names.at(i).toStdString();
 	f.open(fn.c_str(), fstream::in);
 	string content;
-	for(std::string tmp; getline(f, tmp); content += tmp); // read data into string
 
+	for(std::string tmp; getline(f, tmp); content += tmp); // read data into string
 		try{
 			if (fn.rfind("rsdf") == fn.size() - 4 || fn.rfind("RSDF") == fn.size() - 4)
 				dclient->pkg_container("RSDF", content);
@@ -1654,8 +1592,7 @@ void ddclient_gui::on_activate_tray_icon(QSystemTrayIcon::ActivationReason reaso
 
 		break;
 	default:
-		;
-
+		break;
 	}
 }
 
