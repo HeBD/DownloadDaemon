@@ -69,21 +69,23 @@ void curl_speeder::speed_me(CURL* dl) {
 	unique_lock<recursive_mutex> lock(mx);
 	speedmap::iterator it = handles.find(dl);
 	add_speed_to_list(dl);
-
 	if(it == handles.end())
 		return;
 
+	bool speeded = false;
 	while(it->second.desired_speed > 0 && it->second.get_curr_speed() > it->second.desired_speed) {
 		lock.unlock();
                 usleep(1000);
 		lock.lock();
 		add_speed_to_list(dl);
+		speeded = true;
 	}
 	while(glob_speed > 0 && get_curr_glob_speed() > glob_speed && it->second.get_curr_speed() > 100) { // make sure we are never slower than 100 bytes/s because of timeouts
 		lock.unlock(); // these unlock makes sure that multiple downloads can reach this point at the same time and can all be slowed down in parallel
                 usleep(1000);
 		lock.lock();
 		add_speed_to_list(dl);
+		speeded = true;
 	}
 }
 
@@ -105,11 +107,12 @@ void curl_speeder::add_speed_to_list(CURL* dl) {
 	#endif
 
 	filesize_t mcsecs = (t.tv_sec * 1000000) + (t.tv_nsec / 1000);
-        while(it->second.times.size() > 1 && mcsecs > it->second.times[0] + 1000000) {
+	it->second.sizes.push_back(floor(size+0.5));
+	it->second.times.push_back(mcsecs);
+        while(it->second.times.size() > 1 && mcsecs > it->second.times[0] + 3000000) {
 		it->second.times.pop_front();
 		it->second.sizes.pop_front();
 	}
-	it->second.sizes.push_back(floor(size+0.5));
-	it->second.times.push_back(mcsecs);
+
 	it->second.recalc_speed();
 }

@@ -85,6 +85,7 @@ size_t write_file(void *buffer, size_t size, size_t nmemb, void *userp) {
 			info->dl_ptr->post_subscribers();
 		}
 	}
+	curl_speeder::instance()->speed_me(info->curl_handle->raw_handle());
 	return nmemb;
 }
 
