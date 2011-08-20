@@ -371,7 +371,6 @@ void make_valid_filename(std::string &fn) {
 	replace_all(fn, ";", "");
 	replace_all(fn, "[", "");
 	replace_all(fn, "]", "");
-	replace_all(fn, " ", "_");
 }
 
 std::string ascii_hex_to_bin(std::string ascii_hex) {
