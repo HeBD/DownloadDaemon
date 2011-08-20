@@ -84,7 +84,7 @@ public:
 	struct info {
 		info() : desired_speed(0), curr_speed(0), handle(NULL) {}
 		ulong recalc_speed() {
-			if (times.size() > 1 && *times.begin() != times.back() && sizes.size() > 1 && *sizes.begin() != sizes.back())
+			if (times.size() > 3 && *times.begin() != times.back() && *sizes.begin() != sizes.back())
 			{
 				int third = sizes.size() / 3;
 				curr_speed = (3  * avgFromTo(2 * third, sizes.size() - 1) +
@@ -104,7 +104,7 @@ public:
 		}
 
 		inline ulong avgFromTo(size_t from, size_t to) {
-			if (times[from] == times[to]) return 0;
+			if (from < 0 || to < 0 || times[from] == times[to]) return 0;
 			return ((sizes[to] - sizes[from]) * 1000000) / (times[to] - times[from]);
 		}
 

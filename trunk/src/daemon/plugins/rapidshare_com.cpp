@@ -70,7 +70,15 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 		std::string resultstr;
 		string url = get_url();
-		vector<string> splitted_url = split_string(url, "/");
+		vector<string> splitted_url;
+		if(url.find("#!download") == string::npos)
+			splitted_url = split_string(url, "/");
+		else
+		{
+			// new rapidshare links
+			splitted_url = split_string(url, "|");
+			splitted_url.pop_back();
+		}
 		string filename = splitted_url.back();
 		string fileid = *(splitted_url.end() - 2);
 		string dispatch_url = "https://api.rapidshare.com/cgi-bin/rsapi.cgi?sub=download&fileid=" + fileid + "&filename=" + filename + "&try=1&cbf=RSAPIDispatcher&cbid=1";

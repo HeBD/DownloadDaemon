@@ -28,7 +28,7 @@ $LANG = array(
 	'URL' => 'URL',
 	'Add_single_DL' => 'Add single Download',
 	'Add_multi_DL' => 'Add multiple Downloads',
-	'Add_multi_DL_Desc' => '<p style="margin-left: 110px;">If you want to specify a comment for a download, enter it as:<br />http://something.aa/bb|A Fancy Title<br /></p>',
+	'Add_multi_DL_Desc' => '<p style="margin-left: 110px;">If you want to specify a comment for a download, enter it as:<br />http://something.aa/bb::A Fancy Title<br /></p>',
 	'SUCC_ADD_SINGLE' => 'Download added successfully!',
 	'SUCC_ADD_MULTI' => 'All Downloads added successfully!',
 	'package' => 'Package',

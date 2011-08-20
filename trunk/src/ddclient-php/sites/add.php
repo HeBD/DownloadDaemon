@@ -41,11 +41,9 @@ if($connect != 'SUCCESS') {
 	}
 } elseif(isset($_POST['submit_multi'])) {
 	$urls = $_POST['titles_urls'];
-	//echo $urls
-	if(strpos($urls, "#!linklist|") === FALSE) //checking on rapidshare.com
-	{
-		$urls = str_replace("|", " ", $urls);
-	}
+	// replace :: with a space to add titles correctly
+	$urls = str_replace("::", " ", $urls);
+
 	$download_index[] = array();
 	$download_index = explode("\n", $urls);
 	$all_success = true;

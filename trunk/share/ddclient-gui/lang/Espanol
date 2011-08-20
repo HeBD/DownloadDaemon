@@ -17,7 +17,7 @@ Many Downloads->Descarga múltiple
 Add many Downloads (one per Line, no Title necessary).->Añadir descarga múltiple (una por linea, no requiere título)
 Separate into different Packages->Separar en paquetes diferentes
 Title->Título
-Separate URL and Title like this: http://something.aa/bb|a fancy Title->Separar el enlace y el título, por ejemplo: http://dominio.ext/enlace|Mi título
+Separate URL and Title like this: http://something.aa/bb::a fancy Title->Separar el enlace y el título, por ejemplo: http://dominio.ext/enlace|Mi título
 Please connect before adding Downloads.->Por favor conectate antes de añadir descargas.
 No Connection to Server->No hay conexión con el servidor
 At least one inserted URL was invalid.->Al menos uno de los enlaces no es válido
