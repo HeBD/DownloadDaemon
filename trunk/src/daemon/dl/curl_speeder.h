@@ -85,14 +85,27 @@ public:
 		info() : desired_speed(0), curr_speed(0), handle(NULL) {}
 		ulong recalc_speed() {
 			if (times.size() > 1 && *times.begin() != times.back() && sizes.size() > 1 && *sizes.begin() != sizes.back())
-				curr_speed = ((sizes.back() - *sizes.begin()) * 1000000) / (times.back() - *times.begin());
+			{
+				int third = sizes.size() / 3;
+				curr_speed = (3  * avgFromTo(2 * third, sizes.size() - 1) +
+							  2  * avgFromTo(third, 2 * third - 1) +
+							  1 * avgFromTo(0, third - 1))
+							 / 6;
+				// curr_speed = ((sizes.back() - *sizes.begin()) * 1000000) / (times.back() - *times.begin());
+			}
 			else
 				curr_speed = 0;
+			curr_speed = curr_speed * 1;
 			return curr_speed;
 		}
 
 		ulong get_curr_speed() {
 			return curr_speed;
+		}
+
+		inline ulong avgFromTo(size_t from, size_t to) {
+			if (times[from] == times[to]) return 0;
+			return ((sizes[to] - sizes[from]) * 1000000) / (times[to] - times[from]);
 		}
 
 		std::deque <filesize_t> sizes;

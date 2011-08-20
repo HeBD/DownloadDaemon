@@ -629,10 +629,10 @@ void download::download_me_worker(dl_cb_info &cb_info) {
 		// set timeouts
 		handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
 		handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)60);
-		curl_off_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
-		if(dl_speed > 0) {
-			handle.setopt(CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
-		}
+		// curl_off_t dl_speed = global_config.get_int_value("max_dl_speed") * 1024;
+		// if(dl_speed > 0) { // deprecated by curl_speeder.cpp
+		//	handle.setopt(CURLOPT_MAX_RECV_SPEED_LARGE, dl_speed);
+		// }
 
 		// set headers to parse content-disposition
 		handle.setopt(CURLOPT_HEADERFUNCTION, parse_header);
