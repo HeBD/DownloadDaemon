@@ -1440,6 +1440,16 @@ std::vector<std::string> downloadc::split_string(const std::string& inp_string, 
 		++count;
 
 	}
+	// finally, remove the escape-characters of the escaped delimiters
+	for(size_t i = 0; i < ret.size(); ++i)
+	{
+		size_t pos = ret[i].find("\\" + seperator);
+		while(pos != string::npos)
+		{
+			ret[i].erase(pos, 1);
+			pos = ret[i].find("\\" + seperator);
+		}
+	}
 	return ret;
 }
 
@@ -1479,8 +1489,10 @@ void downloadc::split_special_string(std::vector<std::vector<std::string> > &new
                 tab = line;
                 line = "";
             }else{
-                if(tabend != 0 && line.at(tabend-1) == '\\') // because titles can have | inside (will be escaped with \)
-                    tabend = line.find("|", tabend+1);
+				while(tabend != 0 && tabend != string::npos && line.at(tabend-1) == '\\'){ // because titles can have | inside (will be escaped with \)
+					line.erase(tabend - 1, 1);
+					tabend = line.find("|", tabend);
+				}
 
                 tab = line.substr(0, tabend);
                 line = line.substr(tabend+1);
