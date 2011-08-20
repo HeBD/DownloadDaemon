@@ -14,7 +14,7 @@ recv_all($socket, $dlist);
 $dlist = explode("\n", $dlist);
 
 for($i = 0; $i < count($dlist); $i++) {
-	$curr_line = explode('|', $dlist[$i]);
+	$curr_line = explode_escaped('|', $dlist[$i]);
 	if($curr_line[0] == "PACKAGE" && $curr_line[1] == $_GET['pkg_id']) {
 		$tpl_vars['OLD_PKG_NAME'] = $curr_line[2];
 		$tpl_vars['OLD_PKG_PASS'] = $curr_line[3];

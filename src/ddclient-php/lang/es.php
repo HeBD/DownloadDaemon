@@ -28,7 +28,7 @@ $LANG = array(
 	'URL' => 'Enlace',
 	'Add_single_DL' => 'Añadir descarga',
 	'Add_multi_DL' => 'Añadir multiples descargas',
-	'Add_multi_DL_Desc' => '<p style="margin-left: 110px;">Puedes indicar un comentario para la descarga con la siguiente sintaxis:<br />http://dominio.ext/archivo|Mi Comentario<br /></p>',
+	'Add_multi_DL_Desc' => '<p style="margin-left: 110px;">Puedes indicar un comentario para la descarga con la siguiente sintaxis:<br />http://dominio.ext/archivo::Mi Comentario<br /></p>',
 	'SUCC_ADD_SINGLE' => 'Descarga añadida con exito!',
 	'SUCC_ADD_MULTI' => 'Descargas añadidas con exito!',
 	'package' => 'Paquete',

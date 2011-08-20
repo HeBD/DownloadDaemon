@@ -15,7 +15,7 @@ recv_all($socket, $dlist);
 $dlist = explode("\n", $dlist);
 
 for($i = 0; $i < count($dlist); $i++) {
-	$curr_line = explode('|', $dlist[$i]);
+	$curr_line = explode_escaped('|', $dlist[$i]);
 	if($curr_line[0] != "PACKAGE" && $curr_line[0] == $_GET['id']) {
 		$tpl_vars['OLD_DL_TITLE'] = $curr_line[2];
 		$tpl_vars['OLD_DL_URL'] = $curr_line[3];

@@ -87,4 +87,10 @@ function msg_generate($msg, $type) {
 	}
 }
 
+
+function explode_escaped( $delimiter, $string ) {
+	$string = str_replace( '\\' . $delimiter, urlencode( $delimiter ), $string );
+	return array_map( 'urldecode', explode( $delimiter, $string ) );
+}
+
 ?>

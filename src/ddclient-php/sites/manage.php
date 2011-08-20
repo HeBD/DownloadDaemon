@@ -8,6 +8,7 @@ $err_message = '';
 $dl_list = '';
 $any_download_running = false;
 
+
 if($connect != 'SUCCESS') {
 	$err_msg = msg_generate($LANG[$connect], 'error');
 }else{
@@ -106,7 +107,7 @@ if($connect != 'SUCCESS') {
 
 	$exp_dls[] = array();
 	for($i = 0; $i < count($download_index); $i++) {
-		$exp_dls[$i] = explode ('|', $download_index[$i]);
+		$exp_dls[$i] = explode_escaped ('|', $download_index[$i]);
 	}
 
 	for($i = 0; $i < count($exp_dls); $i++) {

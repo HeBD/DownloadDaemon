@@ -160,7 +160,7 @@ QWidget *add_dialog::create_many_downloads_page(){
 	many_package_layout->addRow(new QLabel(""), separate_packages);
 	many_package_layout->addRow(new QLabel(""), fill_title);
 
-	layout->addWidget(new QLabel(p->tsl("Separate URL and Title like this: http://something.aa/bb|a fancy Title")));
+	layout->addWidget(new QLabel(p->tsl("Separate URL and Title like this: http://something.aa/bb::a fancy Title")));
 	layout->addLayout(many_package_layout);
 	layout->addWidget(add_many_edit);
 
@@ -323,13 +323,13 @@ void add_dialog::ok(){
 
     bool separate = separate_packages->isChecked();
 
-    // exchange every | inside the title (of single download) with a blank
+	// exchange every :: inside the title (of single download) with a blank
     size_t title_find;
-    title_find = title.find("|");
+	title_find = title.find("::");
 
     while(title_find != string::npos){
         title.at(title_find) = ' ';
-        title_find = title.find("|");
+		title_find = title.find("::");
     }
 
     // fill title from url if checked
@@ -412,28 +412,19 @@ void add_dialog::ok(){
         }
 
         // parse url and title
-        urlend = line.find("|");
+		urlend = line.find("::");
 
         if(urlend != string::npos)
-        { // we have a title or rapishare.com
-            if(line.find("/#!linklist")==std::string::npos)
-            {
-                url = line.substr(0, urlend);
-                line = line.substr(urlend+1);
+		{
+			url = line.substr(0, urlend);
+			line = line.substr(urlend+1);
 
-                urlend = line.find("|");
-                while(urlend != string::npos){ // exchange every | with a blank (there can be some | inside the title too)
-                        line.at(urlend) = ' ';
-                        urlend = line.find("|");
-                }
-                title = line;
-            }
-            else
-            {
-                url = line;
-                title = "";
-            }
-
+			urlend = line.find("::");
+			while(urlend != string::npos){ // exchange every | with a blank (there can be some | inside the title too)
+					line.at(urlend) = ' ';
+					urlend = line.find("::");
+			}
+			title = line;
         }else{ // no title
                 url = line;
                 title = "";

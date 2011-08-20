@@ -28,7 +28,7 @@ $LANG = array(
 	'URL' => 'URL',
 	'Add_single_DL' => 'Einzelnen Download hinzuf&uuml;gen',
 	'Add_multi_DL' => 'Mehrere Downloads hinzuf&uuml;gen',
-	'Add_multi_DL_Desc' => '<p style="margin-left: 110px;">Falls sie einen Kommentar/Titel f&uuml; Downloads setzen wollen, schreiben sie:<br />http://irgendwas.aa/bb|Toller Titel<br /></p>',
+	'Add_multi_DL_Desc' => '<p style="margin-left: 110px;">Falls sie einen Kommentar/Titel f&uuml; Downloads setzen wollen, schreiben sie:<br />http://irgendwas.aa/bb::Toller Titel<br /></p>',
 	'SUCC_ADD_SINGLE' => 'Downloads erfolgreich hinzugef&uuml;gt!',
 	'SUCC_ADD_MULTI' => 'Alle Downloads wurden erfolgreich hinzugef&uuml;gt!',
 	'package' => 'Paket',
