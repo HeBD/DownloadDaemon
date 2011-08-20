@@ -170,14 +170,14 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 
 	#endif
-
+	#ifndef __CYGWIN__
 	struct flock fl;
 	fl.l_type = F_WRLCK;
 	fl.l_whence = SEEK_SET;
 	fl.l_start = 0;
 	fl.l_len = 1;
 	int fdlock;
-	#ifndef __CYGWIN__
+
 	if((fdlock = open(pid_path.c_str(), O_WRONLY|O_CREAT, 0777)) < 0 || fcntl(fdlock, F_SETLK, &fl) == -1) {
 		std::cerr << "DownloadDaemon is already running. Exiting this instance" << endl;
 		exit(0);
@@ -193,7 +193,6 @@ int main(int argc, char* argv[], char* env[]) {
 	p_tmp += ":/bin:.";
 	setenv("PATH", p_tmp.c_str(), 1);
 	#endif
-
 
 	struct pstat st;
 
@@ -338,7 +337,6 @@ int main(int argc, char* argv[], char* env[]) {
 			/* child (daemon) continues */
 			setsid();	
 		}
-
 		plugin_cache.load_plugins();
 		stringstream plglog;
 		for(plugin_container::handleIter it = plugin_cache.handles.begin(); it != plugin_cache.handles.end(); ++it) {
