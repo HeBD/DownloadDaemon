@@ -106,7 +106,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			}
 			//log_string("links="+links,LOG_DEBUG);
 			vector<string> link = split_string(links, "<br />");
-			for(size_t i = 1; i < link.size()-1; i++)
+			for(size_t i = 0; i < link.size(); i++)
 			{
 				string temp = set_correct_url(trim_string(link[i]));
 				if(validate_url(temp))
