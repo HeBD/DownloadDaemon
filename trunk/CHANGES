@@ -1,3 +1,7 @@
+2011-08-22
+    [stefan]
+	- add support for iload.to link decrypter (captchas can be solved by user only)
+
 2011-08-19
     [boudcallens]
 	- added 7z extractor as requested
