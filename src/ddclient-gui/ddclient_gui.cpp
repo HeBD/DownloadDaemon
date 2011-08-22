@@ -639,11 +639,7 @@ void ddclient_gui::delete_download_helper(int id, int &dialog_answer){
 				try{
 					dclient->delete_download(id, del_file);
 
-				}catch(client_exception &e){
-					stringstream s;
-					s << id;
-					QMessageBox::warning(this, tsl("Error"), tsl("Error occured at deleting File of Download %p1.", s.str().c_str()));
-				}
+				}catch(client_exception &e){}
 
 			}else{ // don't delete file
 				try{
