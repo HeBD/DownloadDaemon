@@ -25,7 +25,8 @@ SET(plugins rapidshare_com.cpp		rapidshare.com
 		gaiafile_com.cpp			gaiafile.com
 		safelinking_net.cpp			safelinking.net
 		serienjunkies_org.cpp		serienjunkies.org
-		hd-bb_org.cpp			hd-bb.org
+		hd-bb_org.cpp				hd-bb.org
+		iload_to.cpp				iload.to
 )
 
 project(DownloadDaemon-Plugins)
