@@ -85,7 +85,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 				{
 					log_string("jeej",LOG_DEBUG);
 					vector<string> links = search_all_between(result, "<downloadlink>","</downloadlink>",0,true);
-					for(int j=0;j<links.size();j++)
+					for(size_t j=0;j<links.size();j++)
 					{
 						log_string("link " + int_to_string(j) + ": " + links[j],LOG_DEBUG);
 						urls.add_download(links[j],"");
