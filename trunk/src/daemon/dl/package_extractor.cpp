@@ -422,6 +422,7 @@ pkg_extractor::extract_status pkg_extractor::merge_hjsplit(const std::string& fi
 
 string pkg_extractor::getTargetDir(const std::string &filename, tool t)
 {
+	std::string unrar_dir = global_config.get_cfg_value("unrar_dir");
 	size_t ext_len=0;
 	switch(t)
 	{
@@ -435,7 +436,17 @@ string pkg_extractor::getTargetDir(const std::string &filename, tool t)
 		case TAR_BZ2: ext_len = 8; break;
 		default: ext_len = 0;
 	}
-	return filename.substr(0, filename.size() - ext_len);
+	if(unrar_dir.empty() || unrar_dir == "")
+	{
+		return filename.substr(0, filename.size() - ext_len);
+	}
+	else
+	{
+		std::vector<std::string> file = split_string(filename.substr(0, filename.size() - ext_len),"/");
+		log_string("unrar_dir=" + unrar_dir + "/" + file[file.size()-1],LOG_DEBUG);
+		return unrar_dir + "/" + file[file.size()-1];
+	}
+		
 }
 
 std::vector<std::string> pkg_extractor::getDir(std::string dir)
