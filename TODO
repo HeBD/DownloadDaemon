@@ -7,7 +7,7 @@
 
 - fix splitted packages when they are renamed during downloading
 - set package title when uploading a container
-- set subfolders for extraction and downloading
+- set subfolders for extraction and downloading->done!
 - estimated total time?
 - quick-enable and disable download-timing
 - display server time in clients?
