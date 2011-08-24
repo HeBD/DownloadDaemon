@@ -84,7 +84,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	if(is_number(splitted_url[4]))
 		id = splitted_url[4];
 	else if(is_number(splitted_url[5]))
-		id = splitted_url[5];
+		id = splitted_url[4] + "-" + splitted_url[5];
 	else
 	{
 		log_string("filesonic.com: cannot find id",LOG_DEBUG);
