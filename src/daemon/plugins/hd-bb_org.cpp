@@ -120,7 +120,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 bool get_file_status(plugin_input &inp, plugin_output &outp)
 {
-	return false;
+	plugin_exec(inp, outp);
+	return true;
 }
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp)
