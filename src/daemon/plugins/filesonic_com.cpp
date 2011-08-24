@@ -9,6 +9,7 @@
  * GNU General Public License for more details.
  */
 
+#define PLUGIN_CAN_PRECHECK
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -151,12 +152,8 @@ bool get_file_status(plugin_input &inp, plugin_output &outp)
 		return false;
 	}
 	string result;
-	url = "http://api.filesonic.com/link?method=getInfo&ids=" + id;
+	url = "http://api.filesonic.com/link?method=getInfo&format=xml&ids=" + id;
 	ddcurl handle;
-	handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
-	handle.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
-	handle.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
-	handle.setopt(CURLOPT_NOSIGNAL, 1);
 	handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
 	handle.setopt(CURLOPT_WRITEDATA, &result);
 	handle.setopt(CURLOPT_COOKIEFILE, "");
