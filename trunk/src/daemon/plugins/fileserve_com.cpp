@@ -52,30 +52,39 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	ddcurl handle;
 	string result;
-	handle.setopt(CURLOPT_URL, inp.url);
+	string post = "submit=Check+Urls&urls=" + inp.url;
+	handle.setopt(CURLOPT_URL, "http://fileserve.com/link-checker.php");
 	handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
 	handle.setopt(CURLOPT_WRITEDATA, &result);
+	handle.setopt(CURLOPT_COPYPOSTFIELDS, post.c_str());
+	handle.setopt(CURLOPT_POST, 1);
 	int ret = handle.perform();
 	if(ret != CURLE_OK) return true;
-	result = search_between(result, "<div class=\"panel file_download\">", "<a class=\"addthis_button\"");
+	result = search_between(result, "<div class=\"link_checker\">", "</div>");
+	result = search_between(result, "<table>", "</table>");
 	if(result.empty()) {
 		outp.file_online = PLUGIN_FILE_NOT_FOUND;
 		return true;
 	}
 	try {
-		outp.download_filename = search_between(result, "<h1>", "<br/>");
-		string size_total = search_between(result, "left;\"><strong>", "</strong>");
-		vector<string> size_split = split_string(size_total, " ");
-		filesize_t size = string_to_long(size_split[0]);
-
-		if(size_split[1] == "MB")
-			size *= 1024*1024;
-		else if(size_split[1] == "KB")
-			size *= 1024;
-		else if(size_split[1] == "GB")
-			size *= 1024*1024*1024;
-
-		outp.file_size = size;
+		vector<string> filenames = search_all_between(result, "<tr>","</tr>",0,true);
+		if(filenames[1].find("fileserve.com/file/")!=string::npos)
+		{
+			vector<string> splitted = search_all_between(filenames[1],"<td>","</td>",0,true);
+			outp.download_filename = trim_string(splitted[1]);
+			string size_total = trim_string(splitted[2]);
+			vector<string> size_split = split_string(size_total, " ");
+			filesize_t size = string_to_long(size_split[0]);
+			if(size_split[1] == "MB")
+				size *= 1024*1024;
+			else if(size_split[1] == "KB")
+				size *= 1024;
+			else if(size_split[1] == "GB")
+				size *= 1024*1024*1024;
+			outp.file_size = size;
+			if(splitted[3]!="Available&nbsp;<img src=\"/images/green_alerts.jpg\"/>" || trim_string(splitted[1]) == "--" || size_total == "--" )
+				outp.file_online = PLUGIN_FILE_NOT_FOUND;
+		}		
 	} catch(...) {
 		outp.file_online = PLUGIN_FILE_NOT_FOUND;
 		return true;
