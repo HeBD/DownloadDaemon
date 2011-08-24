@@ -1,4 +1,9 @@
-2011-08-22
+2011-08-24
+    [stefan]
+	- add get_file_status for share-online.biz plugin
+	- bugfix get_file_status for rapidshare.com 
+
+	2011-08-22
     [stefan]
 	- add support for iload.to link decrypter (captchas can be solved by user only)
 
