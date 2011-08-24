@@ -9,6 +9,7 @@
  * GNU General Public License for more details.
  */
 
+#define PLUGIN_CAN_PRECHECK
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -100,6 +101,52 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	outp.download_url = data;
 	return PLUGIN_SUCCESS;
 
+}
+bool get_file_status(plugin_input &inp, plugin_output &outp) {
+	string url = get_url();
+	string filename, fileid;
+	vector<string> splitted_url = split_string(url, "/");
+
+	if(splitted_url.size() < 5) return true;
+
+	url = "http://www.share-online.biz/linkcheck/linkcheck.php";
+	string postdata = "links=" + splitted_url[4];
+
+	std::string result;
+	ddcurl status;
+	status.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
+	status.setopt(CURLOPT_LOW_SPEED_TIME, (long)20);
+	status.setopt(CURLOPT_CONNECTTIMEOUT, (long)30);
+	status.setopt(CURLOPT_NOSIGNAL, 1);
+	status.setopt(CURLOPT_HTTPPOST,1);
+	status.setopt(CURLOPT_HEADER, 0);
+	status.setopt(CURLOPT_COPYPOSTFIELDS, postdata);
+	status.setopt(CURLOPT_WRITEFUNCTION, write_data);
+	status.setopt(CURLOPT_WRITEDATA, &result);
+	status.setopt(CURLOPT_COOKIEFILE, "");
+	status.setopt(CURLOPT_URL, url.c_str());
+	int res = status.perform();
+	status.cleanup();
+	if(res != 0) {
+		outp.file_online = PLUGIN_CONNECTION_LOST;
+		return true;
+	}
+	try {
+		vector<string> answer = split_string(result, ";");
+		long size = 0;
+		if(answer[1] == "OK")
+			size = atoi(answer[3].c_str());
+		if(size == 0) {
+			outp.file_online = PLUGIN_FILE_NOT_FOUND;
+			return true;
+		}
+		outp.file_online = PLUGIN_SUCCESS;
+		outp.file_size = size;
+		outp.download_filename = answer[2];
+	} catch(...) {
+		outp.file_online = PLUGIN_FILE_NOT_FOUND;
+	}
+	return true;
 }
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {

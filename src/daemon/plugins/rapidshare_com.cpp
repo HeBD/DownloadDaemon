@@ -196,7 +196,7 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 		filename = *(splitted_url.end() - 2);
 		fileid = *(splitted_url.end() - 3);
 	}
-	url = "http://api.rapidshare.com/cgi-bin/rsapi.cgi?sub=checkfiles_v1&files=" + fileid + "&filenames=" + filename;
+	url = "http://api.rapidshare.com/cgi-bin/rsapi.cgi?sub=checkfiles&files=" + fileid + "&filenames=" + filename;
 	std::string result;
 	ddcurl handle;
 	handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
@@ -224,6 +224,10 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 		}
 		outp.file_online = PLUGIN_SUCCESS;
 		outp.file_size = size;
+		if (filename.empty())
+			outp.download_filename = answer[1];
+		else
+			outp.download_filename = filename;
 	} catch(...) {
 		outp.file_online = PLUGIN_FILE_NOT_FOUND;
 	}
