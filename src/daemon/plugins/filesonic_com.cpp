@@ -20,7 +20,7 @@ using namespace std;
 
 bool is_number(const std::string& s)
 {
-	for (int i = 0; i < s.length(); i++) {
+	for (size_t i = 0; i < s.length(); i++) {
 		if (!std::isdigit(s[i]))
 			return false;
 	}
