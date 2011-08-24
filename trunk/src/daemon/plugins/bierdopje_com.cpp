@@ -9,7 +9,6 @@
  * GNU General Public License for more details.
  */
 
-#define PLUGIN_CAN_PRECHECK
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -105,11 +104,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		outp.download_url=url;
 		return PLUGIN_SUCCESS;
 	}
-}
-
-bool get_file_status(plugin_input &inp, plugin_output &outp)
-{
-	return false;
 }
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp)
