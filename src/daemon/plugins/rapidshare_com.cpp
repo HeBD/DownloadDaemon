@@ -184,6 +184,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	string url = get_url();
+	if(url.find("/users/")!=std::string::npos || url.find("#!linklist|")!=std::string::npos)
+		return false;
 	string filename, fileid;
 	if(url.find("#!download") == string::npos) {
 		vector<string> splitted_url = split_string(url, "/");
