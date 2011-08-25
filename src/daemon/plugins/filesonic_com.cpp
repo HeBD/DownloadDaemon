@@ -51,6 +51,29 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 	return nmemb;
 }
 
+string getDomainAPI() 
+{
+	try 
+	{
+		ddcurl handle;
+		string result;
+	        handle.setopt(CURLOPT_FOLLOWLOCATION, 1);
+		handle.setopt(CURLOPT_URL, "http://api.filesonic.com/utility?method=getFilesonicDomainForCurrentIp&format=xml");
+		handle.setopt(CURLOPT_HTTPPOST, 0);
+		handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
+		handle.setopt(CURLOPT_WRITEDATA, &result);
+		handle.setopt(CURLOPT_COOKIEFILE, "");
+		int ret = handle.perform();
+		//log_string("filesonic.com: result=" + result, LOG_DEBUG);
+		if(ret != CURLE_OK)
+			return "";
+		string domain = search_between(result,"<response>","</response>");
+		//log_string("domain=" + domain,LOG_DEBUG);
+		if (!domain.empty()) { return "http://www" + domain; }
+        } catch (...) {}
+        return "";
+}
+
 //Only Premium-User support
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	ddcurl* handle = get_handle();
@@ -59,87 +82,103 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	string url = get_url();
 	string result;
 	result.clear();
-	if(inp.premium_user.empty() || inp.premium_password.empty()) {
-		return PLUGIN_AUTH_FAIL; // free download not supported yet
-	}
-
-	//encode login data
-	string premium_user = handle->escape(inp.premium_user);
-	string premium_pwd = handle->escape(inp.premium_password);
-	
-	/*//get domain for filesonic
-	get_domain->setopt(CURLOPT_URL, "http://api.filesonic.com/utility?method=getFilesonicDomainForCurrentIp");
-	get_domain->setopt(CURLOPT_HTTPPOST, 0);
-	get_domain->setopt(CURLOPT_WRITEFUNCTION, write_data);
-	get_domain->setopt(CURLOPT_WRITEDATA, &result);
-	int ret = get_domain->perform();
-	string domain = search_between(result, "\"response\":\"","\"");
-	//log_string("filesonic.com: domain" + domain, LOG_DEBUG);
-
-	
-	splitted_url[2]= "www" + domain;
-	url.clear();
-	for(size_t i = 0; i < splitted_url.size(); ++i) {
-	   url += splitted_url[i]+"/";}
-	//log_string("filesonic.com: url" + url, LOG_DEBUG);
-	result.clear();
-
-	//is file deleted?
-	fileexists->setopt(CURLOPT_URL, url.c_str());
-	fileexists->setopt(CURLOPT_HTTPPOST, 0);
-	fileexists->setopt(CURLOPT_WRITEFUNCTION, write_data);
-	fileexists->setopt(CURLOPT_WRITEDATA, &result);
-	ret = fileexists->perform();
-	if (result.find("This file was deleted") != std::string::npos)
-		return PLUGIN_FILE_NOT_FOUND;
-	//log_string("filesonic.com: result=" + result, LOG_DEBUG);
-	//Setup post data for Premium Account
-	result.clear();
-	//string data = "redirect=&email="+premium_user+"&password="+premium_pwd+"&rememberMe=0&controls%5Bsubmit%5D=";*/
-	string id = getId(url);
-	if(id=="")
-		return PLUGIN_ERROR;
-	url = "http://api.filesonic.com/link?method=getDownloadLink&u=" + premium_user + "&p=" + premium_pwd + "&format=xml&ids=" + id;
-	for(int i=0;i<6;i++) //ask 6 times if password!
+	if(url.find("/folder/")==string::npos)
 	{
-		handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
-		handle->setopt(CURLOPT_URL, url.c_str());
-		handle->setopt(CURLOPT_HTTPPOST, 0);
-		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-		handle->setopt(CURLOPT_WRITEDATA, &result);
-		handle->setopt(CURLOPT_COOKIEFILE, "");
-		int ret = handle->perform();
-		//log_string("filesonic.com: result=" + result, LOG_DEBUG);
-		if(ret != CURLE_OK)
-			return PLUGIN_CONNECTION_ERROR;
-		if(ret == 0) 
+		if(inp.premium_user.empty() || inp.premium_password.empty()) {
+			return PLUGIN_AUTH_FAIL; // free download not supported yet
+		}
+	
+		//encode login data
+		string premium_user = handle->escape(inp.premium_user);
+		string premium_pwd = handle->escape(inp.premium_password);
+		string id = getId(url);
+		if(id=="")
+			return PLUGIN_ERROR;
+		url = "http://api.filesonic.com/link?method=getDownloadLink&u=" + premium_user + "&p=" + premium_pwd + "&format=xml&ids=" + id;
+		for(int i=0;i<6;i++) //ask 6 times if password!
 		{
-			if (result.find("FSApi_Auth_Exception")!=string::npos)
+			handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+			handle->setopt(CURLOPT_URL, url.c_str());
+			handle->setopt(CURLOPT_HTTPPOST, 0);
+			handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+			handle->setopt(CURLOPT_WRITEDATA, &result);
+			handle->setopt(CURLOPT_COOKIEFILE, "");
+			int ret = handle->perform();
+			//log_string("filesonic.com: result=" + result, LOG_DEBUG);
+			if(ret != CURLE_OK)
+				return PLUGIN_CONNECTION_ERROR;
+			if(ret == 0) 
 			{
-				return PLUGIN_AUTH_FAIL;
+				if (result.find("FSApi_Auth_Exception")!=string::npos)
+				{
+					return PLUGIN_AUTH_FAIL;
+				}
+				string status = search_between(result,"<status>","</status");
+				if (status == "NOT_AVAILABLE")
+				{
+					return PLUGIN_FILE_NOT_FOUND;
+				}
+				if(status == "PASSWORD_REQUIRED" || status == "WRONG_PASSWORD")
+				{
+					//password protected => ask user for password
+					string rslt="http://ghost-zero.webs.com/password.png";
+					handle->setopt(CURLOPT_URL, rslt);
+					result.clear();
+					handle->perform();
+					std::string captcha_text = Captcha.process_image(result, "png", "", -1, false, false, captcha::SOLVE_MANUAL);
+					url = "http://api.filesonic.com/link?method=getDownloadLink&u=" + premium_user + "&p=" + premium_pwd + "&format=xml&ids=" + id + "&passwords[" + id + "]=" + captcha_text;
+				}
+				string url = search_between(result,"<url><![CDATA[","]]></url>");
+				outp.download_url = url.c_str();
+				//log_string("url = " + url,LOG_DEBUG);
+				return PLUGIN_SUCCESS;
 			}
-			string status = search_between(result,"<status>","</status");
-			if (status == "NOT_AVAILABLE")
+		}
+		return PLUGIN_ERROR;
+	}
+	else
+	{
+		download_container urls;
+		try
+		{
+			size_t pos = url.find("filesonic.com");
+			pos+=13;
+			string id = url.substr(pos);
+			string domain = getDomainAPI();
+			if(domain=="")
+				return PLUGIN_ERROR;
+			string url = domain + id;
+			log_string("url=" + url,LOG_DEBUG);
+			handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+			handle->setopt(CURLOPT_URL, url.c_str());
+			handle->setopt(CURLOPT_HTTPPOST, 0);
+			handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+			handle->setopt(CURLOPT_WRITEDATA, &result);
+			handle->setopt(CURLOPT_COOKIEFILE, "");
+			int ret = handle->perform();
+			if(ret != CURLE_OK)
+				return PLUGIN_CONNECTION_ERROR;
+			if(result.find(">No links to show<")!=string::npos || result.find("Folder do not exist<") !=string::npos 
+			|| result.find(">The requested folder do not exist or was deleted by the owner") != string::npos
+			|| result.find(">If you want, you can contact the owner of the referring site to tell him about this mistake") != string::npos) 
+				return PLUGIN_FILE_NOT_FOUND;
+			result = search_between(result,"<tbody>","</tbody>");
+			log_string("filesonic.com: result=" + result, LOG_DEBUG);
+			vector<string> alink = search_all_between(result,"</span><a href=\"","</a></td>",0,true);
+			if(alink.empty())
 			{
 				return PLUGIN_FILE_NOT_FOUND;
 			}
-			if(status == "PASSWORD_REQUIRED" || status == "WRONG_PASSWORD")
+			for(size_t i = 0; i < alink.size(); i++)
 			{
-				//password protected => ask user for password
-				string rslt="http://ghost-zero.webs.com/password.png";
-				handle->setopt(CURLOPT_URL, rslt);
-				result.clear();
-				handle->perform();
-				std::string captcha_text = Captcha.process_image(result, "png", "", -1, false, false, captcha::SOLVE_MANUAL);
-				url = "http://api.filesonic.com/link?method=getDownloadLink&u=" + premium_user + "&p=" + premium_pwd + "&format=xml&ids=" + id + "&passwords[" + id + "]=" + captcha_text;
+				vector<string> split = split_string(alink[i],"\">");
+				urls.add_download(split[0],split[1]);
 			}
-			string url = search_between(result,"<url><![CDATA[","]]></url>");
-			outp.download_url = url.c_str();
-			//log_string("url = " + url,LOG_DEBUG);
-			return PLUGIN_SUCCESS;
-		}
+		}catch(...) {return PLUGIN_ERROR;}
+		replace_this_download(urls);
+		return PLUGIN_SUCCESS;
 	}
-	return PLUGIN_ERROR;
+	
 }
 
 bool get_file_status(plugin_input &inp, plugin_output &outp) 
