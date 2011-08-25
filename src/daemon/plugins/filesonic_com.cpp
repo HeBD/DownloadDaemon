@@ -163,7 +163,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			|| result.find(">If you want, you can contact the owner of the referring site to tell him about this mistake") != string::npos) 
 				return PLUGIN_FILE_NOT_FOUND;
 			result = search_between(result,"<tbody>","</tbody>");
-			log_string("filesonic.com: result=" + result, LOG_DEBUG);
+			//log_string("filesonic.com: result=" + result, LOG_DEBUG);
 			vector<string> alink = search_all_between(result,"</span><a href=\"","</a></td>",0,true);
 			if(alink.empty())
 			{
