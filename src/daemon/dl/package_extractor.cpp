@@ -51,8 +51,14 @@ pkg_extractor::extract_status pkg_extractor::extract_package(const std::string& 
 		default:
 			return PKG_INVALID;
 	}
-	//deep extract
 	string targetDir = getTargetDir(filename,to_use);
+	extract_status = deep_extract(targetDir,extract_status,password);
+	return extract_status;
+}
+
+pkg_extractor::extract_status pkg_extractor::deep_extract(const std::string& targetDir,pkg_extractor::extract_status extract_status, const std::string& password)
+{
+	//deep extract	
 	log_string("Deep unrar: target dir=" + targetDir,LOG_DEBUG);
 	std::vector<std::string> files = getDir(targetDir);
 	if(!files.empty())
@@ -60,6 +66,8 @@ pkg_extractor::extract_status pkg_extractor::extract_package(const std::string& 
 		for(size_t i = 0; i < files.size(); i++)
 		{
 			log_string("Trying to deep extract "+ files[i],LOG_DEBUG);
+			if(opendir(files[i].c_str()) != NULL)
+				deep_extract(files[i],extract_status,password);
 			pkg_extractor::extract_status temp = extract_package(files[i], password);
 			if(temp != PKG_INVALID)
 				extract_status = temp;

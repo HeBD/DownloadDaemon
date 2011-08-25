@@ -29,6 +29,7 @@ public:
 	static extract_status extract_zip(const std::string& filename, const std::string& password, tool t);
         static extract_status merge_hjsplit(const std::string& filename, tool t);
 	static extract_status extract_7z(const std::string& filename, const std::string& password, tool t);
+	static extract_status deep_extract(const std::string& targetDir, pkg_extractor::extract_status extract_status, const std::string& password);
         static std::string getTargetDir(const std::string& filename, tool t);
         static std::vector<std::string> getDir(std::string dir);
 
