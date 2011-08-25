@@ -66,7 +66,8 @@ pkg_extractor::extract_status pkg_extractor::deep_extract(const std::string& tar
 		for(size_t i = 0; i < files.size(); i++)
 		{
 			log_string("Trying to deep extract "+ files[i],LOG_DEBUG);
-			if(opendir(files[i].c_str()) != NULL && files[i]!="." && files[i]!="..")
+			std::vector<std::string> splitted = split_string(files[i],"/");
+			if(opendir(files[i].c_str()) != NULL && splitted.back()!="." && splitted.back()!="..")
 				deep_extract(files[i],extract_status,password);
 			pkg_extractor::extract_status temp = extract_package(files[i], password);
 			if(temp != PKG_INVALID)
