@@ -211,6 +211,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	std::string url = get_url();
+	if(url.find("/?f=")!= std::string::npos)
+		return false;
 	std::string result;
 	ddcurl handle;
 	handle.setopt(CURLOPT_LOW_SPEED_LIMIT, (long)10);
