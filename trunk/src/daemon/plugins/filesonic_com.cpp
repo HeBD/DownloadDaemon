@@ -184,6 +184,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 bool get_file_status(plugin_input &inp, plugin_output &outp) 
 {
 	string url = get_url();
+	if(url.find("/folder/")!=string::npos)
+		return false;
 	string id = getId(url);
 	if(id=="")
 	{
