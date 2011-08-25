@@ -24,30 +24,75 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-	if(inp.premium_user.empty() || inp.premium_password.empty()) {
+	string url = get_url();
+	if(url.find("/list/")==string::npos)
+	{
+		if(inp.premium_user.empty() || inp.premium_password.empty()) {
 			return PLUGIN_AUTH_FAIL; // free download not supported yet
-	}
-	string result;
-	ddcurl* handle = get_handle();
-	string data = "loginUserName=" + handle->escape(inp.premium_user) + "&loginUserPassword=" + handle->escape(inp.premium_password) +
+		}
+		string result;
+		ddcurl* handle = get_handle();
+		string data = "loginUserName=" + handle->escape(inp.premium_user) + "&loginUserPassword=" + handle->escape(inp.premium_password) +
 				  "&autoLogin=on&recaptcha_response_field=&recaptcha_challenge_field=&recaptcha_shortencode_field=&loginFormSubmit=Login";
-	handle->setopt(CURLOPT_URL, "http://fileserve.com/login.php");
-	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-	handle->setopt(CURLOPT_WRITEDATA, &result);
-	handle->setopt(CURLOPT_COPYPOSTFIELDS, data.c_str());
+		handle->setopt(CURLOPT_URL, "http://fileserve.com/login.php");
+		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+		handle->setopt(CURLOPT_WRITEDATA, &result);
+		handle->setopt(CURLOPT_COPYPOSTFIELDS, data.c_str());
 
-	int ret = handle->perform();
-	if(ret != CURLE_OK)
-		return PLUGIN_CONNECTION_ERROR;
-	if(ret == CURLE_OK) {
-		if(result.find("Invalid login.") != string::npos) {
-			return PLUGIN_AUTH_FAIL;
+		int ret = handle->perform();
+		if(ret != CURLE_OK)
+			return PLUGIN_CONNECTION_ERROR;
+		if(ret == CURLE_OK) {
+			if(result.find("Invalid login.") != string::npos) {
+				return PLUGIN_AUTH_FAIL;
+			}
+		}
+
+		outp.download_url = get_url();
+		return PLUGIN_SUCCESS;
+	}
+	else
+	{
+		string result;
+		ddcurl* handle = get_handle();
+		handle->setopt(CURLOPT_URL, get_url());
+		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+		handle->setopt(CURLOPT_WRITEDATA, &result);
+
+		int ret = handle->perform();
+		if(ret != CURLE_OK)
+			return PLUGIN_CONNECTION_ERROR;
+		if(ret == CURLE_OK) 
+		{
+			download_container urls;
+			try
+			{
+				if(result.find(">Total file size: 0 Bytes<") != string::npos || result.find("Fileserve - 404 - Page not found") != string::npos || 
+				result.find("<h4>The file or page you tried to access is no longer accessible") != string::npos) 
+				{
+					return PLUGIN_FILE_NOT_FOUND;
+				}
+				string fpname = search_between(result,"<h1>Viewing public folder ","</h1>");
+				result = search_between(result,"<td class=\"m35\">","</table>");
+				vector<string> alink = search_all_between(result,"<a href=\"","\" class=\"sheet_icon");
+				if(alink.empty())
+				{
+					return PLUGIN_FILE_NOT_FOUND;
+				}
+				//urls.add_download("http://fileserve.com" + alink,"");	
+				urls.set_pkg_name(trim_string(fpname));
+				for(size_t i = 0; i < alink.size(); i++)
+				{
+					//log_string("alink = " + alink[i],LOG_DEBUG);
+					urls.add_download("http://fileserve.com" + alink[i],"");
+				}
+			}
+			catch(...) {return PLUGIN_ERROR;}
+			replace_this_download(urls);
+			return PLUGIN_SUCCESS;
 		}
 	}
-
-	outp.download_url = get_url();
-	return PLUGIN_SUCCESS;
-}
+}	
 
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
 	ddcurl handle;
