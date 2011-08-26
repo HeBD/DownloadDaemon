@@ -92,6 +92,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			return PLUGIN_SUCCESS;
 		}
 	}
+	return PLUGIN_CONNECTION_ERROR;
 }	
 
 bool get_file_status(plugin_input &inp, plugin_output &outp) {
