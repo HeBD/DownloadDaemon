@@ -343,8 +343,8 @@ int main(int argc, char* argv[], char* env[]) {
 			plglog << it->first << " ";
 		}
 		global_download_list.from_file(dlist_fn.c_str());
-		log_string("DownloadDaemon started successfully with these plugins: " + plglog.str(), LOG_DEBUG);
-                curl_global_init(CURL_GLOBAL_SSL);
+		curl_global_init(CURL_GLOBAL_SSL);
+
 		thread mgmt_thread(mgmt_thread_main);
 		mgmt_thread.detach();
 
@@ -353,6 +353,8 @@ int main(int argc, char* argv[], char* env[]) {
 		once_per_sec_thread.detach();
 		thread sync_sig_handler(sig_handle_thread);
 		sync_sig_handler.detach();
+
+		log_string("DownloadDaemon started successfully with these plugins: " + plglog.str(), LOG_DEBUG);
 
 		global_download_list.start_next_downloadable();
 

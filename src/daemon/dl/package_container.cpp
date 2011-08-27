@@ -85,7 +85,7 @@ int package_container::from_file(const char* filename) {
 		dl->from_serialized(line);
 		add_dl_to_pkg(dl, curr_pkg_id);
 	}
-	start_next_downloadable();
+
 	if(!dlist.good()) {
 		dlist.close();
 		return LIST_PERMISSION;
@@ -119,7 +119,6 @@ int package_container::add_dl_to_pkg(download* dl, int pkg_id) {
 		return LIST_ID;
 	}
 	int ret = (*it)->add_download(dl, get_next_download_id());
-	start_next_downloadable();
 	return ret;
 }
 
