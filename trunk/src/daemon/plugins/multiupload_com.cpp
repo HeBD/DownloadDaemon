@@ -37,40 +37,78 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp)
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	ddcurl* handle = get_handle();
 	string url = get_url();
-	string result;
-	handle->setopt(CURLOPT_URL, url.c_str());
-	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
-	handle->setopt(CURLOPT_WRITEDATA, &result);
-	handle->setopt(CURLOPT_COOKIEFILE, "");
-
-	int res = handle->perform();
-	if(res != 0)
+	if(url.find(".multiupload.com:")==string::npos)
 	{
-		log_string("multiupload.com: handle failed! Please check internet connection or contact hd-bb.org",LOG_DEBUG);
-		return PLUGIN_CONNECTION_ERROR;
+		string result;
+		result.clear();
+		handle->setopt(CURLOPT_HEADER, 1);
+		handle->setopt(CURLOPT_URL, url.c_str());
+		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+		handle->setopt(CURLOPT_WRITEDATA, &result);
+		handle->setopt(CURLOPT_COOKIEFILE, "");
+	
+		int res = handle->perform();
+		if(res != 0)
+		{
+			log_string("multiupload.com: handle failed! Please check internet connection or contact hd-bb.org",LOG_DEBUG);
+			return PLUGIN_CONNECTION_ERROR;
+		}
+		download_container urls;
+		try
+		{
+			if(result.find("the link you have clicked is not available")!=string::npos || result.find("Invalid link")!=string::npos || 
+			result.find("The file has been deleted because it was violating our")!=string::npos || result.find("No htmlCode read")!=string::npos)
+			{
+				return PLUGIN_FILE_NOT_FOUND;
+			}
+			if(result.find(">UNKNOWN ERROR<")!=string::npos)
+			{
+				log_string("multiupload.com: Unknown error caused by multiupload.com",LOG_WARNING);
+				return PLUGIN_ERROR;
+			}
+			if(url.find("_")==string::npos)
+			{
+				vector<string> links = search_all_between(result,"<div id=\"downloadbutton_","</a></div>");
+				for(size_t i=0; i<links.size();i++)
+				{
+					string directMultiuploadLink = search_between(links[i],"<a href=\"","\"");
+					if(validate_url(directMultiuploadLink))
+						urls.add_download(directMultiuploadLink,"");
+				}
+			}
+			else
+			{
+				//just a simple redirect
+				log_string("simple redirect!",LOG_DEBUG);
+				size_t urlpos = result.find("location:");
+				if(urlpos == string::npos)
+				{
+					log_string("Multiupload.com: urlpos is at end of file",LOG_DEBUG);
+					return PLUGIN_ERROR;
+				}
+				urlpos += 10;
+				string newurl = result.substr(urlpos, result.find_first_of("\r\n", urlpos) - urlpos);
+				urls.add_download(set_correct_url(newurl),"");
+			}		
+		}catch(...) {}
+		replace_this_download(urls);
+		return PLUGIN_SUCCESS;
 	}
-	download_container urls;
-	try
+	else
 	{
-		if(result.find("the link you have clicked is not available")!=string::npos || result.find("Invalid link")!=string::npos || 
-		result.find("The file has been deleted because it was violating our")!=string::npos || result.find("No htmlCode read")!=string::npos)
-		{
-			return PLUGIN_FILE_NOT_FOUND;
-		}
-		if(result.find(">UNKNOWN ERROR<")!=string::npos)
-		{
-			log_string("multiupload.com: Unknown error caused by multiupload.com",LOG_WARNING);
-			return PLUGIN_ERROR;
-		}
-		string directMultiuploadLink = search_between("<div id=\"downloadbutton_\" style=\"",
-	}catch(...) {}
-	replace_this_download(urls);
-	return PLUGIN_SUCCESS;
+		//direct download link
+		outp.download_url = url;
+		return PLUGIN_SUCCESS;
+	}
 }
 
 bool get_file_status(plugin_input &inp, plugin_output &outp)
 {
-	return false;
+	string url = inp.url;
+	if(url.find(".multiupload.com:")==string::npos)
+		return false;
+	else
+		return true;
 }
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp)
