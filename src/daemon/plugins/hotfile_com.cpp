@@ -31,15 +31,76 @@ void form_opt(const string &result, size_t &pos, const string &var, string &val)
 }
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
-	if(inp.premium_user.empty() || inp.premium_password.empty())
-		return PLUGIN_AUTH_FAIL;
-	ddcurl* handle = get_handle();
-	outp.allows_multiple = true;
-	outp.allows_resumption = true;
-	outp.download_url = inp.url;
-	handle->setopt(CURLOPT_USERPWD, inp.premium_user + ":" + inp.premium_password);
-	return PLUGIN_SUCCESS;
-
+	string url = get_url();
+	log_string("url = "+url,LOG_DEBUG);
+	if(url.find("/list/")==string::npos && url.find("/links/")==string::npos)
+	{
+		if(inp.premium_user.empty() || inp.premium_password.empty())
+			return PLUGIN_AUTH_FAIL;
+		ddcurl* handle = get_handle();
+		outp.allows_multiple = true;
+		outp.allows_resumption = true;
+		outp.download_url = inp.url;
+		handle->setopt(CURLOPT_USERPWD, inp.premium_user + ":" + inp.premium_password);
+		return PLUGIN_SUCCESS;
+	}
+	else
+	{
+		log_string("hotfile.com: folder detected",LOG_DEBUG);
+		ddcurl* handle = get_handle();
+		string result;
+		handle->setopt(CURLOPT_URL, url.c_str());
+		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
+		handle->setopt(CURLOPT_WRITEDATA, &result);
+		handle->setopt(CURLOPT_COOKIEFILE, "");
+		int res = handle->perform();
+		if(res != 0)
+		{
+			log_string("hotfile.com: handle failed! Please check internet connection or contact hd-bb.org",LOG_DEBUG);
+			return PLUGIN_CONNECTION_ERROR;
+		}
+		download_container urls;
+		try
+		{
+			if(result.find("Empty Directory")!=string::npos)
+				return PLUGIN_FILE_NOT_FOUND;
+			if(url.find("/list/")!=string::npos)
+			{
+				string fpname = search_between(result,"-2px;\" />","</td>");
+				fpname = trim_string(fpname);
+				if(fpname == "")
+				{
+					fpname = "Hotfile.com folder";
+				}
+				urls.set_pkg_name(fpname);
+				result = search_between(result,"<div id=\"main_content\">","</div>");
+				vector<string> alink = search_all_between(result,"<td style=\"","</a></td>",0,true);
+				for(size_t i=0;i<alink.size();i++)
+				{
+					string link = search_between(alink[i],"<a href=\"","\"");
+					if(validate_url(link))
+						urls.add_download(link,"");
+				}
+			}
+			else
+			{
+				string finallink = search_between(result,"name=\"url\" id=\"url\" class=\"textfield\" value=\"","\"");
+				if(finallink == "")
+				{
+					finallink = search_between(result,"name=\"forum\" id=\"forum\" class=\"textfield\" value=\"[URL=","]http");
+					if(finallink == "")
+					{
+						finallink = "http://hotfile.com/dl/d+/" + search_between(result,"\"http://hotfile.com/dl/d+/","\"");
+					}
+				}
+				if(finallink == "")
+					return PLUGIN_ERROR;
+				urls.add_download(finallink, "");
+			}
+		}catch(...) {return PLUGIN_ERROR;}
+		replace_this_download(urls);
+		return PLUGIN_SUCCESS;
+	}
 // Hotfile.com free support is disabled because of recatcha. Only premium works
 #if 0
 	CURL* handle = get_handle();
