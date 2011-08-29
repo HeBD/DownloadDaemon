@@ -28,6 +28,7 @@ SET(plugins rapidshare_com.cpp		rapidshare.com
 		hd-bb_org.cpp				hd-bb.org
 		iload_to.cpp				iload.to
 		bierdopje_com.cpp			bierdopje.com
+		multiupload_com.cpp			multiupload.com
 )
 
 project(DownloadDaemon-Plugins)
