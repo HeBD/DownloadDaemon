@@ -1,3 +1,9 @@
+2011-08-30
+   [boudcallens]
+	- added multiupload plugin
+	- added hotfile list
+	- improved deep-unrar capabilities
+
 2011-08-24
     [stefan]
 	- add get_file_status for share-online.biz plugin
