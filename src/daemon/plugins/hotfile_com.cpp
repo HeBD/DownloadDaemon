@@ -90,7 +90,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 					finallink = search_between(result,"name=\"forum\" id=\"forum\" class=\"textfield\" value=\"[URL=","]http");
 					if(finallink == "")
 					{
-						finallink = "http://hotfile.com/dl/d+/" + search_between(result,"\"http://hotfile.com/dl/d+/","\"");
+						finallink = "http://hotfile.com/dl/" + search_between(result,"\"http://hotfile.com/dl/","\"");
 					}
 				}
 				if(finallink == "")
