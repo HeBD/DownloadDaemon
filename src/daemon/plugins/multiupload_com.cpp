@@ -72,6 +72,10 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 				for(size_t i=0; i<links.size();i++)
 				{
 					string directMultiuploadLink = search_between(links[i],"<a href=\"","\"");
+					if(directMultiuploadLink.find("mediafire")!=string::npos)
+					{
+						replace_all(directMultiuploadLink,"mediafire.com?","mediafire.com/?");
+					}
 					if(validate_url(directMultiuploadLink))
 						urls.add_download(directMultiuploadLink,"");
 				}
