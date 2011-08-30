@@ -32,7 +32,7 @@ void form_opt(const string &result, size_t &pos, const string &var, string &val)
 
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	string url = get_url();
-	log_string("url = "+url,LOG_DEBUG);
+	//log_string("url = "+url,LOG_DEBUG);
 	if(url.find("/list/")==string::npos && url.find("/links/")==string::npos)
 	{
 		if(inp.premium_user.empty() || inp.premium_password.empty())
