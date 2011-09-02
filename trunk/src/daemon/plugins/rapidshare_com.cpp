@@ -145,7 +145,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			id = splitted_url[0];
 			log_string("Rapidshare.com: id_user=" + id,LOG_DEBUG);
 		}
-		string newurl = "http://rapidshare.com/cgi-bin/rsapi.cgi?sub=viewlinklist_v1&linklist=" + id + "&cbf=RSAPIDispatcher&cbid=1";
+		string newurl = "http://rapidshare.com/cgi-bin/rsapi.cgi?sub=viewlinklist&linklist=" + id + "&cbf=RSAPIDispatcher&cbid=1";
 		//log_string("Rapidshare.com: url=" + newurl,LOG_DEBUG);
 		handle->setopt(CURLOPT_URL, newurl);
 		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
@@ -155,6 +155,12 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		if(res != 0)
 		{
 			return PLUGIN_CONNECTION_ERROR;
+		}
+		//rapidshare removed linklists/folders from there API
+		if(result.find("Invalid routine called")!=string::npos)
+		{
+			log_string("Rapidshare removed linklists, please contact rapidshare.com",LOG_WARNING);
+			return PLUGIN_ERROR;
 		}
 		replace_all(result,"\\\"","\"");
 		//log_string("Rapidshare.com: result=" + result,LOG_DEBUG);
