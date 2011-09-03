@@ -9,7 +9,6 @@
  * GNU General Public License for more details.
  */
 
-#define PLUGIN_CAN_PRECHECK
 #include "plugin_helpers.h"
 #include <curl/curl.h>
 #include <cstdlib>
@@ -40,12 +39,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
 		handle->setopt(CURLOPT_WRITEDATA, &result);
 		res = handle->perform();
+		if(res != 0) {
+			log_string("iload.to: could not receive forward url: " + url,LOG_DEBUG);
+			return PLUGIN_CONNECTION_ERROR;
+		}
 		string fileid = result.substr(result.find("Location:") + 10, result.size());
 		fileid = fileid.substr(0, fileid.size() - 4);
-		if (url.find("merged") != std::string::npos)
-			url = fileid;
-		else
-			url = "http://iload.to" + fileid;
+		url = fileid;
 	}
 	handle->setopt(CURLOPT_URL, url);
 	handle->setopt(CURLOPT_HEADER, 1);
