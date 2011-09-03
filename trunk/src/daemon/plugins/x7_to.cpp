@@ -122,7 +122,7 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 
 	else {
 		outp.allows_resumption = false;
-		outp.allows_multiple = true;
+		outp.allows_multiple = false;
 	}
 	// For Free-Account
 	outp.offers_premium = true;
