@@ -55,7 +55,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		int ret = handle->perform();		
 		if(ret != CURLE_OK)
 			return PLUGIN_CONNECTION_ERROR;
-		log_string("result=" + result,LOG_DEBUG);
+		//log_string("result=" + result,LOG_DEBUG);
 		if(result.find("status\":\"ok\"")==string::npos)
 			return PLUGIN_ERROR;
 		if(result.find("\"captcha\":1")!=string::npos)

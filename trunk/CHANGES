@@ -1,5 +1,9 @@
+2011-09-06
+   [boudcallens]
+	- added ifile.it plugin
+
 2011-09-03
-    [stefan]
+   [stefan]
 	- bugfix iload.to
 	- bugfix plugin_getinfo for x7.to
 
