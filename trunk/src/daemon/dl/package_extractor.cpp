@@ -435,11 +435,11 @@ string pkg_extractor::getTargetDir(const std::string &filename, tool t)
 	size_t ext_len=0;
 	switch(t)
 	{
+		case HJSPLIT:
+		case SEVENZ: ext_len=3; break;
 		case GNU_UNRAR:
 		case RARLAB_UNRAR:
 		case ZIP:
-		case HJSPLIT:
-		case SEVENZ: ext_len=3; break;
 		case TAR: ext_len = 4; break;
 		case TAR_GZ: ext_len = 7; break;
 		case TAR_BZ2: ext_len = 8; break;
