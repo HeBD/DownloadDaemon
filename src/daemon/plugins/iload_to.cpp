@@ -35,7 +35,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	if (url.find("/go/") != std::string::npos) {
 		handle->setopt(CURLOPT_HEADER, 1);
 		handle->setopt(CURLOPT_URL, url);
-		handle->setopt(CURLOPT_FOLLOWLOCATION,0);
+		handle->setopt(CURLOPT_FOLLOWLOCATION,1);
 		handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
 		handle->setopt(CURLOPT_WRITEDATA, &result);
 		res = handle->perform();
@@ -43,10 +43,22 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			log_string("iload.to: could not receive forward url: " + url,LOG_DEBUG);
 			return PLUGIN_CONNECTION_ERROR;
 		}
-		string fileid = result.substr(result.find("Location:") + 10, result.size());
-		fileid = fileid.substr(0, fileid.size() - 4);
-		url = fileid;
+
+		string fileid;
+		if (url.find("merged") != std::string::npos) 
+			fileid = result.substr(result.find("Location:") + 10, result.size());
+		else
+			fileid = result.substr(result.find("Location:", result.find("Location:") + 10) + 10, result.size());
+
+		fileid = fileid.substr(0, fileid.find("HTTP")-4);
+		if (url.find("merged") != std::string::npos)
+			url = fileid;
+		else
+			url = "http://iload.to" + fileid;
+
+		log_string("iload.to: url which contains captcha: " + url, LOG_DEBUG);
 	}
+	result.clear();
 	handle->setopt(CURLOPT_URL, url);
 	handle->setopt(CURLOPT_HEADER, 1);
 	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
