@@ -25,12 +25,14 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
 	return nmemb;
 }
 
+bool free_member = false;
+bool premium_member = false;
+
 plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	ddcurl* handle = get_handle();
 	string result;
 	string url = get_url();
-	if(url.find("/?f=")== std::string::npos)
-	{
+	if(url.find("/?f=")== std::string::npos) {
 		if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
 			handle->setopt(CURLOPT_COOKIEFILE, "");
 			handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
@@ -46,15 +48,14 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			}
 
 			handle->setopt(CURLOPT_POST, 0);
-			if(result.find("Username and password do not match") != string::npos) {
+			if(result.find("Username and password do not match") != string::npos)
 				return PLUGIN_AUTH_FAIL;
+
+			if (premium_member) {
+				outp.download_url = get_url();
+				return PLUGIN_SUCCESS;
 			}
-
-			outp.download_url = get_url();
-
-			return PLUGIN_SUCCESS;
-	    	}
-
+		}
 		bool done = false;
 		// so we can never get in an infinite loop..
 		int while_tries = 0;
@@ -262,16 +263,64 @@ bool get_file_status(plugin_input &inp, plugin_output &outp) {
 }
 
 extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
-	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+	if (premium_member) {
 		outp.allows_resumption = true;
 		outp.allows_multiple = true;
-	} else {
-		outp.allows_resumption = false;
+	}
+	if (free_member) {
+		outp.allows_resumption = true;
 		outp.allows_multiple = false;
+	}
+	if (!premium_member && !free_member) {
+		if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
+			outp.allows_resumption = true;
+			ddcurl handle;
+			string result;
+			handle.setopt(CURLOPT_COOKIEFILE, "");
+			handle.setopt(CURLOPT_FOLLOWLOCATION, 0);
+			handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
+			handle.setopt(CURLOPT_WRITEDATA, &result);
+			handle.setopt(CURLOPT_URL, "http://www.megaupload.com/?c=login&setlang=en");
+			handle.setopt(CURLOPT_POST, 1);
+			string to_post = "login=1&redir=1&username=" + inp.premium_user + "&password=" + inp.premium_password;
+			handle.setopt(CURLOPT_COPYPOSTFIELDS, to_post.c_str());
+			handle.perform();
+
+			handle.setopt(CURLOPT_POST, 0);
+			if(result.find("Username and password do not match") != string::npos) {
+				outp.allows_resumption = false;
+				outp.allows_multiple = false;
+				premium_member = false;
+				free_member = false;
+			}
+			if(result.find("Username and password do not match") == string::npos) {
+				//receive account details
+				result.clear();
+				handle.setopt(CURLOPT_WRITEFUNCTION, write_data);
+				handle.setopt(CURLOPT_WRITEDATA, &result);
+				handle.setopt(CURLOPT_URL, "http://www.megaupload.com/?c=account");
+				handle.perform();
+
+				if(result.find("Regular") != string::npos) {
+					outp.allows_multiple = false;
+					premium_member = false;
+					free_member = true;
+					log_string("Megaupload.com: Using free Member Account", LOG_DEBUG);
+				}
+				else {
+					outp.allows_multiple = true;
+					premium_member = true;
+					free_member = false;
+				}
+			}
+		}
+		else {
+			outp.allows_resumption = false;
+			outp.allows_multiple = false;
+		}
 	}
 	outp.offers_premium = true;
 }
-
 void post_process_download(plugin_input &inp) {
 	if(!inp.premium_user.empty() && !inp.premium_password.empty()) {
 		return;
