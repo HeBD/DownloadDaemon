@@ -63,6 +63,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 	handle->setopt(CURLOPT_HEADER, 1);
 	handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
 	handle->setopt(CURLOPT_WRITEDATA, &result);
+	handle->setopt(CURLOPT_FOLLOWLOCATION, 0);
 	handle->setopt(CURLOPT_COOKIEFILE, "");
 	res = handle->perform();
 	log_string("iload.to: trying to decrypt " + url,LOG_DEBUG);
@@ -100,7 +101,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 	for(size_t i = 0; i < links.size(); i++) {
 		links[i] = handle->unescape(links[i]);
-		if (links[i].find("?") != std::string::npos)
+		if (links[i].find("?http") != std::string::npos)
 			links[i] = links[i].substr(links[i].find("?")+1,links[i].size());
 		urls.add_download(links[i], "");
 	}
