@@ -24,7 +24,44 @@ SET(daemon_SRCS downloaddaemon.cpp
 		../include/crypt/AES/aes_cbc.cpp
 		../include/crypt/AES/aes_cfb.cpp
 		../include/crypt/AES/aes_core.cpp
-		../include/crypt/base64.cpp)
+		../include/crypt/base64.cpp
+# Sources of the LUA engine for plugins
+		../include/lua/src/lapi.c
+		../include/lua/src/lauxlib.c
+		../include/lua/src/lbaselib.c
+		../include/lua/src/lcode.c
+		../include/lua/src/ldblib.c
+		../include/lua/src/ldebug.c
+		../include/lua/src/ldo.c
+		../include/lua/src/ldump.c
+		../include/lua/src/lfunc.c
+		../include/lua/src/lgc.c
+		../include/lua/src/linit.c
+		../include/lua/src/liolib.c
+		../include/lua/src/llex.c
+		../include/lua/src/lmathlib.c
+		../include/lua/src/lmem.c
+		../include/lua/src/loadlib.c
+		../include/lua/src/lobject.c
+		../include/lua/src/lopcodes.c
+		../include/lua/src/loslib.c
+		../include/lua/src/lparser.c
+		../include/lua/src/lstate.c
+		../include/lua/src/lstring.c
+		../include/lua/src/lstrlib.c
+		../include/lua/src/ltable.c
+		../include/lua/src/ltablib.c
+		../include/lua/src/ltm.c
+#		../include/lua/src/lua.c  # This is the main() interpreter and should not be compiled into DD
+#		../include/lua/src/luac.c # The lua compiler. Also not to include in DD
+		../include/lua/src/lundump.c
+		../include/lua/src/lvm.c
+		../include/lua/src/lzio.c
+#		../include/lua/src/print.c # Only required for the compiler
+)
+
+# for LUA...
+add_definitions(-DLUA_USE_POSIX)
 
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckIncludeFileCXX)
@@ -128,8 +165,8 @@ IF(CURL_FOUND AND HAVE_POPEN)
 			TARGET_LINK_LIBRARIES(DownloadDaemon ${Boost_LIBRARIES} ${CURL_LIBRARIES} ${CMAKE_DL_LIBS} ${GENERAL_LIKER_FLAGS})
 		ENDIF(Boost_FOUND)
 	ELSE(NOT USE_STD_THREAD)
+		set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++0x)
 		ADD_EXECUTABLE(DownloadDaemon ${daemon_SRCS})
-		add_definitions(-std=c++0x)
 		TARGET_LINK_LIBRARIES(DownloadDaemon ${CURL_LIBRARIES} ${CMAKE_DL_LIBS} ${GENERAL_LIKER_FLAGS})
 	ENDIF(NOT USE_STD_THREAD)
 ENDIF(CURL_FOUND AND HAVE_POPEN)
