@@ -25,7 +25,6 @@ namespace std {
 #include <thread>
 #endif
 
-
 class pkg_extractor {
 public:
 	enum extract_status { PKG_SUCCESS, PKG_PASSWORD, PKG_INVALID, PKG_ERROR };
@@ -52,8 +51,6 @@ private:
 	static std::string last_posted_message;
 	static int container_id;
 	static std::recursive_mutex mx;
-
-
 };
 
 #endif // PACKAGE_EXTRACTOR_H_INCLUDED

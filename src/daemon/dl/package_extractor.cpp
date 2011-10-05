@@ -31,8 +31,13 @@
 #include <errno.h>
 using std::string;
 
+//declare class static objects
+std::string pkg_extractor::last_posted_message;
+int pkg_extractor::container_id;
+std::recursive_mutex pkg_extractor::mx;
+
 pkg_extractor::extract_status pkg_extractor::extract_package(const std::string& filename, const int& id, const std::string& password) {
-	container_id = id;
+	pkg_extractor::container_id = id;
 	tool to_use = required_tool(filename);
 	pkg_extractor::extract_status extract_status;
 	switch(to_use) {
