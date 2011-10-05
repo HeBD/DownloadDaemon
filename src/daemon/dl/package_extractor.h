@@ -51,6 +51,7 @@ public:
 private:
 	static std::string last_posted_message;
 	static int container_id;
+	static std::recursive_mutex mx;
 
 
 };
