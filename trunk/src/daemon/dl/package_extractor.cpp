@@ -559,7 +559,7 @@ pkg_extractor::extract_status pkg_extractor::extract_7z(const std::string& filen
 }
 
 void pkg_extractor::post_subscribers(connection_manager::reason_type reason, std::string temp) {
-	unique_lock<recursive_mutex> lock(mx);
+	std::unique_lock<std::recursive_mutex> lock(pkg_extractor::mx);
 	std::string line, reason_str;
 
 	connection_manager::reason_to_string(reason, reason_str);
