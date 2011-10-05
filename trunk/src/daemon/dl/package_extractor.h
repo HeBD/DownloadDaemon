@@ -11,8 +11,20 @@
 
 #ifndef PACKAGE_EXTRACTOR_H_INCLUDED
 #define PACKAGE_EXTRACTOR_H_INCLUDED
+#include <config.h>
 #include <string>
 #include <vector>
+#include "../mgmt/connection_manager.h"
+
+#ifndef USE_STD_THREAD
+#include <boost/thread.hpp>
+namespace std {
+	using namespace boost;
+}
+#else
+#include <thread>
+#endif
+
 
 class pkg_extractor {
 public:
@@ -20,7 +32,7 @@ public:
 	enum tool { GNU_UNRAR, RARLAB_UNRAR, TAR, TAR_BZ2, TAR_GZ, ZIP, NONE, HJSPLIT, SEVENZ };
 
 
-	static extract_status extract_package(const std::string& filename, const std::string& password = "");
+	static extract_status extract_package(const std::string& filename, const int& id, const std::string& password = "");
 	static tool required_tool(std::string filename);
 	static tool get_unrar_type();
 
@@ -32,6 +44,13 @@ public:
 	static extract_status deep_extract(const std::string& targetDir, pkg_extractor::extract_status extract_status, const std::string& password);
         static std::string getTargetDir(const std::string& filename, tool t);
         static std::vector<std::string> getDir(std::string dir);
+        
+	static void post_subscribers(connection_manager::reason_type reason = connection_manager::UPDATE,std::string temp="");
+	static void setLastPostedMessage(std::string message);
+	static std::string getLastPostMessage();
+private:
+	static std::string last_posted_message;
+	static int container_id;
 
 
 };

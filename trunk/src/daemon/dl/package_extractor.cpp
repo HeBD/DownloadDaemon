@@ -9,6 +9,11 @@
  * GNU General Public License for more details.
  */
 
+#include <config.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dlfcn.h>
+
 #include "package_extractor.h"
 #include "../global.h"
 #include "../tools/helperfunctions.h"
@@ -26,7 +31,8 @@
 #include <errno.h>
 using std::string;
 
-pkg_extractor::extract_status pkg_extractor::extract_package(const std::string& filename, const std::string& password) {
+pkg_extractor::extract_status pkg_extractor::extract_package(const std::string& filename, const int& id, const std::string& password) {
+	container_id = id;
 	tool to_use = required_tool(filename);
 	pkg_extractor::extract_status extract_status;
 	switch(to_use) {
@@ -69,7 +75,7 @@ pkg_extractor::extract_status pkg_extractor::deep_extract(const std::string& tar
 			std::vector<std::string> splitted = split_string(files[i],"/");
 			if(opendir(files[i].c_str()) != NULL && splitted.back()!="." && splitted.back()!="..")
 				deep_extract(files[i],extract_status,password);
-			pkg_extractor::extract_status temp = extract_package(files[i], password);
+			pkg_extractor::extract_status temp = extract_package(files[i], container_id, password);
 			if(temp != PKG_INVALID)
 				extract_status = temp;
 		}
@@ -196,7 +202,8 @@ pkg_extractor::extract_status pkg_extractor::extract_rar(const std::string& file
 
 		dup2(ctop[1], STDOUT_FILENO);
 		dup2(ctop[1], STDERR_FILENO);
-
+		
+		
 		if(have_pw) {
 			execlp(unrar_path, unrar_path, "x", unrar_pw, "-o+", fn_path, target_dir, NULL);
 		} else {
@@ -210,7 +217,7 @@ pkg_extractor::extract_status pkg_extractor::extract_rar(const std::string& file
 	} else {
 		// parent
 		close(ctop[1]);
-
+		post_subscribers(connection_manager::UNRAR_START);
 		std::string result;
 		size_t num;
 		while((num = read(ctop[0], buf, 256)) > 0) {
@@ -230,7 +237,14 @@ pkg_extractor::extract_status pkg_extractor::extract_rar(const std::string& file
 		extract_status ret = PKG_SUCCESS;
 		if(t == GNU_UNRAR && result.find(" Failed") != string::npos) {
 			ret = PKG_PASSWORD;
-		} else if(t == RARLAB_UNRAR && (result.find("password incorrect") != string::npos || result.find("No files to extract") != string::npos)) {
+		} else if(t == RARLAB_UNRAR && (result.find("password incorrect") != string::npos ))
+		{
+			post_subscribers(connection_manager::UNRAR_FINISHED,"password incorrect");
+			return PKG_PASSWORD;
+		}
+		else if (t == RARLAB_UNRAR && (result.find("No files to extract") != string::npos))
+		{
+			post_subscribers(connection_manager::UNRAR_FINISHED,"password needed");
 			return PKG_PASSWORD;
 		}
 
@@ -542,5 +556,29 @@ pkg_extractor::extract_status pkg_extractor::extract_7z(const std::string& filen
 
 	}
 	return PKG_ERROR;
+}
+
+void pkg_extractor::post_subscribers(connection_manager::reason_type reason, std::string temp) {
+	unique_lock<recursive_mutex> lock(mx);
+	std::string line, reason_str;
+
+	connection_manager::reason_to_string(reason, reason_str);
+	line = "PACKAGE|" + int_to_string(container_id);
+	line = reason_str + ":" + line + ":" + temp;
+
+	if((line != getLastPostMessage()) || (reason == connection_manager::UNRAR_START) || (reason == connection_manager::UNRAR_FINISHED)) {
+		connection_manager::instance()->push_message(connection_manager::SUBS_DOWNLOADS, line);
+		setLastPostedMessage(line);
+	}
+}
+
+void pkg_extractor::setLastPostedMessage(std::string message)
+{
+	last_posted_message = message;
+}
+
+std::string pkg_extractor::getLastPostMessage()
+{
+	return last_posted_message;
 }
 

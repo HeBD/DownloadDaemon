@@ -85,6 +85,12 @@ void connection_manager::reason_to_string(reason_type t, std::string &ret) {
 	case MOVETOP:
 		ret = "MOVETOP";
 		return;
+	case UNRAR_START:
+		ret = "UNRAR_START";
+		return;
+	case UNRAR_FINISHED:
+		ret = "UNRAR_FINISHED";
+		return;
 	}
 }
 
