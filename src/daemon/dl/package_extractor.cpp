@@ -253,9 +253,25 @@ pkg_extractor::extract_status pkg_extractor::extract_rar(const std::string& file
 			return PKG_PASSWORD;
 		}
 
-		if(process_ret != 0 || result.find("ERROR") != string::npos  || (t == RARLAB_UNRAR && result.find("All OK") == string::npos)) {
+		if(process_ret != 0 || result.find("ERROR") != string::npos  || (t == RARLAB_UNRAR && result.find("All OK") == string::npos)) 
+		{
+			size_t s;
+			std::string temp;
+			if(s = result.find("already exists")!=string::npos)
+			{
+				post_subscribers(connection_manager::UNRAR_FINISHED,"ERROR already exist");
+			}
+			s=0;
+			while(s = result.find("CRC failed in volume",s)!=string::npos)
+			{
+				s+=20;
+				temp = result.substr(s,result.find("\n",s)-s);
+				post_subscribers(connection_manager::UNRAR_FINISHED,"ERROR " + temp);
+			}
 			ret = PKG_ERROR;
 		}
+		if(ret == PKG_SUCCESS && result.find("All OK")!= string::npos)
+			post_subscribers(connection_manager::UNRAR_FINISHED,"sucessfully extracted");
 
 		return ret;
 	}
