@@ -25,7 +25,7 @@ public:
 
 	/** Describes the reason why a message is sent to a subscriber.
 	*/
-	enum reason_type { UPDATE = 0, NEW, DELETE, MOVEUP, MOVEDOWN, MOVETOP, MOVEBOTTOM };
+	enum reason_type { UPDATE = 0, NEW, DELETE, MOVEUP, MOVEDOWN, MOVETOP, MOVEBOTTOM, UNRAR_START, UNRAR_FINISHED };
 
 	connection_manager();
 	~connection_manager();

@@ -743,7 +743,7 @@ void download_container::extract_package() {
 			else
 				log_string("Trying to extract " + output_file + " using password " + *curr_password, LOG_INFO);
 			lock.unlock();
-			pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, *curr_password);
+			pkg_extractor::extract_status ret = pkg_extractor::extract_package(output_file, container_id, *curr_password);
 			lock.lock();
 			if(ret == pkg_extractor::PKG_ERROR || ret == pkg_extractor::PKG_INVALID) {
 				all_success = false;
