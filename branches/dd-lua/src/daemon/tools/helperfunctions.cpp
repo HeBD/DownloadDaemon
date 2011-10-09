@@ -255,7 +255,7 @@ void correct_path(std::string &path) {
 	}
 	substitute_env_vars(path);
 	if(path[0] != '/' && path[0] != '\\' && path.find(":\\") == std::string::npos && path.find(":/") == string::npos) {
-		path.insert(0, program_root);
+		path.insert(0, program_root + "/");
 	}
 
 	int path_max;

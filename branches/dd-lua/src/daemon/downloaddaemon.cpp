@@ -245,8 +245,10 @@ int main(int argc, char* argv[], char* env[]) {
 	program_root = program_root.substr(0, program_root.find_last_of("/\\"));
 	program_root.append("/share/downloaddaemon/");
 	if(getenv("DD_DATA_DIR")) {
-		program_root = getenv("DD_DATA_DIR");
-		correct_path(program_root);
+		string tmp = getenv("DD_DATA_DIR");
+		correct_path(tmp);
+		program_root = tmp;
+		log_string("program root: " + program_root, LOG_DEBUG);
 	}
 
 	if(pstat(program_root.c_str(), &st) != 0) {

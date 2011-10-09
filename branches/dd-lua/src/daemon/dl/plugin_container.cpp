@@ -15,20 +15,32 @@
 #include "download.h"
 
 #include <dirent.h>
-#include <dlfcn.h>
 #include <sys/stat.h>
 
 #include <string>
 #include <vector>
+#include <cassert>
+#include <iostream>
+
+extern "C"
+{
+	#include "../../include/lua/src/lua.h"
+	#include "../../include/lua/src/lualib.h"
+	#include "../../include/lua/src/lauxlib.h"
+}
 
 using namespace std;
 
+plugin_container::plugin_container()
+{
+	state = luaL_newstate();
+	assert(state);
+	luaL_openlibs(state);
+}
+
 plugin_container::~plugin_container() {
 	unique_lock<recursive_mutex> lock(mx);
-	for(handleIter it = handles.begin(); it != handles.end(); ++it) {
-		if(it->second) dlclose(it->second);
-	}
-	handles.clear();
+	lua_close(state);
 }
 
 plugin_output plugin_container::get_info(const std::string& info, p_info kind) {
@@ -123,7 +135,7 @@ void plugin_container::load_plugins() {
 	struct dirent *ep;
 	dp = opendir(plugindir.c_str());
 	if (dp == NULL) {
-		log_string("Could not open plugin directory!", LOG_ERR);
+		log_string("Could not open plugin directory.", LOG_ERR);
 		return;
 	}
 
@@ -143,27 +155,45 @@ void plugin_container::load_plugins() {
 
 		if(pstat(current.c_str(), &st) != 0) continue;
 
-		if(current.find("lib") == string::npos || current.rfind(".so") != current.size() - 3)
+		if(current.rfind(".lua") != current.size() - 4)
 			continue;
 
-		// Load the plugin needed
-		void* l_handle = dlopen(current.c_str(), RTLD_NOW | RTLD_LOCAL);
-		if (!l_handle) {
-			log_string(std::string("Unable to open plugin file: ") + dlerror() + '/' + current, LOG_ERR);
+		int r = luaL_dofile(state, current.c_str());
+		if (r != 0) {
+			log_string("Failed to load plugin " + current + ". Error: " + lua_tostring(state, -1), LOG_ERR);
+			std::cerr << lua_tostring(state, -1);
+			lua_pop(state, 1);
 			continue;
 		}
-
-		dlerror();	// Clear any existing error
-		string host = ep->d_name;
-		host = host.substr(3, host.size() - 6); // strip "lib" and ".so"
-		for(size_t i = 0; i < host.size(); ++i) host[i] = tolower(host[i]);
-		handles[host] = l_handle;
-
-
 	}
-
 	closedir(dp);
 
+	vector<string> plugin_tbls;
+	// now all plugins are read and executed. Now we can traverse through all the global objects
+	// (see here: http://www.gamedev.net/topic/465208-lua---traversing-globals-table/ ).
+	// make sure they are tables and check if everything is there and what is for what, etc..
+	lua_getglobal(state, "_G");
+	const int G = lua_gettop(state);
+	lua_pushnil(state);
+	while(lua_next(state, G)) {
+		if (!lua_istable(state, -1)) {
+			lua_pop(state, 1);
+			continue;
+		}
+		lua_getfield(state, -1, "get_plugin_type");
+		if (!lua_isfunction(state, -1)) {
+			lua_pop(state, 2);
+			continue;
+		}
+		lua_pop(state, 1);
+		const char *key_c_str = lua_tostring(state, -2);
+		if(key_c_str ) {
+			plugin_tbls.push_back(key_c_str);
+		}
+		lua_pop(state, 1);
+	}
+	lua_pop(state, 1);
+	//assert(lua_gettop(state) == 0);
 }
 
 const std::vector<plugin>& plugin_container::get_all_infos() {
