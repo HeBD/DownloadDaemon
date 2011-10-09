@@ -58,6 +58,10 @@ SET(daemon_SRCS downloaddaemon.cpp
 		../include/lua/src/lvm.c
 		../include/lua/src/lzio.c
 #		../include/lua/src/print.c # Only required for the compiler
+
+# The regular expression parser
+		../include/RegEx/slre.cpp
+		../include/RegEx/RegEx.cpp
 )
 
 # for LUA...
@@ -137,7 +141,7 @@ ENDIF(BACKTRACE_ON_CRASH)
 CHECK_FUNCTION_EXISTS(stat64 HAVE_STAT64)
 
 CONFIGURE_FILE(config.h.cmake ${CMAKE_BINARY_DIR}/include_downloadd/config.h)
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include_downloadd/ ../include)
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include_downloadd/ ../include ../include/lua/src)
 
 
 CHECK_FUNCTION_EXISTS(popen HAVE_POPEN)

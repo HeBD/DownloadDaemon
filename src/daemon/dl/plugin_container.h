@@ -30,6 +30,10 @@ namespace std {
 #include <thread>
 #endif
 
+extern "C" {
+	#include "../../include/lua/src/lua.h"
+}
+
 struct plugin {
 	std::string host;
 	std::string rhost;
@@ -44,10 +48,10 @@ class plugin_container {
 public:
 	enum p_info { P_HOST, P_FILE };
 
+	plugin_container();
+	
 	plugin_output get_info(const std::string& info, p_info kind);
 	const std::vector<plugin>& get_all_infos();
-
-
 
 	void clear_cache();
 
@@ -83,6 +87,8 @@ private:
 	std::vector<plugin> plugin_cache;
 	mutable std::recursive_mutex mx;
 
+	lua_State* state;
+	std::mutex statemutex;
 
 };
 
