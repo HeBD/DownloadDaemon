@@ -288,7 +288,7 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 
 			handle.setopt(CURLOPT_POST, 0);
 			if(result.find("Username and password do not match") != string::npos) {
-				outp.allows_resumption = false;
+				outp.allows_resumption = true;
 				outp.allows_multiple = false;
 				premium_member = false;
 				free_member = false;
@@ -315,7 +315,7 @@ extern "C" void plugin_getinfo(plugin_input &inp, plugin_output &outp) {
 			}
 		}
 		else {
-			outp.allows_resumption = false;
+			outp.allows_resumption = true;
 			outp.allows_multiple = false;
 		}
 	}
