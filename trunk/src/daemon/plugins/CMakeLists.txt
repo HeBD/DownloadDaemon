@@ -17,12 +17,10 @@ SET(plugins rapidshare_com.cpp		rapidshare.com
 		zshare_net.cpp				zshare.net
 		shragle_com.cpp				shragle.com
 		bitload_com.cpp				bitload.com
-		share_cx.cpp				share.cx
 		filesonic_com.cpp			filesonic.com
 		share-online_biz.cpp		share-online.biz
 		x7_to.cpp					x7.to
 		duckload_com.cpp			duckload.com
-		gaiafile_com.cpp			gaiafile.com
 		safelinking_net.cpp			safelinking.net
 		serienjunkies_org.cpp		serienjunkies.org
 		hd-bb_org.cpp				hd-bb.org
