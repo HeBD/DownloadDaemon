@@ -111,7 +111,7 @@ IF(CYGWIN)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-all-symbols,--enable-runtime-pseudo-reloc,-out-implib,libDownloadDaemon.dll.a")
 ELSE(CYGWIN)
 	add_definitions(-rdynamic -export-dynamic)
-        set(GENERAL_LIKER_FLAGS ${GENERAL_LINKER_FLAGS} -export-dynamic)
+        set(GENERAL_LIKER_FLAGS ${GENERAL_LINKER_FLAGS} -lrt -export-dynamic)
 ENDIF(CYGWIN)
 
 
