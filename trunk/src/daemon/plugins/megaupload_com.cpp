@@ -89,7 +89,8 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			if(result.find("gencap.php") == string::npos) {
 				// as of dec 2010, they don't want a captcha any more.
 				// I don't know if that's an exception, but I'll just leave the captcha-code here and ignore it if not needed
-				outp.download_url = search_between(result, "id=\"downloadlink\"><a href=\"", "\"");
+				int pos = result.find("id=\"dlbuttondisabled\"></a>");
+				outp.download_url = search_between(result, "<a href=\"", "\"",pos);
 				set_wait_time(atoi(search_between(result, "count=", ";").c_str()));
 				if(outp.download_url.empty())
 					return PLUGIN_FILE_NOT_FOUND;
