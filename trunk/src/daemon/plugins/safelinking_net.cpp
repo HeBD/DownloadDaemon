@@ -93,7 +93,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 					size_t urlpos = result.find("<iframe src=\"http://api.recaptcha.net/noscript?k=");
 					if(urlpos == string::npos)
 					{
-						log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+						log_string("Recaptcha1: Safelinking.net: urlpos is at end of file",LOG_DEBUG);
 						return PLUGIN_ERROR;
 					}
 					urlpos += 49;
@@ -117,7 +117,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 						size_t urlpos = result.find("challenge : '");
 						if(urlpos == string::npos)
 						{
-							log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+							log_string("Recaptcha2: Safelinking.net: urlpos is at end of file",LOG_DEBUG);
 							return PLUGIN_ERROR;
 						}
 						urlpos += 13;
@@ -125,7 +125,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 						urlpos = result.find("server : '");
 						if(urlpos == string::npos)
 						{
-							log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+							log_string("Recaptcha3: Safelinking.net: urlpos is at end of file",LOG_DEBUG);
 							return PLUGIN_ERROR;
 						}
 						urlpos += 10;
@@ -163,9 +163,10 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 					std::string captcha_text = Captcha.process_image(result, "jpg", "", -1, false, false, captcha::SOLVE_MANUAL);
 					post+= "&3dcaptcha_response_field=" + captcha_text;
 				}
-				else if(result.find("fancycaptcha.css\"")!= std::string::npos)
+				else if(result.find("class=\"captcha_image ajax-fc-container\"")!= std::string::npos)
 				{
-					handle->setopt(CURLOPT_URL, "http://safelinking.net/includes/captcha_factory/fancycaptcha.php");
+					log_string("Safelinking.net: fancycaptcha!",LOG_DEBUG);
+					handle->setopt(CURLOPT_URL, "http://safelinking.net/includes/captcha_factory/fancycaptcha.php?hash=" + search_between(url,"safelinking.net/p/"));
 					result.clear();
 					handle->perform();
 					post+= "&fancy-captcha=" + trim_string(result);
@@ -204,32 +205,41 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 				return PLUGIN_FILE_NOT_FOUND;
 			}
 			log_string("so far, so good!\ngetting direct links",LOG_DEBUG);
+			vector<string> links;
 			size_t urlpos = result.find("class=\"link-box\" id=\"direct-links\"");
 			if(urlpos == string::npos)
 			{
-				log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
-				return PLUGIN_ERROR;
+				log_string("direct links1: Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+				links = search_all_between(result,"class=\"linked\">","</a>",0,false);
+				if(links.size()==0)
+				{
+					log_string("direct links2: Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+					string lnks = search_between(result,"class=\"result-form\">","</fieldset></div></div></div></div><div id=\"footer\"");
+					if(lnks!="")
+					{
+						links = search_all_between(lnks,"href=\"","\"",0,false);
+					}
+					else
+					{
+						log_string("direct links3: Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+						return PLUGIN_ERROR;
+					}
+				}
+				
 			}
-			urlpos += 39;
-			string list = result.substr(urlpos, result.find("</div>", urlpos) - urlpos);
-			list = trim_string(list);
-			//log_string("Safelinking.net: list = " + list,LOG_DEBUG);
-			vector<string> links = split_string(list, "</a><br />");
-			for(size_t i = 0; i < links.size()-1; i++)
+			else
+			{
+				links = search_all_between(result,"<a href=\"","\"",0,true);
+			}
+			if(links.size()==0)
+			{
+				return PLUGIN_FILE_NOT_FOUND;
+			}
+			
+			for(size_t i = 0; i < links.size(); i++)
 			{
 				links[i] = trim_string(links[i]);
-				//log_string("Safelinking.net: splitted-link =" + links[i],LOG_DEBUG);
-				size_t urlpos = links[i].find("<a href=\"");
-				if(urlpos == string::npos)
-				{
-					log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
-					return PLUGIN_ERROR;
-				}
-				urlpos += 9;
-				//log_string("Safelinking.net: urlpos=" + int_to_string(urlpos),LOG_DEBUG);
-				string temp = links[i].substr(urlpos, links[i].find("\"", urlpos) - urlpos);
-				//log_string("Safelinking.net: link=" + temp,LOG_DEBUG);
-				urls.add_download(temp, "");
+				urls.add_download(links[i], "");
 			}
 		}
 		else
@@ -239,7 +249,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			size_t urlpos = result.find("Location:");
 			if(urlpos == string::npos)
 			{
-				log_string("Safelinking.net: urlpos is at end of file",LOG_DEBUG);
+				log_string("/d: Safelinking.net: urlpos is at end of file",LOG_DEBUG);
 				return PLUGIN_ERROR;
 			}
 			urlpos += 10;
