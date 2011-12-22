@@ -12,3 +12,8 @@
 - quick-enable and disable download-timing
 - display server time in clients?
 - manual router reconnect
+
+- view unrar state in ddclient
+- add unrar now button in ddclient
+- add megaupload free account
+- add global option check if file !=html (known plugins)

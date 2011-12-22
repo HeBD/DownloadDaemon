@@ -114,7 +114,7 @@ std::string convert_to_string(PARAM p1);
  *	@param start_from start searching from this position in the string (and ignore matches before it)
  *	@returns text between before and after, an empty string if before is not found, from before to the end of searchIn if after is not found
  */
-std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from = 0);
+std::string search_between(const std::string& searchIn, const std::string& before, const std::string& after="", size_t start_from = 0);
 
 /** same as above, but returns all occurences from searchIn that match
 	There is the additional parameter by_end. If this is set to true, the after-string will be used for locating substrings
@@ -203,7 +203,10 @@ std::string search_between(const std::string& searchIn, const std::string& befor
 	if(pos == std::string::npos) return "";
 	pos += before.size(); // go to the position right after the search term
 	if(pos >= searchIn.size()) return "";
-	return searchIn.substr(pos, searchIn.find(after, pos) - pos);
+	if(after!="")
+		return searchIn.substr(pos, searchIn.find(after, pos) - pos);
+	else
+		return searchIn.substr(pos);
 }
 
 std::vector<std::string> search_all_between(const std::string& searchIn, const std::string& before, const std::string& after, size_t start_from, bool by_end) {
