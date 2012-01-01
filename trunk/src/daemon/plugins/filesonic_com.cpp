@@ -32,15 +32,22 @@ string getId(string url)
 {
 	vector<string> splitted_url = split_string(url, "/");
 	string id;
-	if(is_number(splitted_url[4]))
+	if(splitted_url[4][0]=='r')
+	{
+		id = splitted_url[4] + "-" + splitted_url[5];
+	}
+	else
+	{
 		id = splitted_url[4];
-	else if(is_number(splitted_url[5]))
+	}
+		
+	/*else if(is_number(splitted_url[5]))
 		id = splitted_url[4] + "-" + splitted_url[5];
 	else
 	{
 		log_string("filesonic.com: cannot find id",LOG_DEBUG);
 		return "";
-	}
+	}*/
 	return id;
 }
 
@@ -92,6 +99,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		string premium_user = handle->escape(inp.premium_user);
 		string premium_pwd = handle->escape(inp.premium_password);
 		string id = getId(url);
+		log_string("filesonic.com: id = " + id, LOG_DEBUG);
 		if(id=="")
 			return PLUGIN_ERROR;
 		url = "http://api.filesonic.com/link?method=getDownloadLink&u=" + premium_user + "&p=" + premium_pwd + "&format=xml&ids=" + id;
@@ -104,7 +112,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			handle->setopt(CURLOPT_WRITEDATA, &result);
 			handle->setopt(CURLOPT_COOKIEFILE, "");
 			int ret = handle->perform();
-			//log_string("filesonic.com: result=" + result, LOG_DEBUG);
+			log_string("filesonic.com: result=" + result, LOG_DEBUG);
 			if(ret != CURLE_OK)
 				return PLUGIN_CONNECTION_ERROR;
 			if(ret == 0) 
