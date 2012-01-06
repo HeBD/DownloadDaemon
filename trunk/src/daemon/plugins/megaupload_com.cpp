@@ -71,7 +71,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			if(res != 0) {
 				return PLUGIN_CONNECTION_ERROR;
 			}
-			log_string("megaupload.com:" + result,LOG_DEBUG);
+			//log_string("megaupload.com:" + result,LOG_DEBUG);
 
 			if(result.find("Unfortunately, the link you have clicked is not available") != string::npos) {
 				return PLUGIN_FILE_NOT_FOUND;
@@ -91,8 +91,45 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 				// as of dec 2010, they don't want a captcha any more.
 				// I don't know if that's an exception, but I'll just leave the captcha-code here and ignore it if not needed
 				int pos = result.find("class=\"download_premium_but\"></a>");
-				outp.download_url = search_between(result, "<a href=\"", "\"",pos);
+				string url = search_between(result, "<a href=\"", "\"",pos);
+				result.clear();
+				//set up handle to only get header
+				handle->setopt(CURLOPT_URL,url.c_str());
+				handle->setopt(CURLOPT_HEADER, true); 
+				handle->setopt(CURLOPT_NOBODY, true); 
+				handle->setopt(CURLOPT_FORBID_REUSE, false); 
+				//handle->setopt(CURLOPT_RETURNTRANSFER, true);
+				int res = handle->perform();
+				//log_string("megaupload.com: " + result,LOG_DEBUG);
+				pos = result.find("HTTP/1.1 ");
+				pos+=9;
+				int responscode = atoi(result.substr(pos,3).c_str());
+				if(responscode==503)
+				{
+					set_wait_time(600);
+					return PLUGIN_LIMIT_REACHED;
+				}
+				else if(responscode==416)
+				{
+					set_wait_time(600);
+					return PLUGIN_SERVER_OVERLOADED;
+				}
+				else if(responscode==404)
+				{
+					return PLUGIN_FILE_NOT_FOUND;
+				}
+				else if(responscode==200)
+				{
+					outp.download_url = url;
+				}
+				else
+				{
+					return PLUGIN_ERROR;
+				}
 				//set_wait_time(atoi(search_between(result, "count=", ";").c_str()));
+				handle->setopt(CURLOPT_HEADER, false); 
+				handle->setopt(CURLOPT_NOBODY, false); 
+				handle->setopt(CURLOPT_FORBID_REUSE, true); 
 				if(outp.download_url.empty())
 					return PLUGIN_FILE_NOT_FOUND;
 				return PLUGIN_SUCCESS;
