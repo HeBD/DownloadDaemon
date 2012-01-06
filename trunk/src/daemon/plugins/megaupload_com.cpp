@@ -71,6 +71,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			if(res != 0) {
 				return PLUGIN_CONNECTION_ERROR;
 			}
+			log_string("megaupload.com:" + result,LOG_DEBUG);
 
 			if(result.find("Unfortunately, the link you have clicked is not available") != string::npos) {
 				return PLUGIN_FILE_NOT_FOUND;
@@ -89,9 +90,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			if(result.find("gencap.php") == string::npos) {
 				// as of dec 2010, they don't want a captcha any more.
 				// I don't know if that's an exception, but I'll just leave the captcha-code here and ignore it if not needed
-				int pos = result.find("id=\"dlbuttondisabled\"></a>");
+				int pos = result.find("class=\"download_premium_but\"></a>");
 				outp.download_url = search_between(result, "<a href=\"", "\"",pos);
-				set_wait_time(atoi(search_between(result, "count=", ";").c_str()));
+				//set_wait_time(atoi(search_between(result, "count=", ";").c_str()));
 				if(outp.download_url.empty())
 					return PLUGIN_FILE_NOT_FOUND;
 				return PLUGIN_SUCCESS;
