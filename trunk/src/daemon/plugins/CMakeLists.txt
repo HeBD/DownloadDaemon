@@ -4,7 +4,6 @@ SET(plugins rapidshare_com.cpp		rapidshare.com
 		uploaded_to.cpp				uploaded.to 
 		youtube_com.cpp				youtube.com
 		netload_in.cpp				netload.in
-		megaupload_com.cpp			megaupload.com
 		netfolder_in.cpp			netfolder.in
 		filefactory_com.cpp			filefactory.com
 		depositfiles_com.cpp		depositfiles.com
@@ -118,7 +117,6 @@ IF(CURL_FOUND AND HAVE_POPEN)
 	endforeach(plg)
 
 	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../share/downloaddaemon/plugins/captchadb/netload.in.tar.bz2 DESTINATION share/downloaddaemon/plugins/captchadb)
-	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../share/downloaddaemon/plugins/captchadb/megaupload.com.tar.bz2 DESTINATION share/downloaddaemon/plugins/captchadb)
 
 	install(CODE "EXEC_PROGRAM(\"tar xjf \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/netload.in.tar.bz2 -C \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/downloaddaemon/plugins/captchadb/ \")")
 
