@@ -1,32 +1,33 @@
 cmake_minimum_required (VERSION 2.6)
 
-SET(plugins rapidshare_com.cpp		rapidshare.com 
+SET(plugins rapidshare_com.cpp				rapidshare.com 
 		uploaded_to.cpp				uploaded.to 
 		youtube_com.cpp				youtube.com
 		netload_in.cpp				netload.in
 		netfolder_in.cpp			netfolder.in
 		filefactory_com.cpp			filefactory.com
-		depositfiles_com.cpp		depositfiles.com
+		depositfiles_com.cpp			depositfiles.com
 		hotfile_com.cpp				hotfile.com 
 		fileserve_com.cpp			fileserve.com
 		linksave_in.cpp				linksave.in 
 		relink_us.cpp				relink.us
 		files_mail_ru.cpp			files.mail.ru
-		load_to.cpp					load.to
+		load_to.cpp				load.to
 		zshare_net.cpp				zshare.net
 		shragle_com.cpp				shragle.com
 		bitload_com.cpp				bitload.com
 		filesonic_com.cpp			filesonic.com
-		share-online_biz.cpp		share-online.biz
-		x7_to.cpp					x7.to
+		share-online_biz.cpp			share-online.biz
+		x7_to.cpp				x7.to
 		duckload_com.cpp			duckload.com
 		safelinking_net.cpp			safelinking.net
-		serienjunkies_org.cpp		serienjunkies.org
+		serienjunkies_org.cpp			serienjunkies.org
 		hd-bb_org.cpp				hd-bb.org
 		iload_to.cpp				iload.to
 		bierdopje_com.cpp			bierdopje.com
 		multiupload_com.cpp			multiupload.com
 		ifile_it.cpp				ifile.it
+		linksafe_me.cpp				linksafe.me
 )
 
 project(DownloadDaemon-Plugins)
