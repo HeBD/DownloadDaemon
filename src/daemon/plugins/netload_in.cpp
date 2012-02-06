@@ -56,8 +56,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_SUCCESS;
 	}
 
-
-
 	// so we can never get in an infinite loop..
 	int while_tries = 0;
 	while(!done && while_tries < 100) {
@@ -109,7 +107,6 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 			n = result.find("value=\"", n) + 7;
 			post_data = "file_id=" + result.substr(n, result.find("\"", n) - n);
 
-
 			handle->setopt(CURLOPT_URL, captcha_url.c_str());
 			result.clear();
 			res = handle->perform();
@@ -142,14 +139,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 				return PLUGIN_FILE_NOT_FOUND;
 			}
 
-			if((n = result.find("You could download your next file in")) != string::npos) {
+			if((n = result.find("You can download the next file in")) != string::npos) {
 				n = result.find("countdown(", n) + 10;
 				int wait_secs = atoi(result.substr(n, result.find(",", n) - n).c_str()) / 100;
 				set_wait_time(wait_secs);
 				return PLUGIN_LIMIT_REACHED;
 			}
-
-			n = result.find("the download is started automatically");
+			n = result.find("Your download will start automatically.");
 			n = result.find("href=\"", n);
 
 			if(n == string::npos) continue;
@@ -162,9 +158,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		} catch(std::exception &e) {
 			return PLUGIN_ERROR;
 		}
-
 	}
-
 	return PLUGIN_SUCCESS;
 }
 
