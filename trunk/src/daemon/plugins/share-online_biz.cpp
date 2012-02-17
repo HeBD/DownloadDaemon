@@ -71,6 +71,9 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		return PLUGIN_SUCCESS;
 		}
 		else{
+			// Free support disabled because of re-captcha
+			return PLUGIN_AUTH_FAIL;
+
 			handle->setopt(CURLOPT_COOKIE, "http://www.share-online.biz; page_language=english");
 			handle->setopt(CURLOPT_URL, url.c_str());
 			handle->setopt(CURLOPT_WRITEFUNCTION, write_data);
