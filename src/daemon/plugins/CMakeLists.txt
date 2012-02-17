@@ -28,6 +28,7 @@ SET(plugins rapidshare_com.cpp				rapidshare.com
 		multiupload_com.cpp			multiupload.com
 		ifile_it.cpp				ifile.it
 		linksafe_me.cpp				linksafe.me
+		mediafire_com.cpp			mediafire.com
 )
 
 project(DownloadDaemon-Plugins)
