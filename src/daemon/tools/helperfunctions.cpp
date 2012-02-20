@@ -530,6 +530,12 @@ bool loadcontainer(const std::string extension, const std::string& content, down
 	return true;
 }
 
+std::string filename_from_path(const std::string &path) {
+    size_t pos = path.find_last_of("/\\");
+    if (pos == string::npos) return path;
+    return path.substr(pos + 1);
+}
+
 
 #ifdef BACKTRACE_ON_CRASH
 #include <execinfo.h>

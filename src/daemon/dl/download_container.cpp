@@ -271,7 +271,7 @@ int download_container::get_next_downloadable(bool do_lock) {
 		return LIST_ID;
 	}
 
-	download_container::iterator downloadable = download_list.end();
+    // download_container::iterator downloadable = download_list.end();
 
 	for(iterator it = download_list.begin(); it != download_list.end(); ++it) {
 		if((*it)->get_status() == DOWNLOAD_PENDING && (*it)->get_wait() == 0 && !(*it)->get_running() && (*it)->get_id() >= 0) {

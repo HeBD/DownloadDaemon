@@ -94,7 +94,7 @@ int report_progress(void *clientp, double dltotal, double dlnow, double ultotal,
 	//std::pair<dlindex, filesize_t> *prog_data = (std::pair<dlindex, filesize_t>*)clientp;
 	dl_cb_info *info = (dl_cb_info*)clientp;
 
-	dlindex id = info->id;
+    // dlindex id = info->id;
 	ddcurl* curr_handle = info->curl_handle;
 
 	double curr_speed_param;

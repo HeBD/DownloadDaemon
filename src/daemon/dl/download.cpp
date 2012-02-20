@@ -801,8 +801,12 @@ plugin_status download::prepare_download(plugin_output &poutp) {
 		return PLUGIN_ERROR;
 	}
 
-	pinp.premium_user = global_premium_config.get_cfg_value(get_host(false) + "_user");
-	pinp.premium_password = global_premium_config.get_cfg_value(get_host(false) + "_password");
+    string premium_entry = filename_from_path(pluginfile);
+    premium_entry = premium_entry.substr(3);
+    premium_entry = premium_entry.substr(0, premium_entry.size() - 3);
+
+    pinp.premium_user = global_premium_config.get_cfg_value(premium_entry + "_user");
+    pinp.premium_password = global_premium_config.get_cfg_value(premium_entry + "_password");
 	pinp.url = url;
 	trim_string(pinp.premium_user);
 	trim_string(pinp.premium_password);
