@@ -53,12 +53,15 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 				outp.download_url = get_url();
 				// get the handle ready (get cookies)
 				handle->setopt(CURLOPT_POST, 0);
-				size_t pos = result.find("cookie=");
-				if(pos == string::npos)
+                size_t pos = result.find("cookie=");
+                if(pos == string::npos) {
+                    log_string("rapidshare.com: rapidshare server did not return a cookie", LOG_ERR);
 					return PLUGIN_AUTH_FAIL;
+                }
 
 				string tmp = result.substr(pos + 7);
-				tmp = tmp.substr(0, tmp.find_first_of(" \r\n"));
+                pos = tmp.find_first_of(" \r\n\\r\\n");
+                tmp = tmp.substr(0, pos);
 				handle->setopt(CURLOPT_COOKIE, string("enc=" + tmp).c_str());
 				return PLUGIN_SUCCESS;
 			}
