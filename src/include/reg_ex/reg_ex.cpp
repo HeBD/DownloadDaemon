@@ -8,39 +8,32 @@ using std::vector;
 using std::string;
 using std::size_t;
 
-reg_ex::reg_ex() : num_brackets(0) {
+reg_ex::reg_ex() : trex(NULL) {
 }
 
 bool reg_ex::compile(const std::string &ex) {
-	num_brackets = 0;
-	if (slre_compile(&s, ex.c_str())) {
-		for (size_t i = 0; i < ex.size(); ++i)
-			if (ex[i] == '(') ++num_brackets;
-        return true;
-	}
-
-	return false;
+	trex = trex_compile(ex.c_str(), NULL);
+	if (!trex) return false;
+	return true;
 }
 
 bool reg_ex::match(const std::string &text) {
-	return slre_match(&s, text.c_str(), text.size(), NULL);
+	return trex_match(trex, text.c_str());
 }
 
 bool reg_ex::match(const std::string &text, vector<string> &result) {
-    struct cap* captures = new cap[num_brackets + 1];  // Number of braket pairs + 1
-    std::memset(captures, 0, sizeof(cap) * num_brackets + 1);
+	const char *in_begin = text.c_str(), *in_end = text.c_str() + text.size();
+	const char *out_begin = NULL, *out_end = NULL;
 
-    if (slre_match(&s, text.c_str(), text.size(), captures)) {
-        for (unsigned int i = 0; i < num_brackets + 1; ++i) {
-            if (captures[i].ptr == NULL || captures[i].len == 0) break;
-			result.push_back(std::string(captures[i].ptr, captures[i].len));
-        }
+	while (true) {
+		bool ret = trex_searchrange(trex, in_begin, in_end, &out_begin, &out_end);
+		if (!ret) return result.size() > 0;
 
-        delete [] captures;
-		return true;
+		result.push_back(string(out_begin, out_end - out_begin));
+
+		in_begin = out_end;
 	}
-    delete [] captures;
-	return false;
+		
 }
 
 bool reg_ex::match(const std::string &text, std::string &result) {
@@ -70,6 +63,11 @@ bool reg_ex::match(const std::string &text, const std::string &ex, std::string &
 	bool ret = match(text, ex, res);
 	if (res.size()) result = res[0];
 	return ret;
+}
+
+reg_ex::~reg_ex() {
+	if (trex)
+		trex_free(trex);
 }
 
 #ifdef REGEX_TESTING
