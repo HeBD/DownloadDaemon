@@ -2,7 +2,7 @@
 #define REGEX_H
 #include <vector>
 #include <string>
-#include "slre.h"
+#include "trex.h"
 
 
 /*! more advanced interface for regular expressions to individually compile and match regular expressions */
@@ -15,9 +15,15 @@ public:
 	/*! match a previousely compiled regex to a text. the first version returns true if the regex matches.
 		the second version also returns all matching results and the third version only returns the first match.
 	*/
+
+	/*! returns true if text is an exact match of the compiled expression */
 	bool match(const std::string &text);
+
+
 	bool match(const std::string &text, std::vector<std::string> &result);
 	bool match(const std::string &text, std::string &result);
+
+	~reg_ex();
 
 
 
@@ -26,8 +32,8 @@ public:
 	static bool match(const std::string &text, const std::string &regex, std::string &result);
 	static bool match(const std::string &text, const std::string &regex);
 private:
-	slre s;
-	unsigned int num_brackets;
+	TRex *trex;
+	
 };
 
 #endif
