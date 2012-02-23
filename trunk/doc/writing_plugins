@@ -112,3 +112,9 @@ So basic rule: If your plugin is a decrypter, return false. Else, check the stat
 
 If you need more functionality to support your specific hoster, please write me, Adrian Batzill (see AUTHORS file) an email. I will then implement it.
 
+
+
+NOTE: For simplicity, you can call many helpers that DownloadDaemon contains (mainly for string parsing).
+You can use the whole set of functions from src/daemon/tools/helperfunctions.h as well as the regular expression eingine
+defined in src/include/reg_ex/reg_ex.h.
+For supported regex syntax, refer to http://slre.sourceforge.net/
