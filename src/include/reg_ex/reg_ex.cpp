@@ -74,18 +74,27 @@ reg_ex::~reg_ex() {
 #ifdef REGEX_TESTING
 #include <iostream>
 #include <cstdlib>
+#include <fstream>
 int main(int argc, char* argv[]) {
-	if (argc < 3) {
+	if (argc < 2) {
 		std::cerr << "usage: " << argv[0] << " regex text" << std::endl;
 		std::exit(1);
 	}
+	string text;
+	if (argc == 2) {
+		string tmp;
+		while (getline(std::cin, tmp)) text +=tmp;
+	} else
+		text = argv[2];
+
+	
 	reg_ex r;
 	if (!r.compile(argv[1])) {
 		std::cout << "failed to compile regex" << std::endl;
 		return 1;
 	}
 	std::vector<std::string> result;
-	std::cout << "match: " << r.match(argv[2], result) << std::endl;
+	std::cout << "match: " << r.match(text, result) << std::endl;
 	std::cout << "results: " << std::endl;
 	for (unsigned int i = 0; i < result.size(); ++i) {
 		std::cout << "match: " << result[i] << std::endl;

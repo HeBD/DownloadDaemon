@@ -24,7 +24,7 @@ public:
 	    extract multiple matches (e.g. all URLs on a page */
 	bool match(const std::string &text, std::vector<std::string> &result);
 
-	/*! Normal regex search that finds a result and stores it
+	/*! Normal regex search that finds a result and stores it */
 	bool match(const std::string &text, std::string &result);
 
 	~reg_ex();
