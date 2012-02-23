@@ -38,10 +38,11 @@ bool reg_ex::match(const std::string &text, vector<string> &result) {
 
 bool reg_ex::match(const std::string &text, std::string &result) {
 	result.clear();
-	vector<string> res;
-	bool ret = match(text, res);
-	if (res.size()) result = res[0];
-	return ret;
+	const char* out_begin, *out_end;
+	bool ret = trex_search(trex, text.c_str(), &out_begin, &out_end);
+	if (!ret) return false;
+	result.assign(out_begin, out_end - out_begin);
+	return true;
 }
 
 bool reg_ex::match(const std::string &text, const std::string &ex) {
@@ -59,9 +60,9 @@ bool reg_ex::match(const std::string &text, const std::string &ex, std::vector<s
 
 bool reg_ex::match(const std::string &text, const std::string &ex, std::string &result) {
 	result.clear();
-	vector<string> res;
-	bool ret = match(text, ex, res);
-	if (res.size()) result = res[0];
+	reg_ex r;
+	if (!r.compile(ex)) return false;
+	bool ret = r.match(text, result);
 	return ret;
 }
 

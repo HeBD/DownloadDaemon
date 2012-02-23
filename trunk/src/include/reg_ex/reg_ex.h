@@ -19,8 +19,12 @@ public:
 	/*! returns true if text is an exact match of the compiled expression */
 	bool match(const std::string &text);
 
-
+	/*! convenience function that does multiple regex searches. Every time the expression is extracted, it is
+	    stored in the result vector and a new search is started from the end of the last match. This allows to simply
+	    extract multiple matches (e.g. all URLs on a page */
 	bool match(const std::string &text, std::vector<std::string> &result);
+
+	/*! Normal regex search that finds a result and stores it
 	bool match(const std::string &text, std::string &result);
 
 	~reg_ex();
