@@ -17,7 +17,7 @@
 #include <config.h>
 #include "../dl/download.h"
 #include "../dl/download_container.h"
-
+#include <reg_ex/reg_ex.h>
 
 /*
 The following types are imported from download.h and may be/have to be used for writing plugins:
