@@ -24,7 +24,9 @@ SET(daemon_SRCS downloaddaemon.cpp
 		../include/crypt/AES/aes_cbc.cpp
 		../include/crypt/AES/aes_cfb.cpp
 		../include/crypt/AES/aes_core.cpp
-		../include/crypt/base64.cpp)
+		../include/crypt/base64.cpp
+		../include/reg_ex/reg_ex.cpp
+		../include/reg_ex/slre.cpp)
 
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckIncludeFileCXX)
