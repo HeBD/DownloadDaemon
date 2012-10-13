@@ -33,13 +33,13 @@ if(!isset($_SERVER['HTTPS']) || strtolower($_SERVER['HTTPS']) == "off") {
 }
 
 $err_message='';
-if(isset($_SERVER'HTTP_X_FORWARDED_SERVER'))
-	$host = $_SERVER'HTTP_X_FORWARDED_HOST';
+if(isset($_SERVER['HTTP_X_FORWARDED_SERVER']))
+	$host = $_SERVER['HTTP_X_FORWARDED_HOST'];
 else
-	$host = $_SERVER'HTTP_HOST';
+	$host = $_SERVER['HTTP_HOST'];
 
 $tpl_vars = array(
-	'T_SITE_URL' => $site_url . $host . substr($_SERVER'SCRIPT_NAME', 0, strrpos($_SERVER'SCRIPT_NAME', "/")+1),
+	'T_SITE_URL' => $site_url . $host . substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], "/")+1),
 	'T_DEFAULT_LANG' => LANG,
 	'L_DD' => $LANG['DD'],
 	'L_Manager' => $LANG['Manager'],
