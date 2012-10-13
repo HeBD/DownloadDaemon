@@ -61,6 +61,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		if (resultstr.find("dl_failure") != std::string::npos)
 			return PLUGIN_FILE_NOT_FOUND;
 
+		// if cookie/session error, wait 5sec and try it again
+		if (resultstr.find("Unable to validate cookie/session") != std::string::npos) {
+			overload_counter = 0;
+			set_wait_time(5);
+			return PLUGIN_SERVER_OVERLOADED;
+		}
+
 		//get real link
 		string code = search_between(resultstr, "dl=\"","\"");
 		string data = base64_decode(code);
