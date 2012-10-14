@@ -18,8 +18,9 @@
 		namespace std {
 			using namespace boost;
 		}
-	#else
-		#include <thread>
+#else
+	#include <thread>
+	#include <mutex>
 #endif
 #include <string>
 

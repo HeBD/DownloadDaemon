@@ -21,6 +21,7 @@ namespace std {
 }
 #else
 #include <thread>
+#include <mutex>
 #endif
 
 #ifdef HAVE_SYSLOG_H

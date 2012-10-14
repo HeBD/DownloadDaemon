@@ -1,6 +1,8 @@
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
+#include <unistd.h>
+
 
 #include "curl_speeder.h"
 using namespace std;

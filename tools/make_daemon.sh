@@ -33,9 +33,9 @@ DESC_DD="DownloadDaemon is a download manager with many features
 
 # specify all files/directorys (array) and the path's where they should go to (basically a cp -r FILES_XXX[i] PATHS_XXX[i] is done)
 # the .svn folders are removed automatically. Folders are created automatically before copying
-FILES_DD=("../src/daemon" "../src/include/netpptk" "../src/include/crypt" "../src/include/reg_ex" "../src/include/cfgfile" "../src/include/ddcurl.h" "../etc/downloaddaemon" "../etc/init.d/downloadd" "../share/downloaddaemon/reconnect" "../share/downloaddaemon/plugins/captchadb/*.tar.bz2"
+FILES_DD=("../src/daemon" "../src/CheckCxx11.cmake" "../src/include/netpptk" "../src/include/crypt" "../src/include/reg_ex" "../src/include/cfgfile" "../src/include/ddcurl.h" "../etc/downloaddaemon" "../etc/init.d/downloadd" "../share/downloaddaemon/reconnect" "../share/downloaddaemon/plugins/captchadb/*.tar.bz2"
 "../AUTHORS" "../CHANGES" "../TODO" "../LICENCE" "../INSTALLING")
-PATHS_DD=("src/" "src/include" "src/include" "src/include" "src/include" "src/include" "etc/" "etc/init.d" "share/downloaddaemon" "share/downloaddaemon/plugins/captchadb/")
+PATHS_DD=("src/" "src/" "src/include" "src/include" "src/include" "src/include" "src/include" "etc/" "etc/init.d" "share/downloaddaemon" "share/downloaddaemon/plugins/captchadb/")
 
 script_dir=`pwd`
 
