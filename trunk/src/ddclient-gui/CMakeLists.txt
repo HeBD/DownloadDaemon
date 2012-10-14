@@ -61,13 +61,8 @@ INCLUDE(CheckFunctionExists)
 INCLUDE(CheckTypeSize)
 INCLUDE(CheckCXXCompilerFlag)
 INCLUDE(CheckCXXSourceCompiles)
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../CheckCxx11.cmake)
 
-CHECK_CXX_COMPILER_FLAG(-std=c++0x HAVE_STD_CXX0X)
-IF(HAVE_STD_CXX0X)
-        CHECK_INCLUDE_FILE_CXX(thread USE_STD_THREAD -std=c++0x)
-ELSE(HAVE_STD_CXX0X)
-        set(USE_STD_THREAD false)
-ENDIF(HAVE_STD_CXX0X)
 
 SET(DDCLIENT_GUI true)
 
@@ -99,7 +94,7 @@ IF(NOT USE_STD_THREAD)
         TARGET_LINK_LIBRARIES(ddclient-gui ${libs})
 ELSE(NOT USE_STD_THREAD)
         ADD_EXECUTABLE(ddclient-gui ${GUI_TYPE} ${ddclient_gui_MOC_SRCS} ${ddclient_gui_SRCS})
-        SET_TARGET_PROPERTIES(ddclient-gui PROPERTIES COMPILE_FLAGS -std=c++0x)
+        SET_TARGET_PROPERTIES(ddclient-gui PROPERTIES COMPILE_FLAGS ${CXX11_FLAG})
         TARGET_LINK_LIBRARIES(ddclient-gui ${libs})
 ENDIF(NOT USE_STD_THREAD)
 

@@ -12,6 +12,7 @@ namespace std {
 }
 #else
 #include <thread>
+#include <mutex>
 #endif
 
 /** This class provides improved scheduling mechanisms for libcurl.
