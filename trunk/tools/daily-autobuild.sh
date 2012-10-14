@@ -26,7 +26,7 @@ gui_up=false
 con_up=false
 php_up=false
 
-svn_up_cmd="$trunk_root/tools/svnup_with_pw.expect"
+svn_up_cmd="$trunk_root/tools/svn_with_pw.expect"
 svn_ci_cmd="$trunk_root/tools/commit_with_pw.expect"
 
 cd "$trunk_root/src/daemon"
