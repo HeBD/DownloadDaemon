@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
 SET(plugins rapidshare_com.cpp				rapidshare.com 
-		uploaded_to.cpp				uploaded.to 
+                uploaded_net.cpp			uploaded.net
 		youtube_com.cpp				youtube.com
 		netload_in.cpp				netload.in
 		netfolder_in.cpp			netfolder.in

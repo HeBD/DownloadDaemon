@@ -1,3 +1,7 @@
+2012-11-06
+   [stefan]
+	- fixed uploaded.to to new uploaded.net
+
 2012-02-23
    [adrian]
 	- Included a simple regular-expression engine into DownloadDaemon to simplify string parsing (trex)
