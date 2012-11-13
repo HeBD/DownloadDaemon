@@ -60,7 +60,7 @@ if [ $dd_up == false -a $gui_up == false -a $con_up == false -a $php_up == false
 fi
 
 cd "${trunk_root}/.."
-$svn_up_cmd $sf_password
+`$svn_up_cmd up $sf_password`
 cd "${trunk_root}/tools"
 
 version="`svn info | grep Revision | cut -f2 -d ' ' /dev/stdin`"
