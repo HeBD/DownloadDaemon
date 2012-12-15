@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # debian target distributions
-DEB_DISTS=("lucid" "oneiric" "precise" "quantal")
+DEB_DISTS=("lucid" "precise" "quantal" "raring")
 
 # upstream authors "Name LastName <mail@foo.foo>", seperated by newline and 4 spaces
 UPSTREAM_AUTHORS="Adrian Batzill <downloaddaemon # batzill ! com>
