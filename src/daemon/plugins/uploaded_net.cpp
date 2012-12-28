@@ -31,7 +31,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		url = url.substr(0, url.find("?"));
                 //url += "?setlang=en";
 
-		std::string api_data = "apikey=hP5Y37ulYfr8gSsS97LCT7kG5Gqp8Uug&id_0=" + splitted_url[4];
+                std::string api_data = "apikey=lhF2IeeprweDfu9ccWlxXVVypA5nA3EL&id_0=" + splitted_url[4];
 
                 handle->setopt(CURLOPT_URL, "http://uploaded.net/api/filemultiple");
 		handle->setopt(CURLOPT_POST, 1);
@@ -62,15 +62,13 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 		handle->perform();
 		handle->setopt(CURLOPT_POST, 0);
 		handle->setopt(CURLOPT_COPYPOSTFIELDS, "");
-                ofstream myfile;
-                myfile.open ("/home/boy1979/ul_net.txt");
-                myfile << result;
-                myfile.close();
 
 		if(result.find("User and password do not match!") != string::npos) {
 			return PLUGIN_AUTH_FAIL;
 		}
-                handle->setopt(CURLOPT_FOLLOWLOCATION, 1);
+                result.clear();
+                handle->setopt(CURLOPT_POST, 0);
+                handle->setopt(CURLOPT_HEADER, 0);
 
 		outp.download_url = url;
 		return PLUGIN_SUCCESS;

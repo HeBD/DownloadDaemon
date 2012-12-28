@@ -169,7 +169,7 @@ std::string download::serialize() {
         //Uploaded needs this because there are a forwarding from ul.to
         if (splitted_url[2].find("ul.to") != std::string::npos &&
                 splitted_url[2].find("uploaded.to") == std::string::npos){
-                splitted_url[2]= "uploaded.to/file";
+                splitted_url[2]= "uploaded.net/file";
 
                         url.clear();
 			for(size_t j = 0; j < splitted_url.size(); ++j) {
