@@ -106,8 +106,11 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
 
 	vector<string> links = search_all_between(result, "<FORM ACTION=\"","\" STYLE=\"display:",0,true);
 	for(size_t i = 0; i < links.size(); i++) {
-		if (links[i].find("mirror") == std::string::npos) {
-			result.clear();
+        if ((links[i].find("mirror") == std::string::npos) &&
+        (links[i].find("firstload.com") == std::string::npos)){
+
+            //firstload
+            result.clear();
 			handle->setopt(CURLOPT_URL, links[i]);
 			handle->setopt(CURLOPT_POST, 0);
 			handle->setopt(CURLOPT_HEADER, 1);
