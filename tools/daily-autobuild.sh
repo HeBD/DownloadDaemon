@@ -9,7 +9,7 @@ fi
 trunk_root="/home/adrian/downloaddaemon/trunk"
 
 # set this to the e-mail adress to use for signing the packages
-sign_email="agib@gmx.de" # "example@example.com"
+sign_email="adrian@batzill.com" # "example@example.com"
 
 # ubuntu ppa to upload to
 ppa="ppa:agib/ppa"
