@@ -484,51 +484,83 @@ bool loadcontainer(const std::string extension, const std::string& content, down
 	//log_string("Loadcontainer: result" + result, LOG_DEBUG);
 	handle.cleanup();
 	curl_formfree(post);
-	try {
-		//log_string("Loadcontainer: result" + result, LOG_DEBUG);
-		result = result.substr(result.find("[") + 2);
-		result = result.substr(0, result.find("]") - 1);
-		vector<string> links = split_string(result, "\", \"");
-		//debug
-		if(extension == ".dlc" || extension == ".ccf")
-		{
-			links.erase(links.begin()); // the first link has nothing to do with the download
-		}
-		for(size_t i = 0; i < links.size(); i++)
-		{
-			log_string("Loadcontainer: splitted-link =" + links[i],LOG_DEBUG);
-			//Uploaded needs this because there are a forwarding from ul.to
-			vector<string> splitted_url = split_string(links[i], "/");
-			if (splitted_url[2].find("ul.to") != std::string::npos &&
-				splitted_url[2].find("uploaded.to") == std::string::npos){
-				splitted_url[2]= "uploaded.to/file";
-				string temp = links[i];
-				links[i].clear();
-				for(size_t j = 0; j < splitted_url.size(); ++j) {
-					links[i] += splitted_url[j]+"/";}
-					links[i] = links[i].substr(0,links[i].size()-1);
-				log_string("ul.to forward to: " + links[i],LOG_DEBUG);
-				}
-		}
-		int pkg_id = -1;
-		if(container == 0) {
-			pkg_id = global_download_list.add_package("");
-		}
-		for(vector<string>::iterator it = links.begin(); it != links.end(); ++it) {
-			if(pkg_id != -1) {
-				download *dl = new download(*it);
-				global_download_list.add_dl_to_pkg(dl, pkg_id);
-			} else if(container) {
-				container->add_download(*it, "");
-			}
-		}
-		if(pkg_id != -1)
-			global_download_list.start_next_downloadable();
-	} catch(std::exception &e) {
-		log_string("Failed to decrypt " + extension + " container: " + string(e.what()), LOG_ERR);
-		return false;
-	}
-	return true;
+    try {
+        vector<string> links;
+        if (result.find("Sorry") != std::string::npos)
+            {
+                result.clear();
+                ddcurl handle;
+                handle.setopt(CURLOPT_URL, "http://linkdecrypter.com/?ck");
+                struct curl_httppost* post = NULL;
+                struct curl_httppost* last = NULL;
+                curl_formadd(&post, &last, CURLFORM_COPYNAME, "container", CURLFORM_FILE, filename.c_str(), CURLFORM_END);
+                handle.setopt(CURLOPT_HTTPPOST, post);
+                handle.setopt(CURLOPT_WRITEFUNCTION, write_to_string);
+                std::string result;
+                handle.setopt(CURLOPT_WRITEDATA, &result);
+                if(handle.perform() != CURLE_OK) {
+                    log_string("Failed to decrypt " + extension + " container: Couldn't contact decryption-server", LOG_ERR);
+                    curl_formfree(post);
+                    return false;
+                }
+                //log_string("Loadcontainer: result" + result, LOG_DEBUG);
+                handle.cleanup();
+                curl_formfree(post);
+                result = result.substr(result.find("textarea"));
+                result  = result.substr(result.find("http"));
+                result = result.substr(0,result.find("</textarea"));
+                //vector<string>
+                links = split_string(result, "\r\n");
+        }
+        else
+        {
+            //log_string("Loadcontainer: result" + result, LOG_DEBUG);
+            result = result.substr(result.find("[") + 2);
+            result = result.substr(0, result.find("]") - 1);
+            //vector<string>
+            links = split_string(result, "\", \"");
+            //debug
+            if(extension == ".dlc" || extension == ".ccf")
+            {
+                links.erase(links.begin()); // the first link has nothing to do with the download
+            }
+        }
+        for(size_t i = 0; i < links.size(); i++)
+        {
+            log_string("Loadcontainer: splitted-link =" + links[i],LOG_DEBUG);
+            //Uploaded needs this because there are a forwarding from ul.to
+            vector<string> splitted_url = split_string(links[i], "/");
+            if (splitted_url[2].find("ul.to") != std::string::npos &&
+                splitted_url[2].find("uploaded.to") == std::string::npos){
+                splitted_url[2]= "uploaded.to/file";
+                string temp = links[i];
+                links[i].clear();
+                for(size_t j = 0; j < splitted_url.size(); ++j) {
+                    links[i] += splitted_url[j]+"/";}
+                    links[i] = links[i].substr(0,links[i].size()-1);
+                log_string("ul.to forward to: " + links[i],LOG_DEBUG);
+                }
+        }
+        int pkg_id = -1;
+        if(container == 0) {
+            pkg_id = global_download_list.add_package("");
+        }
+        for(vector<string>::iterator it = links.begin(); it != links.end(); ++it) {
+            if(pkg_id != -1) {
+                download *dl = new download(*it);
+                global_download_list.add_dl_to_pkg(dl, pkg_id);
+            } else if(container) {
+                container->add_download(*it, "");
+            }
+        }
+        if(pkg_id != -1)
+            global_download_list.start_next_downloadable();
+        return true;
+    }
+    catch(std::exception &e) {
+    log_string("Failed to decrypt " + extension + " container: " + string(e.what()), LOG_ERR);
+    return false;
+    }
 }
 
 std::string filename_from_path(const std::string &path) {
