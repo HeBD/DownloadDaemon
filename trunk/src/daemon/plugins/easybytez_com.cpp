@@ -61,7 +61,7 @@ plugin_status plugin_exec(plugin_input &inp, plugin_output &outp) {
             int Minutes=atoi(wait_time.substr(0,wait_time.find(" ")).c_str())*60;
             int Seconds=atoi(wait_time.substr(wait_time.find(", ")+2,wait_time.length()-wait_time.find(", ")+2).c_str())+2;
             set_wait_time(Minutes+Seconds);
-            return PLUGIN_SERVER_OVERLOADED;
+            return PLUGIN_LIMIT_REACHED;
         }
         string link_wait_time = search_between(resultstr, "<span id=\"countdown_str\">Wait","</span> seconds</span>");
         link_wait_time = search_between(link_wait_time,">","<");
