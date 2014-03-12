@@ -490,10 +490,10 @@ bool loadcontainer(const std::string extension, const std::string& content, down
             {
                 result.clear();
                 ddcurl handle;
-                handle.setopt(CURLOPT_URL, "http://linkdecrypter.com/?ck");
+                handle.setopt(CURLOPT_URL, "http://posativ.org/decrypt/dlc");
                 struct curl_httppost* post = NULL;
                 struct curl_httppost* last = NULL;
-                curl_formadd(&post, &last, CURLFORM_COPYNAME, "container", CURLFORM_FILE, filename.c_str(), CURLFORM_END);
+                curl_formadd(&post, &last, CURLFORM_COPYNAME, "file", CURLFORM_FILE, filename.c_str(), CURLFORM_END);
                 handle.setopt(CURLOPT_HTTPPOST, post);
                 handle.setopt(CURLOPT_WRITEFUNCTION, write_to_string);
                 std::string result;
@@ -506,11 +506,8 @@ bool loadcontainer(const std::string extension, const std::string& content, down
                 //log_string("Loadcontainer: result" + result, LOG_DEBUG);
                 handle.cleanup();
                 curl_formfree(post);
-                result = result.substr(result.find("textarea"));
-                result  = result.substr(result.find("http"));
-                result = result.substr(0,result.find("</textarea"));
                 //vector<string>
-                links = split_string(result, "\r\n");
+                links = split_string(result, "\n");
         }
         else
         {
