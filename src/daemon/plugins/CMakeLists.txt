@@ -32,6 +32,8 @@ SET(plugins rapidshare_com.cpp				rapidshare.com
 		putlocker_com.cpp			putlocker.com
 		gamefront_com.cpp			gamefront.com
 		easybytez_com.cpp			easybytez.com
+		remixshare_com.cpp			remixshare.com
+		yourfiles_to.cpp			yourfiles.to
 )
 
 project(DownloadDaemon-Plugins)
